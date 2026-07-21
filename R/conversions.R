@@ -23,8 +23,6 @@ as_tbl_graph <- function(vtree) {
 #'
 #' This function is close to the `crosstabToCases()` function from
 #' the original vtree package.
-#' @param ... Columns to use for the tree. If no columns are specified, all
-#'            columns except the frequency column will be used.
 #' @inheritParams vtree
 #' @return A data frame of cases, one row per observation, one column per variable
 #' @export
@@ -45,12 +43,13 @@ cases_from_freqtable <- function(x, ..., .freq_col = "Freq", .cols = NULL) {
 
   stopifnot(.freq_col %in% colnames(x))
   stopifnot(all(cnms %in% colnames(x)))
-  if(length(cnms) > 0) {
-    cnms <- setdiff(cnms, .freq_col)
+  if(length(cnms) < 1) {
+    cnms <- setdiff(colnames(x), .freq_col)
   }
+  stopifnot(length(cnms) > 0)
 
   x <- x[ rep.int(seq_len(nrow(x)), x[[.freq_col]]), ]
-  x[[freq_col]] <- NULL
+  x[[.freq_col]] <- NULL
   rownames(x) <- NULL
 
   x
@@ -74,12 +73,17 @@ vtree_from_freqtable <- function(x, ..., .freq_col = "Freq", .cols = NULL) {
     cnms <- map_chr(cols, rlang::as_name)
   }
 
+  if(length(cnms) < 1L) {
+    cnms <- setdiff(colnames(x), .freq_col)
+  }
+  stopifnot(length(cnms) > 0L)
+
   stopifnot(.freq_col %in% colnames(x))
-  stopifnot(length(cnms) > 0)
   stopifnot(all(cnms %in% colnames(x)))
 
+
   x <- x[ rep.int(seq_len(nrow(x)), x[[.freq_col]]), ]
-  x[[freq_col]] <- NULL
+  x[[.freq_col]] <- NULL
   rownames(x) <- NULL
 
   vtree(cases = x, .cols = cnms)

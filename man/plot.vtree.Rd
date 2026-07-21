@@ -9,11 +9,14 @@
   ...,
   palettes = c("Blues", "Greens", "Reds", "Oranges", "Purples"),
   na_fill = "white",
-  by_freq = TRUE
+  by_freq = FALSE,
+  legend = FALSE
 )
 }
 \arguments{
 \item{x}{A vtree object}
+
+\item{...}{ignored}
 
 \item{palettes}{A character vector with names of RColorBrewer palettes
 to use for the variables. By default these are the
@@ -23,6 +26,8 @@ default arguments to the vtree_palette() function.}
 
 \item{by_freq}{If TRUE, the plot is scaled by frequency. If FALSE,
 all nodes have the same size.}
+
+\item{legend}{If TRUE, a legend is added to the plot. Default is FALSE.}
 }
 \value{
 A ggplot object
@@ -38,12 +43,14 @@ in that node. If you prefer a regular plot, set \code{by_freq = FALSE}.
 The returned value is a ggplot2 object, which can be further customized
 using ggplot2 functions.
 
-Fill colors are assigned automatically based on the variable level in the
-tree. By default, each node gets its own palette, and from that palette
-fill colors are assigned to the levels of the variable by their order of
-appearance or factor level in the data. The variables with the lowest
-factor levels or appearing first will get the darkest fill colors. By
-default, NA values are colored white.
+Working with color palettes
+
+By default, fill colors are assigned automatically based on the variable
+level in the tree. Each node gets its own palette, and from
+that palette fill colors are assigned to the levels of the variable by
+their order of appearance or factor level in the data. The variables
+with the lowest factor levels or appearing first will get the darkest
+fill colors. NA values are colored white.
 
 If the vtree object contains, in the node data frame, a column called
 "fill", then the fill colors will be taken from that column instead of being

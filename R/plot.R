@@ -1,6 +1,6 @@
 # for each node, calculate the number of leafs and store in nleafs
 .calc_nleafs <- function(graph) {
-  graph |> activate(nodes) |>
+  graph |> activate("nodes") |>
     mutate(nleafs = map_bfs_back_int(
       root = 1,
       mode = "out",
@@ -16,7 +16,7 @@
 
 
 add_labels <- function(vtree) {
-  vtree <- vtree |> activate(nodes) |>
+  vtree <- vtree |> activate("nodes") |>
     mutate(.node_val = 
            ifelse(.data[["node_col"]] == "__ALL__", "All data", 
                   .data[["node_val"]])) |>
@@ -38,9 +38,9 @@ add_labels <- function(vtree) {
 
 .calc_offsets <- function(vtree) {
   vtree |>
-    activate(nodes) |>
-    group_by(parent) |>
-    mutate(offset = lag(cumsum(n), default = 0)) |>
+    activate("nodes") |>
+    group_by(.data[["parent"]]) |>
+    mutate(offset = lag(cumsum(.data[["n"]]), default = 0)) |>
     ungroup() |>
     mutate(offset_tot = map_bfs_int(
       root = 1,
@@ -51,42 +51,49 @@ add_labels <- function(vtree) {
 }
 
 # plot by frequency
-plot_by_freq <- function(graph, ...) {
+plot_by_freq <- function(graph, fill_scale, color_scale) {
 
   # calculate the local offsets for each descendant of each node
   .graph <- graph |>
     .calc_offsets() |>
     add_labels()
 
+  nodes <- .graph |> 
+    as_tibble() 
+
   maxl <- max(nodes$level)
   totn <- sum(nodes$n[nodes$level == 1])
 
-  nodes <- .graph |> as_tibble() |>
-    mutate(x = level / maxl) |>
-    mutate(y = offset_tot / totn + n / (2 * totn)) |>
-    mutate(width = 0.8 / maxl, height = n / totn)
+  nodes <- nodes |>
+    mutate(x = .data[["level"]] / maxl) |>
+    mutate(y = .data[["offset_tot"]] / totn +
+           .data[["n"]] / (2 * totn)) |>
+    mutate(width = 0.8 / maxl, height = .data[["n"]] / totn)
 
   edges <- graph |> activate(edges) |> as_tibble() |>
-    mutate(x1 = nodes$x[from], x2 = nodes$x[to],
-           y1 = nodes$y[to], y2 = nodes$y[to])
+    mutate(x1 = nodes$x[.data[["from"]]],
+           x2 = nodes$x[.data[["to"]]],
+           y1 = nodes$y[.data[["to"]]],
+           y2 = nodes$y[.data[["to"]]])
   
-  fill_scale <- scale_fill_manual(values = set_names(nodes$fill))
-  color_scale <- scale_color_manual(values = set_names(nodes$color))
-
-  nodes |> ggplot(aes(x = x, y = y, 
-                      group = node_col,
-                      height = height, label = label)) +
+  nodes |> ggplot(aes(x = .data[["x"]], y = .data[["y"]], 
+                      height = .data[["height"]],
+                      label = .data[["label"]])) +
     geom_segment(data = edges, 
-                 aes(x = x1, y = y1, xend = x2, yend = y2), 
+                 aes(x = .data[["x1"]],
+                     y = .data[["y1"]],
+                     xend = .data[["x2"]],
+                     yend = .data[["y2"]]), 
                  inherit.aes = FALSE) +
-    geom_rect(aes(x = x, y = y,
-                  width = width,
-                  height = height,
-                  fill = fill),
+    geom_rect(aes(x = .data[["x"]],
+                  y = .data[["y"]],
+                  width = .data[["width"]],
+                  height = .data[["height"]],
+                  fill = .data[["node_cv"]]),
               color = "black") +
+    geom_text(aes(color = .data[["node_cv"]])) +
     fill_scale +
     color_scale +
-    geom_text(aes(color = color)) +
     # reverse y axis
     scale_y_reverse() +
     # remove clipping
@@ -98,7 +105,7 @@ plot_by_freq <- function(graph, ...) {
 }
 
 # just the nodes, no resizing according to frequency
-plot_regular <- function(graph, ...) {
+plot_regular <- function(graph, fill_scale, color_scale) {
 
   nodes <- graph |> activate(nodes) |> 
     .calc_nleafs() |>
@@ -111,21 +118,32 @@ plot_regular <- function(graph, ...) {
   totn <- sum(nodes$n[nodes$level == 1])
 
   nodes <- nodes |>
-    mutate(x = level / maxl) |>
-    group_by(level) |>
-    mutate(y = (cumsum(nleafs) - nleafs / 2)/totleafs) |>
+    mutate(x = .data[["level"]] / maxl) |>
+    group_by(.data[["level"]]) |>
+    mutate(y = (cumsum(.data[["nleafs"]]) - .data[["nleafs"]] / 2)/
+           totleafs) |>
     ungroup()
 
   edges <- graph |> activate(edges) |> as_tibble() |>
-    mutate(x1 = nodes$x[from], x2 = nodes$x[to],
-           y1 = nodes$y[from], y2 = nodes$y[to])
+    mutate(x1 = nodes$x[.data[["from"]]],
+           x2 = nodes$x[.data[["to"]]],
+           y1 = nodes$y[.data[["from"]]],
+           y2 = nodes$y[.data[["to"]]])
 
-  nodes |> ggplot(aes(x = x, y = y, label = label)) +
+  nodes |> ggplot(aes(x = .data[["x"]],
+                      y = .data[["y"]],
+                      label = .data[["label"]])) +
     geom_segment(data = edges, 
-                 aes(x = x1, y = y1, xend = x2, yend = y2), 
+                 aes(x = .data[["x1"]],
+                     y = .data[["y1"]],
+                     xend = .data[["x2"]],
+                     yend = .data[["y2"]]), 
                  inherit.aes = FALSE) +
-    geom_textbox() +
+    geom_label(aes(fill = .data[["node_cv"]],
+                   color = .data[["node_cv"]])) +
     # reverse y axis
+    fill_scale +
+    color_scale +
     scale_y_reverse() +
     # remove clipping
     coord_cartesian(clip = "off")
@@ -167,10 +185,14 @@ contrast_color <- function(color) {
 #' `vtree_pal_assign` assigns fill colors to the nodes of a vtree based on the
 #' variable levels. The fill colors are stored in a new column in the nodes
 #' data frame called "fill".
+#' @param vtree A vtree object
+#' @param palettes The names of RColorBrewer palettes corresponding to the
+#'                 subsequent columns in the vtree
+#' @param na_fill fill color used for nodes associated with NA values
 #' @return A character vector of colors for the levels of the variable
 #' @importFrom RColorBrewer brewer.pal
 #' @importFrom grDevices colorRampPalette
-#' @importFrom purrr map imap
+#' @importFrom purrr map imap map2_chr map_chr map_dfr set_names
 #' @export
 vtree_palette <- function(vtree,
                           palettes = c("Blues", "Greens", "Reds", 
@@ -187,7 +209,7 @@ vtree_palette <- function(vtree,
 
   ret <- imap(palettes, \(pal, var) {
     n <- length(levs[[var]])
-    pal <- .vtree_pal(n, pal_name = pal)
+    pal <- rev(.vtree_pal(n, pal_name = pal))
     names(pal) <- levs[[var]]
     pal
   })
@@ -207,7 +229,7 @@ vtree_pal_assign <- function(vtree,
 
   pal <- vtree_palette(vtree, palettes = palettes)
 
-  vtree <- vtree |> activate(nodes) |>
+  vtree <- vtree |> activate("nodes") |>
     mutate(fill = ifelse(is.na(.data[["node_val"]]),
                                na_fill,
 
@@ -247,7 +269,7 @@ vtree_pal_assign <- function(vtree,
 
   # Extension for variables with more than nine levels
   grDevices::colorRampPalette(
-    RColorBrewer::brewer.pal(9, family),
+    RColorBrewer::brewer.pal(9, pal_name),
     space = "Lab"
   )(n)
 }
@@ -263,12 +285,14 @@ vtree_pal_assign <- function(vtree,
 #' The returned value is a ggplot2 object, which can be further customized
 #' using ggplot2 functions.
 #'
-#' Fill colors are assigned automatically based on the variable level in the
-#' tree. By default, each node gets its own palette, and from that palette
-#' fill colors are assigned to the levels of the variable by their order of
-#' appearance or factor level in the data. The variables with the lowest
-#' factor levels or appearing first will get the darkest fill colors. By
-#' default, NA values are colored white.
+#' Working with color palettes
+#'
+#' By default, fill colors are assigned automatically based on the variable
+#' level in the tree. Each node gets its own palette, and from
+#' that palette fill colors are assigned to the levels of the variable by
+#' their order of appearance or factor level in the data. The variables
+#' with the lowest factor levels or appearing first will get the darkest
+#' fill colors. NA values are colored white.
 #' 
 #' If the vtree object contains, in the node data frame, a column called
 #' "fill", then the fill colors will be taken from that column instead of being
@@ -278,41 +302,60 @@ vtree_pal_assign <- function(vtree,
 #' colors will be taken from that column. Otherwise, the either white or
 #' black will be chosen depending on the fill color for each node.
 #' @param x A vtree object
+#' @param ... ignored
 #' @param palettes A character vector with names of RColorBrewer palettes
 #'                 to use for the variables. By default these are the
 #'                 default arguments to the vtree_palette() function.
 #' @param na_fill The color to use for NA values. Default is "white".
 #' @param by_freq If TRUE, the plot is scaled by frequency. If FALSE,
 #'                all nodes have the same size.
+#' @param legend If TRUE, a legend is added to the plot. Default is FALSE.
 #' @return A ggplot object
 #' @importFrom ggplot2 ggplot aes geom_segment geom_rect 
 #' @importFrom ggplot2 scale_y_reverse coord_cartesian
-#' @importFrom ggplot2 theme_void
+#' @importFrom ggplot2 theme_void geom_text geom_label
+#' @importFrom ggplot2 scale_fill_manual scale_color_manual theme
 #' @export
 plot.vtree <- function(x, 
                        ..., 
                        palettes = c("Blues", "Greens", "Reds", 
                                     "Oranges", "Purples"),
                        na_fill = "white",
-                       by_freq = TRUE) {
+                       by_freq = FALSE,
+                       legend = FALSE) {
   stopifnot(inherits(x, "vtree"))
 
-  if(! "fill" %in% colnames(x |> activate(nodes) |> as_tibble())) {
+  nodes <- x |> activate(nodes) |> as_tibble()
+  if(! "fill" %in% colnames(nodes)) {
     x <- vtree_pal_assign(x, palettes = palettes, na_fill = na_fill)
   }
 
-  if(! "color" %in% colnames(x |> activate(nodes) |> as_tibble())) {
+  if(! "color" %in% colnames(nodes)) {
     x <- x |> activate(nodes) |>
       mutate(color = contrast_color(.data[["fill"]]))
   }
 
+  nodes <- x |> activate(nodes) |> as_tibble()
+  fill_scale  <- scale_fill_manual(name = NULL,
+                                   values  = set_names(nodes$fill,
+                                                       nodes$node_cv))
+  color_scale <- scale_color_manual(name = NULL,
+                                    values = set_names(nodes$color,
+                                                       nodes$node_cv))
   if(by_freq) {
-    p <- plot_by_freq(x, ...)
+    p <- plot_by_freq(x, fill_scale, color_scale)
   } else {
-    p <- plot_regular(x, ...)
+    p <- plot_regular(x, fill_scale, color_scale)
   }
 
-  p + theme_void()
+  p <- p + theme_void()
+
+  if(!legend) {
+    p <- p + theme(legend.position = "none")
+  }
+
+  p
+
 }
 
 

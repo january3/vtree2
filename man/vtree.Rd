@@ -12,7 +12,9 @@ vtree(cases, ..., .cols = NULL)
 \arguments{
 \item{x}{A frequency table (matrix, table or data frame)}
 
-\item{...}{Columns to use for the tree}
+\item{...}{Columns to use for the tree. If no columns are specified, all
+columns (except the frequency column for the frequency
+tables) will be used}
 
 \item{.freq_col}{The name of the column in a frequency table that
 contains the frequency counts. Default is "Freq".}
@@ -48,6 +50,9 @@ for plotting.
 library(tidyverse)
 data(Titanic)
 vt <- vtree_from_freqtable(Titanic, Class, Survived)
+if(interactive()) {
+  plot(vt, by_freq = TRUE)
+}
 set.seed(123)
 # create a new data set with NAs
 titanicNA <- Titanic |>
@@ -60,4 +65,7 @@ titanicNA <- Titanic |>
   mutate(Age = ifelse(runif(n()) < 0.1, NA, Age))            
 
 vt <- vtree(titanicNA, Class, Sex, Survived)
+if(interactive()) {
+  plot(vt)
+}
 }

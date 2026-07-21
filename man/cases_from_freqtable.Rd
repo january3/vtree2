@@ -10,7 +10,8 @@ cases_from_freqtable(x, ..., .freq_col = "Freq", .cols = NULL)
 \item{x}{A frequency table (matrix, table or data frame)}
 
 \item{...}{Columns to use for the tree. If no columns are specified, all
-columns except the frequency column will be used.}
+columns (except the frequency column for the frequency
+tables) will be used}
 
 \item{.freq_col}{The name of the column in a frequency table that
 contains the frequency counts. Default is "Freq".}

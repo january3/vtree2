@@ -8,6 +8,8 @@
 }
 \arguments{
 \item{x}{A vtree object.}
+
+\item{...}{Ignored}
 }
 \value{
 Invisibly returns the input object.

@@ -14,6 +14,8 @@
 #' Print a vtree pattern
 #'
 #' @param x A vtree pattern object.
+#' @param ... Ignored
+#' @importFrom purrr imap_int
 #' @return Invisibly returns the input object.
 #' @export
 print.vtree_pattern <- function(x, ...) {
@@ -75,7 +77,7 @@ pattern <- function(vtree) {
   stopifnot(maxl > 0)
 
   # get the column names
-  cnms <- attr(x, "cols")
+  cnms <- attr(vtree, "cols")
 
   d1 <- .extract_level(nodes, cnms[1]) |>
     select(-all_of("parent"))

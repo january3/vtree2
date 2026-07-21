@@ -16,6 +16,14 @@ vtree_pal_assign(
   na_fill = "white"
 )
 }
+\arguments{
+\item{vtree}{A vtree object}
+
+\item{palettes}{The names of RColorBrewer palettes corresponding to the
+subsequent columns in the vtree}
+
+\item{na_fill}{fill color used for nodes associated with NA values}
+}
 \value{
 A character vector of colors for the levels of the variable
 }

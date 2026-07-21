@@ -47,6 +47,7 @@ names.vtree <- function(x) {
 #' Print a vtree object
 #'
 #' @param x A vtree object.
+#' @param ... Ignored
 #' @return Invisibly returns the input object.
 #' @export
 print.vtree <- function(x, ...) {
@@ -72,7 +73,8 @@ as_vtree <- function(x) {
   # integrity checks
   # ------------------
   nodes <- x |> activate(nodes) |> as_tibble()
-  stopifnot(all(c("ID", "node_col", "node_val", "parent", "level", "n", "freq") 
+  stopifnot(all(c("ID", "node_col", "node_val", "node_cv", 
+                  "parent", "level", "n", "freq") 
                 %in% colnames(nodes)))
 
   # more than a root
@@ -84,6 +86,8 @@ as_vtree <- function(x) {
   N <- nodes$n[ nodes$level == 0 ]
 
   stopifnot(all(!is.na(nodes$node_col)))
+
+  cnms <- unique(nodes$node_col[ nodes$level > 0 ])
 
   attr(x, "cols") <- cnms
   attr(x, "N") <- N
@@ -117,6 +121,9 @@ as_vtree <- function(x) {
 #' library(tidyverse)
 #' data(Titanic)
 #' vt <- vtree_from_freqtable(Titanic, Class, Survived)
+#' if(interactive()) {
+#'   plot(vt, by_freq = TRUE)
+#' }
 #' set.seed(123)
 #' # create a new data set with NAs
 #' titanicNA <- Titanic |>
@@ -127,18 +134,30 @@ as_vtree <- function(x) {
 #'   mutate(Class = ifelse(runif(n()) < 0.1, NA, Class)) |>
 #'   mutate(Sex = ifelse(runif(n()) < 0.1, NA, Sex)) |>
 #'   mutate(Age = ifelse(runif(n()) < 0.1, NA, Age))            
-#'
+#' 
 #' vt <- vtree(titanicNA, Class, Sex, Survived)
+#' if(interactive()) {
+#'   plot(vt)
+#' }
 #' @param cases A data frame, one row per observation, one column per variable
 #' @param x A frequency table (matrix, table or data frame)
-#' @param ... Columns to use for the tree
+#' @param ... Columns to use for the tree. If no columns are specified, all
+#'            columns (except the frequency column for the frequency
+#'            tables) will be used
 #' @param .cols Provide column names as a character vector instead of using the ... argument. This is useful when the column names are stored in a variable.
 #' @param .freq_col The name of the column in a frequency table that
 #' contains the frequency counts. Default is "Freq".
 #' @return an object of class vtree
 #' @importFrom dplyr select mutate group_by summarize ungroup 
-#' @importFrom dplyr distinct rename rowwise c_across
-#' @importFrom rlang enquos as_name
+#' @importFrom dplyr distinct rename rowwise c_across all_of
+#' @importFrom dplyr first .data n pull filter as_tibble lag
+#' @importFrom dplyr pick across
+#' @importFrom tidyselect everything starts_with
+#' @importFrom purrr map map_chr map_dfr reduce map_dfc
+#' @importFrom rlang enquos as_name :=
+#' @importFrom tidygraph tbl_graph activate map_bfs_lgl map_bfs_int
+#' @importFrom tidygraph tbl_graph map_bfs_back_int
+#' @importFrom tidygraph .N .E
 #' @export
 vtree <- function(cases, ..., .cols = NULL) {
   if (!is.null(.cols)) {
@@ -149,6 +168,12 @@ vtree <- function(cases, ..., .cols = NULL) {
     # get the column names as strings
     cnms <- map_chr(cols, rlang::as_name)
   }
+
+  if(length(cnms) < 1L) {
+    cnms <- colnames(cases)
+  }
+  stopifnot(length(cnms) > 0L)
+
 
   stopifnot(length(cnms) > 0)
   stopifnot(all(cnms %in% colnames(cases)))
@@ -182,10 +207,10 @@ vtree_pat <- function(data, cnms) {
       # we rely here on the fact that the data is already grouped by the
       # previous columns! e.g. in the Titanic example, when var is Sex, the
       # data is already grouped by Class.
-      mutate(..denom.. = sum(!is.na(.data[[nm]]))) |>
+      mutate(.denom = sum(!is.na(.data[[nm]]))) |>
       group_by(across(cnms[1:i])) |>
       mutate(!!paste0(nm, "_n") := n()) |>
-      mutate(!!paste0(nm, "_frac") := n() / ..denom..)
+      mutate(!!paste0(nm, "_frac") := n() / .data[[".denom"]])
   }
 
   # selected columns
@@ -206,9 +231,9 @@ vtree_pat <- function(data, cnms) {
 df2edge <- function(df) {
 
   df |>
-    select(ID, parent) |>
-    filter(!is.na(parent)) |>
-    rename(from = parent, to = ID)
+    select(all_of(c("ID", "parent"))) |>
+    filter(!is.na(.data[["parent"]])) |>
+    rename(from = "parent", to = "ID")
 }
 
 # this one creates a node data frame directly from the pattern,
@@ -265,5 +290,10 @@ pat2df <- function(pattern, columns) {
                                level = 0, 
                                n = N,
                                freq = 1), ret)
+  ret <- ret |>
+    mutate(node_cv = paste0(.data[["node_col"]], ":", 
+                            .data[["node_val"]])) |>
+    select(all_of(c("ID", "node_col", "node_val", "node_cv",
+                    "parent", "level", "n", "freq")))
   ret
 }
