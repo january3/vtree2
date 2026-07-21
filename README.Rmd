@@ -30,6 +30,10 @@ pak::pak("january3/vtree2")
 
 ## Quick start
 
+### What is a vtree?
+
+### Basic plots
+
 You can construct a vtree roughly from two types of data:
 
  * a data frame with one row per case (cases data frame)
@@ -49,25 +53,27 @@ vt
 `vt` is now an object of class `vtree`, which is basically `tidygraph`'s `tbl_graph` with some extra attributes. You can plot it with `plot()`:
 
 
-```{r example_plot}
+```{r example_plot,fig.width=8,fig.height=5}
 plot(vt)
 ```
 
+### Vtree pruning
 
 
-
-What is special about using `README.Rmd` instead of just `README.md`? You can include R chunks like so:
-
-```{r cars}
-summary(cars)
+```{r example_pruning}
+ucb <- cases_from_freqtable(UCBAdmissions)
+vt <- vtree(ucb, Dept, Gender, Admit) |>
+  prune(n < 100 | freq < .15)
+plot(vt, by_freq = TRUE)
 ```
 
-You'll still need to render `README.Rmd` regularly, to keep `README.md` up-to-date. `devtools::build_readme()` is handy for this.
 
-You can also embed plots, for example:
 
-```{r pressure, echo = FALSE}
-plot(pressure)
-```
 
-In that case, don't forget to commit and push the resulting figure files, so they display on GitHub and CRAN.
+### Vtree patterns
+
+
+## TODO
+
+ * plotting function for patterns
+ * should the vtree function take cases or samples?

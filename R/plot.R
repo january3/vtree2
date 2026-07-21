@@ -313,7 +313,7 @@ vtree_pal_assign <- function(vtree,
 #' @return A ggplot object
 #' @importFrom ggplot2 ggplot aes geom_segment geom_rect 
 #' @importFrom ggplot2 scale_y_reverse coord_cartesian
-#' @importFrom ggplot2 theme_void geom_text geom_label
+#' @importFrom ggplot2 theme_void geom_text geom_label unit
 #' @importFrom ggplot2 scale_fill_manual scale_color_manual theme
 #' @export
 plot.vtree <- function(x, 
@@ -348,7 +348,9 @@ plot.vtree <- function(x,
     p <- plot_regular(x, fill_scale, color_scale)
   }
 
-  p <- p + theme_void()
+  p <- p + theme_void() +
+    coord_cartesian(clip = "off") +
+    theme(plot.margin = unit(rep(1, 4), "cm"))
 
   if(!legend) {
     p <- p + theme(legend.position = "none")

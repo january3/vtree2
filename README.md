@@ -19,6 +19,10 @@ pak::pak("january3/vtree2")
 
 ## Quick start
 
+### What is a vtree?
+
+### Basic plots
+
 You can construct a vtree roughly from two types of data:
 
 - a data frame with one row per case (cases data frame)
@@ -50,30 +54,28 @@ plot(vt)
 #> ℹ Please use the `parent` argument instead.
 #> ℹ The deprecated feature was likely used in the tidygraph package.
 #>   Please report the issue at <https://github.com/thomasp85/tidygraph/issues>.
+#> Coordinate system already present.
+#> ℹ Adding new coordinate system, which will replace the existing one.
 ```
 
 <img src="man/figures/README-example_plot-1.png" alt="" width="100%" />
 
-What is special about using `README.Rmd` instead of just `README.md`?
-You can include R chunks like so:
+### Vtree pruning
 
 ``` r
-summary(cars)
-#>      speed           dist       
-#>  Min.   : 4.0   Min.   :  2.00  
-#>  1st Qu.:12.0   1st Qu.: 26.00  
-#>  Median :15.0   Median : 36.00  
-#>  Mean   :15.4   Mean   : 42.98  
-#>  3rd Qu.:19.0   3rd Qu.: 56.00  
-#>  Max.   :25.0   Max.   :120.00
+ucb <- cases_from_freqtable(UCBAdmissions)
+vt <- vtree(ucb, Dept, Gender, Admit) |>
+  prune(n < 100 | freq < .15)
+plot(vt, by_freq = TRUE)
+#> Coordinate system already present.
+#> ℹ Adding new coordinate system, which will replace the existing one.
 ```
 
-You’ll still need to render `README.Rmd` regularly, to keep `README.md`
-up-to-date. `devtools::build_readme()` is handy for this.
+<img src="man/figures/README-example_pruning-1.png" alt="" width="100%" />
 
-You can also embed plots, for example:
+### Vtree patterns
 
-<img src="man/figures/README-pressure-1.png" alt="" width="100%" />
+## TODO
 
-In that case, don’t forget to commit and push the resulting figure
-files, so they display on GitHub and CRAN.
+- plotting function for patterns
+- should the vtree function take cases or samples?
