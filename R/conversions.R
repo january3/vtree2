@@ -58,7 +58,8 @@ cases_from_freqtable <- function(x, ..., .freq_col = "Freq", .cols = NULL) {
 
 #' @rdname vtree
 #' @export
-vtree_from_freqtable <- function(x, ..., .freq_col = "Freq", .cols = NULL) {
+vtree_from_freqtable <- function(x, ..., .freq_col = "Freq", 
+                                 .vp = TRUE, .cols = NULL) {
 
   if(!is.data.frame(x)) {
     x <- as.data.frame(x)
@@ -73,20 +74,9 @@ vtree_from_freqtable <- function(x, ..., .freq_col = "Freq", .cols = NULL) {
     cnms <- map_chr(cols, rlang::as_name)
   }
 
-  if(length(cnms) < 1L) {
-    cnms <- setdiff(colnames(x), .freq_col)
-  }
-  stopifnot(length(cnms) > 0L)
+  x <- cases_from_freqtable(x, .freq_col = .freq_col, .cols = cnms)
 
-  stopifnot(.freq_col %in% colnames(x))
-  stopifnot(all(cnms %in% colnames(x)))
-
-
-  x <- x[ rep.int(seq_len(nrow(x)), x[[.freq_col]]), ]
-  x[[.freq_col]] <- NULL
-  rownames(x) <- NULL
-
-  vtree(cases = x, .cols = cnms)
+  vtree(cases = x, .vp = .vp, .cols = cnms)
 }
 
 

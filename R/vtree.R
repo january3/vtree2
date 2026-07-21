@@ -145,6 +145,8 @@ as_vtree <- function(x) {
 #'            columns (except the frequency column for the frequency
 #'            tables) will be used
 #' @param .cols Provide column names as a character vector instead of using the ... argument. This is useful when the column names are stored in a variable.
+#' @param .vp valid percentage; when calculating frequencies / percentages,
+#'           omit NA values from the denominator
 #' @param .freq_col The name of the column in a frequency table that
 #' contains the frequency counts. Default is "Freq".
 #' @return an object of class vtree
@@ -159,7 +161,7 @@ as_vtree <- function(x) {
 #' @importFrom tidygraph tbl_graph map_bfs_back_int
 #' @importFrom tidygraph .N .E
 #' @export
-vtree <- function(cases, ..., .cols = NULL) {
+vtree <- function(cases, ..., .vp = TRUE, .cols = NULL) {
   if (!is.null(.cols)) {
     cnms <- .cols
   } else {
@@ -173,9 +175,6 @@ vtree <- function(cases, ..., .cols = NULL) {
     cnms <- colnames(cases)
   }
   stopifnot(length(cnms) > 0L)
-
-
-  stopifnot(length(cnms) > 0)
   stopifnot(all(cnms %in% colnames(cases)))
 
   cases <- select(cases, all_of(cnms))
@@ -184,6 +183,8 @@ vtree <- function(cases, ..., .cols = NULL) {
   pat <- vtree_pat(cases, cnms)
 
   df <- pat2df(pat, cnms)
+  df[["vp"]] <- .vp
+
   edges <- df2edge(df)
   vtree <- tbl_graph(nodes = df, edges = edges, directed = TRUE, node_key = "ID")
 
@@ -193,7 +194,7 @@ vtree <- function(cases, ..., .cols = NULL) {
 
 # converts a data frame to a pattern data frame, one line per each pattern
 # / path through the tree.
-vtree_pat <- function(data, cnms) {
+vtree_pat <- function(data, cnms, vp = TRUE) {
   # enquos the columns so we can play with them
   nc <- length(cnms)
 
@@ -201,13 +202,21 @@ vtree_pat <- function(data, cnms) {
 
   for(i in 1:nc) {
     nm <- cnms[i]
+
+    if(vp) {
+      data <- data |>
+        mutate(.denom = sum(!is.na(.data[[nm]])))
+    } else {
+      data <- data |>
+        mutate(.denom = length(.data[[nm]]))
+    }
+
     data <- data |>
       # denom is the denominator: the number of non-NA values for the given
       # column.
       # we rely here on the fact that the data is already grouped by the
       # previous columns! e.g. in the Titanic example, when var is Sex, the
       # data is already grouped by Class.
-      mutate(.denom = sum(!is.na(.data[[nm]]))) |>
       group_by(across(cnms[1:i])) |>
       mutate(!!paste0(nm, "_n") := n()) |>
       mutate(!!paste0(nm, "_frac") := n() / .data[[".denom"]])
