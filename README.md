@@ -14,17 +14,45 @@ The goal of vtree2 is to …
 You can install the development version of vtree2 like so:
 
 ``` r
-# FILL THIS IN! HOW CAN PEOPLE INSTALL YOUR DEV PACKAGE?
+pak::pak("january3/vtree2")
 ```
 
-## Example
+## Quick start
 
-This is a basic example which shows you how to solve a common problem:
+You can construct a vtree roughly from two types of data:
+
+- a data frame with one row per case (cases data frame)
+- a data frame with one row per combination of factor levels, and a
+  frequency column (frequency table)
+
+While the former ones are common in the wild, the builtin R examples are
+often the latter. The following example shows how to construct a vtree
+from a frequency table and plot it with `vtree2`.
 
 ``` r
-## library(vtree2)
-## basic example code
+library(vtree2)
+tdf <- cases_from_freqtable(Titanic)
+vt <- vtree(tdf, Class, Sex, Survived)
+vt
+#> vtree object with 3 columns and 2201 observations
+#> Columns: Class, Sex, Survived
 ```
+
+`vt` is now an object of class `vtree`, which is basically `tidygraph`’s
+`tbl_graph` with some extra attributes. You can plot it with `plot()`:
+
+``` r
+plot(vt)
+#> Warning: There was 1 warning in `mutate()`.
+#> ℹ In argument: `nleafs = map_bfs_back_int(...)`.
+#> Caused by warning:
+#> ! The `father` argument of `bfs()` is deprecated as of igraph 2.2.0.
+#> ℹ Please use the `parent` argument instead.
+#> ℹ The deprecated feature was likely used in the tidygraph package.
+#>   Please report the issue at <https://github.com/thomasp85/tidygraph/issues>.
+```
+
+<img src="man/figures/README-example_plot-1.png" alt="" width="100%" />
 
 What is special about using `README.Rmd` instead of just `README.md`?
 You can include R chunks like so:
