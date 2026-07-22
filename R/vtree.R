@@ -180,7 +180,7 @@ vtree <- function(cases, ..., .vp = TRUE, .cols = NULL) {
   cases <- select(cases, all_of(cnms))
   N <- nrow(cases)
 
-  pat <- vtree_pat(cases, cnms)
+  pat <- vtree_pat(cases, cnms, vp = .vp)
 
   df <- pat2df(pat, cnms)
   df[["vp"]] <- .vp
@@ -189,7 +189,6 @@ vtree <- function(cases, ..., .vp = TRUE, .cols = NULL) {
   vtree <- tbl_graph(nodes = df, edges = edges, directed = TRUE, node_key = "ID")
 
   as_vtree(vtree)
-
 }
 
 # converts a data frame to a pattern data frame, one line per each pattern

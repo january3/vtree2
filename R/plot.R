@@ -14,24 +14,25 @@
 }
 
 
-
+#' Add labels to a plot
+#'
+#' Add labels to a plot
+#' @param vtree an object of class vtree
+#' @return an object of class vtree with added labels
+#' @export
 add_labels <- function(vtree) {
   vtree <- vtree |> activate("nodes") |>
-    mutate(.node_val = 
-           ifelse(.data[["node_col"]] == "__ALL__", "All data", 
-                  .data[["node_val"]])) |>
-    mutate(label = ifelse(is.na(.data[[".node_val"]]),
+    mutate(label = ifelse(is.na(.data[["node_val"]]),
            sprintf("%s: %s n=%d", .data[["node_col"]], 
-                                  .data[[".node_val"]], .data[["n"]]),
+                                  .data[["node_val"]], .data[["n"]]),
            sprintf("%s: %s n=%d (%.1f%%)", 
                     .data[["node_col"]], 
-                    .data[[".node_val"]], 
+                    .data[["node_val"]], 
                     .data[["n"]], 
                     .data[["freq"]] * 100))
-    ) |>
-  select(-all_of(".node_val"))
+    )
 
-  class(vtree) <- c("vtree", class(vtree))
+  vtree <- as_vtree(vtree)
   vtree
 }
 
@@ -55,8 +56,7 @@ plot_by_freq <- function(graph, fill_scale, color_scale) {
 
   # calculate the local offsets for each descendant of each node
   .graph <- graph |>
-    .calc_offsets() |>
-    add_labels()
+    .calc_offsets()
 
   nodes <- .graph |> 
     as_tibble() 
@@ -110,7 +110,6 @@ plot_regular <- function(graph, fill_scale, color_scale) {
   nodes <- graph |> activate(nodes) |> 
     .calc_nleafs() |>
     # calculate number of leafs per node
-    add_labels() |>
     as_tibble()
 
   maxl <- max(nodes$level)
@@ -342,6 +341,10 @@ plot.vtree <- function(x,
   color_scale <- scale_color_manual(name = NULL,
                                     values = set_names(nodes$color,
                                                        nodes$node_cv))
+  if(! "label" %in% colnames(nodes)) {
+    x <- x |> add_labels()
+  }
+
   if(by_freq) {
     p <- plot_by_freq(x, fill_scale, color_scale)
   } else {

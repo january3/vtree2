@@ -5,9 +5,9 @@
 \alias{vtree}
 \title{Create a vtree object from a data frame}
 \usage{
-vtree_from_freqtable(x, ..., .freq_col = "Freq", .cols = NULL)
+vtree_from_freqtable(x, ..., .freq_col = "Freq", .vp = TRUE, .cols = NULL)
 
-vtree(cases, ..., .cols = NULL)
+vtree(cases, ..., .vp = TRUE, .cols = NULL)
 }
 \arguments{
 \item{x}{A frequency table (matrix, table or data frame)}
@@ -18,6 +18,9 @@ tables) will be used}
 
 \item{.freq_col}{The name of the column in a frequency table that
 contains the frequency counts. Default is "Freq".}
+
+\item{.vp}{valid percentage; when calculating frequencies / percentages,
+omit NA values from the denominator}
 
 \item{.cols}{Provide column names as a character vector instead of using the ... argument. This is useful when the column names are stored in a variable.}
 

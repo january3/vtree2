@@ -36,22 +36,23 @@ cases_from_freqtable <- function(x, ..., .freq_col = "Freq", .cols = NULL) {
     cnms <- .cols
   } else {
     # enquos the columns so we can play with them
-    cols <- rlang::enquos(...)
+    cols <- enquos(...)
     # get the column names as strings
-    cnms <- map_chr(cols, rlang::as_name)
+    cnms <- map_chr(cols, as_name)
   }
 
   stopifnot(.freq_col %in% colnames(x))
   stopifnot(all(cnms %in% colnames(x)))
+
   if(length(cnms) < 1) {
     cnms <- setdiff(colnames(x), .freq_col)
   }
   stopifnot(length(cnms) > 0)
 
   x <- x[ rep.int(seq_len(nrow(x)), x[[.freq_col]]), ]
-  x[[.freq_col]] <- NULL
-  rownames(x) <- NULL
+  x <- x[ , cnms, drop = FALSE ]
 
+  rownames(x) <- NULL
   x
 }
 
