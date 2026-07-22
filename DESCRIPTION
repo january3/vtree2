@@ -17,6 +17,7 @@ Imports:
     purrr,
     RColorBrewer,
     rlang,
+    stats,
     tibble,
     tidygraph,
     tidyselect

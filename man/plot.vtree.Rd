@@ -9,7 +9,7 @@
   ...,
   palettes = c("Blues", "Greens", "Reds", "Oranges", "Purples"),
   na_fill = "white",
-  by_freq = FALSE,
+  proportional = FALSE,
   legend = FALSE
 )
 }
@@ -24,8 +24,8 @@ default arguments to the vtree_palette() function.}
 
 \item{na_fill}{The color to use for NA values. Default is "white".}
 
-\item{by_freq}{If TRUE, the plot is scaled by frequency. If FALSE,
-all nodes have the same size.}
+\item{proportional}{If TRUE, the node sizes are scaled by number of
+observations. If FALSE, all nodes have the same size.}
 
 \item{legend}{If TRUE, a legend is added to the plot. Default is FALSE.}
 }
@@ -33,17 +33,16 @@ all nodes have the same size.}
 A ggplot object
 }
 \description{
-Plot a vtree
+Plots a vtree object. By default, all nodes have the same size. If you
+specify \code{proportional = TRUE}, then node size will be proportional to the
+number of observations in that node.
 }
 \details{
-Plots a vtree object. By default, the plot is scaled by frequency, so
-that the size of each node is proportional to the number of observations
-in that node. If you prefer a regular plot, set \code{by_freq = FALSE}.
-
 The returned value is a ggplot2 object, which can be further customized
 using ggplot2 functions.
+}
+\section{Working with color palettes}{
 
-Working with color palettes
 
 By default, fill colors are assigned automatically based on the variable
 level in the tree. Each node gets its own palette, and from
@@ -58,5 +57,66 @@ assigned automatically.
 
 If the vtree object contains a column called "color", then the text
 colors will be taken from that column. Otherwise, the either white or
-black will be chosen depending on the fill color for each node.
+black will be chosen depending on the fill color for each node. You can
+easily create this column with the \code{\link[=mutate.vtree]{mutate.vtree()}} function (see
+examples below).
+}
+
+\section{Labels}{
+
+
+Similarly, some default labels are created automatically. However, if
+a \code{label} column is present in the nodes data frame, it will be used
+instead for node labels. The node labels at present use
+\code{\link[ggplot2:geom_text]{ggplot2::geom_text()}}, so no additional markdown/HTML formatting can be
+used. Here, there are several columns that can be used to create a
+label:
+\itemize{
+\item \code{freq}, the frequency for a node
+\item \code{n}, number of samples of a node
+\item \code{node_col}, name of the variable associated with a node
+\item \code{node_val}, value of the variable associated with a node
+\item \code{node_cv}, same as \code{paste0(node_col, ':', node_val)}
+}
+
+Manipulating these columns is straightforward using the
+\code{\link[=mutate.vtree]{mutate.vtree()}} function (see below).
+
+For variables which are not associated with the nodes and additional
+summary variables, see \code{\link[=summary_vt]{summary_vt()}}.
+}
+
+\examples{
+library(vtree2)
+vt <- vtree_from_freqtable(Titanic)
+
+# regular plot
+plot(vt)
+
+# proportional
+plot(vt, proportional = TRUE)
+
+# create custom labels as simple numbers with mutate()
+vt |> mutate(label = 1:n()) |> plot()
+
+# a bit more complex example
+vt |>
+  mutate(label = paste0(node_col, " = ",
+                        node_val, '\n',
+         ifelse(is.na(node_val), '-',
+             sprintf("\%.0f\%\%", 100 * freq)))) |>
+  plot()
+
+# some color manipulation
+pal <- colorRampPalette(c("white", "steelblue"))(101)
+
+vt |>
+  mutate(fill = pal[round(freq * 100) + 1]) |>
+  plot()
+
+vt |>
+  mutate(abs_freq = n / max(n)) |>
+  mutate(fill = pal[round(abs_freq * 100) + 1]) |>
+ plot()
+
 }

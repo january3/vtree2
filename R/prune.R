@@ -50,7 +50,7 @@
 #'              as a vector of column names for which all NA values should
 #'              be removed.
 #' @return A pruned vtree object.
-#' @importFrom rlang is_empty enquo eval_tidy
+#' @importFrom rlang is_empty enquo eval_tidy expr
 #' @importFrom stats na.omit
 #' @importFrom dplyr bind_cols
 #' @importFrom tibble tibble

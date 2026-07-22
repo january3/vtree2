@@ -23,12 +23,12 @@
 add_labels <- function(vtree) {
   vtree <- vtree |> activate("nodes") |>
     mutate(label = ifelse(is.na(.data[["node_val"]]),
-           sprintf("%s: %s n=%d", .data[["node_col"]], 
+           sprintf("%s: %s n=%d", .data[["node_col"]],
                                   .data[["node_val"]], .data[["n"]]),
-           sprintf("%s: %s n=%d (%.1f%%)", 
-                    .data[["node_col"]], 
-                    .data[["node_val"]], 
-                    .data[["n"]], 
+           sprintf("%s: %s n=%d (%.1f%%)",
+                    .data[["node_col"]],
+                    .data[["node_val"]],
+                    .data[["n"]],
                     .data[["freq"]] * 100))
     )
 
@@ -58,8 +58,8 @@ plot_by_freq <- function(graph, fill_scale, color_scale) {
   .graph <- graph |>
     .calc_offsets()
 
-  nodes <- .graph |> 
-    as_tibble() 
+  nodes <- .graph |>
+    as_tibble()
 
   maxl <- max(nodes$level)
   totn <- sum(nodes$n[nodes$level == 1])
@@ -75,15 +75,15 @@ plot_by_freq <- function(graph, fill_scale, color_scale) {
            x2 = nodes$x[.data[["to"]]],
            y1 = nodes$y[.data[["to"]]],
            y2 = nodes$y[.data[["to"]]])
-  
-  nodes |> ggplot(aes(x = .data[["x"]], y = .data[["y"]], 
+
+  nodes |> ggplot(aes(x = .data[["x"]], y = .data[["y"]],
                       height = .data[["height"]],
                       label = .data[["label"]])) +
-    geom_segment(data = edges, 
+    geom_segment(data = edges,
                  aes(x = .data[["x1"]],
                      y = .data[["y1"]],
                      xend = .data[["x2"]],
-                     yend = .data[["y2"]]), 
+                     yend = .data[["y2"]]),
                  inherit.aes = FALSE) +
     geom_rect(aes(x = .data[["x"]],
                   y = .data[["y"]],
@@ -99,7 +99,7 @@ plot_by_freq <- function(graph, fill_scale, color_scale) {
     # remove clipping
     coord_cartesian(clip = "off")
   #+
-  
+
   #theme_void()
 
 }
@@ -107,7 +107,7 @@ plot_by_freq <- function(graph, fill_scale, color_scale) {
 # just the nodes, no resizing according to frequency
 plot_regular <- function(graph, fill_scale, color_scale) {
 
-  nodes <- graph |> activate(nodes) |> 
+  nodes <- graph |> activate(nodes) |>
     .calc_nleafs() |>
     # calculate number of leafs per node
     as_tibble()
@@ -132,11 +132,11 @@ plot_regular <- function(graph, fill_scale, color_scale) {
   nodes |> ggplot(aes(x = .data[["x"]],
                       y = .data[["y"]],
                       label = .data[["label"]])) +
-    geom_segment(data = edges, 
+    geom_segment(data = edges,
                  aes(x = .data[["x1"]],
                      y = .data[["y1"]],
                      xend = .data[["x2"]],
-                     yend = .data[["y2"]]), 
+                     yend = .data[["y2"]]),
                  inherit.aes = FALSE) +
     geom_label(aes(fill = .data[["node_cv"]],
                    color = .data[["node_cv"]])) +
@@ -165,10 +165,10 @@ plot_regular <- function(graph, fill_scale, color_scale) {
 contrast_color <- function(color) {
   # Convert the color to RGB
   rgb <- col2rgb(color)
-  
+
   # Calculate the luminance using the formula
   luminance <- (0.299 * rgb[1, ] + 0.587 * rgb[2, ] + 0.114 * rgb[3, ]) / 255
-  
+
   # Return black for light colors and white for dark colors
   ifelse(luminance > 0.5, "black", "white")
 }
@@ -177,8 +177,8 @@ contrast_color <- function(color) {
 #'
 #' Get a color palette for a variable level
 #'
-#' `vtree_palette` returns a color palette for a variable level in a vtree. 
-#' The colors are chosen from the RColorBrewer package, and the palette is 
+#' `vtree_palette` returns a color palette for a variable level in a vtree.
+#' The colors are chosen from the RColorBrewer package, and the palette is
 #' extended for variables with more than nine levels.
 #'
 #' `vtree_pal_assign` assigns fill colors to the nodes of a vtree based on the
@@ -194,7 +194,7 @@ contrast_color <- function(color) {
 #' @importFrom purrr map imap map2_chr map_chr map_dfr set_names
 #' @export
 vtree_palette <- function(vtree,
-                          palettes = c("Blues", "Greens", "Reds", 
+                          palettes = c("Blues", "Greens", "Reds",
                                        "Oranges", "Purples")) {
   #family <- families[(level - 1L) %% length(families) + 1L]
 
@@ -219,8 +219,8 @@ vtree_palette <- function(vtree,
 
 #' @rdname vtree_palette
 #' @export
-vtree_pal_assign <- function(vtree, 
-                             palettes = c("Blues", "Greens", "Reds", 
+vtree_pal_assign <- function(vtree,
+                             palettes = c("Blues", "Greens", "Reds",
                                        "Oranges", "Purples"),
                              na_fill = "white") {
 
@@ -232,7 +232,7 @@ vtree_pal_assign <- function(vtree,
     mutate(fill = ifelse(is.na(.data[["node_val"]]),
                                na_fill,
 
-                               map2_chr(.data[["node_val"]], 
+                               map2_chr(.data[["node_val"]],
                            .data[["node_col"]], \(val, var) {
       pal[[var]][as.character(val)] %||% na_fill
     })))
@@ -275,16 +275,14 @@ vtree_pal_assign <- function(vtree,
 
 #' Plot a vtree
 #'
-#' Plot a vtree
-#'
-#' Plots a vtree object. By default, the plot is scaled by frequency, so
-#' that the size of each node is proportional to the number of observations
-#' in that node. If you prefer a regular plot, set `by_freq = FALSE`.
+#' Plots a vtree object. By default, all nodes have the same size. If you
+#' specify `proportional = TRUE`, then node size will be proportional to the
+#' number of observations in that node.
 #'
 #' The returned value is a ggplot2 object, which can be further customized
 #' using ggplot2 functions.
 #'
-#' Working with color palettes
+#' @section Working with color palettes:
 #'
 #' By default, fill colors are assigned automatically based on the variable
 #' level in the tree. Each node gets its own palette, and from
@@ -292,35 +290,92 @@ vtree_pal_assign <- function(vtree,
 #' their order of appearance or factor level in the data. The variables
 #' with the lowest factor levels or appearing first will get the darkest
 #' fill colors. NA values are colored white.
-#' 
+#'
 #' If the vtree object contains, in the node data frame, a column called
 #' "fill", then the fill colors will be taken from that column instead of being
 #' assigned automatically.
 #'
 #' If the vtree object contains a column called "color", then the text
 #' colors will be taken from that column. Otherwise, the either white or
-#' black will be chosen depending on the fill color for each node.
+#' black will be chosen depending on the fill color for each node. You can
+#' easily create this column with the [vtree2::mutate.vtree()] function (see
+#' examples below).
+#'
+#' @section Labels:
+#'
+#' Similarly, some default labels are created automatically. However, if
+#' a `label` column is present in the nodes data frame, it will be used
+#' instead for node labels. The node labels at present use
+#' [ggplot2::geom_text()], so no additional markdown/HTML formatting can be
+#' used. Here, there are several columns that can be used to create a
+#' label:
+#'
+#'  * `freq`, the frequency for a node
+#'  * `n`, number of samples of a node
+#'  * `node_col`, name of the variable associated with a node
+#'  * `node_val`, value of the variable associated with a node
+#'  * `node_cv`, same as `paste0(node_col, ':', node_val)`
+#'
+#' Manipulating these columns is straightforward using the
+#' [vtree2::mutate.vtree()] function (see below).
+#'
+#' For variables which are not associated with the nodes and additional
+#' summary variables, see [vtree2::summary_vt()].
+#'
 #' @param x A vtree object
 #' @param ... ignored
 #' @param palettes A character vector with names of RColorBrewer palettes
 #'                 to use for the variables. By default these are the
 #'                 default arguments to the vtree_palette() function.
 #' @param na_fill The color to use for NA values. Default is "white".
-#' @param by_freq If TRUE, the plot is scaled by frequency. If FALSE,
-#'                all nodes have the same size.
+#' @param proportional If TRUE, the node sizes are scaled by number of
+#' observations. If FALSE, all nodes have the same size.
 #' @param legend If TRUE, a legend is added to the plot. Default is FALSE.
+#' @examples
+#' library(vtree2)
+#' vt <- vtree_from_freqtable(Titanic)
+#'
+#' # regular plot
+#' plot(vt)
+#'
+#' # proportional
+#' plot(vt, proportional = TRUE)
+#'
+#' # create custom labels as simple numbers with mutate()
+#' vt |> mutate(label = 1:n()) |> plot()
+#'
+#' # a bit more complex example
+#' vt |>
+#'   mutate(label = paste0(node_col, " = ",
+#'                         node_val, '\n',
+#'          ifelse(is.na(node_val), '-',
+#'              sprintf("%.0f%%", 100 * freq)))) |>
+#'   plot()
+#'
+#' # some color manipulation
+#' pal <- colorRampPalette(c("white", "steelblue"))(101)
+#'
+#' vt |>
+#'   mutate(fill = pal[round(freq * 100) + 1]) |>
+#'   plot()
+#'
+#' vt |>
+#'   mutate(abs_freq = n / max(n)) |>
+#'   mutate(fill = pal[round(abs_freq * 100) + 1]) |>
+#'  plot()
+#'
 #' @return A ggplot object
-#' @importFrom ggplot2 ggplot aes geom_segment geom_rect 
+#' @importFrom ggplot2 ggplot aes geom_segment geom_rect
 #' @importFrom ggplot2 scale_y_reverse coord_cartesian
 #' @importFrom ggplot2 theme_void geom_text geom_label unit
 #' @importFrom ggplot2 scale_fill_manual scale_color_manual theme
 #' @export
-plot.vtree <- function(x, 
-                       ..., 
-                       palettes = c("Blues", "Greens", "Reds", 
+plot.vtree <- function(x,
+                       ...,
+                       palettes = c("Blues", "Greens", "Reds",
                                     "Oranges", "Purples"),
                        na_fill = "white",
-                       by_freq = FALSE,
+                       proportional = FALSE,
                        legend = FALSE) {
   stopifnot(inherits(x, "vtree"))
 
@@ -345,7 +400,7 @@ plot.vtree <- function(x,
     x <- x |> add_labels()
   }
 
-  if(by_freq) {
+  if(proportional) {
     p <- plot_by_freq(x, fill_scale, color_scale)
   } else {
     p <- plot_regular(x, fill_scale, color_scale)

@@ -31,8 +31,6 @@ levels.vtree <- function(x) {
 
 #' Get the variable names of a vtree object
 #'
-#' Get the variable names of a vtree object
-#'
 #' @param x A vtree object.
 #' @return A character vector of variable names
 #' @export
@@ -40,6 +38,7 @@ names.vtree <- function(x) {
   stopifnot(inherits(x, "vtree"))
   attr(x, "cols")
 }
+
 
 
 #' Create, modify, and delete node columns
@@ -56,9 +55,10 @@ names.vtree <- function(x) {
 #' [dplyr::mutate()], [tidygraph::activate()]
 #' @export
 mutate.vtree <- function(.data, ...) {
+  stopifnot(inherits(.data, "vtree"))
   .data <- .data |> activate("nodes")
   class(.data) <- setdiff(class(.data), "vtree")
-  .data |> mutate(...) |> as_vtree()
+  .data |> dplyr::mutate(...) |> as_vtree()
 }
 
 
