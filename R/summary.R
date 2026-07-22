@@ -127,9 +127,9 @@ summary_vt <- function(cases, vtree, col) {
   # probably a clever grouping operation would be more efficient rather
   # than looking for each combination of variables manually
   matches <- map(nodes$path, \(p) .find_match_recursively(cases, p))
-  .get_summary(cases, col, matches) |>
+
+  ret <- .get_summary(cases, col, matches) |>
     mutate(ID = nodes$ID) |>
     select(all_of("ID"), everything())
-
-  matches
+  ret
 }

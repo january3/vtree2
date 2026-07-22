@@ -58,7 +58,7 @@ mutate.vtree <- function(.data, ...) {
   stopifnot(inherits(.data, "vtree"))
   .data <- .data |> activate("nodes")
   class(.data) <- setdiff(class(.data), "vtree")
-  .data |> dplyr::mutate(...) |> as_vtree()
+  .data |> mutate(...) |> as_vtree()
 }
 
 
@@ -149,7 +149,7 @@ as_vtree <- function(x) {
 #' set.seed(123)
 #' # create a new data set with NAs
 #' titanicNA <- Titanic |>
-#'   cases_from_freqtable(Class, Sex, Survived) |>
+#'   cases_from_freqtable() |>
 #'   # change all classes to character
 #'   mutate(across(everything(), as.character)) |>
 #'   # add some random NAs to each column

@@ -52,7 +52,7 @@
 #' @return A pruned vtree object.
 #' @importFrom rlang is_empty enquo eval_tidy expr
 #' @importFrom stats na.omit
-#' @importFrom dplyr bind_cols
+#' @importFrom dplyr bind_cols n
 #' @importFrom tibble tibble
 #' @export
 prune <- function(vtree, condition, keep = FALSE, na.rm = FALSE) {

@@ -332,7 +332,6 @@ vtree_pal_assign <- function(vtree,
 #' observations. If FALSE, all nodes have the same size.
 #' @param legend If TRUE, a legend is added to the plot. Default is FALSE.
 #' @examples
-#' library(vtree2)
 #' vt <- vtree_from_freqtable(Titanic)
 #'
 #' # regular plot
@@ -342,6 +341,7 @@ vtree_pal_assign <- function(vtree,
 #' plot(vt, proportional = TRUE)
 #'
 #' # create custom labels as simple numbers with mutate()
+#' library(dplyr)
 #' vt |> mutate(label = 1:n()) |> plot()
 #'
 #' # a bit more complex example

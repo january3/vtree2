@@ -87,7 +87,6 @@ summary variables, see \code{\link[=summary_vt]{summary_vt()}}.
 }
 
 \examples{
-library(vtree2)
 vt <- vtree_from_freqtable(Titanic)
 
 # regular plot
@@ -97,6 +96,7 @@ plot(vt)
 plot(vt, proportional = TRUE)
 
 # create custom labels as simple numbers with mutate()
+library(dplyr)
 vt |> mutate(label = 1:n()) |> plot()
 
 # a bit more complex example
