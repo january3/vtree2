@@ -43,7 +43,7 @@
 #'              condition. If no condition is provided, no pruning is done,
 #'              except for the removal of nodes with NA values with
 #'              `na.rm`.
-#' @param .keep If TRUE, keeps the nodes that satisfy the condition and prunes
+#' @param keep If TRUE, keeps the nodes that satisfy the condition and prunes
 #'              everything else.
 #' @param na.rm If TRUE, removes nodes with NA values in the evaluated
 #'              condition. If it is a character vector, then it is treated
@@ -55,18 +55,24 @@
 #' @importFrom dplyr bind_cols
 #' @importFrom tibble tibble
 #' @export
-prune <- function(vtree, condition, .keep = FALSE, na.rm = FALSE) {
+prune <- function(vtree, condition, keep = FALSE, na.rm = FALSE) {
   if(missing(condition)) {
-    condition <- rlang::expr(FALSE)
+    condition <- expr(FALSE)
   }
-  condition <- rlang::enquo(condition)
+  condition <- enquo(condition)
 
+  .prune(vtree, condition, keep = keep, na.rm = na.rm)
+
+}
+
+.prune <- function(vtree, condition, keep = FALSE, na.rm = FALSE,
+                   return_mask = FALSE) {
   # we need these cols to be able to naturally evaluate the condition using
   # data vars
   vcols <- .add_virt_cols(vtree |> activate("nodes") |> as_tibble())
 
   # here we create the pruning mask
-  prune <- rlang::eval_tidy(condition, data = vcols)
+  prune <- eval_tidy(condition, data = vcols)
 
   if(is.character(na.rm)) {
     stopifnot(all(na.rm %in% colnames(vcols)))
@@ -79,7 +85,7 @@ prune <- function(vtree, condition, .keep = FALSE, na.rm = FALSE) {
     prune <- prune | nas
   }
 
-  if(.keep) {
+  if(keep) {
     prune <- !prune
   }
 
@@ -104,6 +110,6 @@ prune <- function(vtree, condition, .keep = FALSE, na.rm = FALSE) {
 #' @export
 keep <- function(vtree, condition) {
   condition <- rlang::enquo(condition)
-  prune(vtree, !!condition, .keep = TRUE)
+  prune(vtree, !!condition, keep = TRUE)
 }
 

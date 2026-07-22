@@ -5,7 +5,7 @@
 \alias{keep}
 \title{Prune a vtree graph}
 \usage{
-prune(vtree, condition, .keep = FALSE, na.rm = FALSE)
+prune(vtree, condition, keep = FALSE, na.rm = FALSE)
 
 keep(vtree, condition)
 }
@@ -17,7 +17,7 @@ condition. If no condition is provided, no pruning is done,
 except for the removal of nodes with NA values with
 \code{na.rm}.}
 
-\item{.keep}{If TRUE, keeps the nodes that satisfy the condition and prunes
+\item{keep}{If TRUE, keeps the nodes that satisfy the condition and prunes
 everything else.}
 
 \item{na.rm}{If TRUE, removes nodes with NA values in the evaluated
