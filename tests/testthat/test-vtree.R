@@ -29,7 +29,7 @@ test_that("vtree_from_freqtable works", {
 
   expect_equal(nrow(nodes), 51)
   expect_in(c("ID", "node_col", "node_val", "parent",
-              "level", "n", "freq", "vp"), colnames(nodes))
+              "path", "level", "n", "freq", "vp"), colnames(nodes))
   expect_setequal(c("__ALL__", "Class", "Sex", "Age",
                     "Survived"), unique(nodes$node_col))
 

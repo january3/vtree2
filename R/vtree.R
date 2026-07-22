@@ -74,7 +74,7 @@ as_vtree <- function(x) {
   # ------------------
   nodes <- x |> activate(nodes) |> as_tibble()
   stopifnot(all(c("ID", "node_col", "node_val", "node_cv", 
-                  "parent", "level", "n", "freq") 
+                  "parent", "path", "level", "n", "freq") 
                 %in% colnames(nodes)))
 
   # more than a root
@@ -153,7 +153,7 @@ as_vtree <- function(x) {
 #' @importFrom dplyr select mutate group_by summarize ungroup 
 #' @importFrom dplyr distinct rename rowwise c_across all_of
 #' @importFrom dplyr first .data n pull filter as_tibble lag
-#' @importFrom dplyr pick across
+#' @importFrom dplyr pick across bind_rows
 #' @importFrom tidyselect everything starts_with
 #' @importFrom purrr map map_chr map_dfr reduce map_dfc
 #' @importFrom rlang enquos as_name :=
@@ -182,10 +182,10 @@ vtree <- function(cases, ..., .vp = TRUE, .cols = NULL) {
 
   pat <- vtree_pat(cases, cnms, vp = .vp)
 
-  df <- pat2df(pat, cnms)
+  df <- pat2nodes(pat, cnms)
   df[["vp"]] <- .vp
 
-  edges <- df2edge(df)
+  edges <- node2edge(df)
   vtree <- tbl_graph(nodes = df, edges = edges, directed = TRUE, node_key = "ID")
 
   as_vtree(vtree)
@@ -235,8 +235,8 @@ vtree_pat <- function(data, cnms, vp = TRUE) {
 }
 
 
-# this converts the data frame returned by pat2df to an edge data frame
-df2edge <- function(df) {
+# this converts the data frame returned by pat2nodes to an edge data frame
+node2edge <- function(df) {
 
   df |>
     select(all_of(c("ID", "parent"))) |>
@@ -246,7 +246,7 @@ df2edge <- function(df) {
 
 # this one creates a node data frame directly from the pattern,
 # one line per node. It also collects the order of the nodes.
-pat2df <- function(pattern, columns) {
+pat2nodes <- function(pattern, columns) {
 
   # map over the levels. i denotes the level; the node is defined by the
   # columns 1:i.
@@ -277,6 +277,12 @@ pat2df <- function(pattern, columns) {
                       c_across(all_of(columns[1:(i-1)]))), collapse = "/"))) |>
       mutate(ID = paste0(paste0(columns[1:i], ":", 
                       c_across(all_of(columns[1:i]))), collapse = "/")) |>
+
+      # we want also to store the path as a list column for easier
+      # processing downstream
+      mutate(path = list(as.list(pick(all_of(columns[1:i]))))) |>
+
+
       ungroup() |>
 
       # rather than keeping all the columns, we only keep
@@ -285,23 +291,25 @@ pat2df <- function(pattern, columns) {
       mutate(node_col = columns[i]) |>
       mutate(node_val = .data[[columns[i]]]) |>
 
-      select(all_of(c("ID", "node_col", "node_val", 
-                      "parent", "level", "n", "freq")))
+      select(all_of(c("ID", "node_col", "node_val", "parent", 
+                      "path", "level", "n", "freq")))
   })
 
   N <- sum(ret |> filter(.data[["level"]] == 1) |> pull("n"))
 
-  ret <- rbind(data.frame(ID = "__ALL__:__ALL__", 
+  # that special root node
+  ret <- bind_rows(tibble(ID = "__ALL__:__ALL__", 
                                node_col = "__ALL__",
                                node_val = "__ALL__",
-                               parent = NA, 
+                               parent = NA_character_, 
+                               path = list(NA),
                                level = 0, 
                                n = N,
                                freq = 1), ret)
   ret <- ret |>
     mutate(node_cv = paste0(.data[["node_col"]], ":", 
                             .data[["node_val"]])) |>
-    select(all_of(c("ID", "node_col", "node_val", "node_cv",
-                    "parent", "level", "n", "freq")))
+    select(all_of(c("ID", "node_col", "node_val", "node_cv", "parent",
+                    "path", "level", "n", "freq")))
   ret
 }
