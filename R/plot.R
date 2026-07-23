@@ -85,20 +85,27 @@ add_labels <- function(vtree,
   userfmt <- enquo(format)
   userfmt_na <- enquo(format_na)
 
+  # this only looks complicated because we have to use .data
   if(template == "simple") {
     format <- quo(sprintf("%s\n%d (%.0f%%)",
-         node_val, n, freq * 100))
-    format_na = quo(sprintf("%s\n%d", node_val, n))
+         .data[["node_val"]],
+         .data[["n"]], .data[["freq"]] * 100))
+    format_na = quo(sprintf("%s\n%d", .data[["node_val"]],
+                            .data[["n"]]))
   } else if(template == "long") {
     format <- quo(sprintf("%s: %s\nN = %d (%.0f%%)",
-         node_name,
-         node_val, n, freq * 100))
-    format_na = quo(sprintf("%s: %s\n%d", node_name, node_val, n))
+         .data[["node_name"]],
+         .data[["node_val"]],
+         .data[["n"]],
+         .data[["freq"]] * 100))
+    format_na = quo(sprintf("%s: %s\n%d", .data[["node_name"]],
+                            .data[["node_val"]], .data[["n"]]))
   }
 
   if(!quo_is_null(userfmt)) {
     format <- userfmt
   }
+
   if(!quo_is_null(userfmt_na)) {
     format_na <- userfmt_na
   }
@@ -266,8 +273,10 @@ plot_regular <- function(graph, fill_scale, color_scale,
                      yend = .data[["y2"]]),
                  arrow = arrow(angle = 15, type = "closed"),
                  inherit.aes = FALSE) +
-    geom_rrect(aes(xmin = x - lwidth, xmax = x + lwidth,
-                   ymin = y - lheight, ymax = y + lheight,
+    geom_rrect(aes(xmin = .data[["x"]] - lwidth,
+                   xmax = .data[["x"]] + lwidth,
+                   ymin = .data[["y"]] - lheight,
+                   ymax = .data[["y"]] + lheight,
                    fill = .data[["ID"]]),
                color = "black", radius = .4) +
     geom_text(aes(color = .data[["ID"]]),

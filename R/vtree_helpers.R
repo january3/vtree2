@@ -119,7 +119,8 @@ pat2nodes <- function(pattern, columns) {
   ret <- ret |>
     mutate(node_cv = paste0(.data[["node_col"]], ":", 
                             .data[["node_val"]])) |>
-    mutate(node_name = ifelse(ID == "root", "", node_col)) |>
+    mutate(node_name = ifelse(.data[["ID"]] == "root",
+                              "", .data[["node_col"]])) |>
     select(all_of(c("ID", "node_col", "node_name", "node_val", "node_cv", "parent",
                     "path", "level", "n", "freq")))
   ret

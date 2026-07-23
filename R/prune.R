@@ -52,6 +52,8 @@
 #'              condition. If no condition is provided, no pruning is done,
 #'              except for the removal of nodes with NA values with
 #'              `na.rm`.
+#' @param follow_only if TRUE, keep the nodes selected by condition, but
+#'              prune all following nodes.
 #' @param keep If TRUE, keeps the nodes that satisfy the condition and prunes
 #'              everything else.
 #' @param na.rm If TRUE, removes nodes with NA values in the evaluated
@@ -80,13 +82,15 @@
 #' @importFrom dplyr bind_cols n
 #' @importFrom tibble tibble
 #' @export
-prune <- function(vtree, condition, keep = FALSE, na.rm = FALSE) {
+prune <- function(vtree, condition, follow_only = FALSE,
+                  keep = FALSE, na.rm = FALSE) {
   if(missing(condition)) {
     condition <- expr(FALSE)
   }
   condition <- enquo(condition)
 
-  .prune(vtree, condition, keep = keep, na.rm = na.rm)
+  .prune(vtree, condition, follow_only = follow_only,
+         keep = keep, na.rm = na.rm)
 
 }
 
@@ -97,7 +101,6 @@ find_nodes <- function(vtree, condition) {
   condition <- enquo(condition)
 
   mask <- .get_mask(vtree, condition)
-
   mask
 }
 
@@ -128,23 +131,44 @@ find_nodes <- function(vtree, condition) {
   mask
 }
 
-.prune <- function(vtree, condition, keep = FALSE, na.rm = FALSE) {
 
-  prune <- .get_mask(vtree, condition, keep, na.rm)
+.find_follow_nodes <- function(vtree, mask) {
 
-  ret <- vtree |>
+  follow <- vtree |>
     activate("nodes") |>
-    mutate(.vtree_prune = prune) |>
+    mutate(.vtree_prune = mask) |>
     mutate(.vtree_prune2 = map_bfs_lgl(
       root = 1,
       mode = "out",
       .f = \(node, path, ...) {
-        #print(node)
-        #print(path)
-        return(.N()$.vtree_prune[node] || any(.N()$.vtree_prune[path$node]))
-    })) |>
-    filter(!.data[[".vtree_prune2"]]) |>
-    select(-all_of(c(".vtree_prune", ".vtree_prune2")))
+        return(any(.N()$.vtree_prune[path$node]))
+  })) |> pull(.vtree_prune2)
+
+  follow
+}
+
+# here we actually do the pruning
+# follow only: prune only the following nodes, not the nodes that are
+# selected by the condition
+# na.rm: remove the NA nodes
+.prune <- function(vtree, condition,
+                   follow_only = FALSE,
+                   keep = FALSE, na.rm = FALSE) {
+
+  prune <- .get_mask(vtree, condition, keep, na.rm)
+
+  # find all nodes that follow a node
+  follow_mask <- .find_follow_nodes(vtree, prune)
+
+  if(follow_only) {
+    mask <- follow_mask
+  } else {
+    mask <- prune | follow_mask
+  }
+
+  ret <- vtree |>
+    activate("nodes") |>
+    filter(!mask)
 
   as_vtree(ret)
 }

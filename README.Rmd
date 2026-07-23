@@ -115,6 +115,11 @@ plot(vt, by_freq = TRUE)
  * The mini-language implemented in vtree is now replaced by explicit
    operations: finding nodes, labelling, selecting colors for plotting etc.
 
+## AI disclosure
+
+I have not used LLMs directly in writing the code or documentation.
+However, I did use an LLM based chat to discuss some of the design issues
+(e.g. to compare existing packages for graph representation).
 
 ## TODO
 
