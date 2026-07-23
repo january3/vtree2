@@ -113,6 +113,12 @@ find_nodes <- function(vtree, condition) {
   # here we create the pruning mask
   mask <- eval_tidy(condition, data = vcols)
 
+  # now, some comparisons may return NA.
+  # we ignore them - assume that it's not a match.
+  mask[ is.na(mask) ] <- FALSE
+
+  # na.rm may be a character vector of columns to check
+  # for potential NAs
   if(is.character(na.rm)) {
     stopifnot(all(na.rm %in% colnames(vcols)))
     nas <- lapply(na.rm, \(col) {
