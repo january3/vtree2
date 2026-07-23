@@ -1,17 +1,22 @@
 
 # calculate the overall product of all matches to select the correct
 # classes
-#' @importFrom stats IQR sd median
 .find_match_recursively <- function(df, path, match = TRUE) {
 
-  p <- path[[1]]
-
-  if(is.na(p)) {
-    return(match)
+  # if path is missing, e.g. for root node
+  if(!is.list(path)) {
+    # root node matches everything
+    return(TRUE)
   }
 
+  v1 <- df[[ names(path)[1] ]]
+  v2 <- path[[1]]
+
   match <- match & 
-    df[[ names(path)[1] ]] == path[[1]]
+    (
+    (is.na(v1) & is.na(v2)) |
+    ((!is.na(v1) & !is.na(v2)) & (v1 == v2))
+    )
 
   if(length(path) > 1) {
     match <- .find_match_recursively(df, path[-1], match)
@@ -21,7 +26,7 @@
 }
 
 # get a single summary, the lowlevel function
-#' @importFrom stats quantile
+#' @importFrom stats quantile IQR sd median
 .get_summary <- function(cases, col, matches) {
 
   num <- is.numeric(cases[[col]])
@@ -109,8 +114,6 @@
 #' @param vtree A vtree object.
 #' @param cases A data frame of cases, with one row per observation.
 #' @param format An expression for customized formatting. See Examples.
-#' @param vp if TRUE, then, when calculating proportions, use valid
-#'        percentages (exclude NAs)
 #' @param col The column variable to summarize. This should be a single
 #'            column name, quoted or not.
 #' @param .col If you want to provide a column name in a variable, use .col
@@ -145,7 +148,7 @@
 #' vt |>
 #'   mutate(label = ifelse(leaf,
 #'      paste0(label, "\n", csm_txt),
-#'      label)) |> 
+#'      label)) |>
 #'   plot()
 #'
 #' # introduce a few missing values
@@ -168,7 +171,7 @@
 #'   plot()
 #'
 #' @export
-summary_vt <- function(cases, vtree, col, format = NULL, vp = TRUE, .col = NULL) {
+summary_vt <- function(cases, vtree, col, format = NULL, .col = NULL) {
 
   format <- enquo(format)
 

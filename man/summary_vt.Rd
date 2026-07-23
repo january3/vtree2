@@ -5,7 +5,7 @@
 \alias{summary_vt_df}
 \title{Summarize a case variable for each node of a vtree}
 \usage{
-summary_vt(cases, vtree, col, format = NULL, vp = TRUE, .col = NULL)
+summary_vt(cases, vtree, col, format = NULL, .col = NULL)
 
 summary_vt_df(cases, vtree, col, .col = NULL)
 }
@@ -18,9 +18,6 @@ summary_vt_df(cases, vtree, col, .col = NULL)
 column name, quoted or not.}
 
 \item{format}{An expression for customized formatting. See Examples.}
-
-\item{vp}{if TRUE, then, when calculating proportions, use valid
-percentages (exclude NAs)}
 
 \item{.col}{If you want to provide a column name in a variable, use .col
 and not col.}
@@ -80,6 +77,7 @@ cases$Random <- rnorm(nrow(cases)) + (cases$Sex == "Male")
 csm_txt <- cases |> summary_vt(vt, Random)
 vt |> mutate(label = csm_txt) |> plot()
 
+# make some default labels
 vt <- vt |> add_labels()
 csm_txt <- cases |>
   summary_vt(vt, Random,
@@ -88,17 +86,27 @@ vt |>
   mutate(label = paste0(label, "\n", csm_txt)) |> 
   plot()
 
+# now the same but only for the leafs
+# leaf is a column in the nodes data frame, TRUE or FALSE
+vt |>
+  mutate(label = ifelse(leaf,
+     paste0(label, "\n", csm_txt),
+     label)) |>
+  plot()
+
 # introduce a few missing values
 cases$Random[ runif(nrow(cases)) < .1 ] <- NA
+
 csm_txt <- cases |>
   summary_vt(vt, Random,
      format = sprintf("valid: \%d/\%d (\%d\%\%)",
            valid, n, round(100 * valid/n)))
+
 vt |>
   mutate(label = paste0(label, "\n", csm_txt)) |> 
   plot()
 
-
+# Example for the data frame variant
 csm_df <- cases |> summary_vt_df(vt, Age)
 vt |> 
   mutate(label = sprintf("\%s\n\%s", node_val, 

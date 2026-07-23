@@ -105,7 +105,7 @@ as_vtree <- function(x) {
   }
 
   x <- x |> activate("nodes") |>
-    mutate(leaf = level == max(level))
+    mutate(leaf = .data[["level"]] == max(.data[["level"]]))
 
   # more than a root
   stopifnot(any(nodes$level > 0))
