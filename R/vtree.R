@@ -94,8 +94,6 @@ as_vtree <- function(x) {
 
   # integrity checks
   # ------------------
-  x <- x |> activate("nodes")
-
   nodes <- x |> as_tibble()
   req_cols <- c("ID", "node_col", "node_name", "node_val", "node_cv", 
                   "parent", "path", "level", "n", "freq")
@@ -106,6 +104,8 @@ as_vtree <- function(x) {
                  ))
   }
 
+  x <- x |> activate("nodes") |>
+    mutate(leaf = level == max(level))
 
   # more than a root
   stopifnot(any(nodes$level > 0))
