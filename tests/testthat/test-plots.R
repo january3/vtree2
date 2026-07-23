@@ -18,7 +18,6 @@ test_that("plotting works", {
 
 
 test_that("adding labels works", {
-
   vt <- vtree_from_freqtable(Titanic, "Class", "Sex", "Survived")
 
   nodes <- vt |> add_labels() |> as_tibble()
