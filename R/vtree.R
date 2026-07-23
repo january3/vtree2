@@ -95,9 +95,15 @@ as_vtree <- function(x) {
   # integrity checks
   # ------------------
   nodes <- x |> activate(nodes) |> as_tibble()
-  stopifnot(all(c("ID", "node_col", "node_name", "node_val", "node_cv", 
-                  "parent", "path", "level", "n", "freq") 
-                %in% colnames(nodes)))
+  req_cols <- c("ID", "node_col", "node_name", "node_val", "node_cv", 
+                  "parent", "path", "level", "n", "freq")
+  if(!all(req_cols %in% colnames(nodes))) {
+    stop(sprintf("Columns %s not in colnames(nodes)",
+                 paste(req_cols[ !req_cols %in% colnames(nodes) ], 
+                       collapse=", ")
+                 ))
+  }
+
 
   # more than a root
   stopifnot(any(nodes$level > 0))

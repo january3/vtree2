@@ -4,14 +4,53 @@
 \alias{add_labels}
 \title{Add labels to a plot}
 \usage{
-add_labels(vtree)
+add_labels(
+  vtree,
+  template = "simple",
+  format = NULL,
+  format_na = NULL,
+  root_label = NA
+)
 }
 \arguments{
 \item{vtree}{an object of class vtree}
+
+\item{template}{One of the predefined formats; can be 'simple', 'long'
+or 'custom'. If 'custom', you must provide the \code{format} and \code{format_NA}
+parameters.}
+
+\item{format}{an R expression to format the valid value nodes}
+
+\item{format_na}{an R expression to format NA nodes}
+
+\item{root_label}{Label to be used for the root node. If NA, do not
+modify the root label.}
 }
 \value{
 an object of class vtree with added labels
 }
 \description{
-Add labels to a plot
+Adds or modifies a column called \code{label} to the node data frame of a vtree object.
+Labels are used by the \code{\link[=plot.vtree]{plot.vtree()}} function to show as node labels.
+}
+\details{
+By default, \code{add_labels()} produces simple node labels containing the
+associated variable value, number of cases and percentage within the
+parent node.
+
+Formatting can be done with the \code{format}/\code{format_na} parameter, which is
+an R expression. You can use sprintf, glue, paste or whichever
+expressions you like to construct a label from the following variables:
+\itemize{
+\item \code{freq}, the frequency for a node
+\item \code{n}, number of samples of a node
+\item \code{node_col}, name of the variable associated with a node
+\item \code{node_name}, display name of the variable associated with a node
+\item \code{node_val}, value of the variable associated with a node
+\item \code{node_cv}, same as \code{paste0(node_col, ':', node_val)}
+\item plus whatever new columns you have added to the vtree with mutate().
+}
+
+(the difference between node_col and node_name is that you can set
+node_name to whatever you like, while node_col must remain unchanged)
 }

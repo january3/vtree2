@@ -87,7 +87,6 @@ pat2nodes <- function(pattern, columns) {
                       c_across(all_of(columns[1:(i-1)]))), collapse = "/"))) |>
       mutate(ID = paste0(paste0(columns[1:i], ":", 
                       c_across(all_of(columns[1:i]))), collapse = "/")) |>
-      mutate(node_name = ifelse(i == 1, "", node_col)) |>
 
       # we want also to store the path as a list column for easier
       # processing downstream
@@ -102,7 +101,7 @@ pat2nodes <- function(pattern, columns) {
       mutate(node_col = columns[i]) |>
       mutate(node_val = .data[[columns[i]]]) |>
 
-      select(all_of(c("ID", "node_col", "node_name", "node_val", "parent", 
+      select(all_of(c("ID", "node_col", "node_val", "parent", 
                       "path", "level", "n", "freq")))
   })
 
@@ -111,7 +110,6 @@ pat2nodes <- function(pattern, columns) {
   # that special root node
   ret <- bind_rows(tibble(ID = "root", 
                                node_col = "root",
-                               node_name = "",
                                node_val = "",
                                parent = NA_character_, 
                                path = list(NA),
@@ -121,6 +119,7 @@ pat2nodes <- function(pattern, columns) {
   ret <- ret |>
     mutate(node_cv = paste0(.data[["node_col"]], ":", 
                             .data[["node_val"]])) |>
+    mutate(node_name = ifelse(ID == "root", "", node_col)) |>
     select(all_of(c("ID", "node_col", "node_name", "node_val", "node_cv", "parent",
                     "path", "level", "n", "freq")))
   ret

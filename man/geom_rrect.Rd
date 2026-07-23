@@ -11,7 +11,7 @@ geom_rrect(
   stat = "identity",
   position = "identity",
   ...,
-  radius = 0.1,
+  radius = 0.2,
   na.rm = FALSE,
   show.legend = NA,
   inherit.aes = TRUE

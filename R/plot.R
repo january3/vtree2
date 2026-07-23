@@ -16,34 +16,101 @@
 
 #' Add labels to a plot
 #'
-#' Adds or modifies a column called `label` to the node data frame of a vtree object. 
+#' Adds or modifies a column called `label` to the node data frame of a vtree object.
 #' Labels are used by the [plot.vtree()] function to show as node labels.
-#' 
+#'
 #' By default, `add_labels()` produces simple node labels containing the
 #' associated variable value, number of cases and percentage within the
 #' parent node.
-#' 
+#'
+#' Formatting can be done with the `format`/`format_na` parameter, which is
+#' an R expression. You can use sprintf, glue, paste or whichever
+#' expressions you like to construct a label from the following variables:
+#'
+#'  * `freq`, the frequency for a node
+#'  * `n`, number of samples of a node
+#'  * `node_col`, name of the variable associated with a node
+#'  * `node_name`, display name of the variable associated with a node
+#'  * `node_val`, value of the variable associated with a node
+#'  * `node_cv`, same as `paste0(node_col, ':', node_val)`
+#'  * plus whatever new columns you have added to the vtree with mutate().
+#'
+#' (the difference between node_col and node_name is that you can set
+#' node_name to whatever you like, while node_col must remain unchanged)
+#
+#'
 #' @param vtree an object of class vtree
-#' @param .root_label Label to be used for the root node. If NA, do not
+#' @param template One of the predefined formats; can be 'simple' or
+#' 'long'. If 'custom', you must provide the `format` and `format_NA`
+#' parameters.
+#' @param format an R expression to format the valid value nodes. If not
+#' NULL, replaces the format from the template.
+#' @param format_na an R expression to format NA nodes. If not NULL,
+#' replaces the format from the template.
+#' @param root_label Label to be used for the root node. If NA, do not
 #'                    modify the root label.
 #' @return an object of class vtree with added labels
+#' @importFrom rlang quo quo_is_null
+#' @examples
+#' vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived)
+#' # look at the labels
+#' vt |> add_labels() |> pull(label)
+#' vt |> add_labels() |> plot()
+#'
+#' vt |> add_labels(template = "long") |> plot()
+#'
+#' # customize the format
+#' vt |>
+#'   add_labels(format = sprintf("%d out of %d",
+#'         n, round(n/freq)),
+#'     format_na = "NA") |> plot()
+#'
 #' @export
-add_labels <- function(vtree, 
-                       .root_label = NA) {
+add_labels <- function(vtree,
+                       template = "simple",
+                       format = NULL,
+                       format_na = NULL,
+                       root_label = NA) {
 
-  is_vp <- attr(vtree, "vp")
+  template <- match.arg(template, c("simple", "long"))
+
+  userfmt <- enquo(format)
+  userfmt_na <- enquo(format_na)
+
+  if(template == "simple") {
+    format <- quo(sprintf("%s\n%d (%.0f%%)",
+         node_val, n, freq * 100))
+    format_na = quo(sprintf("%s\n%d", node_val, n))
+  } else if(template == "long") {
+    format <- quo(sprintf("%s: %s\nN = %d (%.0f%%)",
+         node_name,
+         node_val, n, freq * 100))
+    format_na = quo(sprintf("%s: %s\n%d", node_name, node_val, n))
+  }
+
+  if(!quo_is_null(userfmt)) {
+    format <- userfmt
+  }
+  if(!quo_is_null(userfmt_na)) {
+    format_na <- userfmt_na
+  }
+
+  if(quo_is_null(format) || quo_is_null(format_na)) {
+    stop("format/format_na not defined")
+  }
+
+  nodes <- vtree |> activate("nodes") |> as_tibble()
+  labels    <- eval_tidy(format, data = nodes)
+  labels_na <- eval_tidy(format_na, data = nodes)
+
+  is_vp <- attr(vtree, "vp") %||% TRUE
+
   vtree <- vtree |> activate("nodes") |>
-    mutate(label = ifelse(is.na(.data[["node_val"]]),
-           sprintf("%s: %s n=%d", .data[["node_col"]],
-                                  .data[["node_val"]], .data[["n"]]),
-           sprintf("%s: %s n=%d (%.1f%%)",
-                    .data[["node_col"]],
-                    .data[["node_val"]],
-                    .data[["n"]],
-                    .data[["freq"]] * 100))
-    ) |>
-  mutate(label = ifelse(.data[["ID"]] == "root" & !is.na(.root_label), 
-                .root_label, label))
+    mutate(label = ifelse(is.na(.data[["node_val"]]) & is_vp,
+                          labels_na,
+                          labels)) |>
+  mutate(label = ifelse(.data[["ID"]] == "root" & !is.na(root_label),
+                root_label, label))
 
   vtree <- as_vtree(vtree)
   vtree

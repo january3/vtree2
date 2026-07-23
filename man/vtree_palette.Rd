@@ -7,12 +7,12 @@
 \usage{
 vtree_palette(
   vtree,
-  palettes = c("Blues", "Greens", "Reds", "Oranges", "Purples")
+  palettes = c("Reds", "Blues", "Greens", "Oranges", "Purples")
 )
 
 vtree_pal_assign(
   vtree,
-  palettes = c("Blues", "Greens", "Reds", "Oranges", "Purples"),
+  palettes = c("Reds", "Blues", "Greens", "Oranges", "Purples"),
   na_fill = "white"
 )
 }
