@@ -28,8 +28,7 @@ contrast_color <- function(color) {
 #' Get a color palette for a variable level
 #'
 #' `vtree_palette` returns a color palette for a variable level in a vtree.
-#' The colors are chosen from the RColorBrewer package, and the palette is
-#' extended for variables with more than nine levels.
+#' The colors are chosen from the RColorBrewer package.
 #'
 #' `vtree_pal_assign` assigns fill colors to the nodes of a vtree based on the
 #' variable levels. The fill colors are stored in a new column in the nodes
@@ -58,7 +57,7 @@ vtree_palette <- function(vtree,
 
   ret <- imap(palettes, \(pal, var) {
     n <- length(levs[[var]])
-    pal <- rev(.vtree_pal(n, pal_name = pal))
+    pal <- .vtree_pal(n, pal_name = pal)
     names(pal) <- levs[[var]]
     pal
   })

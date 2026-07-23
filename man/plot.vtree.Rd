@@ -7,6 +7,9 @@
 \method{plot}{vtree}(
   x,
   ...,
+  lfontsize = NA,
+  lwidth = 0.7,
+  lheight = 0.8,
   palettes = c("Blues", "Greens", "Reds", "Oranges", "Purples"),
   na_fill = "white",
   proportional = FALSE,
@@ -17,6 +20,12 @@
 \item{x}{A vtree object}
 
 \item{...}{ignored}
+
+\item{lfontsize}{Font size for labels}
+
+\item{lwidth}{Label width relative to available space}
+
+\item{lheight}{Label height relative to available space}
 
 \item{palettes}{A character vector with names of RColorBrewer palettes
 to use for the variables. By default these are the
