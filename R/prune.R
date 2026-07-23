@@ -142,7 +142,7 @@ find_nodes <- function(vtree, condition) {
       mode = "out",
       .f = \(node, path, ...) {
         return(any(.N()$.vtree_prune[path$node]))
-  })) |> pull(.vtree_prune2)
+  })) |> pull(".vtree_prune2")
 
   follow
 }

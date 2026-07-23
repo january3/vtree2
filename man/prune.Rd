@@ -6,7 +6,7 @@
 \alias{keep}
 \title{Find nodes and prune a vtree graph}
 \usage{
-prune(vtree, condition, keep = FALSE, na.rm = FALSE)
+prune(vtree, condition, follow_only = FALSE, keep = FALSE, na.rm = FALSE)
 
 find_nodes(vtree, condition)
 
@@ -19,6 +19,9 @@ keep(vtree, condition)
 condition. If no condition is provided, no pruning is done,
 except for the removal of nodes with NA values with
 \code{na.rm}.}
+
+\item{follow_only}{if TRUE, keep the nodes selected by condition, but
+prune all following nodes.}
 
 \item{keep}{If TRUE, keeps the nodes that satisfy the condition and prunes
 everything else.}

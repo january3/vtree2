@@ -94,7 +94,9 @@ as_vtree <- function(x) {
 
   # integrity checks
   # ------------------
-  nodes <- x |> activate(nodes) |> as_tibble()
+  x <- x |> activate("nodes")
+
+  nodes <- x |> as_tibble()
   req_cols <- c("ID", "node_col", "node_name", "node_val", "node_cv", 
                   "parent", "path", "level", "n", "freq")
   if(!all(req_cols %in% colnames(nodes))) {
