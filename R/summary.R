@@ -131,6 +131,7 @@
 #' csm_txt <- cases |> summary_vt(vt, Random)
 #' vt |> mutate(label = csm_txt) |> plot()
 #'
+#' # make some default labels
 #' vt <- vt |> add_labels()
 #' csm_txt <- cases |>
 #'   summary_vt(vt, Random,
@@ -139,17 +140,27 @@
 #'   mutate(label = paste0(label, "\n", csm_txt)) |> 
 #'   plot()
 #'
+#' # now the same but only for the leafs
+#' # leaf is a column in the nodes data frame, TRUE or FALSE
+#' vt |>
+#'   mutate(label = ifelse(leaf,
+#'      paste0(label, "\n", csm_txt),
+#'      label)) |> 
+#'   plot()
+#'
 #' # introduce a few missing values
 #' cases$Random[ runif(nrow(cases)) < .1 ] <- NA
+#'
 #' csm_txt <- cases |>
 #'   summary_vt(vt, Random,
 #'      format = sprintf("valid: %d/%d (%d%%)",
 #'            valid, n, round(100 * valid/n)))
+#'
 #' vt |>
 #'   mutate(label = paste0(label, "\n", csm_txt)) |> 
 #'   plot()
 #'
-#'
+#' # Example for the data frame variant
 #' csm_df <- cases |> summary_vt_df(vt, Age)
 #' vt |> 
 #'   mutate(label = sprintf("%s\n%s", node_val, 
