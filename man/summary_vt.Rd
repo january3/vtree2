@@ -2,9 +2,12 @@
 % Please edit documentation in R/summary.R
 \name{summary_vt}
 \alias{summary_vt}
+\alias{summary_vt_df}
 \title{Summarize a case variable for each node of a vtree}
 \usage{
-summary_vt(cases, vtree, col)
+summary_vt(cases, vtree, col, format = NULL, vp = TRUE, .col = NULL)
+
+summary_vt_df(cases, vtree, col, .col = NULL)
 }
 \arguments{
 \item{cases}{A data frame of cases, with one row per observation.}
@@ -13,6 +16,14 @@ summary_vt(cases, vtree, col)
 
 \item{col}{The column variable to summarize. This should be a single
 column name, quoted or not.}
+
+\item{format}{An expression for customized formatting. See Examples.}
+
+\item{vp}{if TRUE, then, when calculating proportions, use valid
+percentages (exclude NAs)}
+
+\item{.col}{If you want to provide a column name in a variable, use .col
+and not col.}
 }
 \value{
 A tibble with one row per node of the vtree, and columns for the
@@ -20,9 +31,10 @@ summary statistics of the specified variable for the cases that match
 the path to that node.
 }
 \description{
-\code{summary_vt()} summarizes a case variable for each node of a vtree. That
-is, for each node in the vtree, it selects the cases that match the path
-to that node and summarizes the specified variable for those cases.
+\code{summary_vt()} and \code{summary_vt_df()} summarize a case variable for each
+node of a vtree. That is, for each node in the vtree, they select the
+cases that match the path to that node and summarize the specified
+variable for those cases.
 }
 \details{
 For example, in the Titanic data set, you can ask what were the
@@ -30,9 +42,15 @@ different proportions of survivors for males in the 1st class. This
 corresponds to the summary of variable \code{Survived} for the node with
 path \verb{Class:1st/Sex:Male}.
 
-For numeric variables, the resulting data frame (tibble) will contain
-the following columns: \code{n}, \code{mean}, \code{sd}, \code{min}, \code{max}, \code{median}, \code{iqr},
-\code{valid}, and \code{missing}.
+The \code{summary_vt_df()} function returns a data frame with columns
+corresponding to various and column data type dependent statistic
+measures, while \code{summary_vt()} creates a character vector with these
+measures.
+
+For numeric variables, the resulting data frame (tibble) returned by
+\code{summary_vt_df()} will contain
+the following columns: \code{n}, \code{mean}, \code{sd}, \code{min}, \code{max}, \code{median}, \code{q1},
+\code{q3}, \code{iqr}, \code{valid}, and \code{missing}.
 
 For factor variables, the resulting data frame will contain the following
 columns: \code{n}, \code{valid}, \code{missing}, \code{unique}, \code{levels} and \code{levels_str}.
@@ -42,18 +60,49 @@ the counts of each level of the factor variable for that node. The
 representation of the levels and their counts, which can be used for
 labeling the nodes.
 
-You can use \code{summary_vt()} to create informative labels for the nodes.
+You can use these functions to create informative labels for the nodes.
+
+Using the \code{format} parameter, it is possible to create fully
+summaries. The expression is evaluated within the context of the summary
+data frame, which means that you can use all columns avaialble in that
+data frame. For example, you can use an expression like
+\code{sprintf("\%s", format(median, digits = 2))} or \code{glue("{median}")}.
 }
 \examples{
 
 cases <- cases_from_freqtable(Titanic)
 vt <- vtree(cases, Class, Sex, Survived)
 
-library(tidyverse)
-case_sm <- cases |> summary_vt(vt, Age)
+csm_txt <- cases |> summary_vt(vt, Age)
+vt |> mutate(label = csm_txt) |> plot()
+
+cases$Random <- rnorm(nrow(cases)) + (cases$Sex == "Male")
+csm_txt <- cases |> summary_vt(vt, Random)
+vt |> mutate(label = csm_txt) |> plot()
+
+vt <- vt |> add_labels()
+csm_txt <- cases |>
+  summary_vt(vt, Random,
+             format = sprintf("median: \%.1f",median))
+vt |>
+  mutate(label = paste0(label, "\n", csm_txt)) |> 
+  plot()
+
+# introduce a few missing values
+cases$Random[ runif(nrow(cases)) < .1 ] <- NA
+csm_txt <- cases |>
+  summary_vt(vt, Random,
+     format = sprintf("valid: \%d/\%d (\%d\%\%)",
+           valid, n, round(100 * valid/n)))
+vt |>
+  mutate(label = paste0(label, "\n", csm_txt)) |> 
+  plot()
+
+
+csm_df <- cases |> summary_vt_df(vt, Age)
 vt |> 
   mutate(label = sprintf("\%s\n\%s", node_val, 
-                         case_sm$levels_str)) |>
+                         csm_df$levels_str)) |>
   plot()
 
 }

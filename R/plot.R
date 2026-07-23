@@ -138,7 +138,7 @@ add_labels <- function(vtree,
                           .data[["label"]]
            )) |>
     mutate(label = ifelse(.data[["ID"]] == "root" & !is.na(root_label),
-                root_label, label))
+                root_label, .data[["label"]]))
 
   vtree <- as_vtree(vtree)
   vtree

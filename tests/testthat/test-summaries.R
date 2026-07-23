@@ -4,7 +4,7 @@ test_that("summary_vt works", {
   vt <- vtree(cases, Class, Sex, Survived)
   nodes <- vt |> activate("nodes") |> as_tibble()
 
-  s1 <- summary_vt(cases, vt, Age)
+  s1 <- summary_vt_df(cases, vt, Age)
   expect_in(c("ID", "n", "valid",
               "missing", "unique",
               "levels", "levels_str"), colnames(s1))
@@ -26,7 +26,7 @@ test_that("summary_vt works", {
   }
                    
   cases$foo <- rnorm(nrow(cases))
-  s1 <- summary_vt(cases, vt, foo)
+  s1 <- summary_vt_df(cases, vt, foo)
   expect_equal(nrow(s1), nrow(nodes))
   expect_in(c("ID", "n", "mean", "sd", "min",
               "max", "median", "iqr", "valid",
