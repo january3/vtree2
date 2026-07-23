@@ -60,7 +60,7 @@
 #' vt |> add_labels() |> plot()
 #'
 #' vt |> add_labels(template = "long") |> plot()
-#' 
+#'
 #' # add only labels to some nodes
 #'
 #' mask <- find_nodes(vt, freq > .30)
@@ -81,10 +81,6 @@ add_labels <- function(vtree,
                        root_label = NA) {
 
   template <- match.arg(template, c("simple", "long"))
-
-  if(is.null(mask)) {
-    mask <- rep(TRUE, nrow(nodes))
-  }
 
   userfmt <- enquo(format)
   userfmt_na <- enquo(format_na)
@@ -115,6 +111,10 @@ add_labels <- function(vtree,
   labels    <- eval_tidy(format, data = nodes)
   labels_na <- eval_tidy(format_na, data = nodes)
 
+  if(is.null(mask)) {
+    mask <- rep(TRUE, nrow(nodes))
+  }
+
   is_vp <- attr(vtree, "vp") %||% TRUE
 
   # add label column if one is missing
@@ -129,7 +129,7 @@ add_labels <- function(vtree,
                           labels_na,
                           labels),
                           label
-           )) |> 
+           )) |>
     mutate(label = ifelse(.data[["ID"]] == "root" & !is.na(root_label),
                 root_label, label))
 
@@ -153,7 +153,10 @@ add_labels <- function(vtree,
 }
 
 # plot by frequency
-plot_by_freq <- function(graph, fill_scale, color_scale) {
+plot_by_freq <- function(graph, fill_scale, color_scale,
+                         lfontsize = NA,
+                         lwidth = NA,
+                         lheight = NA) {
 
   # calculate the local offsets for each descendant of each node
   .graph <- graph |>
@@ -165,11 +168,17 @@ plot_by_freq <- function(graph, fill_scale, color_scale) {
   maxl <- max(nodes$level)
   totn <- sum(nodes$n[nodes$level == 1])
 
+  if(is.na(lwidth)) {
+    lwidth <- .35 / maxl
+  } else {
+    lwidth <- lwidth / (2 * maxl)
+  }
+
   nodes <- nodes |>
     mutate(x = .data[["level"]] / maxl) |>
     mutate(y = .data[["offset_tot"]] / totn +
            .data[["n"]] / (2 * totn)) |>
-    mutate(width = 0.8 / maxl, height = .data[["n"]] / totn)
+    mutate(width = 2 * lwidth, height = .data[["n"]] / totn)
 
   edges <- graph |> activate(edges) |> as_tibble() |>
     mutate(x1 = nodes$x[.data[["from"]]],
@@ -192,7 +201,8 @@ plot_by_freq <- function(graph, fill_scale, color_scale) {
                   height = .data[["height"]],
                   fill = .data[["ID"]]),
               color = "black") +
-    geom_text(aes(color = .data[["ID"]])) +
+    geom_text(aes(color = .data[["ID"]]),
+                  size = lfontsize) +
     fill_scale +
     color_scale +
     # reverse y axis
@@ -223,10 +233,14 @@ plot_regular <- function(graph, fill_scale, color_scale,
 
   if(is.na(lheight)) {
     lheight <- .8 / (2 * totleafs)
+  } else {
+    lheight <- lheight / (2 * totleafs)
   }
 
   if(is.na(lwidth)) {
     lwidth <- .35 / maxl
+  } else {
+    lwidth <- lwidth / (2 * maxl)
   }
 
   nodes <- nodes |>
@@ -256,8 +270,7 @@ plot_regular <- function(graph, fill_scale, color_scale,
                    ymin = y - lheight, ymax = y + lheight,
                    fill = .data[["ID"]]),
                color = "black", radius = .4) +
-    geom_text(aes(#fill = .data[["node_cv"]],
-                   color = .data[["ID"]]),
+    geom_text(aes(color = .data[["ID"]]),
               size = lfontsize) +
     # reverse y axis
     fill_scale +
@@ -267,130 +280,7 @@ plot_regular <- function(graph, fill_scale, color_scale,
     coord_cartesian(clip = "off")
 }
 
-#' Get a contrasting color
-#'
-#' Get a contrasting color
-#'
-#' Returns a contrasting color (black or white) for a given color. This is
-#' useful for ensuring that text is readable against a background color.
-#' @param color A character vector with colors in any format accepted by R
-#'              (e.g., "red", "#FF0000", etc.)
-#' @return A character string representing the contrasting color
-#' ("black" or "white")
-#' @examples
-#' contrast_color("red")    # returns "white"
-#' @importFrom grDevices col2rgb
-#' @export
-contrast_color <- function(color) {
-  # Convert the color to RGB
-  rgb <- col2rgb(color)
 
-  # Calculate the luminance using the formula
-  luminance <- (0.299 * rgb[1, ] + 0.587 * rgb[2, ] + 0.114 * rgb[3, ]) / 255
-
-  # Return black for light colors and white for dark colors
-  ifelse(luminance > 0.5, "black", "white")
-}
-
-#' Get a color palette for a variable level
-#'
-#' Get a color palette for a variable level
-#'
-#' `vtree_palette` returns a color palette for a variable level in a vtree.
-#' The colors are chosen from the RColorBrewer package, and the palette is
-#' extended for variables with more than nine levels.
-#'
-#' `vtree_pal_assign` assigns fill colors to the nodes of a vtree based on the
-#' variable levels. The fill colors are stored in a new column in the nodes
-#' data frame called "fill".
-#' @param vtree A vtree object
-#' @param palettes The names of RColorBrewer palettes corresponding to the
-#'                 subsequent columns in the vtree
-#' @param na_fill fill color used for nodes associated with NA values
-#' @return A character vector of colors for the levels of the variable
-#' @importFrom RColorBrewer brewer.pal
-#' @importFrom grDevices colorRampPalette
-#' @importFrom purrr map imap map2_chr map_chr map_dfr set_names
-#' @export
-vtree_palette <- function(vtree,
-                          palettes = c("Reds", "Blues", "Greens",
-                                       "Oranges", "Purples")) {
-  #family <- families[(level - 1L) %% length(families) + 1L]
-
-  stopifnot(inherits(vtree, "vtree"))
-
-  levs <- levels(vtree)
-  levs <- map(levs, \(x) x[ !is.na(x)])
-
-  palettes <- rep(palettes, length.out = length(levs))
-  names(palettes) <- names(levs)
-
-  ret <- imap(palettes, \(pal, var) {
-    n <- length(levs[[var]])
-    pal <- rev(.vtree_pal(n, pal_name = pal))
-    names(pal) <- levs[[var]]
-    pal
-  })
-
-  ret
-}
-
-
-#' @rdname vtree_palette
-#' @export
-vtree_pal_assign <- function(vtree,
-                             palettes = c("Reds", "Blues", "Greens",
-                                       "Oranges", "Purples"),
-                             na_fill = "white") {
-
-  stopifnot(inherits(vtree, "vtree"))
-
-  pal <- vtree_palette(vtree, palettes = palettes)
-
-  vtree <- vtree |> activate("nodes") |>
-    mutate(fill = ifelse(is.na(.data[["node_val"]]),
-                               na_fill,
-
-                               map2_chr(.data[["node_val"]],
-                           .data[["node_col"]], \(val, var) {
-      pal[[var]][as.character(val)] %||% na_fill
-    })))
-
-  as_vtree(vtree)
-}
-
-# @param n The number of levels in the variable
-.vtree_pal <- function(n, pal_name = "Blues") {
-
-  #family <- families[(level - 1L) %% length(families) + 1L]
-
-  if (n == 0L) {
-    return(character())
-  }
-
-  if (n == 1L) {
-    # Equivalent to a medium/dark representative shade
-    return(RColorBrewer::brewer.pal(3, pal_name)[2])
-  }
-
-  if (n <= 9L) {
-    # brewer.pal() requires at least three colours
-    pal <- RColorBrewer::brewer.pal(max(3L, n), pal_name)
-
-    # For n = 2, retain the light and dark endpoints
-    if (n == 2L) {
-      return(pal[c(1L, 3L)])
-    }
-
-    return(pal)
-  }
-
-  # Extension for variables with more than nine levels
-  grDevices::colorRampPalette(
-    RColorBrewer::brewer.pal(9, pal_name),
-    space = "Lab"
-  )(n)
-}
 
 #' Plot a vtree
 #'
@@ -447,6 +337,9 @@ vtree_pal_assign <- function(vtree,
 #'
 #' @param x A vtree object
 #' @param ... ignored
+#' @param lfontsize Font size for labels
+#' @param lwidth Label width relative to available space
+#' @param lheight Label height relative to available space
 #' @param palettes A character vector with names of RColorBrewer palettes
 #'                 to use for the variables. By default these are the
 #'                 default arguments to the vtree_palette() function.
@@ -495,6 +388,9 @@ vtree_pal_assign <- function(vtree,
 #' @export
 plot.vtree <- function(x,
                        ...,
+                       lfontsize = NA,
+                       lwidth = .7,
+                       lheight = .8,
                        palettes = c("Blues", "Greens", "Reds",
                                     "Oranges", "Purples"),
                        na_fill = "white",
@@ -525,9 +421,13 @@ plot.vtree <- function(x,
   }
 
   if(proportional) {
-    p <- plot_by_freq(x, fill_scale, color_scale)
+    p <- plot_by_freq(x, fill_scale, color_scale,
+                      lwidth = lwidth, lheight = lheight,
+                      lfontsize = lfontsize)
   } else {
-    p <- plot_regular(x, fill_scale, color_scale)
+    p <- plot_regular(x, fill_scale, color_scale,
+                      lwidth = lwidth, lheight = lheight,
+                      lfontsize = lfontsize)
   }
 
   #p <- p + theme_void() +
