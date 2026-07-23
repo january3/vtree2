@@ -11,12 +11,15 @@ RoxygenNote: 8.0.0
 Depends: 
     R (>= 4.1.0)
 Imports: 
+    cli,
     dplyr,
     ggplot2,
     grDevices,
+    grid,
     purrr,
     RColorBrewer,
     rlang,
+    scales,
     stats,
     tibble,
     tidygraph,

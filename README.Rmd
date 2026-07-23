@@ -72,6 +72,38 @@ plot(vt, by_freq = TRUE)
 
 ### Vtree patterns
 
+## Differences between vtree2 and the original vtree
+
+### Design principles for vtree2
+
+ * separate frequency calculations, summary calculations and plotting
+ * use graphical objects for plotting which are flexible
+ * use tidyverse principles for data manipulation
+ * use tidyverse syntax for specifying variables
+ * vtree object inherits from tidygraph's tbl_graph, so it can be used with
+   a wide variety of plotting tools, including ggraph, ggplot2, and plotly
+
+### Practical differences
+
+ * In vtree2, you first prepare the data with `vtree()` and then plot it with `plot()`. 
+   This means one more function call, but a much more flexible plotting system.
+ * Given that a vtree object is a tbl_graph, you are not limited to the
+   built-in plotting functions. You can use ggraph, ggplot2, or plotly to
+   create your own plots.
+ * There are some automatic summary and plotting functions, but you can
+   also have a very tight control about the labels by modifying the
+   `label` column in the vtree object.
+ * The summary_vt function can be used to calculate summary statistics for
+   each node based on any additional data. It is not limited to using the
+   data from which the vtree was constructed, and you can use the exposed
+   statistics to shape any label you would like.
+ * Same goes for colors: instead of using automatic color assignments that
+   mimick these of the original vtree, you can use any color scheme you
+   like by assigning values to the `color` column in the vtree object.
+ * Using ggplot2 unfortunately means that you might need to adapt the node
+   sizes and label font sizes manually. ggplot2 is not aware of the size of
+   the text and plot when constructed.
+
 
 ## TODO
 

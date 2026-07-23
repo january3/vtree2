@@ -30,14 +30,14 @@ test_that("vtree_from_freqtable works", {
   expect_equal(nrow(nodes), 51)
   expect_in(c("ID", "node_col", "node_val", "parent",
               "path", "level", "n", "freq", "vp"), colnames(nodes))
-  expect_setequal(c("__ALL__", "Class", "Sex", "Age",
+  expect_setequal(c("", "Class", "Sex", "Age",
                     "Survived"), unique(nodes$node_col))
 
   vt <- vtree_from_freqtable(Titanic, Class, Survived)
   nodes <- vt |> activate(nodes) |> as_tibble()
   expect_equal(nrow(nodes), 13)
 
-  expect_setequal(c("__ALL__", "Class",
+  expect_setequal(c("", "Class",
                     "Survived"), unique(nodes$node_col))
 
   expect_error(vtree_from_freqtable(Titanic, .cols = c("Class", "Foo")))

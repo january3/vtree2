@@ -95,7 +95,7 @@ as_vtree <- function(x) {
   # integrity checks
   # ------------------
   nodes <- x |> activate(nodes) |> as_tibble()
-  stopifnot(all(c("ID", "node_col", "node_val", "node_cv", 
+  stopifnot(all(c("ID", "node_col", "node_name", "node_val", "node_cv", 
                   "parent", "path", "level", "n", "freq") 
                 %in% colnames(nodes)))
 
@@ -113,6 +113,11 @@ as_vtree <- function(x) {
 
   attr(x, "cols") <- cnms
   attr(x, "N") <- N
+  attr(x, "vp") <- TRUE
+
+  if("vp" %in% colnames(nodes) & !all(nodes[["vp"]])) {
+    attr(x, "vp") <- FALSE
+  }
 
   class(x) <- c("vtree", class(x))
   x

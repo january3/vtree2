@@ -16,11 +16,22 @@
 
 #' Add labels to a plot
 #'
-#' Add labels to a plot
+#' Adds or modifies a column called `label` to the node data frame of a vtree object. 
+#' Labels are used by the [plot.vtree()] function to show as node labels.
+#' 
+#' By default, `add_labels()` produces simple node labels containing the
+#' associated variable value, number of cases and percentage within the
+#' parent node.
+#' 
 #' @param vtree an object of class vtree
+#' @param .root_label Label to be used for the root node. If NA, do not
+#'                    modify the root label.
 #' @return an object of class vtree with added labels
 #' @export
-add_labels <- function(vtree) {
+add_labels <- function(vtree, 
+                       .root_label = NA) {
+
+  is_vp <- attr(vtree, "vp")
   vtree <- vtree |> activate("nodes") |>
     mutate(label = ifelse(is.na(.data[["node_val"]]),
            sprintf("%s: %s n=%d", .data[["node_col"]],
@@ -30,7 +41,9 @@ add_labels <- function(vtree) {
                     .data[["node_val"]],
                     .data[["n"]],
                     .data[["freq"]] * 100))
-    )
+    ) |>
+  mutate(label = ifelse(.data[["ID"]] == "root" & !is.na(.root_label), 
+                .root_label, label))
 
   vtree <- as_vtree(vtree)
   vtree
@@ -105,7 +118,10 @@ plot_by_freq <- function(graph, fill_scale, color_scale) {
 }
 
 # just the nodes, no resizing according to frequency
-plot_regular <- function(graph, fill_scale, color_scale) {
+plot_regular <- function(graph, fill_scale, color_scale,
+                         lfontsize = NA,
+                         lwidth = NA,
+                         lheight = NA) {
 
   nodes <- graph |> activate(nodes) |>
     .calc_nleafs() |>
@@ -116,6 +132,14 @@ plot_regular <- function(graph, fill_scale, color_scale) {
   totleafs <- sum(nodes$nleafs[nodes$level == 1])
   totn <- sum(nodes$n[nodes$level == 1])
 
+  if(is.na(lheight)) {
+    lheight <- .8 / (2 * totleafs)
+  }
+
+  if(is.na(lwidth)) {
+    lwidth <- .35 / maxl
+  }
+
   nodes <- nodes |>
     mutate(x = .data[["level"]] / maxl) |>
     group_by(.data[["level"]]) |>
@@ -125,7 +149,7 @@ plot_regular <- function(graph, fill_scale, color_scale) {
 
   edges <- graph |> activate(edges) |> as_tibble() |>
     mutate(x1 = nodes$x[.data[["from"]]],
-           x2 = nodes$x[.data[["to"]]],
+           x2 = nodes$x[.data[["to"]]] - lwidth,
            y1 = nodes$y[.data[["from"]]],
            y2 = nodes$y[.data[["to"]]])
 
@@ -137,9 +161,15 @@ plot_regular <- function(graph, fill_scale, color_scale) {
                      y = .data[["y1"]],
                      xend = .data[["x2"]],
                      yend = .data[["y2"]]),
+                 arrow = arrow(angle = 15, type = "closed"),
                  inherit.aes = FALSE) +
-    geom_label(aes(fill = .data[["node_cv"]],
-                   color = .data[["node_cv"]])) +
+    geom_rrect(aes(xmin = x - lwidth, xmax = x + lwidth,
+                   ymin = y - lheight, ymax = y + lheight,
+                   fill = .data[["node_cv"]]),
+               color = "black", radius = .4) +
+    geom_text(aes(#fill = .data[["node_cv"]],
+                   color = .data[["node_cv"]]),
+              size = lfontsize) +
     # reverse y axis
     fill_scale +
     color_scale +
@@ -194,7 +224,7 @@ contrast_color <- function(color) {
 #' @importFrom purrr map imap map2_chr map_chr map_dfr set_names
 #' @export
 vtree_palette <- function(vtree,
-                          palettes = c("Blues", "Greens", "Reds",
+                          palettes = c("Reds", "Blues", "Greens",
                                        "Oranges", "Purples")) {
   #family <- families[(level - 1L) %% length(families) + 1L]
 
@@ -220,7 +250,7 @@ vtree_palette <- function(vtree,
 #' @rdname vtree_palette
 #' @export
 vtree_pal_assign <- function(vtree,
-                             palettes = c("Blues", "Greens", "Reds",
+                             palettes = c("Reds", "Blues", "Greens",
                                        "Oranges", "Purples"),
                              na_fill = "white") {
 
@@ -313,8 +343,12 @@ vtree_pal_assign <- function(vtree,
 #'  * `freq`, the frequency for a node
 #'  * `n`, number of samples of a node
 #'  * `node_col`, name of the variable associated with a node
+#'  * `node_name`, display name of the variable associated with a node
 #'  * `node_val`, value of the variable associated with a node
 #'  * `node_cv`, same as `paste0(node_col, ':', node_val)`
+#'
+#' (the difference between node_col and node_name is that you can set
+#' node_name to whatever you like, while node_col must remain unchanged)
 #'
 #' Manipulating these columns is straightforward using the
 #' [vtree2::mutate.vtree()] function (see below).
@@ -406,8 +440,8 @@ plot.vtree <- function(x,
     p <- plot_regular(x, fill_scale, color_scale)
   }
 
-  p <- p + theme_void() +
-    coord_cartesian(clip = "off") +
+  #p <- p + theme_void() +
+  p <- p+  coord_cartesian(clip = "off") +
     theme(plot.margin = unit(rep(1, 4), "cm"))
 
   if(!legend) {
