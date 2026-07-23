@@ -7,6 +7,7 @@
 add_labels(
   vtree,
   template = "simple",
+  mask = NULL,
   format = NULL,
   format_na = NULL,
   root_label = NA
@@ -15,13 +16,18 @@ add_labels(
 \arguments{
 \item{vtree}{an object of class vtree}
 
-\item{template}{One of the predefined formats; can be 'simple', 'long'
-or 'custom'. If 'custom', you must provide the \code{format} and \code{format_NA}
+\item{template}{One of the predefined formats; can be 'simple' or
+'long'. If 'custom', you must provide the \code{format} and \code{format_NA}
 parameters.}
 
-\item{format}{an R expression to format the valid value nodes}
+\item{mask}{If not NULL, then a logical vector is expected indicating
+the nodes for which the labels will be modified.}
 
-\item{format_na}{an R expression to format NA nodes}
+\item{format}{an R expression to format the valid value nodes. If not
+NULL, replaces the format from the template.}
+
+\item{format_na}{an R expression to format NA nodes. If not NULL,
+replaces the format from the template.}
 
 \item{root_label}{Label to be used for the root node. If NA, do not
 modify the root label.}
@@ -53,4 +59,24 @@ expressions you like to construct a label from the following variables:
 
 (the difference between node_col and node_name is that you can set
 node_name to whatever you like, while node_col must remain unchanged)
+}
+\examples{
+vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived)
+# look at the labels
+vt |> add_labels() |> pull(label)
+vt |> add_labels() |> plot()
+
+vt |> add_labels(template = "long") |> plot()
+
+# add only labels to some nodes
+
+mask <- find_nodes(vt, freq > .30)
+vt |> add_labels(mask = mask) |> plot()
+
+# customize the format
+vt |>
+  add_labels(format = sprintf("\%d out of \%d",
+        n, round(n/freq)),
+    format_na = "NA") |> plot()
+
 }

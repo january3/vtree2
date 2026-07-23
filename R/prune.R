@@ -28,7 +28,7 @@
 # "has_attr()" function which must be used in conjunction with is.na() to
 # check whether the node has that attribute.
 
-#' Prune a vtree graph
+#' Find nodes and prune a vtree graph
 #'
 #' `prune()` prunes a vtree graph by removing nodes that satisfy a given condition.
 #' The condition is evaluated in the context of the node attributes,
@@ -37,6 +37,15 @@
 #'
 #' `keep()` is a convenience function that keeps only the nodes that
 #' satisfy the condition and prunes everything else.
+#'
+#' `find_nodes()` returns a logical vector identifying the nodes which
+#' fullfill a certain condition.
+#'
+#' `condition` can be any logical vector that refers to either the columns
+#' in the node data frame of the vtree object, or the names of the vtree
+#' variables. For example, you can use `node_col` to find nodes which
+#' correspond to a certain variable, and then use the variable name to
+#' search for a specific value.
 #'
 #' @param vtree A vtree graph object.
 #' @param condition A logical expression that defines the pruning
@@ -49,7 +58,23 @@
 #'              condition. If it is a character vector, then it is treated
 #'              as a vector of column names for which all NA values should
 #'              be removed.
-#' @return A pruned vtree object.
+#' @return `keep()` and `prune()` return a pruned vtree object.
+#' `find_nodes()` returns a logical vector corresponding to the tree nodes
+#' @examples
+#' vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived)
+#'
+#' # find the node corresponding to the 1st Class
+#' mask <- find_nodes(vt, node_col == "Class" & Class == "1st")
+#'
+#' # find nodes with frequencies below 15%
+#' mask <- find_nodes(vt, freq < .15)
+#'
+#' # find nodes where the fraction of survivorship was less than 80
+#' mask <- find_nodes(vt, node_col == "Survived" &
+#'                    node_val == "No" & freq > .2)
+#'
+#' # mark these nodes with red color on the plot
+#' vt |> mutate(fill = ifelse(mask, "red", "white")) |> plot()
 #' @importFrom rlang is_empty enquo eval_tidy expr
 #' @importFrom stats na.omit
 #' @importFrom dplyr bind_cols n
@@ -65,29 +90,47 @@ prune <- function(vtree, condition, keep = FALSE, na.rm = FALSE) {
 
 }
 
-.prune <- function(vtree, condition, keep = FALSE, na.rm = FALSE,
-                   return_mask = FALSE) {
+
+#' @rdname prune
+#' @export
+find_nodes <- function(vtree, condition) {
+  condition <- enquo(condition)
+
+  mask <- .get_mask(vtree, condition)
+
+  mask
+}
+
+.get_mask <- function(vtree, condition, keep = FALSE, na.rm = FALSE) {
+
   # we need these cols to be able to naturally evaluate the condition using
   # data vars
   vcols <- .add_virt_cols(vtree |> activate("nodes") |> as_tibble())
 
   # here we create the pruning mask
-  prune <- eval_tidy(condition, data = vcols)
+  mask <- eval_tidy(condition, data = vcols)
 
   if(is.character(na.rm)) {
     stopifnot(all(na.rm %in% colnames(vcols)))
     nas <- lapply(na.rm, \(col) {
       vcols$node_col == col & is.na(vcols$node_val)
     }) |> reduce(`|`)
-    prune <- prune | nas
+    mask <- mask | nas
   } else if(na.rm) {
     nas <- vcols |> pull("node_val") |> is.na()
-    prune <- prune | nas
+    mask <- mask | nas
   }
 
   if(keep) {
-    prune <- !prune
+    mask <- !mask
   }
+
+  mask
+}
+
+.prune <- function(vtree, condition, keep = FALSE, na.rm = FALSE) {
+
+  prune <- .get_mask(vtree, condition, keep, na.rm)
 
   ret <- vtree |>
     activate("nodes") |>

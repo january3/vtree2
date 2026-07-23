@@ -100,9 +100,20 @@ plot(vt, by_freq = TRUE)
  * Same goes for colors: instead of using automatic color assignments that
    mimick these of the original vtree, you can use any color scheme you
    like by assigning values to the `color` column in the vtree object.
+ * The downside of this setup is that the original vtree allows you to
+   generate a beautiful plot with a single terse function call, whereas
+   vtree2 is much more explicit and requires several steps. The upside is
+   that you have more flexibility and more control over the final plot.
  * Using ggplot2 unfortunately means that you might need to adapt the node
    sizes and label font sizes manually. ggplot2 is not aware of the size of
    the text and plot when constructed.
+ * Similarly, the geometry of the plot is chosen by the original vtree
+   plotting function, whereas in vtree2 the geometry of the plot is chosen
+   by the user, and plotting function tries to fit the graph inside it,
+   possibly requiring the user to adapt the font and label sizes or the
+   geometry.
+ * The mini-language implemented in vtree is now replaced by explicit
+   operations: finding nodes, labelling, selecting colors for plotting etc.
 
 
 ## TODO

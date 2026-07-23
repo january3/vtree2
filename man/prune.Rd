@@ -2,10 +2,13 @@
 % Please edit documentation in R/prune.R
 \name{prune}
 \alias{prune}
+\alias{find_nodes}
 \alias{keep}
-\title{Prune a vtree graph}
+\title{Find nodes and prune a vtree graph}
 \usage{
 prune(vtree, condition, keep = FALSE, na.rm = FALSE)
+
+find_nodes(vtree, condition)
 
 keep(vtree, condition)
 }
@@ -26,7 +29,8 @@ as a vector of column names for which all NA values should
 be removed.}
 }
 \value{
-A pruned vtree object.
+\code{keep()} and \code{prune()} return a pruned vtree object.
+\code{find_nodes()} returns a logical vector corresponding to the tree nodes
 }
 \description{
 \code{prune()} prunes a vtree graph by removing nodes that satisfy a given condition.
@@ -37,4 +41,29 @@ If a node is pruned, all subsequent nodes in the path are also pruned.
 \details{
 \code{keep()} is a convenience function that keeps only the nodes that
 satisfy the condition and prunes everything else.
+
+\code{find_nodes()} returns a logical vector identifying the nodes which
+fullfill a certain condition.
+
+\code{condition} can be any logical vector that refers to either the columns
+in the node data frame of the vtree object, or the names of the vtree
+variables. For example, you can use \code{node_col} to find nodes which
+correspond to a certain variable, and then use the variable name to
+search for a specific value.
+}
+\examples{
+vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived)
+
+# find the node corresponding to the 1st Class
+mask <- find_nodes(vt, node_col == "Class" & Class == "1st")
+
+# find nodes with frequencies below 15\%
+mask <- find_nodes(vt, freq < .15)
+
+# find nodes where the fraction of survivorship was less than 80
+mask <- find_nodes(vt, node_col == "Survived" &
+                   node_val == "No" & freq > .2)
+
+# mark these nodes with red color on the plot
+vt |> mutate(fill = ifelse(mask, "red", "white")) |> plot()
 }

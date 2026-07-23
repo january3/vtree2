@@ -4,6 +4,7 @@
 \name{reexports}
 \alias{reexports}
 \alias{mutate}
+\alias{pull}
 \title{Re-exported functions}
 \keyword{internal}
 \description{
@@ -11,6 +12,6 @@ These objects are imported from other packages. Follow the links
 below to see their documentation.
 
 \describe{
-  \item{dplyr}{\code{\link[dplyr:mutate]{mutate()}}}
+  \item{dplyr}{\code{\link[dplyr:mutate]{mutate()}}, \code{\link[dplyr:pull]{pull()}}}
 }}
 

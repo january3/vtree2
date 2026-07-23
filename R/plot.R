@@ -43,6 +43,8 @@
 #' @param template One of the predefined formats; can be 'simple' or
 #' 'long'. If 'custom', you must provide the `format` and `format_NA`
 #' parameters.
+#' @param mask If not NULL, then a logical vector is expected indicating
+#' the nodes for which the labels will be modified.
 #' @param format an R expression to format the valid value nodes. If not
 #' NULL, replaces the format from the template.
 #' @param format_na an R expression to format NA nodes. If not NULL,
@@ -58,6 +60,11 @@
 #' vt |> add_labels() |> plot()
 #'
 #' vt |> add_labels(template = "long") |> plot()
+#' 
+#' # add only labels to some nodes
+#'
+#' mask <- find_nodes(vt, freq > .30)
+#' vt |> add_labels(mask = mask) |> plot()
 #'
 #' # customize the format
 #' vt |>
@@ -68,11 +75,16 @@
 #' @export
 add_labels <- function(vtree,
                        template = "simple",
+                       mask = NULL,
                        format = NULL,
                        format_na = NULL,
                        root_label = NA) {
 
   template <- match.arg(template, c("simple", "long"))
+
+  if(is.null(mask)) {
+    mask <- rep(TRUE, nrow(nodes))
+  }
 
   userfmt <- enquo(format)
   userfmt_na <- enquo(format_na)
@@ -105,11 +117,20 @@ add_labels <- function(vtree,
 
   is_vp <- attr(vtree, "vp") %||% TRUE
 
+  # add label column if one is missing
+  if(!"label" %in% colnames(nodes)) {
+    vtree <- mutate(vtree, label = "")
+  }
+
+
   vtree <- vtree |> activate("nodes") |>
-    mutate(label = ifelse(is.na(.data[["node_val"]]) & is_vp,
+    mutate(label = ifelse(mask,
+           ifelse(is.na(.data[["node_val"]]) & is_vp,
                           labels_na,
-                          labels)) |>
-  mutate(label = ifelse(.data[["ID"]] == "root" & !is.na(root_label),
+                          labels),
+                          label
+           )) |> 
+    mutate(label = ifelse(.data[["ID"]] == "root" & !is.na(root_label),
                 root_label, label))
 
   vtree <- as_vtree(vtree)
@@ -169,9 +190,9 @@ plot_by_freq <- function(graph, fill_scale, color_scale) {
                   y = .data[["y"]],
                   width = .data[["width"]],
                   height = .data[["height"]],
-                  fill = .data[["node_cv"]]),
+                  fill = .data[["ID"]]),
               color = "black") +
-    geom_text(aes(color = .data[["node_cv"]])) +
+    geom_text(aes(color = .data[["ID"]])) +
     fill_scale +
     color_scale +
     # reverse y axis
@@ -185,6 +206,7 @@ plot_by_freq <- function(graph, fill_scale, color_scale) {
 }
 
 # just the nodes, no resizing according to frequency
+#' @importFrom ggplot2 arrow
 plot_regular <- function(graph, fill_scale, color_scale,
                          lfontsize = NA,
                          lwidth = NA,
@@ -232,10 +254,10 @@ plot_regular <- function(graph, fill_scale, color_scale,
                  inherit.aes = FALSE) +
     geom_rrect(aes(xmin = x - lwidth, xmax = x + lwidth,
                    ymin = y - lheight, ymax = y + lheight,
-                   fill = .data[["node_cv"]]),
+                   fill = .data[["ID"]]),
                color = "black", radius = .4) +
     geom_text(aes(#fill = .data[["node_cv"]],
-                   color = .data[["node_cv"]]),
+                   color = .data[["ID"]]),
               size = lfontsize) +
     # reverse y axis
     fill_scale +
@@ -491,12 +513,13 @@ plot.vtree <- function(x,
   }
 
   nodes <- x |> activate(nodes) |> as_tibble()
+
   fill_scale  <- scale_fill_manual(name = NULL,
                                    values  = set_names(nodes$fill,
-                                                       nodes$node_cv))
+                                                       nodes$ID))
   color_scale <- scale_color_manual(name = NULL,
                                     values = set_names(nodes$color,
-                                                       nodes$node_cv))
+                                                       nodes$ID))
   if(! "label" %in% colnames(nodes)) {
     x <- x |> add_labels()
   }
