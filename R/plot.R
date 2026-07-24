@@ -1,8 +1,10 @@
 # for each node, calculate the number of leafs and store in nleafs
-.calc_nleafs <- function(graph) {
-  graph |> activate("nodes") |>
+.calc_nleafs <- function(vtree) {
+  rt <- which(as_tibble(vtree)$ID == "root")
+
+  vtree |> activate("nodes") |>
     mutate(nleafs = map_bfs_back_int(
-      root = 1,
+      root = rt,
       mode = "out",
       .f = \(node, path, ...) {
         if(nrow(path) == 0) {
@@ -146,13 +148,15 @@ add_labels <- function(vtree,
 
 
 .calc_offsets <- function(vtree) {
+  rt <- which(as_tibble(vtree)$ID == "root")
+
   vtree |>
     activate("nodes") |>
     group_by(.data[["parent"]]) |>
     mutate(offset = lag(cumsum(.data[["n"]]), default = 0)) |>
     ungroup() |>
     mutate(offset_tot = map_bfs_int(
-      root = 1,
+      root = rt,
       mode = "out",
       .f = \(node, path, ...) {
         .N()$offset[node] + sum(.N()$offset[path$node])
