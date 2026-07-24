@@ -5,7 +5,7 @@ test_that("plotting works", {
   expect_s3_class(p1, "gg")
   p1 <- ggplot2::ggplot_build(p1)
 
-  expect_equal(length(p1@data), 3)
+  expect_equal(length(p1@data), 4)
 
   expect_no_error(plot(vt, dir = "bt"))
   expect_no_error(plot(vt, dir = "tb"))
@@ -35,4 +35,3 @@ test_that("adding labels works", {
   nodes <- vt |> add_labels(fmt = "foo", fmt_na = "foo") |> as_tibble()
   expect_true(all(nodes$label == "foo"))
 })
-
