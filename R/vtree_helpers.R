@@ -14,10 +14,10 @@ vtree_pat <- function(data, cnms, vp = TRUE) {
 
     if(vp) {
       data <- data |>
-        mutate(.denom = sum(!is.na(.data[[nm]])))
+        mutate(denom = sum(!is.na(.data[[nm]])))
     } else {
       data <- data |>
-        mutate(.denom = length(.data[[nm]]))
+        mutate(denom = length(.data[[nm]]))
     }
 
     data <- data |>
@@ -28,15 +28,20 @@ vtree_pat <- function(data, cnms, vp = TRUE) {
       # data is already grouped by Class.
       group_by(across(cnms[1:i])) |>
       mutate(!!paste0(nm, "_n") := n()) |>
-      mutate(!!paste0(nm, "_frac") := n() / .data[[".denom"]])
+      mutate(!!paste0(nm, "_frac") := n() / .data[["denom"]]) |>
+      mutate(!!paste0(nm, "_denom") := .data[["denom"]])
   }
 
   # selected columns
-  selcnms <- map(cnms, ~ c(.x, paste0(.x, "_n"), paste0(.x, "_frac"))) |> unlist()
+  selcnms <- map(cnms, ~ c(.x,
+                           paste0(.x, "_n"),
+                           paste0(.x, "_frac"),
+                           paste0(.x, "_denom"))) |> unlist()
 
   # we are not interested in individual data points, only in the summaries
+  # why setdiff: you can't summarize across grouping columns
   data <- data |> 
-    summarize(across(starts_with(cnms), first),
+    summarize(across(all_of(setdiff(selcnms, cnms)), first),
               .groups = "drop_last") |>
     ungroup() |>
     select(all_of(selcnms))

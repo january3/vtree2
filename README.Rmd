@@ -74,9 +74,23 @@ plot(vt, by_freq = TRUE)
 
 ## Differences between vtree2 and the original vtree
 
+### Motivation
+
+The original vtree package implements most of its functionality in a single
+function `vtree()` producing a plot. The function implements its own
+mini-language for specifying formats of labels, variables, conditions to
+select nodes and so on. This allows for simple and terse function calls.
+
+However, this limits the flexibility of the package. It is not possible to
+fully customize the labels, inspect the interim data, use the various
+summaries for other purposes (e.g. to produce simple tables). `vtree2`
+separates data preparation, label construction, node selection and plotting
+into four separate steps. This comes at the cost of more verbose function
+calls.
+
 ### Design principles for vtree2
 
- * separate frequency calculations, summary calculations and plotting
+ * separate frequency calculations, summary calculations, node selection and plotting
  * use graphical objects for plotting which are flexible
  * use tidyverse principles for data manipulation
  * use tidyverse syntax for specifying variables
@@ -84,6 +98,7 @@ plot(vt, by_freq = TRUE)
    a wide variety of plotting tools, including ggraph, ggplot2, and plotly
 
 ### Practical differences
+
 
  * In vtree2, you first prepare the data with `vtree()` and then plot it with `plot()`. 
    This means one more function call, but a much more flexible plotting system.
