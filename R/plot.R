@@ -217,13 +217,7 @@ plot_by_freq <- function(graph, fill_scale, color_scale,
     fill_scale +
     color_scale +
     # reverse y axis
-    scale_y_reverse() +
-    # remove clipping
-    coord_cartesian(clip = "off")
-  #+
-
-  #theme_void()
-
+    scale_y_reverse()
 }
 
 # just the nodes, no resizing according to frequency
@@ -288,9 +282,7 @@ plot_regular <- function(graph, fill_scale, color_scale,
     # reverse y axis
     fill_scale +
     color_scale +
-    scale_y_reverse() +
-    # remove clipping
-    coord_cartesian(clip = "off")
+    scale_y_reverse()
 }
 
 
