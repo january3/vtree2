@@ -203,7 +203,7 @@ find_precede_nodes <- function(vtree, mask) {
 
   # we need these cols to be able to naturally evaluate the condition using
   # data vars
-  vcols <- .add_virt_cols(vtree |> activate("nodes") |> as_tibble())
+  vcols <- .add_virt_cols(as_tibble(vtree))
 
   # here we create the pruning mask
   mask <- eval_tidy(condition, data = vcols)

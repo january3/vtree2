@@ -75,7 +75,7 @@ pattern <- function(vtree) {
     cli_abort(x = "pattern() requires a vtree object")
   }
 
-  nodes <- vtree |> activate("nodes") |> as_tibble()
+  nodes <- as_tibble(vtree)
 
   maxl <- max(nodes[["level"]])
 

@@ -12,7 +12,7 @@
 #' @importFrom cli cli_abort
 #' @export
 levels.vtree <- function(x) {
-  nodes <- x |> as_tibble()
+  nodes <- as_tibble(x)
 
   cnms <- attr(x, "cols") |> set_names()
 
@@ -98,7 +98,7 @@ as_vtree <- function(x) {
 
   # integrity checks
   # ------------------
-  nodes <- x |> as_tibble()
+  nodes <- as_tibble(x)
   req_cols <- c("ID", "node_col", "node_name", "node_val", "node_cv",
                   "parent", "path", "level", "n", "tot_n",
                   "missing", "freq", "denom")

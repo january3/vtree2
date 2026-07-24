@@ -280,7 +280,7 @@ plot_regular <- function(layout, fill_scale, color_scale,
                          lfontsize = NA) {
 
 
-  nodes <- activate(layout, "nodes") |> as_tibble()
+  nodes <- as_tibble(layout)
   edges <- activate(layout, "edges") |> as_tibble()
 
   p <- nodes |> ggplot(aes(x = .data[["x"]],
@@ -431,7 +431,7 @@ plot.vtree <- function(x,
 
   dir <- match.arg(dir)
 
-  nodes <- x |> activate("nodes") |> as_tibble()
+  nodes <- as_tibble(x)
   if(! "fill" %in% colnames(nodes)) {
     x <- add_palette(x, palettes = palettes, na_fill = na_fill)
   }
@@ -441,7 +441,7 @@ plot.vtree <- function(x,
       mutate(color = contrast_color(.data[["fill"]]))
   }
 
-  nodes <- x |> activate("nodes") |> as_tibble()
+  nodes <- as_tibble(x)
 
   fill_scale  <- scale_fill_manual(name = NULL,
                                    values  = set_names(nodes$fill,
