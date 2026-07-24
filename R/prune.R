@@ -255,7 +255,7 @@ find_precede_nodes <- function(vtree, mask) {
     ret <- vtree |>
       mutate(mark = ifelse(mask, 
                            "prune", "keep")) |>
-      mutate(mark = ifelse(mask_cond, "hit", mark))
+      mutate(mark = ifelse(mask_cond, "hit", .data[["mark"]]))
   } else {
     ret <- vtree |>
       filter(!mask)

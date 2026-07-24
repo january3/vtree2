@@ -275,7 +275,7 @@ layout_regular <- function(vtree, lwidth=NA, lheight=NA) {
 }
 
 # just the nodes, no resizing according to frequency
-#' @importFrom ggplot2 arrow
+#' @importFrom ggplot2 arrow coord_flip
 plot_regular <- function(layout, fill_scale, color_scale,
                          lfontsize = NA) {
 
@@ -283,7 +283,7 @@ plot_regular <- function(layout, fill_scale, color_scale,
   nodes <- activate(layout, "nodes") |> as_tibble()
   edges <- activate(layout, "edges") |> as_tibble()
 
-  nodes |> ggplot(aes(x = .data[["x"]],
+  p <- nodes |> ggplot(aes(x = .data[["x"]],
                       y = .data[["y"]],
                       label = .data[["label"]])) +
     geom_segment(data = edges,
@@ -303,8 +303,9 @@ plot_regular <- function(layout, fill_scale, color_scale,
               size = lfontsize) +
     # reverse y axis
     fill_scale +
-    color_scale +
-    scale_y_reverse()
+    color_scale
+
+  p
 }
 
 
@@ -367,6 +368,9 @@ plot_regular <- function(layout, fill_scale, color_scale,
 #' @param lfontsize Font size for labels
 #' @param lwidth Label width relative to available space
 #' @param lheight Label height relative to available space
+#' @param dir direction of the tree. One of "lr" (left to right), "rl"
+#'        (right to left), "tb" (top to bottom), "bt" (bottom to top).
+#'        Default is "lr".
 #' @param palettes A character vector with names of RColorBrewer palettes
 #'                 to use for the variables. By default these are the
 #'                 default arguments to the vtree_palette() function.
@@ -409,7 +413,7 @@ plot_regular <- function(layout, fill_scale, color_scale,
 #'
 #' @return A ggplot object
 #' @importFrom ggplot2 ggplot aes geom_segment geom_rect
-#' @importFrom ggplot2 scale_y_reverse coord_cartesian
+#' @importFrom ggplot2 scale_x_reverse scale_y_reverse coord_cartesian
 #' @importFrom ggplot2 theme_void geom_text geom_label unit
 #' @importFrom ggplot2 scale_fill_manual scale_color_manual theme
 #' @export
@@ -421,8 +425,11 @@ plot.vtree <- function(x,
                        palettes = c("Blues", "Greens", "Reds",
                                     "Oranges", "Purples"),
                        na_fill = "white",
+                       dir = c("lr", "rl", "tb", "bt"),
                        proportional = FALSE,
                        legend = FALSE) {
+
+  dir <- match.arg(dir)
   stopifnot(inherits(x, "vtree"))
 
   nodes <- x |> activate("nodes") |> as_tibble()
@@ -457,8 +464,16 @@ plot.vtree <- function(x,
                       lfontsize = lfontsize)
   }
 
+  if(dir == "rl") {
+    p <- p + scale_x_reverse()
+  } else if(dir == "tb") {
+    p <- p + coord_flip() + scale_x_reverse()
+  } else if(dir == "bt") {
+    p <- p + coord_flip()
+  }
+
   #p <- p + theme_void() +
-  p <- p+  coord_cartesian(clip = "off") +
+  p <- p + #coord_cartesian(clip = "off") +
     theme(plot.margin = unit(rep(1, 4), "cm"))
 
   if(!legend) {

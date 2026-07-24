@@ -12,6 +12,7 @@
   lheight = 0.8,
   palettes = c("Blues", "Greens", "Reds", "Oranges", "Purples"),
   na_fill = "white",
+  dir = c("lr", "rl", "tb", "bt"),
   proportional = FALSE,
   legend = FALSE
 )
@@ -32,6 +33,10 @@ to use for the variables. By default these are the
 default arguments to the vtree_palette() function.}
 
 \item{na_fill}{The color to use for NA values. Default is "white".}
+
+\item{dir}{direction of the tree. One of "lr" (left to right), "rl"
+(right to left), "tb" (top to bottom), "bt" (bottom to top).
+Default is "lr".}
 
 \item{proportional}{If TRUE, the node sizes are scaled by number of
 observations. If FALSE, all nodes have the same size.}

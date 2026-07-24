@@ -4,7 +4,7 @@
 \alias{mutate.vtree}
 \title{Create, modify, and delete node columns}
 \usage{
-\method{mutate}{vtree}(.data, ...)
+\method{mutate}{vtree}(.data, ..., .edges = FALSE)
 }
 \arguments{
 \item{.data}{A vtree object.}
@@ -13,6 +13,8 @@
 The name gives the name of the new or modified node attribute, and the
 value defines its contents. The expressions are evaluated using
 tidy evaluation in the context of the node table.}
+
+\item{.edges}{If TRUE, modify the edges rather than the nodes.}
 }
 \value{
 An object of class vtree

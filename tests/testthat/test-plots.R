@@ -7,7 +7,13 @@ test_that("plotting works", {
 
   expect_equal(length(p1@data), 3)
 
+  expect_no_error(plot(vt, dir = "bt"))
+  expect_no_error(plot(vt, dir = "tb"))
+  expect_no_error(plot(vt, dir = "rl"))
   expect_no_error(plot(vt, proportional = TRUE))
+  expect_no_error(plot(vt, proportional = TRUE, dir = "bt"))
+  expect_no_error(plot(vt, proportional = TRUE, dir = "tb"))
+  expect_no_error(plot(vt, proportional = TRUE, dir = "rl"))
   expect_no_error(plot(vt, lfontsize = 11))
   expect_no_error(plot(vt, lheight = .1))
   expect_no_error(plot(vt, lwidth = .1))
