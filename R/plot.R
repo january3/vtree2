@@ -147,6 +147,34 @@ add_labels <- function(vtree,
 }
 
 
+.add_level_labels <- function(vtree, top = FALSE) {
+
+  nn <- names(vtree)
+  nodes <- as_tibble(vtree)
+
+  # we reuse the node_key which is bound to the color
+  # we pick the last fill/color combination, because that is usually the
+  # strongest color
+  keys <- purrr::map_chr(nn, \(x) {
+    nodes |> filter(.data[["node_col"]] == x) |> dplyr::last() |> pull(node_key)
+  })
+
+  y <- ifelse(top, -.1, 1.1)
+
+  df <- data.frame(
+        label = nn,
+        keys = keys,
+        x = seq(0, 1, length.out = 1 + length(nn))[-1],
+        y = y
+        )
+
+  geom_label(data = df,
+             aes(x = x, y = y, label = label, fill = keys,
+                 color = keys),
+             size = 11,
+             inherit.aes = FALSE)
+}
+
 .calc_offsets <- function(vtree) {
   rt <- which(as_tibble(vtree)$node_id == 1)
 
@@ -461,6 +489,7 @@ plot.vtree <- function(x,
                       lfontsize = lfontsize)
   }
 
+  # plot orientation
   if(dir == "rl") {
     p <- p + scale_x_reverse() + scale_y_reverse()
   } else if(dir == "lr") {
@@ -470,6 +499,9 @@ plot.vtree <- function(x,
   } else if(dir == "bt") {
     p <- p + coord_flip()
   }
+
+  # add labels
+  p <- p + .add_level_labels(x)
 
   #p <- p + theme_void() +
   p <- p + #coord_cartesian(clip = "off") +
@@ -482,6 +514,5 @@ plot.vtree <- function(x,
   p
 
 }
-
 
 
