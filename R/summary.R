@@ -65,7 +65,7 @@
         levels = list(summary(fa[m]))
       ) |>
       mutate(levels_str =
-             map_chr(levels, \(l) paste(names(l), l, sep = ":", collapse = "\n")))
+             map_chr(levels, \(l) paste(names(l), l, sep = ": ", collapse = "\n")))
     }
     ret
   })
