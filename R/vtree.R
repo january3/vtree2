@@ -46,6 +46,7 @@ names.vtree <- function(x) {
 #' This is a wrapper around the regular [dplyr::mutate()]
 #' function which preserves the vtree class.
 #' @param .data A vtree object.
+#' @param .edges If TRUE, modify the edges rather than the nodes.
 #' @param ... Name-value pairs of expressions, passed to [dplyr::mutate()].
 #'   The name gives the name of the new or modified node attribute, and the
 #'   value defines its contents. The expressions are evaluated using
@@ -54,11 +55,15 @@ names.vtree <- function(x) {
 #' @seealso
 #' [dplyr::mutate()], [tidygraph::activate()]
 #' @export
-mutate.vtree <- function(.data, ...) {
+mutate.vtree <- function(.data, ..., .edges = FALSE) {
   stopifnot(inherits(.data, "vtree"))
-  .data <- .data |> activate("nodes")
+  if(.edges) {
+    .data <- .data |> activate("edges")
+  } else {
+    .data <- .data |> activate("nodes")
+  }
   class(.data) <- setdiff(class(.data), "vtree")
-  .data |> mutate(...) |> as_vtree()
+  .data |> mutate(...) |> activate("nodes") |> as_vtree()
 }
 
 

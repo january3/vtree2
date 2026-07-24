@@ -163,18 +163,11 @@ add_labels <- function(vtree,
     }))
 }
 
-# plot by frequency
-plot_by_freq <- function(graph, fill_scale, color_scale,
-                         lfontsize = NA,
-                         lwidth = NA,
-                         lheight = NA) {
+layout_by_freq <- function(vtree, lwidth=NA) {
 
-  # calculate the local offsets for each descendant of each node
-  .graph <- graph |>
-    .calc_offsets()
+  layout <- .calc_offsets(vtree)
 
-  nodes <- .graph |>
-    as_tibble()
+  nodes <- as_tibble(layout)
 
   maxl <- max(nodes$level)
   totn <- sum(nodes$n[nodes$level == 1])
@@ -185,17 +178,31 @@ plot_by_freq <- function(graph, fill_scale, color_scale,
     lwidth <- lwidth / (2 * maxl)
   }
 
-  nodes <- nodes |>
+  layout <- layout |>
     mutate(x = .data[["level"]] / maxl) |>
     mutate(y = .data[["offset_tot"]] / totn +
            .data[["n"]] / (2 * totn)) |>
     mutate(width = 2 * lwidth, height = .data[["n"]] / totn)
 
-  edges <- graph |> activate("edges") |> as_tibble() |>
+  nodes <- as_tibble(layout)
+
+  layout <- layout |>
     mutate(x1 = nodes$x[.data[["from"]]],
            x2 = nodes$x[.data[["to"]]],
            y1 = nodes$y[.data[["to"]]],
-           y2 = nodes$y[.data[["to"]]])
+           y2 = nodes$y[.data[["to"]]],
+           .edges = TRUE)
+
+  layout
+}
+
+# plot by frequency
+plot_by_freq <- function(layout, fill_scale, color_scale,
+                         lfontsize = NA) {
+
+  # calculate the local offsets for each descendant of each node
+  nodes <- as_tibble(layout)
+  edges <- activate(layout, "edges") |> as_tibble()
 
   nodes |> ggplot(aes(x = .data[["x"]], y = .data[["y"]],
                       height = .data[["height"]],
@@ -220,17 +227,12 @@ plot_by_freq <- function(graph, fill_scale, color_scale,
     scale_y_reverse()
 }
 
-# just the nodes, no resizing according to frequency
-#' @importFrom ggplot2 arrow
-plot_regular <- function(graph, fill_scale, color_scale,
-                         lfontsize = NA,
-                         lwidth = NA,
-                         lheight = NA) {
 
-  nodes <- graph |> activate("nodes") |>
-    .calc_nleafs() |>
-    # calculate number of leafs per node
-    as_tibble()
+layout_regular <- function(vtree, lwidth=NA, lheight=NA) {
+
+  layout <- .calc_nleafs(vtree)
+
+  nodes  <- as_tibble(layout)
 
   maxl <- max(nodes$level)
   totleafs <- sum(nodes$nleafs[nodes$level == 1])
@@ -248,18 +250,38 @@ plot_regular <- function(graph, fill_scale, color_scale,
     lwidth <- lwidth / (2 * maxl)
   }
 
-  nodes <- nodes |>
+  layout <- layout |>
     mutate(x = .data[["level"]] / maxl) |>
     group_by(.data[["level"]]) |>
     mutate(y = (cumsum(.data[["nleafs"]]) - .data[["nleafs"]] / 2)/
            totleafs) |>
-    ungroup()
+    ungroup() |>
+    mutate(xmin = .data[["x"]] - lwidth,
+           xmax = .data[["x"]] + lwidth,
+           ymin = .data[["y"]] - lheight,
+           ymax = .data[["y"]] + lheight)
 
-  edges <- graph |> activate("edges") |> as_tibble() |>
+  nodes <- as_tibble(layout)
+
+  layout <- layout |>
     mutate(x1 = nodes$x[.data[["from"]]],
            x2 = nodes$x[.data[["to"]]] - lwidth,
            y1 = nodes$y[.data[["from"]]],
-           y2 = nodes$y[.data[["to"]]])
+           y2 = nodes$y[.data[["to"]]],
+           .edges = TRUE)
+
+
+   layout
+}
+
+# just the nodes, no resizing according to frequency
+#' @importFrom ggplot2 arrow
+plot_regular <- function(layout, fill_scale, color_scale,
+                         lfontsize = NA) {
+
+
+  nodes <- activate(layout, "nodes") |> as_tibble()
+  edges <- activate(layout, "edges") |> as_tibble()
 
   nodes |> ggplot(aes(x = .data[["x"]],
                       y = .data[["y"]],
@@ -271,10 +293,10 @@ plot_regular <- function(graph, fill_scale, color_scale,
                      yend = .data[["y2"]]),
                  arrow = arrow(angle = 15, type = "closed"),
                  inherit.aes = FALSE) +
-    geom_rrect(aes(xmin = .data[["x"]] - lwidth,
-                   xmax = .data[["x"]] + lwidth,
-                   ymin = .data[["y"]] - lheight,
-                   ymax = .data[["y"]] + lheight,
+    geom_rrect(aes(xmin = .data[["xmin"]],
+                   xmax = .data[["xmax"]],
+                   ymin = .data[["ymin"]],
+                   ymax = .data[["ymax"]],
                    fill = .data[["ID"]]),
                color = "black", radius = .4) +
     geom_text(aes(color = .data[["ID"]]),
@@ -426,12 +448,12 @@ plot.vtree <- function(x,
   }
 
   if(proportional) {
-    p <- plot_by_freq(x, fill_scale, color_scale,
-                      lwidth = lwidth, lheight = lheight,
+    l <- layout_by_freq(x, lwidth = lwidth)
+    p <- plot_by_freq(l, fill_scale, color_scale,
                       lfontsize = lfontsize)
   } else {
-    p <- plot_regular(x, fill_scale, color_scale,
-                      lwidth = lwidth, lheight = lheight,
+    l <- layout_regular(x, lwidth = lwidth, lheight = lheight)
+    p <- plot_regular(l, fill_scale, color_scale,
                       lfontsize = lfontsize)
   }
 
