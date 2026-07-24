@@ -1,6 +1,6 @@
 # for each node, calculate the number of leafs and store in nleafs
 .calc_nleafs <- function(vtree) {
-  rt <- which(as_tibble(vtree)$ID == "root")
+  rt <- which(as_tibble(vtree)$node_id == 1)
 
   vtree |> activate("nodes") |>
     mutate(nleafs = map_bfs_back_int(
@@ -139,7 +139,7 @@ add_labels <- function(vtree,
                           labels),
                           .data[["label"]]
            )) |>
-    mutate(label = ifelse(.data[["ID"]] == "root" & !is.na(root_label),
+    mutate(label = ifelse(.data[["node_id"]] == 1 & !is.na(root_label),
                 root_label, .data[["label"]]))
 
   vtree <- as_vtree(vtree)
@@ -148,7 +148,7 @@ add_labels <- function(vtree,
 
 
 .calc_offsets <- function(vtree) {
-  rt <- which(as_tibble(vtree)$ID == "root")
+  rt <- which(as_tibble(vtree)$node_id == 1)
 
   vtree |>
     activate("nodes") |>
@@ -217,14 +217,12 @@ plot_by_freq <- function(layout, fill_scale, color_scale,
                   y = .data[["y"]],
                   width = .data[["width"]],
                   height = .data[["height"]],
-                  fill = .data[["ID"]]),
+                  fill = .data[["node_key"]]),
               color = "black") +
-    geom_text(aes(color = .data[["ID"]]),
+    geom_text(aes(color = .data[["node_key"]]),
                   size = lfontsize) +
     fill_scale +
-    color_scale +
-    # reverse y axis
-    scale_y_reverse()
+    color_scale
 }
 
 
@@ -297,9 +295,9 @@ plot_regular <- function(layout, fill_scale, color_scale,
                    xmax = .data[["xmax"]],
                    ymin = .data[["ymin"]],
                    ymax = .data[["ymax"]],
-                   fill = .data[["ID"]]),
+                   fill = .data[["node_key"]]),
                color = "black", radius = .4) +
-    geom_text(aes(color = .data[["ID"]]),
+    geom_text(aes(color = .data[["node_key"]]),
               size = lfontsize) +
     # reverse y axis
     fill_scale +
@@ -445,10 +443,10 @@ plot.vtree <- function(x,
 
   fill_scale  <- scale_fill_manual(name = NULL,
                                    values  = set_names(nodes$fill,
-                                                       nodes$ID))
+                                                       nodes$node_key))
   color_scale <- scale_color_manual(name = NULL,
                                     values = set_names(nodes$color,
-                                                       nodes$ID))
+                                                       nodes$node_key))
   if(! "label" %in% colnames(nodes)) {
     x <- x |> add_labels()
   }
@@ -464,7 +462,9 @@ plot.vtree <- function(x,
   }
 
   if(dir == "rl") {
-    p <- p + scale_x_reverse()
+    p <- p + scale_x_reverse() + scale_y_reverse()
+  } else if(dir == "lr") {
+    p <- p + scale_y_reverse()
   } else if(dir == "tb") {
     p <- p + coord_flip() + scale_x_reverse()
   } else if(dir == "bt") {

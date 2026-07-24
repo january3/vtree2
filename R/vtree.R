@@ -99,9 +99,12 @@ as_vtree <- function(x) {
   # integrity checks
   # ------------------
   nodes <- as_tibble(x)
-  req_cols <- c("ID", "node_col", "node_name", "node_val", "node_cv",
+  req_cols <- c("ID", "node_id", "node_key",
+                "parent_id", "node_col", "node_name",
+                "node_val", "node_cv",
                   "parent", "path", "level", "n", "tot_n",
                   "missing", "freq", "denom")
+
   if(!all(req_cols %in% colnames(nodes))) {
     stop(sprintf("Columns %s not in colnames(nodes)",
                  paste(req_cols[ !req_cols %in% colnames(nodes) ],
@@ -180,6 +183,7 @@ as_vtree <- function(x) {
 #'   that if you are using slashes or colons in column names or values,
 #'   this can be unreliable.
 #' * `node_id`: unique numeric ID of the node.
+#' * `node_key`: unique character string ID of the node.
 #' * `node_col`: the column of the original cases data frame to which the
 #'    node corresponds to (`Sex`)
 #' * `node_name`: node name used for labelling (`Sex`).
@@ -218,7 +222,7 @@ as_vtree <- function(x) {
 #' `n` of the parent node (`Class:1st` in case of `Class:1st/Sex:Female`). However,
 #' it makes the calculations transparent.
 #' @examples
-#' 
+#'
 #' data(Titanic)
 #' vt <- vtree_from_freqtable(Titanic, Class, Survived)
 #' plot(vt)
@@ -235,7 +239,7 @@ as_vtree <- function(x) {
 #'     mutate(Class = ifelse(runif(n()) < 0.1, NA, Class)) |>
 #'     mutate(Sex = ifelse(runif(n()) < 0.1, NA, Sex)) |>
 #'     mutate(Age = ifelse(runif(n()) < 0.1, NA, Age))
-#'   
+#'
 #'   vt <- vtree(titanicNA, Class, Sex, Survived)
 #'   plot(vt)
 #' }

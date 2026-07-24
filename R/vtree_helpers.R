@@ -61,7 +61,8 @@ node2edge <- function(df) {
 
   df |>
     select(all_of(c("node_id", "parent_id"))) |>
-    filter(.data[["node_id"]] != .data[["parent_id"]]) |>
+    # root has no parent! poor orphan
+    filter(!is.na(.data[["parent_id"]])) |>
     rename(from = "parent_id", to = "node_id")
 }
 
@@ -89,6 +90,11 @@ same_paths <- function(p1, p2) {
 
 # for a given node, find the parent node
 find_parent <- function(path, all_paths) {
+
+  # root has just an NA value without a var name
+  if(is.null(names(path))) {
+    return(NA) # this is the root
+  }
 
   if(length(path) == 1L) {
     return(1) # root ID
@@ -191,9 +197,9 @@ pat2nodes <- function(pattern, columns) {
                             .data[["node_val"]])) |>
     mutate(node_name = ifelse(.data[["ID"]] == "root",
                               "", .data[["node_col"]])) |>
-    select(all_of(c("ID", "node_id", "parent", "parent_id", "path",
-                    "level", "node_col", "node_name", "node_val",
-                    "node_cv", "n",
-                    "tot_n", "missing", "freq", "denom")))
+    mutate(node_key = paste0("node_", node_id)) |>
+    select(all_of(c("ID", "node_id", "node_key", "parent", "parent_id",
+                    "path", "level", "node_col", "node_name", "node_val",
+                    "node_cv", "n", "tot_n", "missing", "freq", "denom")))
   ret
 }

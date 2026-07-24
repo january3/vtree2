@@ -59,15 +59,16 @@ plot(vt)
 
 ### Vtree pruning
 
+With the `prune()` function, you can find nodes which fullfill a certain
+condition and remove them (along with their children) from the vtree:
+
 
 ```{r example_pruning}
 ucb <- cases_from_freqtable(UCBAdmissions)
 vt <- vtree(ucb, Dept, Gender, Admit) |>
   prune(n < 100 | freq < .15)
-plot(vt, by_freq = TRUE)
+plot(vt, proportional = TRUE)
 ```
-
-
 
 
 ### Vtree patterns
@@ -134,9 +135,10 @@ calls.
 
 I have not used LLMs directly in writing the code or documentation.
 However, I did use an LLM based chat to discuss some of the design issues
-(e.g. to compare existing packages for graph representation).
+(e.g. to compare existing packages for graph representation). Also, for
+code review / bug finding.
 
 ## TODO
 
  * plotting function for patterns
- * should the vtree function take cases or samples?
+ * should the vtree() function take cases or samples?
