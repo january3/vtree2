@@ -3,24 +3,24 @@
     Code
       nodes
     Output
-      # A tibble: 15 x 15
-         ID        node_col node_name node_val node_cv parent path         level     n
-         <chr>     <chr>    <chr>     <chr>    <chr>   <chr>  <list>       <dbl> <int>
-       1 Class:1s~ Sex      Sex       Female   Sex:Fe~ Class~ <named list>     2   120
-       2 Class:1s~ Sex      Sex       Male     Sex:Ma~ Class~ <named list>     2   142
-       3 Class:1s~ Sex      Sex       <NA>     Sex:NA  Class~ <named list>     2    32
-       4 Class:2n~ Sex      Sex       Female   Sex:Fe~ Class~ <named list>     2    84
-       5 Class:2n~ Sex      Sex       Male     Sex:Ma~ Class~ <named list>     2   146
-       6 Class:2n~ Sex      Sex       <NA>     Sex:NA  Class~ <named list>     2    28
-       7 Class:3r~ Sex      Sex       Female   Sex:Fe~ Class~ <named list>     2   162
-       8 Class:3r~ Sex      Sex       Male     Sex:Ma~ Class~ <named list>     2   408
-       9 Class:3r~ Sex      Sex       <NA>     Sex:NA  Class~ <named list>     2    63
-      10 Class:Cr~ Sex      Sex       Female   Sex:Fe~ Class~ <named list>     2    20
-      11 Class:Cr~ Sex      Sex       Male     Sex:Ma~ Class~ <named list>     2   698
-      12 Class:Cr~ Sex      Sex       <NA>     Sex:NA  Class~ <named list>     2    75
-      13 Class:NA~ Sex      Sex       Female   Sex:Fe~ Class~ <named list>     2    39
-      14 Class:NA~ Sex      Sex       Male     Sex:Ma~ Class~ <named list>     2   159
-      15 Class:NA~ Sex      Sex       <NA>     Sex:NA  Class~ <named list>     2    25
-      # i 6 more variables: tot_n <int>, missing <int>, freq <dbl>, denom <int>,
-      #   vp <lgl>, leaf <lgl>
+      # A tibble: 15 x 17
+         ID    node_id parent parent_id path         level node_col node_name node_val
+         <chr>   <int> <chr>      <int> <list>       <dbl> <chr>    <chr>     <chr>   
+       1 Clas~       7 Class~         2 <named list>     2 Sex      Sex       Female  
+       2 Clas~       8 Class~         2 <named list>     2 Sex      Sex       Male    
+       3 Clas~       9 Class~         2 <named list>     2 Sex      Sex       <NA>    
+       4 Clas~      10 Class~         3 <named list>     2 Sex      Sex       Female  
+       5 Clas~      11 Class~         3 <named list>     2 Sex      Sex       Male    
+       6 Clas~      12 Class~         3 <named list>     2 Sex      Sex       <NA>    
+       7 Clas~      13 Class~         4 <named list>     2 Sex      Sex       Female  
+       8 Clas~      14 Class~         4 <named list>     2 Sex      Sex       Male    
+       9 Clas~      15 Class~         4 <named list>     2 Sex      Sex       <NA>    
+      10 Clas~      16 Class~         5 <named list>     2 Sex      Sex       Female  
+      11 Clas~      17 Class~         5 <named list>     2 Sex      Sex       Male    
+      12 Clas~      18 Class~         5 <named list>     2 Sex      Sex       <NA>    
+      13 Clas~      19 Class~         6 <named list>     2 Sex      Sex       Female  
+      14 Clas~      20 Class~         6 <named list>     2 Sex      Sex       Male    
+      15 Clas~      21 Class~         6 <named list>     2 Sex      Sex       <NA>    
+      # i 8 more variables: node_cv <chr>, n <int>, tot_n <int>, missing <int>,
+      #   freq <dbl>, denom <int>, vp <lgl>, leaf <lgl>
 

@@ -176,7 +176,10 @@ as_vtree <- function(x) {
 #' list of the columns; in parentheses, you will find example values for a
 #' node from the `Titanic` example.
 #'
-#' * `ID`: unique ID of the node (`Class:1st/Sex:Female`).
+#' * `ID`: human readable ID of the node (`Class:1st/Sex:Female`). Note
+#'   that if you are using slashes or colons in column names or values,
+#'   this can be unreliable.
+#' * `node_id`: unique numeric ID of the node.
 #' * `node_col`: the column of the original cases data frame to which the
 #'    node corresponds to (`Sex`)
 #' * `node_name`: node name used for labelling (`Sex`).
@@ -295,7 +298,8 @@ vtree <- function(cases, ..., .vp = TRUE, .cols = NULL) {
   df[["vp"]] <- .vp
 
   edges <- node2edge(df)
-  vtree <- tbl_graph(nodes = df, edges = edges, directed = TRUE, node_key = "ID")
+  vtree <- tbl_graph(nodes = df, edges = edges,
+                     directed = TRUE, node_key = "node_id")
 
   as_vtree(vtree)
 }
