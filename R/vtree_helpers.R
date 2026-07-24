@@ -11,6 +11,9 @@ vtree_pat <- function(data, cnms, vp = TRUE) {
 
   for(i in 1:nc) {
     nm <- cnms[i]
+    data <- data |>
+      mutate(!!paste0(nm, "_missing") := sum(is.na(.data[[nm]]))) |>
+      mutate(!!paste0(nm, "_tot_n") := length(.data[[nm]]))
 
     if(vp) {
       data <- data |>
@@ -35,12 +38,14 @@ vtree_pat <- function(data, cnms, vp = TRUE) {
   # selected columns
   selcnms <- map(cnms, ~ c(.x,
                            paste0(.x, "_n"),
+                           paste0(.x, "_tot_n"),
                            paste0(.x, "_frac"),
-                           paste0(.x, "_denom"))) |> unlist()
+                           paste0(.x, "_denom"),
+                           paste0(.x, "_missing"))) |> unlist()
 
   # we are not interested in individual data points, only in the summaries
   # why setdiff: you can't summarize across grouping columns
-  data <- data |> 
+  data <- data |>
     summarize(across(all_of(setdiff(selcnms, cnms)), first),
               .groups = "drop_last") |>
     ungroup() |>
@@ -72,13 +77,19 @@ pat2nodes <- function(pattern, columns) {
       distinct(pick(columns[1:i]), .keep_all = TRUE) |>
 
       # ignore columns below the current level
-      select(all_of(c(columns[1:i], 
-                      paste0(columns[i], "_n"), 
-                      paste0(columns[i], "_frac")))) |>
-      
+      select(all_of(c(columns[1:i],
+                      paste0(columns[i], "_n"),
+                      paste0(columns[i], "_tot_n"),
+                      paste0(columns[i], "_missing"),
+                      paste0(columns[i], "_frac"),
+                      paste0(columns[i], "_denom")))) |>
+
       # n instead of colname_n etc.
       rename(n = paste0(columns[i], "_n"),
-             freq = paste0(columns[i], "_frac")) |>
+             tot_n = paste0(columns[i], "_tot_n"),
+             missing = paste0(columns[i], "_missing"),
+             freq = paste0(columns[i], "_frac"),
+             denom = paste0(columns[i], "_denom")) |>
       mutate(level = i) |>
 
       # this complex bit constructs the parent and ID columns. The parent
@@ -87,10 +98,10 @@ pat2nodes <- function(pattern, columns) {
       # name:value pairs separated by slashes.
       # the c_across is specifically for rowwise operations
       rowwise() |>
-      mutate(parent = ifelse(i == 1, "root", 
-        paste0(paste0(columns[1:(i-1)], ":", 
+      mutate(parent = ifelse(i == 1, "root",
+        paste0(paste0(columns[1:(i-1)], ":",
                       c_across(all_of(columns[1:(i-1)]))), collapse = "/"))) |>
-      mutate(ID = paste0(paste0(columns[1:i], ":", 
+      mutate(ID = paste0(paste0(columns[1:i], ":",
                       c_across(all_of(columns[1:i]))), collapse = "/")) |>
 
       # we want also to store the path as a list column for easier
@@ -101,32 +112,35 @@ pat2nodes <- function(pattern, columns) {
       ungroup() |>
 
       # rather than keeping all the columns, we only keep
-      # node_col, which holds the column name, and node_val, which holds the 
+      # node_col, which holds the column name, and node_val, which holds the
       # value of that column for the given node.
       mutate(node_col = columns[i]) |>
       mutate(node_val = .data[[columns[i]]]) |>
 
-      select(all_of(c("ID", "node_col", "node_val", "parent", 
-                      "path", "level", "n", "freq")))
+      select(all_of(c("ID", "node_col", "node_val", "parent",
+                      "path", "level", "n", "tot_n", "missing", "freq", "denom")))
   })
 
   N <- sum(ret |> filter(.data[["level"]] == 1) |> pull("n"))
 
   # that special root node
-  ret <- bind_rows(tibble(ID = "root", 
+  ret <- bind_rows(tibble(ID = "root",
                                node_col = "root",
                                node_val = "",
-                               parent = NA_character_, 
+                               parent = NA_character_,
                                path = list(NA),
-                               level = 0, 
+                               level = 0,
                                n = N,
-                               freq = 1), ret)
+                               tot_n = N,
+                               missing = NA,
+                               freq = 1,
+                               denom = N), ret)
   ret <- ret |>
-    mutate(node_cv = paste0(.data[["node_col"]], ":", 
+    mutate(node_cv = paste0(.data[["node_col"]], ":",
                             .data[["node_val"]])) |>
     mutate(node_name = ifelse(.data[["ID"]] == "root",
                               "", .data[["node_col"]])) |>
     select(all_of(c("ID", "node_col", "node_name", "node_val", "node_cv", "parent",
-                    "path", "level", "n", "freq")))
+                    "path", "level", "n", "tot_n", "missing", "freq", "denom")))
   ret
 }

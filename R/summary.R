@@ -12,7 +12,7 @@
   v1 <- df[[ names(path)[1] ]]
   v2 <- path[[1]]
 
-  match <- match & 
+  match <- match &
     (
     (is.na(v1) & is.na(v2)) |
     ((!is.na(v1) & !is.na(v2)) & (v1 == v2))
@@ -64,7 +64,7 @@
         unique = length(unique(x)),
         levels = list(summary(fa[m]))
       ) |>
-      mutate(levels_str = 
+      mutate(levels_str =
              map_chr(levels, \(l) paste(names(l), l, sep = ":", collapse = "\n")))
     }
     ret
@@ -108,7 +108,7 @@
 #' Using the `fmt` parameter, it is possible to create fully
 #' summaries. The expression is evaluated within the context of the summary
 #' data frame, which means that you can use all columns avaialble in that
-#' data frame. For example, you can use an expression like 
+#' data frame. For example, you can use an expression like
 #' `sprintf("%s", fmt(median, digits = 2))` or `glue("{median}")`.
 #'
 #' @param vtree A vtree object.
@@ -140,7 +140,7 @@
 #'   summary_vt(vt, Random,
 #'              fmt = sprintf("median: %.1f",median))
 #' vt |>
-#'   mutate(label = paste0(label, "\n", csm_txt)) |> 
+#'   mutate(label = paste0(label, "\n", csm_txt)) |>
 #'   plot()
 #'
 #' # now the same but only for the leafs
@@ -160,13 +160,13 @@
 #'            valid, n, round(100 * valid/n)))
 #'
 #' vt |>
-#'   mutate(label = paste0(label, "\n", csm_txt)) |> 
+#'   mutate(label = paste0(label, "\n", csm_txt)) |>
 #'   plot()
 #'
 #' # Example for the data frame variant
 #' csm_df <- cases |> summary_vt_df(vt, Age)
-#' vt |> 
-#'   mutate(label = sprintf("%s\n%s", node_val, 
+#' vt |>
+#'   mutate(label = sprintf("%s\n%s", node_val,
 #'                          csm_df$levels_str)) |>
 #'   plot()
 #'

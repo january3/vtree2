@@ -39,8 +39,9 @@ observation. The selected columns will correspond to the nodes of the vtree.
 With \code{vtree_from_freqtable()}, you can create a vtree from a frequency
 table, where each row corresponds to a unique combination of values and
 a frequency count.
+}
+\section{Manipulating a vtree object}{
 
-Manipulating a vtree object
 
 Vtree objects are little more than tidygraph object of class tbl_graph.
 You can use the tidygraph package to manipulate them, and the ggraph
@@ -48,7 +49,62 @@ package to plot them. The vtree class is mostly a convenience for
 plotting. You can manipulate the vtree object using regular tidygraph
 functions, and then use as_vtree to convert it back to a vtree object
 for plotting.
+
+The main difference between the \code{tbl_graph} and \code{vtree} is that you can
+directly get the nodes table with \code{as_tibble()} and you can use
+\code{mutate()} to modify or create the columns of a \code{vtree} object.
 }
+
+\section{Columns in the nodes data frame}{
+
+
+The vtree object, like the \code{tbl_graph} objects, consists of two data
+frames: nodes and edges. The nodes data frame in vtree contains all
+information pertaining the different nodes of the vtree. Below is the
+list of the columns; in parentheses, you will find example values for a
+node from the \code{Titanic} example.
+\itemize{
+\item \code{ID}: unique ID of the node (\verb{Class:1st/Sex:Female}).
+\item \code{node_col}: the column of the original cases data frame to which the
+node corresponds to (\code{Sex})
+\item \code{node_name}: node name used for labelling (\code{Sex}).
+\item \code{node_val}: the value of the node variable at this node (\code{Female}).
+\item \code{node_cv}: combination of node column and node value (\code{Sex:Female}).
+\item \code{parent}: ID of the parent node (\verb{Class:1st}).
+\item \code{path}: is a list node; i.e., each element is a list. The path describes
+all nodes from the root to the current node, excluding the root and
+including the current node. (\code{list(Class = "1st", Sex = "Female")}.
+\item \code{level}: the level of the node, with 0 for the root node. Equal to the
+length of the path (\code{2}).
+\item \code{n}: total number of cases at the node (\code{145}).
+\item \code{tot_n}: total number of cases at the parent node (\code{325}).
+\item \code{missing}: number of cases missing for that variable in the parent
+node (\code{0}).
+\item \code{freq}: calculated frequency relative to the number of valid or total
+cases in the parent node (\code{0.446}).
+\item \code{denom}: the denominator used to calculate the frequency (\code{325}). If
+\code{.vp} is true, this is equal to the number of valid observations in the
+parent node; if \code{.vp} is false, this is equal to \code{n} of the parent
+node.
+\item \code{vp}: whether the valid percentage was calculated (\code{TRUE}).
+\item \code{leaf}: whether the node is a leaf (\code{FALSE}).
+}
+
+Note that the variables \code{tot_n}, \code{denom} and \code{missing} all refer to the
+\emph{parent} node, not to the current node. For example, if the current node is
+\verb{Class:1st/Sex:Female}, then \code{tot_n} will be the total number of persons in
+the 1st class, and \code{n} will be the total number of females in the 1st
+class. Likewise, \code{missing} will be the total number of persons in the 1st
+class for which we do not know whether they were male or female. The
+\code{denom} variable will depend on \code{.vp}. If we need the valid percentages
+(default), then \code{denom} will be equal to \code{tot_n - missing}; otherwise it will
+be \code{tot_n}.
+
+The \code{tot_n} information is redundant, since it can be read directly from
+\code{n} of the parent node (\verb{Class:1st} in case of \verb{Class:1st/Sex:Female}). However,
+it makes the calculations transparent.
+}
+
 \examples{
 library(tidyverse)
 data(Titanic)
@@ -65,7 +121,7 @@ titanicNA <- Titanic |>
   # add some random NAs to each column
   mutate(Class = ifelse(runif(n()) < 0.1, NA, Class)) |>
   mutate(Sex = ifelse(runif(n()) < 0.1, NA, Sex)) |>
-  mutate(Age = ifelse(runif(n()) < 0.1, NA, Age))            
+  mutate(Age = ifelse(runif(n()) < 0.1, NA, Age))
 
 vt <- vtree(titanicNA, Class, Sex, Survived)
 if(interactive()) {

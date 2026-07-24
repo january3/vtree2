@@ -83,7 +83,7 @@ csm_txt <- cases |>
   summary_vt(vt, Random,
              fmt = sprintf("median: \%.1f",median))
 vt |>
-  mutate(label = paste0(label, "\n", csm_txt)) |> 
+  mutate(label = paste0(label, "\n", csm_txt)) |>
   plot()
 
 # now the same but only for the leafs
@@ -103,13 +103,13 @@ csm_txt <- cases |>
            valid, n, round(100 * valid/n)))
 
 vt |>
-  mutate(label = paste0(label, "\n", csm_txt)) |> 
+  mutate(label = paste0(label, "\n", csm_txt)) |>
   plot()
 
 # Example for the data frame variant
 csm_df <- cases |> summary_vt_df(vt, Age)
-vt |> 
-  mutate(label = sprintf("\%s\n\%s", node_val, 
+vt |>
+  mutate(label = sprintf("\%s\n\%s", node_val,
                          csm_df$levels_str)) |>
   plot()
 

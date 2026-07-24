@@ -43,7 +43,7 @@ names.vtree <- function(x) {
 
 #' Create, modify, and delete node columns
 #'
-#' This is a wrapper around the regular [dplyr::mutate()] 
+#' This is a wrapper around the regular [dplyr::mutate()]
 #' function which preserves the vtree class.
 #' @param .data A vtree object.
 #' @param ... Name-value pairs of expressions, passed to [dplyr::mutate()].
@@ -95,11 +95,12 @@ as_vtree <- function(x) {
   # integrity checks
   # ------------------
   nodes <- x |> as_tibble()
-  req_cols <- c("ID", "node_col", "node_name", "node_val", "node_cv", 
-                  "parent", "path", "level", "n", "freq")
+  req_cols <- c("ID", "node_col", "node_name", "node_val", "node_cv",
+                  "parent", "path", "level", "n", "tot_n",
+                  "missing", "freq", "denom")
   if(!all(req_cols %in% colnames(nodes))) {
     stop(sprintf("Columns %s not in colnames(nodes)",
-                 paste(req_cols[ !req_cols %in% colnames(nodes) ], 
+                 paste(req_cols[ !req_cols %in% colnames(nodes) ],
                        collapse=", ")
                  ))
   }
@@ -144,7 +145,7 @@ as_vtree <- function(x) {
 #' table, where each row corresponds to a unique combination of values and
 #' a frequency count.
 #'
-#' Manipulating a vtree object
+#' @section Manipulating a vtree object:
 #'
 #' Vtree objects are little more than tidygraph object of class tbl_graph.
 #' You can use the tidygraph package to manipulate them, and the ggraph
@@ -152,6 +153,57 @@ as_vtree <- function(x) {
 #' plotting. You can manipulate the vtree object using regular tidygraph
 #' functions, and then use as_vtree to convert it back to a vtree object
 #' for plotting.
+#'
+#' The main difference between the `tbl_graph` and `vtree` is that you can
+#' directly get the nodes table with `as_tibble()` and you can use
+#' `mutate()` to modify or create the columns of a `vtree` object.
+#'
+#' @section Columns in the nodes data frame:
+#'
+#' The vtree object, like the `tbl_graph` objects, consists of two data
+#' frames: nodes and edges. The nodes data frame in vtree contains all
+#' information pertaining the different nodes of the vtree. Below is the
+#' list of the columns; in parentheses, you will find example values for a
+#' node from the `Titanic` example.
+#'
+#' * `ID`: unique ID of the node (`Class:1st/Sex:Female`).
+#' * `node_col`: the column of the original cases data frame to which the
+#'    node corresponds to (`Sex`)
+#' * `node_name`: node name used for labelling (`Sex`).
+#' * `node_val`: the value of the node variable at this node (`Female`).
+#' * `node_cv`: combination of node column and node value (`Sex:Female`).
+#' * `parent`: ID of the parent node (`Class:1st`).
+#' * `path`: is a list node; i.e., each element is a list. The path describes
+#'    all nodes from the root to the current node, excluding the root and
+#'    including the current node. (`list(Class = "1st", Sex = "Female")`.
+#' * `level`: the level of the node, with 0 for the root node. Equal to the
+#'    length of the path (`2`).
+#' * `n`: total number of cases at the node (`145`).
+#' * `tot_n`: total number of cases at the parent node (`325`).
+#' * `missing`: number of cases missing for that variable in the parent
+#' node (`0`).
+#' * `freq`: calculated frequency relative to the number of valid or total
+#'   cases in the parent node (`0.446`).
+#' * `denom`: the denominator used to calculate the frequency (`325`). If
+#'   `.vp` is true, this is equal to the number of valid observations in the
+#'   parent node; if `.vp` is false, this is equal to `n` of the parent
+#'   node.
+#' * `vp`: whether the valid percentage was calculated (`TRUE`).
+#' * `leaf`: whether the node is a leaf (`FALSE`).
+#'
+#' Note that the variables `tot_n`, `denom` and `missing` all refer to the
+#' *parent* node, not to the current node. For example, if the current node is
+#' `Class:1st/Sex:Female`, then `tot_n` will be the total number of persons in
+#' the 1st class, and `n` will be the total number of females in the 1st
+#' class. Likewise, `missing` will be the total number of persons in the 1st
+#' class for which we do not know whether they were male or female. The
+#' `denom` variable will depend on `.vp`. If we need the valid percentages
+#' (default), then `denom` will be equal to `tot_n - missing`; otherwise it will
+#' be `tot_n`.
+#'
+#' The `tot_n` information is redundant, since it can be read directly from
+#' `n` of the parent node (`Class:1st` in case of `Class:1st/Sex:Female`). However,
+#' it makes the calculations transparent.
 #' @examples
 #' library(tidyverse)
 #' data(Titanic)
@@ -168,8 +220,8 @@ as_vtree <- function(x) {
 #'   # add some random NAs to each column
 #'   mutate(Class = ifelse(runif(n()) < 0.1, NA, Class)) |>
 #'   mutate(Sex = ifelse(runif(n()) < 0.1, NA, Sex)) |>
-#'   mutate(Age = ifelse(runif(n()) < 0.1, NA, Age))            
-#' 
+#'   mutate(Age = ifelse(runif(n()) < 0.1, NA, Age))
+#'
 #' vt <- vtree(titanicNA, Class, Sex, Survived)
 #' if(interactive()) {
 #'   plot(vt)
@@ -185,7 +237,7 @@ as_vtree <- function(x) {
 #' @param .freq_col The name of the column in a frequency table that
 #' contains the frequency counts. Default is "Freq".
 #' @return an object of class vtree
-#' @importFrom dplyr select mutate group_by summarize ungroup 
+#' @importFrom dplyr select mutate group_by summarize ungroup
 #' @importFrom dplyr distinct rename rowwise c_across all_of
 #' @importFrom dplyr first .data n pull filter as_tibble lag
 #' @importFrom dplyr pick across bind_rows

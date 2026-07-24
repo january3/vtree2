@@ -84,6 +84,13 @@ test_that("vtree calculations are correct", {
   vt <- vtree(titanicNA, Class, Sex, Survived)
   nodes <- vt |> activate(nodes) |> as_tibble()
   expect_equal(sum(is.na(nodes$node_val)), 6)
+
+  # denominator for Class should be equal to the number of valid
+  # observations in Class
+  expect_all_true(
+    (nodes |> filter(level == 1) |> pull(denom)) ==
+    sum(!is.na(titanicNA$Class)))
+
   nodes <- nodes |> filter(level == 2)
 
   expect_all_true(abs(nodes$freq -
@@ -94,11 +101,20 @@ test_that("vtree calculations are correct", {
   vt <- vtree(titanicNA, Class, Sex, Survived, .vp = FALSE)
   nodes <- vt |> activate(nodes) |> as_tibble()
   expect_equal(sum(is.na(nodes$node_val)), 6)
+
+  # denominator for Class should be equal to the total number of
+  # observations in Class
+  expect_all_true(
+    (nodes |> filter(level == 1) |> pull(denom)) ==
+    nrow(titanicNA))
+
+
   nodes <- nodes |> filter(level == 2)
 
   expect_all_true(abs(nodes$freq -
                   c(0.41, 0.48, 0.11, 0.33, 0.57, 0.11, 0.26, 0.64,
                     0.10, 0.03, 0.88, 0.09, 0.17, 0.71, 0.11)) < .1)
+  expect_snapshot(nodes)
 })
 
 
