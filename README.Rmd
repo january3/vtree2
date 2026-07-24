@@ -18,7 +18,9 @@ knitr::opts_chunk$set(
 <!-- badges: start -->
 <!-- badges: end -->
 
-The goal of vtree2 is to ...
+Tree diagrams for categorical data, based on the 
+[original vtree package](https://github.com/nbarrowman/vtree) by
+Nick Barrowman.
 
 ## Installation
 
@@ -57,11 +59,14 @@ vt
 plot(vt)
 ```
 
+**There is more:** trees can be oriented vertically or horizontally, 
+top to bottom, bottom to top, left to right, right to left;
+labels and colors can be freely customized, trees can be pruned for display.
+
 ### Vtree pruning
 
 With the `prune()` function, you can find nodes which fullfill a certain
 condition and remove them (along with their children) from the vtree:
-
 
 ```{r example_pruning}
 ucb <- cases_from_freqtable(UCBAdmissions)
@@ -69,6 +74,56 @@ vt <- vtree(ucb, Dept, Gender, Admit) |>
   prune(n < 100 | freq < .15)
 plot(vt, proportional = TRUE)
 ```
+
+**There is more:** with `find_nodes()` you can find nodes which fullfill a
+certain condition. The produced mask (a simple logical vector) can be used
+to select nodes for changing labels or colors. With `keep()`, you can
+select the nodes you want to keep and remove other nodes.
+
+### Labelling and colors
+
+While colors and labels can be generated automatically, it is possible to
+customize them by modifying the `label` and `fill` columns of the vtree object:
+
+
+```{r}
+vt <- vtree(tdf, Class, Survived)
+vt <- vt |> add_labels() |> # add default labels
+  add_palette() |>
+  mutate(label = gsub("No", "Not survived", label)) |>
+  mutate(fill = ifelse(node_col == "Survived" &
+                       node_val == "No", "red", fill))
+
+plot(vt)
+```
+
+**There is more:** `add_labels()` is highly customizable and you can
+produce complex labels with a simple R expression using `sprintf()` or
+`glue()`.
+
+
+### Summaries
+
+The tree can be used to produce per-node summaries of any data. For
+example, if you have an additional variable for your cases, you can add
+summary of the values as labels to the nodes.
+
+
+```{r}
+vt <- vtree(tdf, Class, Sex, Survived)
+                                         
+sm_txt <- summary_vt(tdf, vt, Age)
+vt |> 
+  add_labels() |>
+  mutate(label = paste0(label, "\n", sm_txt)) |> plot()
+```
+
+**There is more:** `summary_vt()` can be used to calculate any summary
+of categorical or continuous variables as a character vector which can be
+then used as labels for the nodes. `summary_vt_df()` produces a data frame
+with per-node summary statistics (different for categorical and continuous
+variables) which can be used for further analysis.
+
 
 
 ### Vtree patterns
