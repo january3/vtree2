@@ -109,7 +109,7 @@ example, if you have an additional variable for your cases, you can add
 summary of the values as labels to the nodes.
 
 
-```{r example_summary,fig.width=14,fig.height=20}
+```{r example_summary,fig.width=14,fig.height=30}
 vt <- vtree(tdf, Class, Sex, Survived)
                                          
 sm_txt <- summary_vt(tdf, vt, Age)
