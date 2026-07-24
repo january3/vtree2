@@ -55,7 +55,7 @@ vt
 `vt` is now an object of class `vtree`, which is basically `tidygraph`'s `tbl_graph` with some extra attributes. You can plot it with `plot()`:
 
 
-```{r example_plot,fig.width=8,fig.height=5}
+```{r example_plot,fig.width=16,fig.height=15,warning=FALSE,message=FALSE}
 plot(vt)
 ```
 
@@ -68,7 +68,7 @@ labels and colors can be freely customized, trees can be pruned for display.
 With the `prune()` function, you can find nodes which fullfill a certain
 condition and remove them (along with their children) from the vtree:
 
-```{r example_pruning}
+```{r example_pruning,fig.width=16,fig.height=15}
 ucb <- cases_from_freqtable(UCBAdmissions)
 vt <- vtree(ucb, Dept, Gender, Admit) |>
   prune(n < 100 | freq < .15)
@@ -86,7 +86,7 @@ While colors and labels can be generated automatically, it is possible to
 customize them by modifying the `label` and `fill` columns of the vtree object:
 
 
-```{r}
+```{r example_labelling,fig.width=16,fig.height=15}
 vt <- vtree(tdf, Class, Survived)
 vt <- vt |> add_labels() |> # add default labels
   add_palette() |>
@@ -109,7 +109,7 @@ example, if you have an additional variable for your cases, you can add
 summary of the values as labels to the nodes.
 
 
-```{r}
+```{r example_summary,fig.width=16,fig.height=15}
 vt <- vtree(tdf, Class, Sex, Survived)
                                          
 sm_txt <- summary_vt(tdf, vt, Age)

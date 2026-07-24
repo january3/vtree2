@@ -48,13 +48,6 @@ vt
 
 ``` r
 plot(vt)
-#> Warning: There was 1 warning in `mutate()`.
-#> ℹ In argument: `nleafs = map_bfs_back_int(...)`.
-#> Caused by warning:
-#> ! The `father` argument of `bfs()` is deprecated as of igraph 2.2.0.
-#> ℹ Please use the `parent` argument instead.
-#> ℹ The deprecated feature was likely used in the tidygraph package.
-#>   Please report the issue at <https://github.com/thomasp85/tidygraph/issues>.
 ```
 
 <img src="man/figures/README-example_plot-1.png" alt="" width="100%" />
@@ -99,7 +92,7 @@ vt <- vt |> add_labels() |> # add default labels
 plot(vt)
 ```
 
-<img src="man/figures/README-unnamed-chunk-2-1.png" alt="" width="100%" />
+<img src="man/figures/README-example_labelling-1.png" alt="" width="100%" />
 
 **There is more:** `add_labels()` is highly customizable and you can
 produce complex labels with a simple R expression using `sprintf()` or
@@ -120,7 +113,7 @@ vt |>
   mutate(label = paste0(label, "\n", sm_txt)) |> plot()
 ```
 
-<img src="man/figures/README-unnamed-chunk-3-1.png" alt="" width="100%" />
+<img src="man/figures/README-example_summary-1.png" alt="" width="100%" />
 
 **There is more:** `summary_vt()` can be used to calculate any summary
 of categorical or continuous variables as a character vector which can
