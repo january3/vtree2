@@ -64,7 +64,7 @@ condition and remove them (along with their children) from the vtree:
 ``` r
 ucb <- cases_from_freqtable(UCBAdmissions)
 vt <- vtree(ucb, Dept, Gender, Admit) |>
-  prune(n < 100 | freq < .15)
+  prune(n < 150 | freq < .15)
 plot(vt, proportional = TRUE)
 ```
 
