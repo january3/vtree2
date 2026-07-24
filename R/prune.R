@@ -138,19 +138,58 @@ find_nodes <- function(vtree, condition) {
 }
 
 
-.find_follow_nodes <- function(vtree, mask) {
+#' Find all nodes that follow or precede the nodes for which the mask is TRUE
+#'
+#' `find_follow_nodes` identifies all nodes in a vtree graph that follow the
+#' nodes for which the provided mask is TRUE.
+#'
+#' `find_precede_nodes` identifies all nodes in a vtree graph that precede the
+#' nodes for which the provided mask is TRUE.
+#' @param vtree A vtree graph object.
+#' @param mask A logical vector indicating which nodes to consider for finding
+#'             their following or preceding nodes.
+#' vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived)
+#' mask <- find_nodes(vt, ID == "Class:1st/Sex:Male")
+#' follow <- find_follow_nodes(vt, mask)
+#' precede <- find_precede_nodes(vt, mask)
+#' vt |> mutate(fill =
+#'             ifelse(ID == "Class:1st/Sex:Male", "green", "white")) |>
+#'       mutate(fill =
+#'             ifelse(follow, "red",
+#'                    ifelse(precede, "blue", fill))) |>
+#'       plot()
+#' 
+#' @export
+find_follow_nodes <- function(vtree, mask) {
 
   follow <- vtree |>
-    activate("nodes") |>
-    mutate(.vtree_prune = mask) |>
-    mutate(.vtree_prune2 = map_bfs_lgl(
+    mutate(.mask = mask) |>
+    mutate(.follow = map_bfs_lgl(
       root = 1,
       mode = "out",
       .f = \(node, path, ...) {
-        return(any(.N()$.vtree_prune[path$node]))
-  })) |> pull(".vtree_prune2")
+        return(any(.N()$.mask[path$node]))
+  })) |> pull(".follow")
 
   follow
+}
+
+#' @rdname find_follow_nodes
+#' @importFrom tidygraph map_bfs_back_lgl
+#' @export
+find_precede_nodes <- function(vtree, mask) {
+
+  precede <- vtree |>
+    mutate(.mask = mask) |>
+    mutate(.precede = map_bfs_back_lgl(
+      root = 1,
+      mode = "out",
+      .f = \(node, path, ...) {
+        return(any(.N()$.mask[path$node]) ||
+               any(unlist(path$result)))
+  })) |> pull(".precede")
+
+  precede
 }
 
 # here we actually do the pruning
@@ -164,7 +203,7 @@ find_nodes <- function(vtree, condition) {
   prune <- .get_mask(vtree, condition, keep, na.rm)
 
   # find all nodes that follow a node
-  follow_mask <- .find_follow_nodes(vtree, prune)
+  follow_mask <- find_follow_nodes(vtree, prune)
 
   if(follow_only) {
     mask <- follow_mask
