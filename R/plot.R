@@ -171,7 +171,7 @@ add_labels <- function(vtree,
   geom_label(data = df,
              aes(x = x, y = y, label = label, fill = keys,
                  color = keys),
-             size = 11,
+             size = 9,
              inherit.aes = FALSE)
 }
 
@@ -451,6 +451,7 @@ plot.vtree <- function(x,
                        palettes = c("Blues", "Greens", "Reds",
                                     "Oranges", "Purples"),
                        na_fill = "white",
+                       var_labels = TRUE,
                        dir = c("lr", "rl", "tb", "bt"),
                        proportional = FALSE,
                        legend = FALSE) {
@@ -501,7 +502,9 @@ plot.vtree <- function(x,
   }
 
   # add labels
-  p <- p + .add_level_labels(x)
+  if(var_labels) {
+    p <- p + .add_level_labels(x)
+  }
 
   #p <- p + theme_void() +
   p <- p + #coord_cartesian(clip = "off") +
