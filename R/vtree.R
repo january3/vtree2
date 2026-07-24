@@ -12,7 +12,7 @@
 #' @export
 levels.vtree <- function(x) {
   stopifnot(inherits(x, "vtree"))
-  nodes <- x |> activate(nodes) |> as_tibble()
+  nodes <- x |> as_tibble()
 
   cnms <- attr(x, "cols") |> set_names()
 

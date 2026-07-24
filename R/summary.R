@@ -253,7 +253,7 @@ summary_vt_df <- function(cases, vtree, col, .col = NULL) {
   stopifnot(all(cols %in% colnames(cases)))
   stopifnot(all(col %in% colnames(cases)))
 
-  nodes <- vtree |> activate(nodes) |> as_tibble()
+  nodes <- vtree |> as_tibble()
 
   # next create a match vector between the vtree and the cases data frame
   # probably a clever grouping operation would be more efficient rather

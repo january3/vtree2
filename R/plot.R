@@ -187,7 +187,7 @@ plot_by_freq <- function(graph, fill_scale, color_scale,
            .data[["n"]] / (2 * totn)) |>
     mutate(width = 2 * lwidth, height = .data[["n"]] / totn)
 
-  edges <- graph |> activate(edges) |> as_tibble() |>
+  edges <- graph |> activate("edges") |> as_tibble() |>
     mutate(x1 = nodes$x[.data[["from"]]],
            x2 = nodes$x[.data[["to"]]],
            y1 = nodes$y[.data[["to"]]],
@@ -229,7 +229,7 @@ plot_regular <- function(graph, fill_scale, color_scale,
                          lwidth = NA,
                          lheight = NA) {
 
-  nodes <- graph |> activate(nodes) |>
+  nodes <- graph |> activate("nodes") |>
     .calc_nleafs() |>
     # calculate number of leafs per node
     as_tibble()
@@ -257,7 +257,7 @@ plot_regular <- function(graph, fill_scale, color_scale,
            totleafs) |>
     ungroup()
 
-  edges <- graph |> activate(edges) |> as_tibble() |>
+  edges <- graph |> activate("edges") |> as_tibble() |>
     mutate(x1 = nodes$x[.data[["from"]]],
            x2 = nodes$x[.data[["to"]]] - lwidth,
            y1 = nodes$y[.data[["from"]]],
@@ -407,17 +407,17 @@ plot.vtree <- function(x,
                        legend = FALSE) {
   stopifnot(inherits(x, "vtree"))
 
-  nodes <- x |> activate(nodes) |> as_tibble()
+  nodes <- x |> activate("nodes") |> as_tibble()
   if(! "fill" %in% colnames(nodes)) {
     x <- vtree_pal_assign(x, palettes = palettes, na_fill = na_fill)
   }
 
   if(! "color" %in% colnames(nodes)) {
-    x <- x |> activate(nodes) |>
+    x <- x |> activate("nodes") |>
       mutate(color = contrast_color(.data[["fill"]]))
   }
 
-  nodes <- x |> activate(nodes) |> as_tibble()
+  nodes <- x |> activate("nodes") |> as_tibble()
 
   fill_scale  <- scale_fill_manual(name = NULL,
                                    values  = set_names(nodes$fill,

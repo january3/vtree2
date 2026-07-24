@@ -3,6 +3,7 @@
 
 # converts a data frame to a pattern data frame, one line per each pattern
 # / path through the tree.
+#' @importFrom dplyr first
 vtree_pat <- function(data, cnms, vp = TRUE) {
   # enquos the columns so we can play with them
   nc <- length(cnms)
@@ -46,7 +47,7 @@ vtree_pat <- function(data, cnms, vp = TRUE) {
   # we are not interested in individual data points, only in the summaries
   # why setdiff: you can't summarize across grouping columns
   data <- data |>
-    summarize(across(all_of(setdiff(selcnms, cnms)), first),
+    summarize(across(all_of(setdiff(selcnms, cnms)), dplyr::first),
               .groups = "drop_last") |>
     ungroup() |>
     select(all_of(selcnms))

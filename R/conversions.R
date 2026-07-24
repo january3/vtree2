@@ -24,6 +24,7 @@ as_tbl_graph <- function(vtree) {
 #' This function is close to the `crosstabToCases()` function from
 #' the original vtree package.
 #' @inheritParams vtree
+#' @importFrom rlang as_name
 #' @return A data frame of cases, one row per observation, one column per variable
 #' @export
 cases_from_freqtable <- function(x, ..., .freq_col = "Freq", .cols = NULL) {
@@ -38,7 +39,7 @@ cases_from_freqtable <- function(x, ..., .freq_col = "Freq", .cols = NULL) {
     # enquos the columns so we can play with them
     cols <- enquos(...)
     # get the column names as strings
-    cnms <- map_chr(cols, as_name)
+    cnms <- map_chr(cols, rlang::as_name)
   }
 
   stopifnot(.freq_col %in% colnames(x))
