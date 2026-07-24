@@ -26,7 +26,7 @@ test_that("adding labels works", {
   nodes <- vt |> add_labels(template = "long") |> as_tibble()
   expect_in("label", colnames(nodes))
 
-  nodes <- vt |> add_labels(format = "foo", format_na = "foo") |> as_tibble()
+  nodes <- vt |> add_labels(fmt = "foo", fmt_na = "foo") |> as_tibble()
   expect_true(all(nodes$label == "foo"))
 })
 

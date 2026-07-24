@@ -8,8 +8,8 @@ add_labels(
   vtree,
   template = "simple",
   mask = NULL,
-  format = NULL,
-  format_na = NULL,
+  fmt = NULL,
+  fmt_na = NULL,
   root_label = NA
 )
 }
@@ -17,16 +17,16 @@ add_labels(
 \item{vtree}{an object of class vtree}
 
 \item{template}{One of the predefined formats; can be 'simple' or
-'long'. If 'custom', you must provide the \code{format} and \code{format_NA}
+'long'. If 'custom', you must provide the \code{fmt} and \code{fmt_NA}
 parameters.}
 
 \item{mask}{If not NULL, then a logical vector is expected indicating
 the nodes for which the labels will be modified.}
 
-\item{format}{an R expression to format the valid value nodes. If not
+\item{fmt}{an R expression to format the valid value nodes. If not
 NULL, replaces the format from the template.}
 
-\item{format_na}{an R expression to format NA nodes. If not NULL,
+\item{fmt_na}{an R expression to format NA nodes. If not NULL,
 replaces the format from the template.}
 
 \item{root_label}{Label to be used for the root node. If NA, do not
@@ -44,7 +44,7 @@ By default, \code{add_labels()} produces simple node labels containing the
 associated variable value, number of cases and percentage within the
 parent node.
 
-Formatting can be done with the \code{format}/\code{format_na} parameter, which is
+Formatting can be done with the \code{fmt}/\code{fmt_na} parameter, which is
 an R expression. You can use sprintf, glue, paste or whichever
 expressions you like to construct a label from the following variables:
 \itemize{
@@ -75,8 +75,8 @@ vt |> add_labels(mask = mask) |> plot()
 
 # customize the format
 vt |>
-  add_labels(format = sprintf("\%d out of \%d",
+  add_labels(fmt = sprintf("\%d out of \%d",
         n, round(n/freq)),
-    format_na = "NA") |> plot()
+    fmt_na = "NA") |> plot()
 
 }

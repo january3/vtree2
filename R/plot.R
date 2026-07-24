@@ -23,7 +23,7 @@
 #' associated variable value, number of cases and percentage within the
 #' parent node.
 #'
-#' Formatting can be done with the `format`/`format_na` parameter, which is
+#' Formatting can be done with the `fmt`/`fmt_na` parameter, which is
 #' an R expression. You can use sprintf, glue, paste or whichever
 #' expressions you like to construct a label from the following variables:
 #'
@@ -41,13 +41,13 @@
 #'
 #' @param vtree an object of class vtree
 #' @param template One of the predefined formats; can be 'simple' or
-#' 'long'. If 'custom', you must provide the `format` and `format_NA`
+#' 'long'. If 'custom', you must provide the `fmt` and `fmt_NA`
 #' parameters.
 #' @param mask If not NULL, then a logical vector is expected indicating
 #' the nodes for which the labels will be modified.
-#' @param format an R expression to format the valid value nodes. If not
+#' @param fmt an R expression to format the valid value nodes. If not
 #' NULL, replaces the format from the template.
-#' @param format_na an R expression to format NA nodes. If not NULL,
+#' @param fmt_na an R expression to format NA nodes. If not NULL,
 #' replaces the format from the template.
 #' @param root_label Label to be used for the root node. If NA, do not
 #'                    modify the root label.
@@ -68,55 +68,55 @@
 #'
 #' # customize the format
 #' vt |>
-#'   add_labels(format = sprintf("%d out of %d",
+#'   add_labels(fmt = sprintf("%d out of %d",
 #'         n, round(n/freq)),
-#'     format_na = "NA") |> plot()
+#'     fmt_na = "NA") |> plot()
 #'
 #' @export
 add_labels <- function(vtree,
                        template = "simple",
                        mask = NULL,
-                       format = NULL,
-                       format_na = NULL,
+                       fmt = NULL,
+                       fmt_na = NULL,
                        root_label = NA) {
 
   template <- match.arg(template, c("simple", "long"))
 
-  userfmt <- enquo(format)
-  userfmt_na <- enquo(format_na)
+  userfmt <- enquo(fmt)
+  userfmt_na <- enquo(fmt_na)
 
   # this only looks complicated because we have to use .data
   if(template == "simple") {
-    format <- quo(sprintf("%s\n%d (%.0f%%)",
+    fmt <- quo(sprintf("%s\n%d (%.0f%%)",
          .data[["node_val"]],
          .data[["n"]], .data[["freq"]] * 100))
-    format_na = quo(sprintf("%s\n%d", .data[["node_val"]],
+    fmt_na = quo(sprintf("%s\n%d", .data[["node_val"]],
                             .data[["n"]]))
   } else if(template == "long") {
-    format <- quo(sprintf("%s: %s\nN = %d (%.0f%%)",
+    fmt <- quo(sprintf("%s: %s\nN = %d (%.0f%%)",
          .data[["node_name"]],
          .data[["node_val"]],
          .data[["n"]],
          .data[["freq"]] * 100))
-    format_na = quo(sprintf("%s: %s\n%d", .data[["node_name"]],
+    fmt_na = quo(sprintf("%s: %s\n%d", .data[["node_name"]],
                             .data[["node_val"]], .data[["n"]]))
   }
 
   if(!quo_is_null(userfmt)) {
-    format <- userfmt
+    fmt <- userfmt
   }
 
   if(!quo_is_null(userfmt_na)) {
-    format_na <- userfmt_na
+    fmt_na <- userfmt_na
   }
 
-  if(quo_is_null(format) || quo_is_null(format_na)) {
-    stop("format/format_na not defined")
+  if(quo_is_null(fmt) || quo_is_null(fmt_na)) {
+    stop("fmt/fmt_na not defined")
   }
 
   nodes <- vtree |> activate("nodes") |> as_tibble()
-  labels    <- eval_tidy(format, data = nodes)
-  labels_na <- eval_tidy(format_na, data = nodes)
+  labels    <- eval_tidy(fmt, data = nodes)
+  labels_na <- eval_tidy(fmt_na, data = nodes)
 
   if(is.null(mask)) {
     mask <- rep(TRUE, nrow(nodes))
