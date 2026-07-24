@@ -5,7 +5,7 @@
 \alias{summary_vt_df}
 \title{Summarize a case variable for each node of a vtree}
 \usage{
-summary_vt(cases, vtree, col, format = NULL, .col = NULL)
+summary_vt(cases, vtree, col, fmt = NULL, .col = NULL)
 
 summary_vt_df(cases, vtree, col, .col = NULL)
 }
@@ -17,7 +17,7 @@ summary_vt_df(cases, vtree, col, .col = NULL)
 \item{col}{The column variable to summarize. This should be a single
 column name, quoted or not.}
 
-\item{format}{An expression for customized formatting. See Examples.}
+\item{fmt}{An expression for customized formatting. See Examples.}
 
 \item{.col}{If you want to provide a column name in a variable, use .col
 and not col.}
@@ -59,11 +59,11 @@ labeling the nodes.
 
 You can use these functions to create informative labels for the nodes.
 
-Using the \code{format} parameter, it is possible to create fully
+Using the \code{fmt} parameter, it is possible to create fully
 summaries. The expression is evaluated within the context of the summary
 data frame, which means that you can use all columns avaialble in that
 data frame. For example, you can use an expression like
-\code{sprintf("\%s", format(median, digits = 2))} or \code{glue("{median}")}.
+\code{sprintf("\%s", fmt(median, digits = 2))} or \code{glue("{median}")}.
 }
 \examples{
 
@@ -81,7 +81,7 @@ vt |> mutate(label = csm_txt) |> plot()
 vt <- vt |> add_labels()
 csm_txt <- cases |>
   summary_vt(vt, Random,
-             format = sprintf("median: \%.1f",median))
+             fmt = sprintf("median: \%.1f",median))
 vt |>
   mutate(label = paste0(label, "\n", csm_txt)) |> 
   plot()
@@ -99,7 +99,7 @@ cases$Random[ runif(nrow(cases)) < .1 ] <- NA
 
 csm_txt <- cases |>
   summary_vt(vt, Random,
-     format = sprintf("valid: \%d/\%d (\%d\%\%)",
+     fmt = sprintf("valid: \%d/\%d (\%d\%\%)",
            valid, n, round(100 * valid/n)))
 
 vt |>

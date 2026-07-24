@@ -105,15 +105,15 @@
 #'
 #' You can use these functions to create informative labels for the nodes.
 #'
-#' Using the `format` parameter, it is possible to create fully
+#' Using the `fmt` parameter, it is possible to create fully
 #' summaries. The expression is evaluated within the context of the summary
 #' data frame, which means that you can use all columns avaialble in that
 #' data frame. For example, you can use an expression like 
-#' `sprintf("%s", format(median, digits = 2))` or `glue("{median}")`.
+#' `sprintf("%s", fmt(median, digits = 2))` or `glue("{median}")`.
 #'
 #' @param vtree A vtree object.
 #' @param cases A data frame of cases, with one row per observation.
-#' @param format An expression for customized formatting. See Examples.
+#' @param fmt An expression for customized formatting. See Examples.
 #' @param col The column variable to summarize. This should be a single
 #'            column name, quoted or not.
 #' @param .col If you want to provide a column name in a variable, use .col
@@ -138,7 +138,7 @@
 #' vt <- vt |> add_labels()
 #' csm_txt <- cases |>
 #'   summary_vt(vt, Random,
-#'              format = sprintf("median: %.1f",median))
+#'              fmt = sprintf("median: %.1f",median))
 #' vt |>
 #'   mutate(label = paste0(label, "\n", csm_txt)) |> 
 #'   plot()
@@ -156,7 +156,7 @@
 #'
 #' csm_txt <- cases |>
 #'   summary_vt(vt, Random,
-#'      format = sprintf("valid: %d/%d (%d%%)",
+#'      fmt = sprintf("valid: %d/%d (%d%%)",
 #'            valid, n, round(100 * valid/n)))
 #'
 #' vt |>
@@ -171,9 +171,9 @@
 #'   plot()
 #'
 #' @export
-summary_vt <- function(cases, vtree, col, format = NULL, .col = NULL) {
+summary_vt <- function(cases, vtree, col, fmt = NULL, .col = NULL) {
 
-  format <- enquo(format)
+  fmt <- enquo(fmt)
 
   if(!is.null(.col)) {
     col <- .col
@@ -188,32 +188,32 @@ summary_vt <- function(cases, vtree, col, format = NULL, .col = NULL) {
   type <- match.arg(type, c("categorical", "numeric"))
 
   if(type == "categorical") {
-    ret <- .summary_vt_categoric(df, format)
+    ret <- .summary_vt_categoric(df, fmt)
   } else {
-    ret <- .summary_vt_numeric(df, format)
+    ret <- .summary_vt_numeric(df, fmt)
   }
 
   ret
 
 }
 
-.summary_vt_categoric <- function(summary_df, format=NULL) {
+.summary_vt_categoric <- function(summary_df, fmt=NULL) {
 
-  if(quo_is_null(format)) {
-    format <- quo(
+  if(quo_is_null(fmt)) {
+    fmt <- quo(
       sprintf("%s\n%s",
         .data[["col"]],
         .data[["levels_str"]]))
   }
 
-  ret <- eval_tidy(format, data = summary_df)
+  ret <- eval_tidy(fmt, data = summary_df)
   ret
 }
 
-.summary_vt_numeric <- function(summary_df, format=NULL) {
+.summary_vt_numeric <- function(summary_df, fmt=NULL) {
 
-  if(quo_is_null(format)) {
-    format <- quo(
+  if(quo_is_null(fmt)) {
+    fmt <- quo(
       sprintf(
         "%s\nNAs: %d\nmean %s SD %s\nmedian %s IQR %s, %s\nrange %s, %s",
          .data[["col"]],
@@ -229,7 +229,7 @@ summary_vt <- function(cases, vtree, col, format = NULL, .col = NULL) {
          ))
   }
 
-  ret <- eval_tidy(format, data = summary_df)
+  ret <- eval_tidy(fmt, data = summary_df)
   ret
 }
 

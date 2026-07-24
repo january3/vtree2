@@ -35,10 +35,11 @@ test_that("pruning works", {
 
   # now with some missing values
   cases <- cases_from_freqtable(Titanic)
+  set.seed(128)
   cases$Sex[ runif(nrow(cases)) < .1 ] <- NA
   vt1 <- vtree(cases, Class, Sex, Survived)
   vt2 <- prune(vt1, freq < .12)
-  expect_equal(nrow(vt2 |> as_tibble()), 28)
+  expect_equal(nrow(vt2 |> as_tibble()), 37)
   vt2 <- prune(vt1, Class == "1st")
   expect_equal(nrow(vt2 |> as_tibble()), 31)
   vt2 <- prune(vt1, Sex == "Male")
