@@ -2,13 +2,16 @@
 #'
 #' Convert a vtree_graph to a tbl_graph
 #'
-#' @param vtree A vtree object
+#' @param x A vtree object
+#' @param ... Ignored
+#' @examples
+#' vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived)
+#' as_tbl_graph(vt) |> plot()
 #' @return A tbl_graph object
 #' @export
-as_tbl_graph <- function(vtree) {
-  stopifnot(inherits(vtree, "vtree"))
-  class(vtree) <- setdiff(class(vtree), "vtree")
-  vtree
+as_tbl_graph.vtree <- function(x, ...) {
+  class(x) <- setdiff(class(x), "vtree")
+  x
 }
 
 #' Convert a frequency table to a data frame of cases
@@ -23,6 +26,16 @@ as_tbl_graph <- function(vtree) {
 #'
 #' This function is close to the `crosstabToCases()` function from
 #' the original vtree package.
+#' @param x A frequency table, as a data frame or a table object.
+#' @param ... The columns to use for the cases. If not specified, all columns
+#'       except the frequency column are used.
+#' @param .freq_col The name of the column containing the frequency counts.
+#' @examples
+#' cases <- cases_from_freqtable(Titanic)
+#' cases <- cases_from_freqtable(Titanic, Class, Sex, Survived)
+#' cases <- cases_from_freqtable(Titanic,
+#'               .freq_col = "Freq",
+#'               .cols = c("Class", "Sex", "Survived"))
 #' @inheritParams vtree
 #' @importFrom rlang as_name
 #' @return A data frame of cases, one row per observation, one column per variable
@@ -42,13 +55,33 @@ cases_from_freqtable <- function(x, ..., .freq_col = "Freq", .cols = NULL) {
     cnms <- map_chr(cols, rlang::as_name)
   }
 
-  stopifnot(.freq_col %in% colnames(x))
-  stopifnot(all(cnms %in% colnames(x)))
+  if(!.freq_col %in% colnames(x)) {
+      fcol <- .freq_col
+    cli_abort(c(
+      x = "Frequency column {fcol} not found in the data frame",
+      i = "Available columns: {paste(colnames(x), collapse = ', ')}"
+    ))
+  }
+
+  if(!all(cnms %in% colnames(x))) {
+    missing_cols <- setdiff(cnms, colnames(x))
+    cli_abort(c(
+      x = "Some columns specified in .cols or ... are not found in the data frame",
+      i = "Missing columns: {paste(missing_cols, collapse = ', ')}",
+      i = "Available columns: {paste(colnames(x), collapse = ', ')}"
+    ))
+  }
 
   if(length(cnms) < 1) {
     cnms <- setdiff(colnames(x), .freq_col)
   }
-  stopifnot(length(cnms) > 0)
+
+  if(!length(cnms) > 0) {
+    cli_abort(c(
+      x = "No usable columns found in the data frame",
+      i = "Available columns: {paste(colnames(x), collapse = ', ')}"
+    ))
+  }
 
   x <- x[ rep.int(seq_len(nrow(x)), x[[.freq_col]]), ]
   x <- x[ , cnms, drop = FALSE ]

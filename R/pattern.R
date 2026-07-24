@@ -69,12 +69,15 @@ print.vtree_pattern <- function(x, ...) {
 #' @param vtree A vtree object.
 #' @return A data frame of class vtree_pattern in 
 #'         which each row corresponds to one path through the tree.
+#' @export
 pattern <- function(vtree) {
-  stopifnot(inherits(vtree, "vtree"))
+  if(!inherits(vtree, "vtree")) {
+    cli_abort(x = "pattern() requires a vtree object")
+  }
+
   nodes <- vtree |> activate("nodes") |> as_tibble()
 
   maxl <- max(nodes[["level"]])
-  stopifnot(maxl > 0)
 
   # get the column names
   cnms <- attr(vtree, "cols")

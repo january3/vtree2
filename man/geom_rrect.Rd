@@ -110,6 +110,20 @@ rather than combining with them. This is most useful for helper functions
 that define both data and aesthetics and shouldn't inherit behaviour from
 the default plot specification, e.g. \code{\link[ggplot2:annotation_borders]{annotation_borders()}}.}
 }
+\value{
+A ggplot2 layer
+}
 \description{
 Draw rectangles with rounded corners.
+}
+\examples{
+library(ggplot2)
+ggplot(mtcars, aes(xmin = wt - 0.5,
+                  xmax = wt + 0.5,
+                  ymin = mpg - 5,
+                  ymax = mpg + 5,
+                  fill = factor(cyl))) +
+                  geom_rrect(radius = 0.2, alpha = 0.5) +
+                  geom_point(aes(x = wt, y = mpg), size = 2) +
+                  theme_minimal()
 }

@@ -114,6 +114,18 @@ prune <- function(vtree, condition, follow_only = FALSE,
   }
   condition <- enquo(condition)
 
+  if(is.character(na.rm)) {
+    if(!all(na.rm %in% names(vtree))) {
+      na.rm <- na.rm[!na.rm %in% names(vtree)]
+      na.rm <- paste(na.rm, collapse = ", ")
+      present <- paste(names(vtree), collapse = ", ")
+      cli_abort(c(
+        "na.rm must be a logical value or a character vector of column names",
+        i = "Columns present in the vtree: {present}",
+        x = "Following columns are not present in the vtree: {na.rm}"))
+    }
+  }
+
   .prune(vtree, condition, follow_only = follow_only,
          mark_only = mark_only,
          keep = keep, na.rm = na.rm)
@@ -141,6 +153,7 @@ find_nodes <- function(vtree, condition) {
 #' @param vtree A vtree graph object.
 #' @param mask A logical vector indicating which nodes to consider for finding
 #'             their following or preceding nodes.
+#' @examples
 #' vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived)
 #' mask <- find_nodes(vt, ID == "Class:1st/Sex:Male")
 #' follow <- find_follow_nodes(vt, mask)
@@ -152,6 +165,7 @@ find_nodes <- function(vtree, condition) {
 #'                    ifelse(precede, "blue", fill))) |>
 #'       plot()
 #' 
+#' @return A logical vector indicating which nodes follow or precede the nodes
 #' @export
 find_follow_nodes <- function(vtree, mask) {
 
@@ -201,7 +215,6 @@ find_precede_nodes <- function(vtree, mask) {
   # na.rm may be a character vector of columns to check
   # for potential NAs
   if(is.character(na.rm)) {
-    stopifnot(all(na.rm %in% colnames(vcols)))
     nas <- lapply(na.rm, \(col) {
       vcols$node_col == col & is.na(vcols$node_val)
     }) |> reduce(`|`)

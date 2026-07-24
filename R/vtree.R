@@ -9,9 +9,9 @@
 #' with each ordered vector containing the levels of that variable.
 #' @param x A vtree object.
 #' @return A list of character vectors, one for each variable split in the tree,
+#' @importFrom cli cli_abort
 #' @export
 levels.vtree <- function(x) {
-  stopifnot(inherits(x, "vtree"))
   nodes <- x |> as_tibble()
 
   cnms <- attr(x, "cols") |> set_names()
@@ -35,7 +35,6 @@ levels.vtree <- function(x) {
 #' @return A character vector of variable names
 #' @export
 names.vtree <- function(x) {
-  stopifnot(inherits(x, "vtree"))
   attr(x, "cols")
 }
 
@@ -56,7 +55,6 @@ names.vtree <- function(x) {
 #' [dplyr::mutate()], [tidygraph::activate()]
 #' @export
 mutate.vtree <- function(.data, ..., .edges = FALSE) {
-  stopifnot(inherits(.data, "vtree"))
   if(.edges) {
     .data <- .data |> activate("edges")
   } else {
@@ -78,7 +76,6 @@ mutate.vtree <- function(.data, ..., .edges = FALSE) {
 #' @return Invisibly returns the input object.
 #' @export
 print.vtree <- function(x, ...) {
-  stopifnot(inherits(x, "vtree"))
   cols <- attr(x, "cols")
   N <- attr(x, "N")
   cat("vtree object with", length(cols), "columns and", N, "observations\n")
@@ -95,7 +92,9 @@ print.vtree <- function(x, ...) {
 #' @param x A tbl_graph object.
 #' @return A vtree object
 as_vtree <- function(x) {
-  stopifnot(inherits(x, "tbl_graph"))
+  if(!inherits(x, "tbl_graph")) {
+    cli_abort(x = "x must be a tbl_graph object")
+  }
 
   # integrity checks
   # ------------------
@@ -114,14 +113,20 @@ as_vtree <- function(x) {
     mutate(leaf = .data[["level"]] == max(.data[["level"]]))
 
   # more than a root
-  stopifnot(any(nodes$level > 0))
+  if(!any(nodes$level > 0) || nrow(nodes) < 2) {
+    cli_abort(x = "The vtree must have at least one node other than the root")
+  }
 
   # only one root
-  stopifnot(sum(nodes$level == 0) == 1)
+  if(!sum(nodes$level == 0) == 1) {
+    cli_abort(x = "The vtree must have exactly one root node")
+  }
 
   N <- nodes$n[ nodes$level == 0 ]
 
-  stopifnot(all(!is.na(nodes$node_col)))
+  if(any(is.na(nodes$node_col))) {
+    cli_abort(x = "The node_col column must not contain NA values")
+  }
 
   cnms <- unique(nodes$node_col[ nodes$level > 0 ])
 
@@ -210,25 +215,25 @@ as_vtree <- function(x) {
 #' `n` of the parent node (`Class:1st` in case of `Class:1st/Sex:Female`). However,
 #' it makes the calculations transparent.
 #' @examples
-#' library(tidyverse)
+#' 
 #' data(Titanic)
 #' vt <- vtree_from_freqtable(Titanic, Class, Survived)
-#' if(interactive()) {
-#'   plot(vt, by_freq = TRUE)
-#' }
-#' set.seed(123)
-#' # create a new data set with NAs
-#' titanicNA <- Titanic |>
-#'   cases_from_freqtable() |>
-#'   # change all classes to character
-#'   mutate(across(everything(), as.character)) |>
-#'   # add some random NAs to each column
-#'   mutate(Class = ifelse(runif(n()) < 0.1, NA, Class)) |>
-#'   mutate(Sex = ifelse(runif(n()) < 0.1, NA, Sex)) |>
-#'   mutate(Age = ifelse(runif(n()) < 0.1, NA, Age))
+#' plot(vt)
+#' plot(vt, proportional = TRUE)
 #'
-#' vt <- vtree(titanicNA, Class, Sex, Survived)
-#' if(interactive()) {
+#' if(requireNamespace('dplyr', quietly = TRUE)) {
+#'   library(dplyr)
+#'   set.seed(123)
+#'   # create a new data set with NAs
+#'   titanicNA <- cases_from_freqtable(Titanic) |>
+#'     # change all classes to character
+#'     mutate(across(everything(), as.character)) |>
+#'     # add some random NAs to each column
+#'     mutate(Class = ifelse(runif(n()) < 0.1, NA, Class)) |>
+#'     mutate(Sex = ifelse(runif(n()) < 0.1, NA, Sex)) |>
+#'     mutate(Age = ifelse(runif(n()) < 0.1, NA, Age))
+#'   
+#'   vt <- vtree(titanicNA, Class, Sex, Survived)
 #'   plot(vt)
 #' }
 #' @param cases A data frame, one row per observation, one column per variable
@@ -236,7 +241,9 @@ as_vtree <- function(x) {
 #' @param ... Columns to use for the tree. If no columns are specified, all
 #'            columns (except the frequency column for the frequency
 #'            tables) will be used
-#' @param .cols Provide column names as a character vector instead of using the ... argument. This is useful when the column names are stored in a variable.
+#' @param .cols Provide column names as a character vector instead of using
+#'         the ... argument. This is useful when the column names are
+#'         stored in a variable.
 #' @param .vp valid percentage; when calculating frequencies / percentages,
 #'           omit NA values from the denominator
 #' @param .freq_col The name of the column in a frequency table that
@@ -266,8 +273,18 @@ vtree <- function(cases, ..., .vp = TRUE, .cols = NULL) {
   if(length(cnms) < 1L) {
     cnms <- colnames(cases)
   }
-  stopifnot(length(cnms) > 0L)
-  stopifnot(all(cnms %in% colnames(cases)))
+
+  if(length(cnms) < 1L) {
+    cli_abort(x = "No columns specified for the vtree")
+  }
+
+  if(!all(cnms %in% colnames(cases))) {
+    cnms <- cnms[ !cnms %in% colnames(cases) ]
+    cli_abort(
+    c("Columns specified for the vtree are not in the cases data frame",
+      "x" = "Columns not found: {cnms}")
+    )
+  }
 
   cases <- select(cases, all_of(cnms))
   N <- nrow(cases)

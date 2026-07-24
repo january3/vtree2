@@ -384,7 +384,7 @@ plot_regular <- function(layout, fill_scale, color_scale,
 #' # regular plot
 #' plot(vt)
 #'
-#' # proportional
+#' # proportional plot
 #' plot(vt, proportional = TRUE)
 #'
 #' # create custom labels as simple numbers with mutate()
@@ -430,11 +430,10 @@ plot.vtree <- function(x,
                        legend = FALSE) {
 
   dir <- match.arg(dir)
-  stopifnot(inherits(x, "vtree"))
 
   nodes <- x |> activate("nodes") |> as_tibble()
   if(! "fill" %in% colnames(nodes)) {
-    x <- vtree_pal_assign(x, palettes = palettes, na_fill = na_fill)
+    x <- add_palette(x, palettes = palettes, na_fill = na_fill)
   }
 
   if(! "color" %in% colnames(nodes)) {

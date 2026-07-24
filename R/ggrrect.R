@@ -29,7 +29,18 @@ draw_key_rrect <- function(data, params, size) {
 #' @inheritParams ggplot2::geom_rect
 #' @param radius Corner radius as fraction of the rect width, .1 - .5
 #'
+#' @examples
+#' library(ggplot2)
+#' ggplot(mtcars, aes(xmin = wt - 0.5,
+#'                   xmax = wt + 0.5,
+#'                   ymin = mpg - 5,
+#'                   ymax = mpg + 5,
+#'                   fill = factor(cyl))) +
+#'                   geom_rrect(radius = 0.2, alpha = 0.5) +
+#'                   geom_point(aes(x = wt, y = mpg), size = 2) +
+#'                   theme_minimal()
 #' @importFrom rlang list2
+#' @return A ggplot2 layer
 #' @export
 geom_rrect <- function(
     mapping = NULL,
@@ -65,8 +76,8 @@ draw_panel_rrect <- function(
       radius = 0.1
 ) {
   if (!coord$is_linear()) {
-    cli::cli_abort(
-      "{.fn geom_rrect} only supports linear coordinate systems."
+    cli_abort(
+      x = "{.fn geom_rrect} only supports linear coordinate systems."
     )
   }
 
@@ -77,8 +88,8 @@ draw_panel_rrect <- function(
     radius < 0 ||
     radius > 0.5
   ) {
-    cli::cli_abort(
-      "{.arg radius} must be a number between 0 and 0.5."
+    cli_abort(
+      x = "{.arg radius} must be a number between 0 and 0.5."
     )
   }
 

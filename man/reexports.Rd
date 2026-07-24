@@ -5,6 +5,7 @@
 \alias{reexports}
 \alias{mutate}
 \alias{pull}
+\alias{as_tbl_graph}
 \title{Re-exported functions}
 \keyword{internal}
 \description{
@@ -13,5 +14,7 @@ below to see their documentation.
 
 \describe{
   \item{dplyr}{\code{\link[dplyr:mutate]{mutate()}}, \code{\link[dplyr:pull]{pull()}}}
+
+  \item{tidygraph}{\code{\link[tidygraph:as_tbl_graph]{as_tbl_graph()}}}
 }}
 

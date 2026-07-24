@@ -22,7 +22,9 @@ contains the frequency counts. Default is "Freq".}
 \item{.vp}{valid percentage; when calculating frequencies / percentages,
 omit NA values from the denominator}
 
-\item{.cols}{Provide column names as a character vector instead of using the ... argument. This is useful when the column names are stored in a variable.}
+\item{.cols}{Provide column names as a character vector instead of using
+the ... argument. This is useful when the column names are
+stored in a variable.}
 
 \item{cases}{A data frame, one row per observation, one column per variable}
 }
@@ -106,25 +108,25 @@ it makes the calculations transparent.
 }
 
 \examples{
-library(tidyverse)
+
 data(Titanic)
 vt <- vtree_from_freqtable(Titanic, Class, Survived)
-if(interactive()) {
-  plot(vt, by_freq = TRUE)
-}
-set.seed(123)
-# create a new data set with NAs
-titanicNA <- Titanic |>
-  cases_from_freqtable() |>
-  # change all classes to character
-  mutate(across(everything(), as.character)) |>
-  # add some random NAs to each column
-  mutate(Class = ifelse(runif(n()) < 0.1, NA, Class)) |>
-  mutate(Sex = ifelse(runif(n()) < 0.1, NA, Sex)) |>
-  mutate(Age = ifelse(runif(n()) < 0.1, NA, Age))
+plot(vt)
+plot(vt, proportional = TRUE)
 
-vt <- vtree(titanicNA, Class, Sex, Survived)
-if(interactive()) {
+if(requireNamespace('dplyr', quietly = TRUE)) {
+  library(dplyr)
+  set.seed(123)
+  # create a new data set with NAs
+  titanicNA <- cases_from_freqtable(Titanic) |>
+    # change all classes to character
+    mutate(across(everything(), as.character)) |>
+    # add some random NAs to each column
+    mutate(Class = ifelse(runif(n()) < 0.1, NA, Class)) |>
+    mutate(Sex = ifelse(runif(n()) < 0.1, NA, Sex)) |>
+    mutate(Age = ifelse(runif(n()) < 0.1, NA, Age))
+  
+  vt <- vtree(titanicNA, Class, Sex, Survived)
   plot(vt)
 }
 }

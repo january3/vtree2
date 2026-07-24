@@ -13,17 +13,10 @@ find_precede_nodes(vtree, mask)
 \item{vtree}{A vtree graph object.}
 
 \item{mask}{A logical vector indicating which nodes to consider for finding
-their following or preceding nodes.
-vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived)
-mask <- find_nodes(vt, ID == "Class:1st/Sex:Male")
-follow <- find_follow_nodes(vt, mask)
-precede <- find_precede_nodes(vt, mask)
-vt |> mutate(fill =
-ifelse(ID == "Class:1st/Sex:Male", "green", "white")) |>
-mutate(fill =
-ifelse(follow, "red",
-ifelse(precede, "blue", fill))) |>
-plot()}
+their following or preceding nodes.}
+}
+\value{
+A logical vector indicating which nodes follow or precede the nodes
 }
 \description{
 \code{find_follow_nodes} identifies all nodes in a vtree graph that follow the
@@ -32,4 +25,17 @@ nodes for which the provided mask is TRUE.
 \details{
 \code{find_precede_nodes} identifies all nodes in a vtree graph that precede the
 nodes for which the provided mask is TRUE.
+}
+\examples{
+vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived)
+mask <- find_nodes(vt, ID == "Class:1st/Sex:Male")
+follow <- find_follow_nodes(vt, mask)
+precede <- find_precede_nodes(vt, mask)
+vt |> mutate(fill =
+            ifelse(ID == "Class:1st/Sex:Male", "green", "white")) |>
+      mutate(fill =
+            ifelse(follow, "red",
+                   ifelse(precede, "blue", fill))) |>
+      plot()
+
 }

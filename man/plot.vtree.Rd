@@ -110,7 +110,7 @@ vt <- vtree_from_freqtable(Titanic)
 # regular plot
 plot(vt)
 
-# proportional
+# proportional plot
 plot(vt, proportional = TRUE)
 
 # create custom labels as simple numbers with mutate()

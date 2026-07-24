@@ -244,14 +244,47 @@ summary_vt_df <- function(cases, vtree, col, .col = NULL) {
     col <- rlang::as_name(col)
   }
 
-  stopifnot(length(col) == 1L)
-  stopifnot(is.data.frame(cases))
-  stopifnot(inherits(vtree, "vtree"))
+  if(!length(col) == 1L) {
+    cli_abort(c(
+      x = "Only one column can be summarized at a time",
+      i = "You provided {length(col)} columns: {paste(col, collapse = ', ')}"
+    ))
+  }
+
+  if(!is.data.frame(cases)) {
+    cli_abort(c(
+      x = "cases must be a data frame",
+      i = "You provided an object of class {class(cases)}"
+    ))
+  }
+
+  if(!inherits(vtree, "vtree")) {
+    cli_abort(c(
+      x = "vtree must be a vtree object",
+      i = "You provided an object of class {class(vtree)}"
+    ))
+  }
 
   # first, check that all necessary variables are in the colnames of cases
   cols <- names(vtree)
-  stopifnot(all(cols %in% colnames(cases)))
-  stopifnot(all(col %in% colnames(cases)))
+
+  if(!all(cols %in% colnames(cases))) {
+    missing_cols <- setdiff(cols, colnames(cases))
+    cli_abort(c(
+      x = "Some columns in the vtree are not found in the cases data frame",
+      i = "All columns from the vtree must be present in the cases data frame",
+      i = "Missing columns: {missing_cols}",
+      i = "Columns in cases: {colnames(cases)}"
+    ))
+  }
+
+  if(!col %in% colnames(cases)) {
+    cli_abort(c(
+      x = "The column to summarize is not found in the cases data frame",
+      i = "You provided column: {col}",
+      i = "Columns in cases: {colnames(cases)}"
+    ))
+  }
 
   nodes <- vtree |> as_tibble()
 

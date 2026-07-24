@@ -2,7 +2,7 @@
 % Please edit documentation in R/colors.R
 \name{vtree_palette}
 \alias{vtree_palette}
-\alias{vtree_pal_assign}
+\alias{add_palette}
 \title{Get a color palette for a variable level}
 \usage{
 vtree_palette(
@@ -10,7 +10,7 @@ vtree_palette(
   palettes = c("Reds", "Blues", "Greens", "Oranges", "Purples")
 )
 
-vtree_pal_assign(
+add_palette(
   vtree,
   palettes = c("Reds", "Blues", "Greens", "Oranges", "Purples"),
   na_fill = "white"
@@ -34,7 +34,11 @@ Get a color palette for a variable level
 \code{vtree_palette} returns a color palette for a variable level in a vtree.
 The colors are chosen from the RColorBrewer package.
 
-\code{vtree_pal_assign} assigns fill colors to the nodes of a vtree based on the
+\code{add_palette} assigns fill colors to the nodes of a vtree based on the
 variable levels. The fill colors are stored in a new column in the nodes
 data frame called "fill".
+}
+\examples{
+vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived)
+vtree_palette(vt)
 }

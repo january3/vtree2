@@ -30,13 +30,16 @@ contrast_color <- function(color) {
 #' `vtree_palette` returns a color palette for a variable level in a vtree.
 #' The colors are chosen from the RColorBrewer package.
 #'
-#' `vtree_pal_assign` assigns fill colors to the nodes of a vtree based on the
+#' `add_palette` assigns fill colors to the nodes of a vtree based on the
 #' variable levels. The fill colors are stored in a new column in the nodes
 #' data frame called "fill".
 #' @param vtree A vtree object
 #' @param palettes The names of RColorBrewer palettes corresponding to the
 #'                 subsequent columns in the vtree
 #' @param na_fill fill color used for nodes associated with NA values
+#' @examples
+#' vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived)
+#' vtree_palette(vt)
 #' @return A character vector of colors for the levels of the variable
 #' @importFrom RColorBrewer brewer.pal
 #' @importFrom grDevices colorRampPalette
@@ -47,7 +50,9 @@ vtree_palette <- function(vtree,
                                        "Oranges", "Purples")) {
   #family <- families[(level - 1L) %% length(families) + 1L]
 
-  stopifnot(inherits(vtree, "vtree"))
+  if(!inherits(vtree, "vtree")) {
+    cli_abort(x = "vtree_palette() requires a vtree object")
+  }
 
   levs <- levels(vtree)
   levs <- map(levs, \(x) x[ !is.na(x)])
@@ -68,12 +73,14 @@ vtree_palette <- function(vtree,
 
 #' @rdname vtree_palette
 #' @export
-vtree_pal_assign <- function(vtree,
+add_palette <- function(vtree,
                              palettes = c("Reds", "Blues", "Greens",
                                        "Oranges", "Purples"),
                              na_fill = "white") {
 
-  stopifnot(inherits(vtree, "vtree"))
+  if(!inherits(vtree, "vtree")) {
+    cli_abort(x = "add_palette() requires a vtree object")
+  }
 
   pal <- vtree_palette(vtree, palettes = palettes)
 
