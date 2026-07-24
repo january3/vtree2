@@ -36,7 +36,8 @@
 #' If a node is pruned, all subsequent nodes in the path are also pruned.
 #'
 #' `keep()` is a convenience function that keeps only the nodes that
-#' satisfy the condition and prunes everything else.
+#' satisfy the condition and prunes everything else, except for any node
+#' that precedes the selected nodes. 
 #'
 #' `find_nodes()` returns a logical vector identifying the nodes which
 #' fullfill a certain condition.
@@ -47,6 +48,23 @@
 #' correspond to a certain variable, and then use the variable name to
 #' search for a specific value.
 #'
+#' @section keep vs prune:
+#'
+#' Note that `keep()` is not a simple complement of `prune()`, because if you
+#' use keep to select a node, then if the parent node does not fullfill the
+#' condition it will still be kept. However, if you mark a node for pruning
+#' with `prune()`, then all subsequent nodes will be pruned, even if they
+#' fullfill the condition.
+#'
+#' In the Titanic example, if you prune all nodes where frequency is less
+#' than 15%, then the node for adult females from the crew will be pruned,
+#' because the frequency of the node Crew:Adult/Sex:Female is below 15% and
+#' all subsequent nodes are also pruned. However, if you specify to keep
+#' all nodes where frequency is above 15%, then the node
+#' Crew:Adult/Sex:Female will be kept despite having a low frequency,
+#' because the subsequent nodes – like percentage of survivorship for
+#' female crew members – are above 15%.
+#'
 #' @param vtree A vtree graph object.
 #' @param condition A logical expression that defines the pruning
 #'              condition. If no condition is provided, no pruning is done,
@@ -56,6 +74,12 @@
 #'              prune all following nodes.
 #' @param keep If TRUE, keeps the nodes that satisfy the condition and prunes
 #'              everything else.
+#' @param mark_only If TRUE, marks the nodes that satisfy the condition in
+#'          the node data frame with a new column `mark` but does not prune
+#'          the graph. Useful for debugging. The values of the column are
+#'          `hit` for the nodes that satisfy the condition, otherwise
+#'          `keep` for the nodes that would be kept, and `prune` for the
+#'          nodes that would be pruned.
 #' @param na.rm If TRUE, removes nodes with NA values in the evaluated
 #'              condition. If it is a character vector, then it is treated
 #'              as a vector of column names for which all NA values should
@@ -83,6 +107,7 @@
 #' @importFrom tibble tibble
 #' @export
 prune <- function(vtree, condition, follow_only = FALSE,
+                  mark_only = FALSE,
                   keep = FALSE, na.rm = FALSE) {
   if(missing(condition)) {
     condition <- expr(FALSE)
@@ -90,6 +115,7 @@ prune <- function(vtree, condition, follow_only = FALSE,
   condition <- enquo(condition)
 
   .prune(vtree, condition, follow_only = follow_only,
+         mark_only = mark_only,
          keep = keep, na.rm = na.rm)
 
 }
@@ -101,39 +127,6 @@ find_nodes <- function(vtree, condition) {
   condition <- enquo(condition)
 
   mask <- .get_mask(vtree, condition)
-  mask
-}
-
-.get_mask <- function(vtree, condition, keep = FALSE, na.rm = FALSE) {
-
-  # we need these cols to be able to naturally evaluate the condition using
-  # data vars
-  vcols <- .add_virt_cols(vtree |> activate("nodes") |> as_tibble())
-
-  # here we create the pruning mask
-  mask <- eval_tidy(condition, data = vcols)
-
-  # now, some comparisons may return NA.
-  # we ignore them - assume that it's not a match.
-  mask[ is.na(mask) ] <- FALSE
-
-  # na.rm may be a character vector of columns to check
-  # for potential NAs
-  if(is.character(na.rm)) {
-    stopifnot(all(na.rm %in% colnames(vcols)))
-    nas <- lapply(na.rm, \(col) {
-      vcols$node_col == col & is.na(vcols$node_val)
-    }) |> reduce(`|`)
-    mask <- mask | nas
-  } else if(na.rm) {
-    nas <- vcols |> pull("node_val") |> is.na()
-    mask <- mask | nas
-  }
-
-  if(keep) {
-    mask <- !mask
-  }
-
   mask
 }
 
@@ -192,36 +185,89 @@ find_precede_nodes <- function(vtree, mask) {
   precede
 }
 
+.get_mask <- function(vtree, condition, na.rm = FALSE) {
+
+  # we need these cols to be able to naturally evaluate the condition using
+  # data vars
+  vcols <- .add_virt_cols(vtree |> activate("nodes") |> as_tibble())
+
+  # here we create the pruning mask
+  mask <- eval_tidy(condition, data = vcols)
+
+  # now, some comparisons may return NA.
+  # we ignore them - assume that it's not a match.
+  mask[ is.na(mask) ] <- FALSE
+
+  # na.rm may be a character vector of columns to check
+  # for potential NAs
+  if(is.character(na.rm)) {
+    stopifnot(all(na.rm %in% colnames(vcols)))
+    nas <- lapply(na.rm, \(col) {
+      vcols$node_col == col & is.na(vcols$node_val)
+    }) |> reduce(`|`)
+    mask <- mask | nas
+  } else if(na.rm) {
+    nas <- vcols |> pull("node_val") |> is.na()
+    mask <- mask | nas
+  }
+
+  mask
+}
+
+
 # here we actually do the pruning
 # follow only: prune only the following nodes, not the nodes that are
 # selected by the condition
 # na.rm: remove the NA nodes
 .prune <- function(vtree, condition,
                    follow_only = FALSE,
+                   mark_only = FALSE,
                    keep = FALSE, na.rm = FALSE) {
 
-  prune <- .get_mask(vtree, condition, keep, na.rm)
+  mask_cond <- .get_mask(vtree, condition, na.rm)
+
+  # inverse mask if we want to keep the nodes
+  # that satisfy the condition
+  if(keep) {
+    # first, which nodes precede our selected nodes?
+    # we need to keep them!
+    precede <- find_precede_nodes(vtree, mask_cond)
+    mask <- mask_cond | precede
+
+    # now inverse the mask, so anything FALSE ("do not keep")
+    # becomes TRUE ("prune")
+    mask <- !mask
+  } else {
+    mask <- mask_cond
+  }
 
   # find all nodes that follow a node
-  follow_mask <- find_follow_nodes(vtree, prune)
+  follow_mask <- find_follow_nodes(vtree, mask)
 
+  # pruning only follow nodes
   if(follow_only) {
     mask <- follow_mask
   } else {
-    mask <- prune | follow_mask
+    mask <- mask | follow_mask
   }
 
-  ret <- vtree |>
-    activate("nodes") |>
-    filter(!mask)
+  if(mark_only) {
+    ret <- vtree |>
+      mutate(mark = ifelse(mask, 
+                           "prune", "keep")) |>
+      mutate(mark = ifelse(mask_cond, "hit", mark))
+  } else {
+    ret <- vtree |>
+      filter(!mask)
+  }
 
   as_vtree(ret)
 }
 
 #' @rdname prune
 #' @export
-keep <- function(vtree, condition) {
+keep <- function(vtree, condition, mark_only = FALSE) {
   condition <- rlang::enquo(condition)
-  prune(vtree, !!condition, keep = TRUE)
+  prune(vtree, !!condition, keep = TRUE, mark_only = mark_only)
 }
 

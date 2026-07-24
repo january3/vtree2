@@ -31,7 +31,7 @@ test_that("pruning works", {
   expect_equal(nrow(vt3 |> as_tibble()), 36)
 
   vt2 <- vt |> keep(freq > .12)
-  expect_equal(nrow(vt2 |> as_tibble()), 36)
+  expect_equal(nrow(vt2 |> as_tibble()), 49)
 
   # now with some missing values
   cases <- cases_from_freqtable(Titanic)

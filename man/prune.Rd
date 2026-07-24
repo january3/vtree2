@@ -6,11 +6,18 @@
 \alias{keep}
 \title{Find nodes and prune a vtree graph}
 \usage{
-prune(vtree, condition, follow_only = FALSE, keep = FALSE, na.rm = FALSE)
+prune(
+  vtree,
+  condition,
+  follow_only = FALSE,
+  mark_only = FALSE,
+  keep = FALSE,
+  na.rm = FALSE
+)
 
 find_nodes(vtree, condition)
 
-keep(vtree, condition)
+keep(vtree, condition, mark_only = FALSE)
 }
 \arguments{
 \item{vtree}{A vtree graph object.}
@@ -22,6 +29,13 @@ except for the removal of nodes with NA values with
 
 \item{follow_only}{if TRUE, keep the nodes selected by condition, but
 prune all following nodes.}
+
+\item{mark_only}{If TRUE, marks the nodes that satisfy the condition in
+the node data frame with a new column \code{mark} but does not prune
+the graph. Useful for debugging. The values of the column are
+\code{hit} for the nodes that satisfy the condition, otherwise
+\code{keep} for the nodes that would be kept, and \code{prune} for the
+nodes that would be pruned.}
 
 \item{keep}{If TRUE, keeps the nodes that satisfy the condition and prunes
 everything else.}
@@ -43,7 +57,8 @@ If a node is pruned, all subsequent nodes in the path are also pruned.
 }
 \details{
 \code{keep()} is a convenience function that keeps only the nodes that
-satisfy the condition and prunes everything else.
+satisfy the condition and prunes everything else, except for any node
+that precedes the selected nodes.
 
 \code{find_nodes()} returns a logical vector identifying the nodes which
 fullfill a certain condition.
@@ -54,6 +69,25 @@ variables. For example, you can use \code{node_col} to find nodes which
 correspond to a certain variable, and then use the variable name to
 search for a specific value.
 }
+\section{keep vs prune}{
+
+
+Note that \code{keep()} is not a simple complement of \code{prune()}, because if you
+use keep to select a node, then if the parent node does not fullfill the
+condition it will still be kept. However, if you mark a node for pruning
+with \code{prune()}, then all subsequent nodes will be pruned, even if they
+fullfill the condition.
+
+In the Titanic example, if you prune all nodes where frequency is less
+than 15\%, then the node for adult females from the crew will be pruned,
+because the frequency of the node Crew:Adult/Sex:Female is below 15\% and
+all subsequent nodes are also pruned. However, if you specify to keep
+all nodes where frequency is above 15\%, then the node
+Crew:Adult/Sex:Female will be kept despite having a low frequency,
+because the subsequent nodes – like percentage of survivorship for
+female crew members – are above 15\%.
+}
+
 \examples{
 vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived)
 
