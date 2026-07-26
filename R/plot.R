@@ -89,11 +89,15 @@ add_labels <- function(vtree,
 
   # this only looks complicated because we have to use .data
   if(template == "simple") {
-    fmt <- quo(sprintf("%s\n%d (%.0f%%)",
+    fmt <- quo(ifelse(.data[["node_val"]] == "",
+               sprintf("%d (%.0f%%)", .data[["n"]], .data[["freq"]] * 100),
+               sprintf("%s\n%d (%.0f%%)",
          .data[["node_val"]],
-         .data[["n"]], .data[["freq"]] * 100))
-    fmt_na = quo(sprintf("%s\n%d", .data[["node_val"]],
-                            .data[["n"]]))
+         .data[["n"]], .data[["freq"]] * 100)))
+    fmt_na = quo(ifelse(.data[["node_val"]] == "",
+                        sprintf("%d", .data[["n"]]),
+                        sprintf("%s\n%d", .data[["node_val"]], .data[["n"]]))
+                       )
   } else if(template == "long") {
     fmt <- quo(sprintf("%s: %s\nN = %d (%.0f%%)",
          .data[["node_name"]],
@@ -156,7 +160,8 @@ add_labels <- function(vtree,
   # we pick the last fill/color combination, because that is usually the
   # strongest color
   keys <- purrr::map_chr(nn, \(x) {
-    nodes |> filter(.data[["node_col"]] == x) |> dplyr::last() |> pull(node_key)
+    nodes |> filter(.data[["node_col"]] == x) |>
+      dplyr::last() |> pull("node_key")
   })
 
   y <- ifelse(top, -.1, 1.1)
@@ -169,8 +174,10 @@ add_labels <- function(vtree,
         )
 
   geom_label(data = df,
-             aes(x = x, y = y, label = label, fill = keys,
-                 color = keys),
+             aes(x = .data[["x"]], y = .data[["y"]],
+                 label = .data[["label"]],
+                 fill = .data[["keys"]],
+                 color = .data[["keys"]]),
              size = 9,
              inherit.aes = FALSE)
 }

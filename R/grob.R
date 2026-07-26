@@ -1,93 +1,4 @@
 # ok, a better plotting approach with grobs.
-grob_layout_by_freq <- function(vtree, dir="lr", lwidth=NA, lheight=NA) {
-
-  layout <- .calc_offsets(vtree)
-  nodes <- as_tibble(layout)
-
-  nlevel <- max(nodes$level) + 1
-  totn <- sum(nodes$n[nodes$level == 1])
-
-  if(is.na(lwidth)) {
-    lwidth <- .35 / nlevel
-    full_w <- 1 / nlevel
-  } else {
-    lwidth <- lwidth / nlevel
-    full_w <- 1 / nlevel
-  }
-
-
-  layout <- layout |>
-    mutate(width = lwidth, height = .data[["n"]] / totn) |>
-    mutate(full_w = full_w, full_h = .data[["height"]]) |>
-    mutate(x = (.data[["level"]] + .5)/ nlevel) |>
-    mutate(y = .data[["offset_tot"]] / totn +
-           .data[["height"]] / 2)
-
-  nodes <- as_tibble(layout)
-
-  layout <- layout |>
-    mutate(x1 = nodes$x[.data[["from"]]] + nodes$width[.data[["from"]]]/2,
-           x2 = nodes$x[.data[["to"]]] - nodes$width[.data[["to"]]]/2,
-           y1 = nodes$y[.data[["to"]]],
-           y2 = nodes$y[.data[["to"]]],
-           .edges = TRUE)
-
-  layout
-}
-
-
-grob_layout_regular <- function(vtree, dir="lr", lwidth=NA, lheight=NA) {
-
-  layout <- .calc_nleafs(vtree)
-  nodes  <- as_tibble(layout)
-
-  nlevel <- max(nodes$level) + 1
-  totleafs <- sum(nodes$nleafs[nodes$level == 1])
-
-  if(is.na(lheight)) {
-    lheight <- .8 / totleafs
-    full_h <- 1 / totleafs
-  } else {
-    lheight <- lheight / totleafs
-    full_h <- 1 / totleafs
-  }
-
-  if(is.na(lwidth)) {
-    lwidth <- .35 / nlevel
-    full_w <- 1 / nlevel
-  } else {
-    lwidth <- lwidth / nlevel
-    full_w <- 1 / nlevel
-  }
-
-  layout <- layout |>
-    mutate(x = (.data[["level"]] + .5)/ nlevel) |>
-    group_by(.data[["level"]]) |>
-    mutate(y = (cumsum(.data[["nleafs"]]) - .data[["nleafs"]] / 2)/
-           totleafs) |>
-    ungroup() |>
-    mutate(full_h = full_h, full_w = full_w) |>
-    mutate(width = lwidth, height = lheight)
-
-  nodes <- as_tibble(layout)
-
-  if(dir %in% c("tb", "bt")) {
-    dx <- lheight
-  } else {
-    dx <- lwidth
-  }
-
-  layout <- layout |>
-    mutate(x1 = nodes$x[.data[["from"]]] + dx/2,
-           x2 = nodes$x[.data[["to"]]] - dx/2,
-           y1 = nodes$y[.data[["from"]]],
-           y2 = nodes$y[.data[["to"]]],
-           .edges = TRUE)
-
-
-   layout
-}
-
 .get_widths <- function(grobs) {
     purrr::map_dbl(grobs, \(g) 
       convertWidth(grobWidth(g), "npc", valueOnly = TRUE))
@@ -104,57 +15,54 @@ grob_layout_regular <- function(vtree, dir="lr", lwidth=NA, lheight=NA) {
       g })
 }
 
-#' @importFrom grid convertWidth grobWidth
-#' @importFrom grid convertHeight grobHeight
-adapt_fontsize <- function(grobs, widths, heights) {
-  fs <- grobs[[1]]$gp$fontsize
-
-  print(sprintf("finding fontsize, starting from %d", fs))
-  lwids <- purrr::map_dbl(grobs, \(g) 
-    convertWidth(grobWidth(g), "npc", valueOnly = TRUE))
-
-  lhghs <- purrr::map_dbl(grobs, \(g) 
-    convertHeight(grobHeight(g), "npc", valueOnly = TRUE))
+.adapt_fontsize_single <- function(grob, width, height, mar) {
 
   mins <- 5
-  maxs <- 50
-  while(maxs - mins > 3) {
+  maxs <- 150
+  while(maxs - mins > 1) {
     fs <- (maxs + mins)/2
-    grobs <- .set_fontsize(grobs, fs)
-    lwids <- .get_widths(grobs)
-    lhghs <- .get_heights(grobs)
+    grob <- .set_fontsize(list(grob), fs)[[1]]
+    lw <- convertWidth(grobWidth(grob), "npc", valueOnly = TRUE)
+    lh <-  convertHeight(grobHeight(grob), "npc", valueOnly = TRUE)
 
-    if(any(lwids > .9 * widths) || 
-          any(lhghs > .9 * heights)) {
+    if(lw > mar * width || lh > mar * height) {
       maxs <- fs  
-      print("too large")
     } else {
-      print("too small")
       mins <- fs
     }
 
-    message(fs, " mins=", mins, " maxs= ", maxs)
   }
-  grobs <- .set_fontsize(grobs, mins)
-  print(mins)
 
+  # .set_fontsize works with lists
+  grob <- .set_fontsize(list(grob), floor(mins))
+  grob[[1]]
+}
+
+# adapt the font size of each grob separately
+#' @importFrom grid convertWidth grobWidth
+#' @importFrom grid convertHeight grobHeight
+adapt_fontsize <- function(grobs, widths, heights,
+                           padding = .2) {
+  .mar <- 1 - padding
+
+  grobs <- map(seq_along(grobs), \(i)
+               .adapt_fontsize_single(grobs[[i]],
+                                      widths[[i]],
+                                      heights[[i]],
+                                      .mar))
   return(grobs)
 }
 
 find_fontsize <- function(labels, widths, heights) {
 
-  print(labels)
-  print(widths)
-  print(heights)
   l <- strsplit(labels, "\n")
   maxh <- min(heights/sapply(l, length))
-  print(labels[which.min(sapply(l, length))])
   maxw <- min(sapply(l, \(x) widths/max(nchar(x))))
-  print(labels[which.min(sapply(l, \(x) widths/max(nchar(x))))])
 
   # we want to find a font size that will roughly give us a char w of maxw
   # and a line height of maxs.
-  teststr <- "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789\nABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789\nABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+  teststr <- "WM\u00C1\u00C2\u00C4\u00C5\u00C9\u00CA\u00CB\u00CD\u00CE\u00CF\u00D3\u00D4\u00D6\u00DA\u00DB\u00DCgjpqy"
+  teststr <- paste(rep(teststr, 3), collapse="\n")
 
   n <- nchar(teststr)/3 - 2
   g <- textGrob(teststr, gp=gpar(fontsize=20))
@@ -170,17 +78,12 @@ find_fontsize <- function(labels, widths, heights) {
 
     if(w/n > maxw || h > 3 * maxh) {
       maxs <- fs  
-      print("too large")
     } else {
-      print("too small")
       mins <- fs
     }
-
-    message(fs, " mins=", mins, " maxs= ", maxs)
   }
   
   mins <- floor(mins)
-  message("fontsize = ", mins)
   mins
 }
 
@@ -197,9 +100,10 @@ find_fontsize <- function(labels, widths, heights) {
   })
 }
 
-.get_node_rects <- function(nodes) {
+.get_node_rects <- function(nodes, rgrob) {
 
   map(1:nrow(nodes), \(i) {
+    if(rgrob == "roundrectGrob") {
     roundrectGrob(x = nodes$x[i],
       y = nodes$y[i],
       name = paste0("node_", nodes$ID[i]),
@@ -210,10 +114,21 @@ find_fontsize <- function(labels, widths, heights) {
                lwd = 2,
                col = "black",
                fill = nodes$fill[i]))
+    } else {
+    rectGrob(x = nodes$x[i],
+      y = nodes$y[i],
+      name = paste0("node_", nodes$ID[i]),
+      width = nodes$width[i],
+      height = nodes$height[i],
+      gp = gpar(
+               lwd = 2,
+               col = "black",
+               fill = nodes$fill[i]))
+    }
   })
 }
 
-.get_arrows <- function(edges, arr_length=.01) {
+.get_arrows <- function(edges, arr_length=.025) {
 
   segmentsGrob(x0 = edges$x1, y0 = edges$y1,
                x1 = edges$x2, y1 = edges$y2,
@@ -261,35 +176,48 @@ makeContent.vtree_plot <- function(x) {
   nodes <- as_tibble(layout)
   edges <- activate(layout, "edges") |> as_tibble()
 
-  rects <- .get_node_rects(nodes)
+  # the rgrob param chooses between rectangle and roundrect
+  rects <- .get_node_rects(nodes, x$params$rgrob)
   rects <- gTree(gp = gpar(),
                  children = do.call(gList, rects),
                  name = "nodes")
 
-  fs <- find_fontsize(nodes$label, .9 * nodes$width, .9 * nodes$height)
+  # labels - this is the main reason why I used grid: I want the labels to
+  # automatically fit inside of the node rectangles
+  fs <- 12
+  if(x$param$autofontsize == "fixed") {
+    fs <- find_fontsize(nodes$label, .9 * nodes$width, .9 * nodes$height)
+  }
+
   labels <- .get_labels(nodes, fs = fs) 
+
+  # adaptive means: each label gets its own font size
+  if(x$param$autofontsize == "adaptive") {
+    labels <- adapt_fontsize(labels, nodes$width, nodes$height,
+                         padding = .4)
+  }
 
   labels <- gTree(gp = gpar(),
                   children = do.call(gList, labels),
                   name = "labels")
 
+
   arrows <- .get_arrows(edges)
 
-
+  # margin labels with the variable names
   cnodes <- distinct(nodes, .data[["node_col"]], .keep_all = TRUE) |>
     dplyr::slice(-1)
-  if(x$dir %in% c("bt", "tb")) {
+  if(x$params$dir %in% c("bt", "tb")) {
     message("margin[2]=",x$margin[2])
     fs <- find_fontsize(cnodes$node_col, x$margin[2], .9 * cnodes$full_h[1])
   } else {
     fs <- find_fontsize(cnodes$node_col, .9 * cnodes$full_w[1], .9 * x$margin[1])
   }
-  clabs <- .get_clabs(cnodes, dir=x$dir, mar=x$margin, fs = fs)
+  clabs <- .get_clabs(cnodes, dir=x$params$dir, mar=x$margin, fs = fs)
 
   clabs <- gTree(gp = gpar(),
                   children = do.call(gList, clabs),
                   name = "clabs")
-
 
   obj <- gTree(gp = gpar(),
                name = "vtree",
@@ -301,22 +229,20 @@ makeContent.vtree_plot <- function(x) {
 
 #' @export
 print.vtree_plot <- function(x, ...) {
-
-  
-  print("printing")
   grid.newpage()
   grid.draw(x)
-
 }
 
 .flip_horiz <- function(layout) {
-    mutate(layout, x = 1 - x) |>
-    mutate(x1 = 1 - x1, x2 = 1 - x2, .edges=TRUE)
+    mutate(layout, x = 1 - .data[["x"]]) |>
+    mutate(x1 = 1 - .data[["x1"]],
+           x2 = 1 - .data[["x2"]], .edges=TRUE)
 }
 
 .flip_vert <- function(layout) {
-    mutate(layout, y = 1 - y) |>
-    mutate(y1 = 1 - y1, y2 = 1 - y2, .edges=TRUE)
+    mutate(layout, y = 1 - .data[["y"]]) |>
+    mutate(y1 = 1 - .data[["y1"]],
+           y2 = 1 - .data[["y2"]], .edges=TRUE)
 }
 
 .transpose <- function(layout) {
@@ -348,19 +274,32 @@ print.vtree_plot <- function(x, ...) {
          .edges=TRUE)
 }
 
+
 #' @importFrom grid gTree gpar gList grid.newpage
 #' @importFrom grid textGrob rectGrob roundrectGrob
 #' @importFrom grid segmentsGrob arrow
 #' @importFrom grid setChildren grid.draw makeContent
 #' @export
-plot_regular_grob <- function(vtree,
-                              lwidth = NA, lheight = NA,
-                              dir = "lr"
-                              ) {
+plot_grob <- function(vtree,
+                      proportional = FALSE,
+                      lwidth = NA, lheight = NA,
+                      autofontsize = NA,
+                      dir = "lr") {
   dir <- match.arg(dir, c("lr", "rl", "bt", "tb"))
 
-  #layout <- grob_layout_regular(vtree, dir, lwidth=lwidth, lheight=lheight)
-  layout <- grob_layout_by_freq(vtree, dir, lwidth=lwidth, lheight=lheight)
+  if(proportional) {
+    layout <- grob_layout_by_freq(vtree, dir, lwidth=lwidth, lheight=lheight)
+    rgrob <- "rectGrob"
+    if(is.na(autofontsize)) {
+      autofontsize = "adaptive"
+    }
+  } else {
+    layout <- grob_layout_regular(vtree, dir, lwidth=lwidth, lheight=lheight)
+    rgrob <- "roundrectGrob"
+    if(is.na(autofontsize)) {
+      autofontsize = "fixed"
+    }
+  }
 
   layout <- add_palette(layout) |>
       add_labels() |>
@@ -375,6 +314,7 @@ plot_regular_grob <- function(vtree,
   if(dir %in% c("bt", "tb")) {
     margins <- c(0.02, .1, 0.02, 0.02)
     layout <- .transpose(layout)
+    layout <- .flip_horiz(layout)
   }
 
   if(dir == "tb") {
@@ -385,11 +325,14 @@ plot_regular_grob <- function(vtree,
                   1 - (margins[2] + margins[4]),
                  1 - (margins[1] + margins[3]))
 
-
   gTree(
+        params = list(
+          dir = dir,
+          rgrob = rgrob,
+          autofontsize = autofontsize,
+          proportional = proportional),
         layout = layout,
         margin = margins,
-        dir = dir,
         name = "vtree",
         children = gList(),
         cl = "vtree_plot",

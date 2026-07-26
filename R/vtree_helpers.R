@@ -192,12 +192,13 @@ pat2nodes <- function(pattern, columns) {
                           denom = N), ret)
   ret <- ret |>
     mutate(node_id = dplyr::row_number()) |>
-    mutate(parent_id = purrr::map_int(path, \(x) find_parent(x, path))) |>
+    mutate(parent_id = purrr::map_int(.data[["path"]],
+                       \(x) find_parent(x, .data[["path"]]))) |>
     mutate(node_cv = paste0(.data[["node_col"]], ":",
                             .data[["node_val"]])) |>
     mutate(node_name = ifelse(.data[["ID"]] == "root",
                               "", .data[["node_col"]])) |>
-    mutate(node_key = paste0("node_", node_id)) |>
+    mutate(node_key = paste0("node_", .data[["node_id"]])) |>
     select(all_of(c("ID", "node_id", "node_key", "parent", "parent_id",
                     "path", "level", "node_col", "node_name", "node_val",
                     "node_cv", "n", "tot_n", "missing", "freq", "denom")))
