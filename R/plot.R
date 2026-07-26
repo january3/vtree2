@@ -1,21 +1,3 @@
-# for each node, calculate the number of leafs and store in nleafs
-.calc_nleafs <- function(vtree) {
-  rt <- which(as_tibble(vtree)$node_id == 1)
-
-  vtree |> activate("nodes") |>
-    mutate(nleafs = map_bfs_back_int(
-      root = rt,
-      mode = "out",
-      .f = \(node, path, ...) {
-        if(nrow(path) == 0) {
-          return(1L)
-        } else {
-          return(sum(unlist(path$result)))
-        }
-    }))
-}
-
-
 #' Add labels to a plot
 #'
 #' Adds or modifies a column called `label` to the node data frame of a vtree object.
@@ -180,22 +162,6 @@ add_labels <- function(vtree,
                  color = .data[["keys"]]),
              size = 9,
              inherit.aes = FALSE)
-}
-
-.calc_offsets <- function(vtree) {
-  rt <- which(as_tibble(vtree)$node_id == 1)
-
-  vtree |>
-    activate("nodes") |>
-    group_by(.data[["parent"]]) |>
-    mutate(offset = lag(cumsum(.data[["n"]]), default = 0)) |>
-    ungroup() |>
-    mutate(offset_tot = map_bfs_int(
-      root = rt,
-      mode = "out",
-      .f = \(node, path, ...) {
-        .N()$offset[node] + sum(.N()$offset[path$node])
-    }))
 }
 
 layout_by_freq <- function(vtree, lwidth=NA) {

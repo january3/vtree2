@@ -1,20 +1,25 @@
 # ok, a better plotting approach with grobs.
+
+# get widths from a list of grobs
 .get_widths <- function(grobs) {
     purrr::map_dbl(grobs, \(g) 
       convertWidth(grobWidth(g), "npc", valueOnly = TRUE))
 }
 
+# get heights from a list of grobs
 .get_heights <- function(grobs) {
     lhghs <- purrr::map_dbl(grobs, \(g) 
       convertHeight(grobHeight(g), "npc", valueOnly = TRUE))
 }
 
+# for a list of grobs, set the fontsize to fs
 .set_fontsize <- function(grobs, fs) {
     map(grobs, \(g) {
       g$gp$fontsize <- fs
       g })
 }
 
+# given a single grob, adapt the fontsize to fit a given w x h
 .adapt_fontsize_single <- function(grob, width, height, mar) {
 
   mins <- 5
@@ -53,6 +58,8 @@ adapt_fontsize <- function(grobs, widths, heights,
   return(grobs)
 }
 
+# given a vector of labels, figure out what fontsize fits them into the
+# widths x heights. Note that this is approximate only
 find_fontsize <- function(labels, widths, heights) {
 
   l <- strsplit(labels, "\n")
@@ -87,7 +94,7 @@ find_fontsize <- function(labels, widths, heights) {
   mins
 }
 
-
+# create grobs for labels from the nodes data frame
 .get_labels <- function(nodes, fs=9) {
   map(1:nrow(nodes), \(i) {
              textGrob(x = nodes$x[i],
@@ -100,6 +107,7 @@ find_fontsize <- function(labels, widths, heights) {
   })
 }
 
+# create node grobs from the nodes data frame
 .get_node_rects <- function(nodes, rgrob) {
 
   map(1:nrow(nodes), \(i) {
@@ -128,6 +136,7 @@ find_fontsize <- function(labels, widths, heights) {
   })
 }
 
+# create the arrows between the nodes
 .get_arrows <- function(edges, arr_length=.025) {
 
   segmentsGrob(x0 = edges$x1, y0 = edges$y1,
@@ -142,6 +151,7 @@ find_fontsize <- function(labels, widths, heights) {
                        lwd = 2))
 }
 
+# get the labels of the variables
 .get_clabs <- function(nodes, dir, margin, fs) {
 
   if(dir %in% c("rl", "lr")) {
@@ -168,6 +178,12 @@ find_fontsize <- function(labels, widths, heights) {
   ret
 }
 
+#' Hook for vtree plots
+#'
+#' This function is called whenever a vtree_plot is plotted on a device.
+#' It's purpose is to calculate the grobs - most importantly, to fit the
+#' labels text into the allocated node space.
+#' @importFrom grid gTree gList setChildren makeContent
 #' @export
 makeContent.vtree_plot <- function(x) {
 
@@ -207,13 +223,15 @@ makeContent.vtree_plot <- function(x) {
   # margin labels with the variable names
   cnodes <- distinct(nodes, .data[["node_col"]], .keep_all = TRUE) |>
     dplyr::slice(-1)
+
   if(x$params$dir %in% c("bt", "tb")) {
     message("margin[2]=",x$margin[2])
     fs <- find_fontsize(cnodes$node_col, x$margin[2], .9 * cnodes$full_h[1])
   } else {
     fs <- find_fontsize(cnodes$node_col, .9 * cnodes$full_w[1], .9 * x$margin[1])
   }
-  clabs <- .get_clabs(cnodes, dir=x$params$dir, mar=x$margin, fs = fs)
+  clabs <- .get_clabs(cnodes, dir=x$params$dir,
+                      margin=x$margin, fs = fs)
 
   clabs <- gTree(gp = gpar(),
                   children = do.call(gList, clabs),
@@ -224,6 +242,7 @@ makeContent.vtree_plot <- function(x) {
                children = gList(rects, labels, arrows, clabs))
 
   children <- gList(obj)
+  children <- gList(nodes=rects, labels=labels, arrows=arrows, clabs=clabs)
   setChildren(x, children)
 }
 
@@ -233,18 +252,21 @@ print.vtree_plot <- function(x, ...) {
   grid.draw(x)
 }
 
+# flip a layout horizontally
 .flip_horiz <- function(layout) {
     mutate(layout, x = 1 - .data[["x"]]) |>
     mutate(x1 = 1 - .data[["x1"]],
            x2 = 1 - .data[["x2"]], .edges=TRUE)
 }
 
+# flip a layout vertically
 .flip_vert <- function(layout) {
     mutate(layout, y = 1 - .data[["y"]]) |>
     mutate(y1 = 1 - .data[["y1"]],
            y2 = 1 - .data[["y2"]], .edges=TRUE)
 }
 
+# transpose a layout
 .transpose <- function(layout) {
     mutate(layout, yy = .data[["y"]],
            y = .data[["x"]], x = .data[["yy"]]) |>
@@ -260,6 +282,8 @@ print.vtree_plot <- function(x, ...) {
            x2 = .data[["yy"]], .edges=TRUE)
 }
 
+# scale the layout. I know I am supposed to use the viewport for that, but
+# right now this is better for debugging.
 .scale <- function(layout, x0, y0, sx, sy) {
 
   mutate(layout,
@@ -273,6 +297,7 @@ print.vtree_plot <- function(x, ...) {
          y2 = y0 + sy * .data[["y2"]],
          .edges=TRUE)
 }
+
 
 
 #' @importFrom grid gTree gpar gList grid.newpage

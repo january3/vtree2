@@ -1,3 +1,37 @@
+# for each node, calculate the number of leafs and store in nleafs
+.calc_nleafs <- function(vtree) {
+  rt <- which(as_tibble(vtree)$node_id == 1)
+
+  vtree |> activate("nodes") |>
+    mutate(nleafs = map_bfs_back_int(
+      root = rt,
+      mode = "out",
+      .f = \(node, path, ...) {
+        if(nrow(path) == 0) {
+          return(1L)
+        } else {
+          return(sum(unlist(path$result)))
+        }
+    }))
+}
+
+.calc_offsets <- function(vtree) {
+  rt <- which(as_tibble(vtree)$node_id == 1)
+
+  vtree |>
+    activate("nodes") |>
+    group_by(.data[["parent"]]) |>
+    mutate(offset = lag(cumsum(.data[["n"]]), default = 0)) |>
+    ungroup() |>
+    mutate(offset_tot = map_bfs_int(
+      root = rt,
+      mode = "out",
+      .f = \(node, path, ...) {
+        .N()$offset[node] + sum(.N()$offset[path$node])
+    }))
+}
+
+
 grob_layout_by_freq <- function(vtree, dir="lr", lwidth=NA, lheight=NA) {
 
   layout <- .calc_offsets(vtree)
