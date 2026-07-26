@@ -12,6 +12,7 @@
   lheight = 0.8,
   palettes = c("Blues", "Greens", "Reds", "Oranges", "Purples"),
   na_fill = "white",
+  var_labels = TRUE,
   dir = c("lr", "rl", "tb", "bt"),
   proportional = FALSE,
   legend = FALSE

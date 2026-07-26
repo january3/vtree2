@@ -72,6 +72,7 @@ vtree_palette <- function(vtree,
 
 
 #' @rdname vtree_palette
+#' @importFrom purrr map2_chr map_chr
 #' @export
 add_palette <- function(vtree,
                              palettes = c("Reds", "Blues", "Greens",
@@ -84,16 +85,15 @@ add_palette <- function(vtree,
 
   pal <- vtree_palette(vtree, palettes = palettes)
 
-  vtree <- vtree |> activate("nodes") |>
+  vtree |> activate("nodes") |>
     mutate(fill = ifelse(is.na(.data[["node_val"]]),
                                na_fill,
-
                                map2_chr(.data[["node_val"]],
                            .data[["node_col"]], \(val, var) {
       pal[[var]][as.character(val)] %||% na_fill
-    })))
-
-  as_vtree(vtree)
+    }))) |>
+    mutate(fill_class = map_chr(.data[["node_col"]], \(var) 
+      pal[[var]][length(pal[[var]])] %||% na_fill))
 }
 
 # @param n The number of levels in the variable

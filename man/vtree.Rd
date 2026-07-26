@@ -66,7 +66,11 @@ information pertaining the different nodes of the vtree. Below is the
 list of the columns; in parentheses, you will find example values for a
 node from the \code{Titanic} example.
 \itemize{
-\item \code{ID}: unique ID of the node (\verb{Class:1st/Sex:Female}).
+\item \code{ID}: human readable ID of the node (\verb{Class:1st/Sex:Female}). Note
+that if you are using slashes or colons in column names or values,
+this can be unreliable.
+\item \code{node_id}: unique numeric ID of the node.
+\item \code{node_key}: unique character string ID of the node.
 \item \code{node_col}: the column of the original cases data frame to which the
 node corresponds to (\code{Sex})
 \item \code{node_name}: node name used for labelling (\code{Sex}).
@@ -125,7 +129,7 @@ if(requireNamespace('dplyr', quietly = TRUE)) {
     mutate(Class = ifelse(runif(n()) < 0.1, NA, Class)) |>
     mutate(Sex = ifelse(runif(n()) < 0.1, NA, Sex)) |>
     mutate(Age = ifelse(runif(n()) < 0.1, NA, Age))
-  
+
   vt <- vtree(titanicNA, Class, Sex, Survived)
   plot(vt)
 }
