@@ -356,6 +356,8 @@ plot_regular <- function(layout, fill_scale, color_scale,
 #' (the difference between node_col and node_name is that you can set
 #' node_name to whatever you like, while node_col must remain unchanged)
 #'
+#' See [vtree2::vtree()] for a list of all columns in the node data frame.
+#'
 #' Manipulating these columns is straightforward using the
 #' [vtree2::mutate.vtree()] function (see below).
 #'
@@ -367,12 +369,20 @@ plot_regular <- function(layout, fill_scale, color_scale,
 #' @param lfontsize Font size for labels
 #' @param lwidth Label width relative to available space
 #' @param lheight Label height relative to available space
+#' @param var_labels If TRUE (default), add names of the variables to the
+#'        plot.
 #' @param dir direction of the tree. One of "lr" (left to right), "rl"
 #'        (right to left), "tb" (top to bottom), "bt" (bottom to top).
 #'        Default is "lr".
 #' @param palettes A character vector with names of RColorBrewer palettes
 #'                 to use for the variables. By default these are the
 #'                 default arguments to the vtree_palette() function.
+#' @param autofontsize If "adaptive", the font size is adjusted to fit the
+#'        each node, which may result in nodes having different font sizes.
+#'        If "fixed", all nodes have the same font size, adjusted to fit
+#'        the smallest node. If NA (default), then "adaptive" is used for
+#'        proportional plots (which often have very small nodes) and
+#'        "fixed" for regular plots.
 #' @param na_fill The color to use for NA values. Default is "white".
 #' @param proportional If TRUE, the node sizes are scaled by number of
 #' observations. If FALSE, all nodes have the same size.
@@ -388,7 +398,7 @@ plot_regular <- function(layout, fill_scale, color_scale,
 #'
 #' # create custom labels as simple numbers with mutate()
 #' library(dplyr)
-#' vt |> mutate(label = 1:n()) |> plot()
+#' vt |> mutate(label = as.character(1:n())) |> plot()
 #'
 #' # a bit more complex example
 #' vt |>
@@ -410,13 +420,93 @@ plot_regular <- function(layout, fill_scale, color_scale,
 #'   mutate(fill = pal[round(abs_freq * 100) + 1]) |>
 #'  plot()
 #'
-#' @return A ggplot object
+#' @return A grid::gTree object of class vtree_plot. `plot_ggplot()`
+#' returns a ggplot2 object.
+#' @importFrom grid gTree gpar gList
+#' @export
+plot.vtree <- function(x, ...,
+                      proportional = FALSE,
+                      palettes = c("Blues", "Greens", "Reds",
+                                   "Oranges", "Purples"),
+                      na_fill = "white",
+                      lwidth = NA, lheight = NA,
+                      autofontsize = NA,
+                      dir = "lr") {
+
+  dir <- match.arg(dir, c("lr", "rl", "bt", "tb"))
+
+  nodes <- as_tibble(x)
+  if(! "fill" %in% colnames(nodes)) {
+    x <- add_palette(x, palettes = palettes, na_fill = na_fill)
+  }
+
+  if(! "color" %in% colnames(nodes)) {
+    x <- x |> activate("nodes") |>
+      mutate(color = contrast_color(.data[["fill"]]))
+  }
+
+  if(! "label" %in% colnames(nodes)) {
+    x <- x |> add_labels()
+  }
+
+  if(proportional) {
+    layout <- grob_layout_by_freq(x, dir, lwidth=lwidth, lheight=lheight)
+    rgrob <- "rectGrob"
+    if(is.na(autofontsize)) {
+      autofontsize = "adaptive"
+    }
+  } else {
+    layout <- grob_layout_regular(x, dir, lwidth=lwidth, lheight=lheight)
+    rgrob <- "roundrectGrob"
+    if(is.na(autofontsize)) {
+      autofontsize = "fixed"
+    }
+  }
+
+  layout <- .flip_vert(layout)
+
+  margins <- c(.05, 0.01, .02, .02)
+  if(dir == "rl") {
+    layout <- .flip_horiz(layout)
+  }
+
+  if(dir %in% c("bt", "tb")) {
+    margins <- c(0.02, .1, 0.02, 0.02)
+    layout <- .transpose(layout)
+    layout <- .flip_horiz(layout)
+  }
+
+  if(dir == "tb") {
+    layout <- .flip_vert(layout)
+  }
+
+  layout <- .scale(layout, margins[2], margins[1],
+                  1 - (margins[2] + margins[4]),
+                 1 - (margins[1] + margins[3]))
+
+  x <- gTree(
+        params = list(
+          dir = dir,
+          rgrob = rgrob,
+          autofontsize = autofontsize,
+          proportional = proportional),
+        layout = layout,
+        margin = margins,
+        name = "vtree",
+        children = gList(),
+        cl = "vtree_plot",
+        gp = gpar()
+        )
+  .make_children(x, fs = 9)
+}
+
+#' @rdname plot.vtree
 #' @importFrom ggplot2 ggplot aes geom_segment geom_rect
 #' @importFrom ggplot2 scale_x_reverse scale_y_reverse coord_cartesian
 #' @importFrom ggplot2 theme_void geom_text geom_label unit
 #' @importFrom ggplot2 scale_fill_manual scale_color_manual theme
 #' @export
-plot.vtree <- function(x,
+plot_ggplot <- function(x,
                        ...,
                        lfontsize = NA,
                        lwidth = .7,
@@ -488,7 +578,6 @@ plot.vtree <- function(x,
   }
 
   p
-
 }
 
 

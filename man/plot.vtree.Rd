@@ -2,9 +2,22 @@
 % Please edit documentation in R/plot.R
 \name{plot.vtree}
 \alias{plot.vtree}
+\alias{plot_ggplot}
 \title{Plot a vtree}
 \usage{
 \method{plot}{vtree}(
+  x,
+  ...,
+  proportional = FALSE,
+  palettes = c("Blues", "Greens", "Reds", "Oranges", "Purples"),
+  na_fill = "white",
+  lwidth = NA,
+  lheight = NA,
+  autofontsize = NA,
+  dir = "lr"
+)
+
+plot_ggplot(
   x,
   ...,
   lfontsize = NA,
@@ -12,7 +25,6 @@
   lheight = 0.8,
   palettes = c("Blues", "Greens", "Reds", "Oranges", "Purples"),
   na_fill = "white",
-  var_labels = TRUE,
   dir = c("lr", "rl", "tb", "bt"),
   proportional = FALSE,
   legend = FALSE
@@ -23,11 +35,8 @@
 
 \item{...}{ignored}
 
-\item{lfontsize}{Font size for labels}
-
-\item{lwidth}{Label width relative to available space}
-
-\item{lheight}{Label height relative to available space}
+\item{proportional}{If TRUE, the node sizes are scaled by number of
+observations. If FALSE, all nodes have the same size.}
 
 \item{palettes}{A character vector with names of RColorBrewer palettes
 to use for the variables. By default these are the
@@ -35,17 +44,21 @@ default arguments to the vtree_palette() function.}
 
 \item{na_fill}{The color to use for NA values. Default is "white".}
 
+\item{lwidth}{Label width relative to available space}
+
+\item{lheight}{Label height relative to available space}
+
 \item{dir}{direction of the tree. One of "lr" (left to right), "rl"
 (right to left), "tb" (top to bottom), "bt" (bottom to top).
 Default is "lr".}
 
-\item{proportional}{If TRUE, the node sizes are scaled by number of
-observations. If FALSE, all nodes have the same size.}
+\item{lfontsize}{Font size for labels}
 
 \item{legend}{If TRUE, a legend is added to the plot. Default is FALSE.}
 }
 \value{
-A ggplot object
+A grid::gTree object of class vtree_plot. \code{plot_ggplot()}
+returns a ggplot2 object.
 }
 \description{
 Plots a vtree object. By default, all nodes have the same size. If you
@@ -98,6 +111,8 @@ label:
 (the difference between node_col and node_name is that you can set
 node_name to whatever you like, while node_col must remain unchanged)
 
+See \code{\link[=vtree]{vtree()}} for a list of all columns in the node data frame.
+
 Manipulating these columns is straightforward using the
 \code{\link[=mutate.vtree]{mutate.vtree()}} function (see below).
 
@@ -116,7 +131,7 @@ plot(vt, proportional = TRUE)
 
 # create custom labels as simple numbers with mutate()
 library(dplyr)
-vt |> mutate(label = 1:n()) |> plot()
+vt |> mutate(label = as.character(1:n())) |> plot()
 
 # a bit more complex example
 vt |>

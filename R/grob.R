@@ -61,6 +61,9 @@ adapt_fontsize <- function(grobs, widths, heights,
 # given a vector of labels, figure out what fontsize fits them into the
 # widths x heights. Note that this is approximate only
 find_fontsize <- function(labels, widths, heights) {
+  print(labels)
+  print(widths)
+  print(heights)
 
   l <- strsplit(labels, "\n")
   maxh <- min(heights/sapply(l, length))
@@ -95,6 +98,7 @@ find_fontsize <- function(labels, widths, heights) {
 }
 
 # create grobs for labels from the nodes data frame
+#' @importFrom grid textGrob
 .get_labels <- function(nodes, fs=9) {
   map(1:nrow(nodes), \(i) {
              textGrob(x = nodes$x[i],
@@ -108,6 +112,7 @@ find_fontsize <- function(labels, widths, heights) {
 }
 
 # create node grobs from the nodes data frame
+#' @importFrom grid rectGrob roundrectGrob
 .get_node_rects <- function(nodes, rgrob) {
 
   map(1:nrow(nodes), \(i) {
@@ -137,6 +142,7 @@ find_fontsize <- function(labels, widths, heights) {
 }
 
 # create the arrows between the nodes
+#' @importFrom grid segmentsGrob arrow
 .get_arrows <- function(edges, arr_length=.025) {
 
   segmentsGrob(x0 = edges$x1, y0 = edges$y1,
@@ -153,6 +159,10 @@ find_fontsize <- function(labels, widths, heights) {
 
 # get the labels of the variables
 .get_clabs <- function(nodes, dir, margin, fs) {
+
+  if(!"fill_class" %in% colnames(nodes)) {
+    nodes$fill_class <- "black"
+  }
 
   if(dir %in% c("rl", "lr")) {
     ret <- map(1:nrow(nodes), \(i) {
@@ -181,11 +191,48 @@ find_fontsize <- function(labels, widths, heights) {
 #' Hook for vtree plots
 #'
 #' This function is called whenever a vtree_plot is plotted on a device.
-#' It's purpose is to calculate the grobs - most importantly, to fit the
+#' It's purpose is to fit the
 #' labels text into the allocated node space.
+#'
 #' @importFrom grid gTree gList setChildren makeContent
 #' @export
 makeContent.vtree_plot <- function(x) {
+
+  labels <- x$children$labels$children
+  nodes <- as_tibble(x$layout)
+
+  if(x$param$autofontsize == "fixed") {
+    fs <- find_fontsize(nodes$label, .9 * nodes$width, .9 * nodes$height)
+    for(i in seq_along(x$children$labels$children)) {
+      x$children$labels$children[[i]]$gp$fontsize <- fs
+    }
+  } else if(x$param$autofontsize == "adaptive") {
+  # adaptive means: each label gets its own font size
+    labels <- adapt_fontsize(labels, nodes$width, nodes$height,
+                         padding = .4)
+    x$children$labels <-
+      setChildren(x$children$labels, do.call(gList, labels))
+  }
+
+  cnodes <- distinct(nodes, .data[["node_col"]], .keep_all = TRUE) |>
+    dplyr::slice(-1)
+
+  if(x$params$dir %in% c("bt", "tb")) {
+    fs <- find_fontsize(cnodes$node_col, x$margin[2], .9 * cnodes$full_h[1])
+  } else {
+    fs <- find_fontsize(cnodes$node_col, .9 * cnodes$full_w[1], .9 * x$margin[1])
+  }
+  for(i in seq_along(x$children$clabs$children)) {
+    x$children$clabs$children[[i]]$gp$fontsize <- fs
+  }
+
+  x
+}
+
+# create the grobs associated with the plot. This is the main function that
+# actually creates the plot.
+#' @importFrom grid gTree gpar gList setChildren
+.make_children <- function(x, fs=9) {
 
   layout <- x$layout
 
@@ -198,25 +245,10 @@ makeContent.vtree_plot <- function(x) {
                  children = do.call(gList, rects),
                  name = "nodes")
 
-  # labels - this is the main reason why I used grid: I want the labels to
-  # automatically fit inside of the node rectangles
-  fs <- 12
-  if(x$param$autofontsize == "fixed") {
-    fs <- find_fontsize(nodes$label, .9 * nodes$width, .9 * nodes$height)
-  }
-
   labels <- .get_labels(nodes, fs = fs) 
-
-  # adaptive means: each label gets its own font size
-  if(x$param$autofontsize == "adaptive") {
-    labels <- adapt_fontsize(labels, nodes$width, nodes$height,
-                         padding = .4)
-  }
-
   labels <- gTree(gp = gpar(),
                   children = do.call(gList, labels),
                   name = "labels")
-
 
   arrows <- .get_arrows(edges)
 
@@ -224,12 +256,6 @@ makeContent.vtree_plot <- function(x) {
   cnodes <- distinct(nodes, .data[["node_col"]], .keep_all = TRUE) |>
     dplyr::slice(-1)
 
-  if(x$params$dir %in% c("bt", "tb")) {
-    message("margin[2]=",x$margin[2])
-    fs <- find_fontsize(cnodes$node_col, x$margin[2], .9 * cnodes$full_h[1])
-  } else {
-    fs <- find_fontsize(cnodes$node_col, .9 * cnodes$full_w[1], .9 * x$margin[1])
-  }
   clabs <- .get_clabs(cnodes, dir=x$params$dir,
                       margin=x$margin, fs = fs)
 
@@ -237,15 +263,11 @@ makeContent.vtree_plot <- function(x) {
                   children = do.call(gList, clabs),
                   name = "clabs")
 
-  obj <- gTree(gp = gpar(),
-               name = "vtree",
-               children = gList(rects, labels, arrows, clabs))
-
-  children <- gList(obj)
-  children <- gList(nodes=rects, labels=labels, arrows=arrows, clabs=clabs)
+  children <- gList(arrows=arrows, nodes=rects, labels=labels, clabs=clabs)
   setChildren(x, children)
 }
 
+#' @importFrom grid grid.newpage grid.draw
 #' @export
 print.vtree_plot <- function(x, ...) {
   grid.newpage()
@@ -298,69 +320,3 @@ print.vtree_plot <- function(x, ...) {
          .edges=TRUE)
 }
 
-
-
-#' @importFrom grid gTree gpar gList grid.newpage
-#' @importFrom grid textGrob rectGrob roundrectGrob
-#' @importFrom grid segmentsGrob arrow
-#' @importFrom grid setChildren grid.draw makeContent
-#' @export
-plot_grob <- function(vtree,
-                      proportional = FALSE,
-                      lwidth = NA, lheight = NA,
-                      autofontsize = NA,
-                      dir = "lr") {
-  dir <- match.arg(dir, c("lr", "rl", "bt", "tb"))
-
-  if(proportional) {
-    layout <- grob_layout_by_freq(vtree, dir, lwidth=lwidth, lheight=lheight)
-    rgrob <- "rectGrob"
-    if(is.na(autofontsize)) {
-      autofontsize = "adaptive"
-    }
-  } else {
-    layout <- grob_layout_regular(vtree, dir, lwidth=lwidth, lheight=lheight)
-    rgrob <- "roundrectGrob"
-    if(is.na(autofontsize)) {
-      autofontsize = "fixed"
-    }
-  }
-
-  layout <- add_palette(layout) |>
-      add_labels() |>
-      mutate(color = contrast_color(.data[["fill"]])) |>
-      .flip_vert()
-
-  margins <- c(.05, 0.01, .02, .02)
-  if(dir == "rl") {
-    layout <- .flip_horiz(layout)
-  }
-
-  if(dir %in% c("bt", "tb")) {
-    margins <- c(0.02, .1, 0.02, 0.02)
-    layout <- .transpose(layout)
-    layout <- .flip_horiz(layout)
-  }
-
-  if(dir == "tb") {
-    layout <- .flip_vert(layout)
-  }
-
-  layout <- .scale(layout, margins[2], margins[1],
-                  1 - (margins[2] + margins[4]),
-                 1 - (margins[1] + margins[3]))
-
-  gTree(
-        params = list(
-          dir = dir,
-          rgrob = rgrob,
-          autofontsize = autofontsize,
-          proportional = proportional),
-        layout = layout,
-        margin = margins,
-        name = "vtree",
-        children = gList(),
-        cl = "vtree_plot",
-        gp = gpar()
-        )
-}
