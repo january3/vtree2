@@ -43,7 +43,7 @@
 }
 
 
-grob_layout_by_freq <- function(vtree, dir="lr", lwidth=NA, lheight=NA) {
+layout_by_freq <- function(vtree, dir="lr", lwidth=NA, lheight=NA) {
 
   layout <- .calc_offsets(vtree)
   nodes <- as_tibble(layout)
@@ -80,7 +80,7 @@ grob_layout_by_freq <- function(vtree, dir="lr", lwidth=NA, lheight=NA) {
 }
 
 
-grob_layout_regular <- function(vtree, dir="lr", lwidth=NA, lheight=NA) {
+layout_regular <- function(vtree, dir="lr", lwidth=NA, lheight=NA) {
 
   layout <- .calc_nleafs(vtree)
   nodes  <- as_tibble(layout)

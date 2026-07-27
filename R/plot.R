@@ -164,39 +164,6 @@ add_labels <- function(vtree,
              inherit.aes = FALSE)
 }
 
-layout_by_freq <- function(vtree, lwidth=NA) {
-
-  layout <- .calc_offsets(vtree)
-
-  nodes <- as_tibble(layout)
-
-  maxl <- max(nodes$level)
-  totn <- sum(nodes$n[nodes$level == 1])
-
-  if(is.na(lwidth)) {
-    lwidth <- .35 / maxl
-  } else {
-    lwidth <- lwidth / (2 * maxl)
-  }
-
-  layout <- layout |>
-    mutate(x = .data[["level"]] / maxl) |>
-    mutate(y = .data[["offset_tot"]] / totn +
-           .data[["n"]] / (2 * totn)) |>
-    mutate(width = 2 * lwidth, height = .data[["n"]] / totn)
-
-  nodes <- as_tibble(layout)
-
-  layout <- layout |>
-    mutate(x1 = nodes$x[.data[["from"]]],
-           x2 = nodes$x[.data[["to"]]],
-           y1 = nodes$y[.data[["to"]]],
-           y2 = nodes$y[.data[["to"]]],
-           .edges = TRUE)
-
-  layout
-}
-
 # plot by frequency
 plot_by_freq <- function(layout, fill_scale, color_scale,
                          lfontsize = NA) {
@@ -227,51 +194,7 @@ plot_by_freq <- function(layout, fill_scale, color_scale,
 }
 
 
-layout_regular <- function(vtree, lwidth=NA, lheight=NA) {
 
-  layout <- .calc_nleafs(vtree)
-
-  nodes  <- as_tibble(layout)
-
-  maxl <- max(nodes$level)
-  totleafs <- sum(nodes$nleafs[nodes$level == 1])
-  totn <- sum(nodes$n[nodes$level == 1])
-
-  if(is.na(lheight)) {
-    lheight <- .8 / (2 * totleafs)
-  } else {
-    lheight <- lheight / (2 * totleafs)
-  }
-
-  if(is.na(lwidth)) {
-    lwidth <- .35 / maxl
-  } else {
-    lwidth <- lwidth / (2 * maxl)
-  }
-
-  layout <- layout |>
-    mutate(x = .data[["level"]] / maxl) |>
-    group_by(.data[["level"]]) |>
-    mutate(y = (cumsum(.data[["nleafs"]]) - .data[["nleafs"]] / 2)/
-           totleafs) |>
-    ungroup() |>
-    mutate(xmin = .data[["x"]] - lwidth,
-           xmax = .data[["x"]] + lwidth,
-           ymin = .data[["y"]] - lheight,
-           ymax = .data[["y"]] + lheight)
-
-  nodes <- as_tibble(layout)
-
-  layout <- layout |>
-    mutate(x1 = nodes$x[.data[["from"]]],
-           x2 = nodes$x[.data[["to"]]] - lwidth,
-           y1 = nodes$y[.data[["from"]]],
-           y2 = nodes$y[.data[["to"]]],
-           .edges = TRUE)
-
-
-   layout
-}
 
 # just the nodes, no resizing according to frequency
 #' @importFrom ggplot2 arrow coord_flip
@@ -292,10 +215,10 @@ plot_regular <- function(layout, fill_scale, color_scale,
                      yend = .data[["y2"]]),
                  arrow = arrow(angle = 15, type = "closed"),
                  inherit.aes = FALSE) +
-    geom_rrect(aes(xmin = .data[["xmin"]],
-                   xmax = .data[["xmax"]],
-                   ymin = .data[["ymin"]],
-                   ymax = .data[["ymax"]],
+    geom_rrect(aes(xmin = .data[["x"]] - .data[["width"]]/2,
+                   xmax = .data[["x"]] + .data[["width"]]/2,
+                   ymin = .data[["y"]] - .data[["height"]]/2,
+                   ymax = .data[["y"]] + .data[["height"]]/2,
                    fill = .data[["node_key"]]),
                color = "black", radius = .4) +
     geom_text(aes(color = .data[["node_key"]]),
@@ -496,13 +419,13 @@ plot.vtree <- function(x, ...,
   }
 
   if(proportional) {
-    layout <- grob_layout_by_freq(x, dir, lwidth=lwidth, lheight=lheight)
+    layout <- layout_by_freq(x, dir, lwidth=lwidth, lheight=lheight)
     rgrob <- "rectGrob"
     if(is.na(autofontsize)) {
       autofontsize = "adaptive"
     }
   } else {
-    layout <- grob_layout_regular(x, dir, lwidth=lwidth, lheight=lheight)
+    layout <- layout_regular(x, dir, lwidth=lwidth, lheight=lheight)
     rgrob <- "roundrectGrob"
     if(is.na(autofontsize)) {
       autofontsize = "fixed"
