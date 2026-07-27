@@ -43,7 +43,9 @@ plot_ggplot(
 
 \item{layout}{The layout type, either "regular", "flushed" or "proportional". If
 "proportional", then the height of each node is proportional to the number
-of observations in that node. See \code{\link[=layout]{layout()}} for details.}
+of observations in that node. See \code{\link[=layout]{layout()}} for details.
+If layout is NA, then it is assumed that the vtree already has a
+layout with all necessary columns and no layout is calculated.}
 
 \item{layout_func}{Custom function to calculate layout (see
 \code{\link[=layout]{layout()}} for details).}

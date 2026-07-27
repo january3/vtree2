@@ -6,7 +6,7 @@
 \usage{
 layout(
   vtree,
-  layout = c("regular", "proportional", "flushed"),
+  layout = c("regular", "proportional", "flushed", "precomputed"),
   layout_func = NULL,
   dir = "lr",
   lwidth = NA,
@@ -56,6 +56,10 @@ nodes data frame:
 \item width, height: the width and height of the node
 \item full_w, full_h: the width and height of the node including the margins
 }
+
+In addition, it can have the "shape" column which specifies the shape of
+the node to use. It can be "rectangle" or "roundrectangle". If not
+specified, the default is "roundrectangle".
 
 In the edge data frame, the following additional columns should be added:
 \itemize{

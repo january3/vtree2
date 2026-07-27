@@ -1,3 +1,49 @@
+# flip a layout horizontally
+.flip_horiz <- function(layout) {
+    mutate(layout, x = 1 - .data[["x"]]) |>
+    mutate(x1 = 1 - .data[["x1"]],
+           x2 = 1 - .data[["x2"]], .edges=TRUE)
+}
+
+# flip a layout vertically
+.flip_vert <- function(layout) {
+    mutate(layout, y = 1 - .data[["y"]]) |>
+    mutate(y1 = 1 - .data[["y1"]],
+           y2 = 1 - .data[["y2"]], .edges=TRUE)
+}
+
+# transpose a layout
+.transpose <- function(layout) {
+    mutate(layout, yy = .data[["y"]],
+           y = .data[["x"]], x = .data[["yy"]]) |>
+    mutate(yy = .data[["width"]],
+           width = .data[["height"]],
+           height = .data[["yy"]]) |>
+    mutate(yy = .data[["full_w"]],
+           full_w = .data[["full_h"]],
+           full_h = .data[["yy"]]) |>
+    mutate(yy = .data[["y1"]], y1 = .data[["x1"]],
+           x1 = .data[["yy"]],
+           yy = .data[["y2"]], y2 = .data[["x2"]],
+           x2 = .data[["yy"]], .edges=TRUE)
+}
+
+# scale the layout. I know I am supposed to use the viewport for that, but
+# right now this is better for debugging.
+.scale <- function(layout, x0, y0, sx, sy) {
+
+  mutate(layout,
+         x = x0 + sx * .data[["x"]],
+         y = y0 + sy * .data[["y"]],
+         width = sx * .data[["width"]],
+         height = sy * .data[["height"]]) |>
+  mutate(x1 = x0 + sx * .data[["x1"]],
+         x2 = x0 + sx * .data[["x2"]],
+         y1 = y0 + sy * .data[["y1"]],
+         y2 = y0 + sy * .data[["y2"]],
+         .edges=TRUE)
+}
+
 # for each node, calculate the number of leafs and store in nleafs
 .calc_nleafs <- function(vtree) {
   rt <- which(as_tibble(vtree)$node_id == 1)
