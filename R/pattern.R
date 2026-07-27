@@ -23,10 +23,14 @@
 #' @return Invisibly returns the input object.
 #' @export
 print.vtree_pattern <- function(x, ...) {
-  cat("# vtree pattern\n")
-  cnms <- attr(x, "cols")
+  cols <- attr(x, "cols")
+  N <- attr(x, "N")
+  cat(cli::col_blue(paste("vtree pattern object with",
+               length(cols), "variables and", N, "observations\n")))
+  cat("Variables:", paste(cols, collapse = ", "), "\n")
+  cat(cli::col_blue("Overview:\n"))
 
-  labs <- map_dfc(cnms, \(cn) {
+  labs <- map_dfc(cols, \(cn) {
     tibble(!!cn := sprintf("%s n=%d (%.0f%%)", x[[cn]],
             x[[paste0(cn, "_n")]],
             100 * x[[paste0(cn, "_freq")]]))
@@ -35,8 +39,8 @@ print.vtree_pattern <- function(x, ...) {
   # determine maximum string length for each column
   max_lens <- imap_int(labs, \(col, cn) max(nchar(c(cn, col))))
 
-  labs <- map_dfc(1:length(cnms), \(i) {
-    cn <- cnms[i]
+  labs <- map_dfc(1:length(cols), \(i) {
+    cn <- cols[i]
     col <- labs[[i]]
     max_len <- max_lens[i]
     # pad the column with spaces to the right
@@ -48,7 +52,7 @@ print.vtree_pattern <- function(x, ...) {
       col
   }))
 
-  print(labs)
+  colorDF::print_colorDF(labs)
   invisible(x)
 }
 
@@ -79,7 +83,7 @@ print.vtree_pattern <- function(x, ...) {
 #'         which each row corresponds to one path through the tree.
 #' @examples
 #' vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived)
-#' pat <- pattern(vt) |> arrange(desc(Survived_n))
+#' pat <- pattern(vt) |> dplyr::arrange(desc(Survived_n))
 #' plot(pat)
 #' @export
 pattern <- function(vtree) {
@@ -121,6 +125,7 @@ pattern <- function(vtree) {
 
 
 # create a vtree from a pattern for plotting purposes.
+#' @importFrom dplyr last row_number
 vtree_from_pattern <- function(pat) {
   if(!inherits(pat, "vtree_pattern")) {
     cli_abort(x = "Input must be a vtree_pattern object")
@@ -170,7 +175,7 @@ vtree_from_pattern <- function(pat) {
     mutate(parent_id = lag(.data[["node_id"]])) |>
     mutate(parent_id = ifelse(.data[["level"]] == 1, 1, .data[["parent_id"]])) |>
     mutate(node_key = paste0("node_", .data[["node_id"]])) |>
-    arrange(level, node_id)
+    dplyr::arrange(.data[["level"]], .data[["node_id"]])
 
   edges <- node2edge(nodes)
   
@@ -189,16 +194,18 @@ vtree_from_pattern <- function(pat) {
 #'
 #' @param x A vtree pattern object.
 #' @param ... Additional arguments passed to plot.vtree()
-#' @param lwidth, lheight The width and height of the nodes in the plot,
+#' @param lwidth,lheight The width and height of the nodes in the plot,
 #'        relative to the maximum available space.
-#' @palettes A vector of color palettes to use for the nodes.
-#' @pattern_fill The fill color for the pattern nodes.
-#' @show_root Whether to show the root node in the plot.
+#' @param palettes A vector of color palettes to use for the nodes.
+#' @param pattern_fill The fill color for the pattern nodes.
+#' @param show_root Whether to show the root node in the plot.
 #' @seealso [plot.vtree()] for plotting vtree objects.
 #' @examples
 #' vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived)
-#' pat <- pattern(vt) |> arrange(desc(Survived_n))
+#' pat <- pattern(vt) |> dplyr::arrange(-Survived_n)
 #' plot(pat)
+#' @return A vtree plot (a grid::gTree object) of the pattern object,
+#'         invisibly.
 #' @export
 plot.vtree_pattern <- function(x, ...,
                       palettes = c("Blues", "Greens", "Oranges",

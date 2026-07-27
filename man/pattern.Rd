@@ -14,7 +14,8 @@ A data frame of class vtree_pattern in
 which each row corresponds to one path through the tree.
 }
 \description{
-Convert a vtree to a pattern
+Converts a vtree object to a pattern data frame, showing unique
+combinations of variable levels and their frequency.
 }
 \details{
 A "pattern" is a data frame in which each rows corresponds to one path
@@ -26,10 +27,17 @@ Paterns are useful to understand which combinations of variables are
 present and which are most frequent in the data.
 
 By default, the patern sorting is given by the initial order of the
-variables. However, as a pattern is just a data frame, it can be sorted
-in any way you like.
+variables. However, as a pattern is just a data frame (tibble), it can
+be sorted and filtered in any way you like, e.g. with dplyr::arrange()
+or dplyr::filter(). However, mind that the result still has the
+\code{vtree_pattern} class, so you can still use plot() on it.
 
 For a better overview, the default print() method for vtree patterns
 will printe a nicely formatted version of the data frame. You can see
-the underlying data frame by using as.data.frame() on the pattern object.
+the underlying data frame by using as_tibble() on the pattern object.
+}
+\examples{
+vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived)
+pat <- pattern(vt) |> dplyr::arrange(desc(Survived_n))
+plot(pat)
 }

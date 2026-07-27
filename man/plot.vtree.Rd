@@ -12,7 +12,7 @@ plot_vtree(
   x,
   layout = c("regular", "proportional", "flushed", "precomputed"),
   layout_func = NULL,
-  palettes = c("Blues", "Greens", "Reds", "Oranges", "Purples"),
+  palettes = c("Blues", "Greens", "Oranges", "Reds", "Purples"),
   na_fill = "white",
   show_root = TRUE,
   var_labels = TRUE,
@@ -26,7 +26,7 @@ plot_ggplot(
   x,
   layout = "regular",
   layout_func = NULL,
-  palettes = c("Blues", "Greens", "Reds", "Oranges", "Purples"),
+  palettes = c("Blues", "Greens", "Oranges", "Reds", "Purples"),
   na_fill = "white",
   var_labels = TRUE,
   lwidth = 0.7,
@@ -155,7 +155,7 @@ vt <- vtree_from_freqtable(Titanic)
 plot(vt)
 
 # proportional plot
-plot(vt, proportional = TRUE)
+plot(vt, layout = "proportional")
 
 # create custom labels as simple numbers with mutate()
 library(dplyr)

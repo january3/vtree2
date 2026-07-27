@@ -116,7 +116,7 @@ it makes the calculations transparent.
 data(Titanic)
 vt <- vtree_from_freqtable(Titanic, Class, Survived)
 plot(vt)
-plot(vt, proportional = TRUE)
+plot(vt, layout = "proportional")
 
 if(requireNamespace('dplyr', quietly = TRUE)) {
   library(dplyr)

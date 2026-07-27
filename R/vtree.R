@@ -76,12 +76,15 @@ mutate.vtree <- function(.data, ..., .edges = FALSE) {
 #' @return Invisibly returns the input object.
 #' @export
 print.vtree <- function(x, ...) {
- #cols <- attr(x, "cols")
- #N <- attr(x, "N")
- #cat("vtree object with", length(cols), "columns and", N, "observations\n")
- #cat("Columns:", paste(cols, collapse = ", "), "\n")
- #invisible(x)
-  colorDF::print_colorDF(as_tibble(x), ...)
+  cols <- attr(x, "cols")
+  N <- attr(x, "N")
+  cat(cli::col_blue(paste("vtree object with",
+               length(cols), "variables and", N, "observations\n")))
+  cat("Variables:", paste(cols, collapse = ", "), "\n")
+  col_to_show <- c("node_col", "node_val", "n", "freq", "tot_n", "missing", "denom")
+  cat(cli::col_blue("Overview:\n"))
+  colorDF::print_colorDF(as_tibble(x |> select(all_of(col_to_show))), ...)
+  invisible(x)
 }
 
 
@@ -228,7 +231,7 @@ as_vtree <- function(x) {
 #' data(Titanic)
 #' vt <- vtree_from_freqtable(Titanic, Class, Survived)
 #' plot(vt)
-#' plot(vt, proportional = TRUE)
+#' plot(vt, layout = "proportional")
 #'
 #' if(requireNamespace('dplyr', quietly = TRUE)) {
 #'   library(dplyr)

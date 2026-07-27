@@ -29,6 +29,10 @@ of the available space. If NA, a sensible preset is chosen.}
 
 \item{show_root}{Whether to show the root node in the layout.}
 }
+\value{
+an object of class vtree with additional columns in the nodes
+and edges data frames
+}
 \description{
 A layout function for vtree adds several columns to both the nodes and
 edges data frame which specify the positions and sizes of the nodes and
@@ -70,5 +74,5 @@ In the edge data frame, the following additional columns should be added:
 
 \examples{
 vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived)
-layout(vt, layout = "regular", dir = "lr") |> as_tibble()
+layout(vt, layout = "regular", dir = "lr") |> tibble::as_tibble()
 }

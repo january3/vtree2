@@ -4,13 +4,42 @@
 \alias{plot.vtree_pattern}
 \title{Plot a pattern object}
 \usage{
-\method{plot}{vtree_pattern}(x, ...)
+\method{plot}{vtree_pattern}(
+  x,
+  ...,
+  palettes = c("Blues", "Greens", "Oranges", "Reds", "Purples"),
+  pattern_fill = "#fc9272",
+  lwidth = 0.4,
+  lheight = 0.9,
+  show_root = FALSE
+)
 }
 \arguments{
 \item{x}{A vtree pattern object.}
 
 \item{...}{Additional arguments passed to plot.vtree()}
+
+\item{palettes}{A vector of color palettes to use for the nodes.}
+
+\item{pattern_fill}{The fill color for the pattern nodes.}
+
+\item{lwidth, lheight}{The width and height of the nodes in the plot,
+relative to the maximum available space.}
+
+\item{show_root}{Whether to show the root node in the plot.}
+}
+\value{
+A vtree plot (a grid::gTree object) of the pattern object,
+invisibly.
 }
 \description{
 Plots a vtree pattern object.
+}
+\examples{
+vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived)
+pat <- pattern(vt) |> dplyr::arrange(-Survived_n)
+plot(pat)
+}
+\seealso{
+\code{\link[=plot.vtree]{plot.vtree()}} for plotting vtree objects.
 }

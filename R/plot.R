@@ -410,7 +410,7 @@ normalize_vtree_for_plotting <- function(x, palettes, na_fill) {
 #' plot(vt)
 #'
 #' # proportional plot
-#' plot(vt, proportional = TRUE)
+#' plot(vt, layout = "proportional")
 #'
 #' # create custom labels as simple numbers with mutate()
 #' library(dplyr)
