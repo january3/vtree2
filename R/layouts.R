@@ -2,7 +2,7 @@
 .calc_nleafs <- function(vtree) {
   rt <- which(as_tibble(vtree)$node_id == 1)
 
-  vtree |> activate("nodes") |>
+  vtree |>
     mutate(nleafs = map_bfs_back_int(
       root = rt,
       mode = "out",
@@ -10,8 +10,20 @@
         if(nrow(path) == 0) {
           return(1L)
         } else {
+          if(sum(unlist(path$result)) == 0) {
+            return(1L)
+          }
           return(sum(unlist(path$result)))
         }
+    })) |>
+    group_by(.data[["parent"]]) |>
+    mutate(offset = lag(cumsum(.data[["nleafs"]]), default = 0)) |>
+    ungroup() |>
+    mutate(offset_tot = map_bfs_int(
+      root = rt,
+      mode = "out",
+      .f = \(node, path, ...) {
+        .N()$offset[node] + sum(.N()$offset[path$node])
     }))
 }
 
@@ -19,7 +31,6 @@
   rt <- which(as_tibble(vtree)$node_id == 1)
 
   vtree |>
-    activate("nodes") |>
     group_by(.data[["parent"]]) |>
     mutate(offset = lag(cumsum(.data[["n"]]), default = 0)) |>
     ungroup() |>
@@ -38,7 +49,7 @@ grob_layout_by_freq <- function(vtree, dir="lr", lwidth=NA, lheight=NA) {
   nodes <- as_tibble(layout)
 
   nlevel <- max(nodes$level) + 1
-  totn <- sum(nodes$n[nodes$level == 1])
+  totn <- attr(vtree, "N") #
 
   if(is.na(lwidth)) {
     lwidth <- .35 / nlevel
@@ -75,7 +86,9 @@ grob_layout_regular <- function(vtree, dir="lr", lwidth=NA, lheight=NA) {
   nodes  <- as_tibble(layout)
 
   nlevel <- max(nodes$level) + 1
-  totleafs <- sum(nodes$nleafs[nodes$level == 1])
+  #totleafs <- sum(nodes$nleafs[nodes$level == 1])
+  totleafs <- nodes$nleafs[nodes$node_id == 1]
+  print(totleafs)
 
   if(is.na(lheight)) {
     lheight <- .8 / totleafs
@@ -93,14 +106,22 @@ grob_layout_regular <- function(vtree, dir="lr", lwidth=NA, lheight=NA) {
     full_w <- 1 / nlevel
   }
 
+ #layout <- layout |>
+ #  mutate(x = (.data[["level"]] + .5)/ nlevel) |>
+ #  group_by(.data[["level"]]) |>
+ #  mutate(y = (cumsum(.data[["nleafs"]]) - .data[["nleafs"]] / 2)/
+ #         totleafs) |>
+ #  ungroup() |>
+ #  mutate(full_h = full_h, full_w = full_w) |>
+ #  mutate(width = lwidth, height = lheight)
+
   layout <- layout |>
+    mutate(width = lwidth, height = lheight) |>
+    mutate(full_w = full_w, full_h = .data[["height"]]) |>
     mutate(x = (.data[["level"]] + .5)/ nlevel) |>
-    group_by(.data[["level"]]) |>
-    mutate(y = (cumsum(.data[["nleafs"]]) - .data[["nleafs"]] / 2)/
-           totleafs) |>
-    ungroup() |>
-    mutate(full_h = full_h, full_w = full_w) |>
-    mutate(width = lwidth, height = lheight)
+    mutate(y = .data[["offset_tot"]] / totleafs +
+               .data[["nleafs"]] / 2 / totleafs)
+
 
   nodes <- as_tibble(layout)
 

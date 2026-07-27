@@ -193,6 +193,7 @@ find_fontsize <- function(labels, widths, heights) {
 #'
 #' @param x A vtree_plot object
 #' @importFrom grid gTree gList setChildren makeContent
+#' @return A gTree object with the labels adjusted to fit into the allocated space.
 #' @export
 makeContent.vtree_plot <- function(x) {
 
