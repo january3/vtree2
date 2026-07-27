@@ -32,7 +32,7 @@ vtree_pat <- function(data, cnms, vp = TRUE) {
       # data is already grouped by Class.
       group_by(across(cnms[1:i])) |>
       mutate(!!paste0(nm, "_n") := n()) |>
-      mutate(!!paste0(nm, "_frac") := n() / .data[["denom"]]) |>
+      mutate(!!paste0(nm, "_freq") := n() / .data[["denom"]]) |>
       mutate(!!paste0(nm, "_denom") := .data[["denom"]])
   }
 
@@ -40,7 +40,7 @@ vtree_pat <- function(data, cnms, vp = TRUE) {
   selcnms <- map(cnms, ~ c(.x,
                            paste0(.x, "_n"),
                            paste0(.x, "_tot_n"),
-                           paste0(.x, "_frac"),
+                           paste0(.x, "_freq"),
                            paste0(.x, "_denom"),
                            paste0(.x, "_missing"))) |> unlist()
 
@@ -58,12 +58,22 @@ vtree_pat <- function(data, cnms, vp = TRUE) {
 
 # this converts the data frame returned by pat2nodes to an edge data frame
 node2edge <- function(df) {
+# df |>
+#   select(all_of(c("node_id", "parent_id"))) |>
+#   mutate(from = match(.data[["parent_id"]], .data[["node_id"]])) |>
+#   mutate(to = 1:n()) |>
+#   # root has no parent! poor orphan
+#   filter(!is.na(.data[["parent_id"]])) |>
+#   select(all_of(c("from", "to")))
 
-  df |>
-    select(all_of(c("node_id", "parent_id"))) |>
-    # root has no parent! poor orphan
+  ret <- df |>
     filter(!is.na(.data[["parent_id"]])) |>
-    rename(from = "parent_id", to = "node_id")
+    mutate(parent_key = paste0("node_", .data[["parent_id"]])) |>
+    select(all_of(c("node_key", "parent_key"))) |>
+    # root has no parent! poor orphan
+    rename(from = "parent_key", to = "node_key")
+  print(ret, n=100)
+  ret
 }
 
 # determine whether two paths are identical
@@ -120,21 +130,19 @@ collect_nodes <- function(pattern, columns) {
   # map over the levels. i denotes the level; the node is defined by the
   # columns 1:i.
   ret <- map_dfr(seq_along(columns), \(i) {
-    df <- pattern |>
-
       # select one representative row for each node
-      distinct(pick(columns[1:i]), .keep_all = TRUE) |>
+      distinct(pattern, pick(columns[1:i]), .keep_all = TRUE) |>
 
       # ignore columns below the current level
       select(all_of(c(columns[1:i],
                       paste0(columns[i], c("_n", "_tot_n",
-                      "_missing", "_frac", "_denom"))))) |>
+                      "_missing", "_freq", "_denom"))))) |>
 
       # n instead of colname_n etc.
       rename(n = paste0(columns[i], "_n"),
              tot_n = paste0(columns[i], "_tot_n"),
              missing = paste0(columns[i], "_missing"),
-             freq = paste0(columns[i], "_frac"),
+             freq = paste0(columns[i], "_freq"),
              denom = paste0(columns[i], "_denom")) |>
       mutate(level = i) |>
 

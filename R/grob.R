@@ -100,7 +100,7 @@ find_fontsize <- function(labels, widths, heights) {
   map(1:nrow(nodes), \(i) {
              textGrob(x = nodes$x[i],
                         y = nodes$y[i],
-                        name = paste0("label_", nodes$ID[i]),
+                        name = paste0("label_", nodes$node_key[i]),
                         label = nodes$label[i],
                         gp = gpar(
                         col = nodes$color[i],
@@ -157,7 +157,7 @@ find_fontsize <- function(labels, widths, heights) {
     .get_grob(grobname = nodes$shape[i],
               x = nodes$x[i],
               y = nodes$y[i],
-              name = paste0("node_", nodes$ID[i]),
+              name = paste0("node_", nodes$node_key[i]),
               width = nodes$width[i],
               height = nodes$height[i],
               col = "black",
@@ -192,7 +192,7 @@ find_fontsize <- function(labels, widths, heights) {
     ret <- map(1:nrow(nodes), \(i) {
                textGrob(x = nodes$x[i],
                         y = margin[1]/2,
-                        name = paste0("label_", nodes$ID[i]),
+                        name = paste0("label_", nodes$node_key[i]),
                         label = nodes$node_col[i],
                         gp = gpar(
                         col = nodes$fill_class[i],
@@ -202,7 +202,7 @@ find_fontsize <- function(labels, widths, heights) {
     ret <- map(1:nrow(nodes), \(i) {
                textGrob(y = nodes$y[i],
                         x = margin[2]/2,
-                        name = paste0("label_", nodes$ID[i]),
+                        name = paste0("label_", nodes$node_key[i]),
                         label = nodes$node_col[i],
                         gp = gpar(
                         col = nodes$fill_class[i],
@@ -228,7 +228,6 @@ makeContent.vtree_plot <- function(x) {
   nodes <- as_tibble(x$layout)
 
   if(x$param$autofontsize == "fixed") {
-    print("fixed font size")
     fs <- find_fontsize(nodes$label, .9 * nodes$width, .9 * nodes$height)
     for(i in seq_along(x$children$labels$children)) {
       x$children$labels$children[[i]]$gp$fontsize <- fs

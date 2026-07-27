@@ -76,11 +76,12 @@ mutate.vtree <- function(.data, ..., .edges = FALSE) {
 #' @return Invisibly returns the input object.
 #' @export
 print.vtree <- function(x, ...) {
-  cols <- attr(x, "cols")
-  N <- attr(x, "N")
-  cat("vtree object with", length(cols), "columns and", N, "observations\n")
-  cat("Columns:", paste(cols, collapse = ", "), "\n")
-  invisible(x)
+ #cols <- attr(x, "cols")
+ #N <- attr(x, "N")
+ #cat("vtree object with", length(cols), "columns and", N, "observations\n")
+ #cat("Columns:", paste(cols, collapse = ", "), "\n")
+ #invisible(x)
+  colorDF::print_colorDF(as_tibble(x), ...)
 }
 
 
@@ -100,10 +101,11 @@ as_vtree <- function(x) {
   # ------------------
   nodes <- as_tibble(x)
   req_cols <- c("ID", "node_id", "node_key",
+                "tot_n", "missing", "denom",
                 "parent_id", "node_col", "node_val",
                 "parent", "path", "level", "n", "freq")
   # this columns are usually created but not critical:
-  # node_cv, node_name, tot_n, missing, and denom
+  # node_cv, node_name
 
   if(!all(req_cols %in% colnames(nodes))) {
     stop(sprintf("Columns %s not in colnames(nodes)",
@@ -303,7 +305,7 @@ vtree <- function(cases, ..., .vp = TRUE, .cols = NULL) {
 
   edges <- node2edge(df)
   vtree <- tbl_graph(nodes = df, edges = edges,
-                     directed = TRUE, node_key = "node_id")
+                     directed = TRUE, node_key = "node_key")
 
   as_vtree(vtree)
 }
