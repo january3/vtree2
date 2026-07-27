@@ -9,6 +9,9 @@
 \arguments{
 \item{x}{A vtree_plot object}
 }
+\value{
+A gTree object with the labels adjusted to fit into the allocated space.
+}
 \description{
 This function is called whenever a vtree_plot is plotted on a device.
 It's purpose is to fit the

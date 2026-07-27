@@ -11,6 +11,7 @@
   proportional = FALSE,
   palettes = c("Blues", "Greens", "Reds", "Oranges", "Purples"),
   na_fill = "white",
+  show_root = TRUE,
   lwidth = NA,
   lheight = NA,
   autofontsize = NA,
@@ -44,6 +45,9 @@ to use for the variables. By default these are the
 default arguments to the vtree_palette() function.}
 
 \item{na_fill}{The color to use for NA values. Default is "white".}
+
+\item{show_root}{If TRUE (default), show the root node (total
+population).}
 
 \item{lwidth}{Label width relative to available space}
 

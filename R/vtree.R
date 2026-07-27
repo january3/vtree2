@@ -93,7 +93,7 @@ print.vtree <- function(x, ...) {
 #' @return A vtree object
 as_vtree <- function(x) {
   if(!inherits(x, "tbl_graph")) {
-    cli_abort(x = "x must be a tbl_graph object")
+    cli_abort(c(x = "x must be a tbl_graph object"))
   }
 
   # integrity checks
@@ -117,18 +117,18 @@ as_vtree <- function(x) {
 
   # more than a root
   if(!any(nodes$level > 0) || nrow(nodes) < 2) {
-    cli_abort(x = "The vtree must have at least one node other than the root")
+    cli_abort(c(x = "The vtree must have at least one node other than the root"))
   }
 
   # only one root
   if(!sum(nodes$level == 0) == 1) {
-    cli_abort(x = "The vtree must have exactly one root node")
+    cli_abort(c(x = "The vtree must have exactly one root node"))
   }
 
   N <- nodes$n[ nodes$level == 0 ]
 
   if(any(is.na(nodes$node_col))) {
-    cli_abort(x = "The node_col column must not contain NA values")
+    cli_abort(c(x = "The node_col column must not contain NA values"))
   }
 
   cnms <- unique(nodes$node_col[ nodes$level > 0 ])
@@ -282,7 +282,7 @@ vtree <- function(cases, ..., .vp = TRUE, .cols = NULL) {
   }
 
   if(length(cnms) < 1L) {
-    cli_abort(x = "No columns specified for the vtree")
+    cli_abort(c(x = "No columns specified for the vtree"))
   }
 
   if(!all(cnms %in% colnames(cases))) {

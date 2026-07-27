@@ -111,6 +111,8 @@ find_fontsize <- function(labels, widths, heights) {
 # create node grobs from the nodes data frame
 #' @importFrom grid rectGrob roundrectGrob
 .get_node_rects <- function(nodes, rgrob) {
+  nodes <- nodes |>
+    filter(!is.na(.data[["x"]]) & !is.na(.data[["y"]]))
 
   map(1:nrow(nodes), \(i) {
     if(rgrob == "roundrectGrob") {

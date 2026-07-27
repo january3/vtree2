@@ -365,6 +365,8 @@ normalize_vtree_for_plotting <- function(x, palettes, na_fill) {
 #' @param lfontsize Font size for labels
 #' @param lwidth Label width relative to available space
 #' @param lheight Label height relative to available space
+#' @param show_root If TRUE (default), show the root node (total
+#'        population).
 #' @param var_labels If TRUE (default), add names of the variables to the
 #'        plot.
 #' @param dir direction of the tree. One of "lr" (left to right), "rl"
@@ -425,6 +427,7 @@ plot.vtree <- function(x, ...,
                       palettes = c("Blues", "Greens", "Reds",
                                    "Oranges", "Purples"),
                       na_fill = "white",
+                      show_root = TRUE,
                       lwidth = NA, lheight = NA,
                       autofontsize = NA,
                       dir = "lr") {
@@ -434,13 +437,17 @@ plot.vtree <- function(x, ...,
   x <- normalize_vtree_for_plotting(x, palettes, na_fill)
 
   if(proportional) {
-    layout <- layout_by_freq(x, dir, lwidth=lwidth, lheight=lheight)
+    layout <- layout_by_freq(x, dir,
+                             lwidth=lwidth, lheight=lheight,
+                             show_root = show_root)
     rgrob <- "rectGrob"
     if(is.na(autofontsize)) {
       autofontsize = "adaptive"
     }
   } else {
-    layout <- layout_regular(x, dir, lwidth=lwidth, lheight=lheight)
+    layout <- layout_regular(x, dir,
+                             lwidth=lwidth, lheight=lheight,
+                             show_root = show_root)
     rgrob <- "roundrectGrob"
     if(is.na(autofontsize)) {
       autofontsize = "fixed"
