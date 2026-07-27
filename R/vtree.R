@@ -100,10 +100,10 @@ as_vtree <- function(x) {
   # ------------------
   nodes <- as_tibble(x)
   req_cols <- c("ID", "node_id", "node_key",
-                "parent_id", "node_col", "node_name",
-                "node_val", "node_cv",
-                  "parent", "path", "level", "n", "tot_n",
-                  "missing", "freq", "denom")
+                "parent_id", "node_col", "node_val",
+                "parent", "path", "level", "n", "freq")
+  # this columns are usually created but not critical:
+  # node_cv, node_name, tot_n, missing, and denom
 
   if(!all(req_cols %in% colnames(nodes))) {
     stop(sprintf("Columns %s not in colnames(nodes)",
