@@ -64,11 +64,19 @@ find_fontsize <- function(labels, widths, heights) {
 
   l <- strsplit(labels, "\n")
   maxh <- min(heights/sapply(l, length))
-  maxw <- min(sapply(l, \(x) widths/max(nchar(x))))
+  maxw <- min(sapply(l, \(x) {
+                       if(length(x) == 0) {
+                         return(1)
+                       }
+                       min(widths/max(nchar(x)))
+              }
+  ))
 
   # we want to find a font size that will roughly give us a char w of maxw
   # and a line height of maxs.
-  teststr <- "WM\u00C1\u00C2\u00C4\u00C5\u00C9\u00CA\u00CB\u00CD\u00CE\u00CF\u00D3\u00D4\u00D6\u00DA\u00DB\u00DCgjpqy"
+  teststr <- paste0("WM\u00C1\u00C2\u00C4\u00C5\u00C9\u00CA",
+                    "\u00CB\u00CD\u00CE\u00CF\u00D3\u00D4",
+                    "\u00D6\u00DA\u00DB\u00DCgjpqy")
   teststr <- paste(rep(teststr, 3), collapse="\n")
 
   n <- nchar(teststr)/3 - 2
