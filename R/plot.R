@@ -230,7 +230,9 @@ plot_regular <- function(layout, fill_scale, color_scale,
   p
 }
 
-vtree_normalize <- function(layout) {
+# we check that the layout is correct and has the required columns
+# for some columns, we make sure that there are no NAs
+normalize_layout <- function(layout) {
 
   nodes <- as_tibble(layout)
   edges <- activate(layout, "edges") |> as_tibble()
@@ -271,11 +273,36 @@ vtree_normalize <- function(layout) {
   req_cols_edges <- c("x1", "x2", "y1", "y2")
   if(!all(req_cols_edges %in% colnames(edges))) {
     missing <- setdiff(req_cols_edges, colnames(edges))
-    cli_abort(c(x = 
+    cli_abort(c(x =
       "layout edges are missing required columns: {missing}"))
   }
 
   layout
+}
+
+# make sure that the vtree is ready for plotting. Fill in the missing
+# color, label, fill etc. information.
+normalize_vtree_for_plotting <- function(x, palettes, na_fill) {
+  if(!inherits(x, "vtree")) {
+    cli_abort(x = "normalize_vtree() requires a vtree object")
+  }
+
+  nodes <- as_tibble(x)
+
+  if(! "fill" %in% colnames(nodes)) {
+    x <- add_palette(x, palettes = palettes, na_fill = na_fill)
+  }
+
+  if(! "color" %in% colnames(nodes)) {
+    x <- x |> activate("nodes") |>
+      mutate(color = contrast_color(.data[["fill"]]))
+  }
+
+  if(! "label" %in% colnames(nodes)) {
+    x <- x |> add_labels()
+  }
+
+  x
 }
 
 #' Plot a vtree
@@ -404,19 +431,7 @@ plot.vtree <- function(x, ...,
 
   dir <- match.arg(dir, c("lr", "rl", "bt", "tb"))
 
-  nodes <- as_tibble(x)
-  if(! "fill" %in% colnames(nodes)) {
-    x <- add_palette(x, palettes = palettes, na_fill = na_fill)
-  }
-
-  if(! "color" %in% colnames(nodes)) {
-    x <- x |> activate("nodes") |>
-      mutate(color = contrast_color(.data[["fill"]]))
-  }
-
-  if(! "label" %in% colnames(nodes)) {
-    x <- x |> add_labels()
-  }
+  x <- normalize_vtree_for_plotting(x, palettes, na_fill)
 
   if(proportional) {
     layout <- layout_by_freq(x, dir, lwidth=lwidth, lheight=lheight)
@@ -431,8 +446,6 @@ plot.vtree <- function(x, ...,
       autofontsize = "fixed"
     }
   }
-
-  layout <- .flip_vert(layout)
 
   margins <- c(.05, 0.01, .02, .02)
   if(dir == "rl") {
@@ -453,7 +466,7 @@ plot.vtree <- function(x, ...,
                   1 - (margins[2] + margins[4]),
                  1 - (margins[1] + margins[3]))
 
-  layout <- vtree_normalize(layout)
+  layout <- normalize_layout(layout)
 
   x <- gTree(
         params = list(

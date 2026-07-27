@@ -64,7 +64,7 @@ layout_by_freq <- function(vtree, dir="lr", lwidth=NA, lheight=NA) {
     mutate(width = lwidth, height = .data[["n"]] / totn) |>
     mutate(full_w = full_w, full_h = .data[["height"]]) |>
     mutate(x = (.data[["level"]] + .5)/ nlevel) |>
-    mutate(y = .data[["offset_tot"]] / totn +
+    mutate(y = 1 - .data[["offset_tot"]] / totn -
            .data[["height"]] / 2)
 
   nodes <- as_tibble(layout)
@@ -119,7 +119,7 @@ layout_regular <- function(vtree, dir="lr", lwidth=NA, lheight=NA) {
     mutate(width = lwidth, height = lheight) |>
     mutate(full_w = full_w, full_h = .data[["height"]]) |>
     mutate(x = (.data[["level"]] + .5)/ nlevel) |>
-    mutate(y = .data[["offset_tot"]] / totleafs +
+    mutate(y = 1 - .data[["offset_tot"]] / totleafs -
                .data[["nleafs"]] / 2 / totleafs)
 
 
