@@ -428,6 +428,7 @@ plot.vtree <- function(x, ...,
                                    "Oranges", "Purples"),
                       na_fill = "white",
                       show_root = TRUE,
+                      var_labels = TRUE,
                       lwidth = NA, lheight = NA,
                       autofontsize = NA,
                       dir = "lr") {
@@ -454,13 +455,13 @@ plot.vtree <- function(x, ...,
     }
   }
 
-  margins <- c(.05, 0.01, .02, .02)
+  margins <- c(.01 + .04 * var_labels, 0.01, .01, .01)
   if(dir == "rl") {
     layout <- .flip_horiz(layout)
   }
 
   if(dir %in% c("bt", "tb")) {
-    margins <- c(0.02, .1, 0.02, 0.02)
+    margins <- c(0.01, .01 + .09 * var_labels, 0.01, 0.01)
     layout <- .transpose(layout)
     layout <- .flip_horiz(layout)
   }
@@ -488,7 +489,7 @@ plot.vtree <- function(x, ...,
         cl = "vtree_plot",
         gp = gpar()
         )
-  .make_children(x, fs = 9)
+  .make_children(x, fs = 9, var_labels = var_labels)
 }
 
 #' @rdname plot.vtree

@@ -233,7 +233,7 @@ makeContent.vtree_plot <- function(x) {
 # create the grobs associated with the plot. This is the main function that
 # actually creates the plot.
 #' @importFrom grid gTree gpar gList setChildren
-.make_children <- function(x, fs=9) {
+.make_children <- function(x, fs=9, var_labels = TRUE) {
 
   layout <- x$layout
 
@@ -257,14 +257,18 @@ makeContent.vtree_plot <- function(x) {
   cnodes <- distinct(nodes, .data[["node_col"]], .keep_all = TRUE) |>
     dplyr::slice(-1)
 
-  clabs <- .get_clabs(cnodes, dir=x$params$dir,
-                      margin=x$margin, fs = fs)
+  if(var_labels) {
+    clabs <- .get_clabs(cnodes, dir=x$params$dir,
+                        margin=x$margin, fs = fs)
 
-  clabs <- gTree(gp = gpar(),
-                  children = do.call(gList, clabs),
-                  name = "clabs")
+    clabs <- gTree(gp = gpar(),
+                    children = do.call(gList, clabs),
+                    name = "clabs")
 
-  children <- gList(arrows=arrows, nodes=rects, labels=labels, clabs=clabs)
+    children <- gList(arrows=arrows, nodes=rects, labels=labels, clabs=clabs)
+  } else {
+    children <- gList(arrows=arrows, nodes=rects, labels=labels)
+  }
   setChildren(x, children)
 }
 
