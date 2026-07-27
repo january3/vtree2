@@ -62,7 +62,7 @@
           return(sum(unlist(path$result)))
         }
     })) |>
-    group_by(.data[["parent"]]) |>
+    group_by(.data[["parent_id"]]) |>
     mutate(offset = lag(cumsum(.data[["nleafs"]]), default = 0)) |>
     ungroup() |>
     mutate(offset_tot = map_bfs_int(
