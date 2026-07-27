@@ -72,7 +72,6 @@ node2edge <- function(df) {
     select(all_of(c("node_key", "parent_key"))) |>
     # root has no parent! poor orphan
     rename(from = "parent_key", to = "node_key")
-  print(ret, n=100)
   ret
 }
 
