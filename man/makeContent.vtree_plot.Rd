@@ -6,6 +6,9 @@
 \usage{
 \method{makeContent}{vtree_plot}(x)
 }
+\arguments{
+\item{x}{A vtree_plot object}
+}
 \description{
 This function is called whenever a vtree_plot is plotted on a device.
 It's purpose is to fit the

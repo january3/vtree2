@@ -61,9 +61,6 @@ adapt_fontsize <- function(grobs, widths, heights,
 # given a vector of labels, figure out what fontsize fits them into the
 # widths x heights. Note that this is approximate only
 find_fontsize <- function(labels, widths, heights) {
-  print(labels)
-  print(widths)
-  print(heights)
 
   l <- strsplit(labels, "\n")
   maxh <- min(heights/sapply(l, length))
@@ -194,6 +191,7 @@ find_fontsize <- function(labels, widths, heights) {
 #' It's purpose is to fit the
 #' labels text into the allocated node space.
 #'
+#' @param x A vtree_plot object
 #' @importFrom grid gTree gList setChildren makeContent
 #' @export
 makeContent.vtree_plot <- function(x) {

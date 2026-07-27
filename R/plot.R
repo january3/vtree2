@@ -72,11 +72,11 @@ add_labels <- function(vtree,
   # this only looks complicated because we have to use .data
   if(template == "simple") {
     fmt <- quo(ifelse(.data[["node_val"]] == "",
-               sprintf("%d (%.0f%%)", .data[["n"]], .data[["freq"]] * 100),
+               sprintf("%d\n(%.0f%%)", .data[["n"]], .data[["freq"]] * 100),
                sprintf("%s\n%d (%.0f%%)",
          .data[["node_val"]],
          .data[["n"]], .data[["freq"]] * 100)))
-    fmt_na = quo(ifelse(.data[["node_val"]] == "",
+    fmt_na = quo(ifelse(!is.na(.data[["node_val"]]) & .data[["node_val"]] == "",
                         sprintf("%d", .data[["n"]]),
                         sprintf("%s\n%d", .data[["node_val"]], .data[["n"]]))
                        )
@@ -307,7 +307,53 @@ plot_regular <- function(layout, fill_scale, color_scale,
   p
 }
 
+vtree_normalize <- function(layout) {
 
+  nodes <- as_tibble(layout)
+  edges <- activate(layout, "edges") |> as_tibble()
+
+  req_cols <- c("x", "y", "width", "height", "color", "fill", "label")
+
+  if(!all(req_cols %in% colnames(nodes))) {
+    missing <- setdiff(req_cols, colnames(nodes))
+    cli_abort(c(x = "layout is missing required columns: {missing}"))
+  }
+
+  # for color and fill: make sure it is character; if fill missing, put
+  # "white"; if color missing, put "black"
+  layout <- layout |>
+    mutate(fill = as.character(.data[["fill"]]),
+           color = as.character(.data[["color"]])) |>
+    mutate(fill = ifelse(is.na(.data[["fill"]]), "white", .data[["fill"]]),
+           color = ifelse(is.na(.data[["color"]]), "black", .data[["color"]]))
+
+  # make sure label is character; if missing, fill in the node_val
+  layout <- layout |>
+    mutate(label = as.character(.data[["label"]])) |>
+    mutate(label = ifelse(is.na(.data[["label"]]),
+                          "NA", .data[["label"]]))
+
+  # if full_w or full_h are missing, replace them with width/height
+  if(!"full_w" %in% colnames(nodes)) {
+    layout <- layout |>
+      mutate(full_w = .data[["width"]])
+  }
+
+  if(!"full_h" %in% colnames(nodes)) {
+    layout <- layout |>
+      mutate(full_h = .data[["height"]])
+  }
+
+  # check edges; required are x1, x2, y1, y2
+  req_cols_edges <- c("x1", "x2", "y1", "y2")
+  if(!all(req_cols_edges %in% colnames(edges))) {
+    missing <- setdiff(req_cols_edges, colnames(edges))
+    cli_abort(c(x = 
+      "layout edges are missing required columns: {missing}"))
+  }
+
+  layout
+}
 
 #' Plot a vtree
 #'
@@ -483,6 +529,8 @@ plot.vtree <- function(x, ...,
   layout <- .scale(layout, margins[2], margins[1],
                   1 - (margins[2] + margins[4]),
                  1 - (margins[1] + margins[3]))
+
+  layout <- vtree_normalize(layout)
 
   x <- gTree(
         params = list(

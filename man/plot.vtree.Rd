@@ -25,6 +25,7 @@ plot_ggplot(
   lheight = 0.8,
   palettes = c("Blues", "Greens", "Reds", "Oranges", "Purples"),
   na_fill = "white",
+  var_labels = TRUE,
   dir = c("lr", "rl", "tb", "bt"),
   proportional = FALSE,
   legend = FALSE
@@ -48,11 +49,21 @@ default arguments to the vtree_palette() function.}
 
 \item{lheight}{Label height relative to available space}
 
+\item{autofontsize}{If "adaptive", the font size is adjusted to fit the
+each node, which may result in nodes having different font sizes.
+If "fixed", all nodes have the same font size, adjusted to fit
+the smallest node. If NA (default), then "adaptive" is used for
+proportional plots (which often have very small nodes) and
+"fixed" for regular plots.}
+
 \item{dir}{direction of the tree. One of "lr" (left to right), "rl"
 (right to left), "tb" (top to bottom), "bt" (bottom to top).
 Default is "lr".}
 
 \item{lfontsize}{Font size for labels}
+
+\item{var_labels}{If TRUE (default), add names of the variables to the
+plot.}
 
 \item{legend}{If TRUE, a legend is added to the plot. Default is FALSE.}
 }
