@@ -157,3 +157,47 @@ layout_regular <- function(vtree, dir="lr",
 }
 
 
+#' Prepare a layout for plotting a vtree
+#'
+#' A layout function for vtree adds several columns to both the nodes and
+#' edges data frame which specify the positions and sizes of the nodes and
+#' edges in the plot.
+#'
+#' The builtin layouts are as follows:
+#' - "regular" - a regular layout in which all nodes have the same width and
+#'  height, and the nodes are evenly spaced along the y-axis.
+#' - "proportional" - a layout in which the height of each node is proportional
+#' to the number of observations in that node, and the nodes are spaced along
+#' the y-axis according to their cumulative frequencies.
+#' @param vtree A vtree object
+#' @param layout The layout type, either "regular" or "proportional"
+#' @param dir The direction of the layout, either "lr" (left to right), "rl"
+#'            (right to left), "tb" (top to bottom), or "bt" (bottom to top)
+#' @param lwidth,lheight The width and height of the nodes, as the fraction
+#'        of the available space. If NA, a sensible preset is chosen.
+#' @param show_root Whether to show the root node in the layout.
+#' @examples
+#' vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived)
+#' layout(vt, layout = "regular", dir = "lr") |> as_tibble()
+#' @export
+layout <- function(vtree,
+                   layout = c("regular", "proportional"),
+                   dir="lr",
+                   lwidth=NA, lheight=NA,
+                   show_root=TRUE) {
+
+
+  layout <- match.arg(layout)
+
+  if(layout == "regular") {
+    layout <- layout_regular(vtree, dir=dir,
+                             lwidth=lwidth, lheight=lheight,
+                             show_root=show_root)
+  } else {
+    layout <- layout_by_freq(vtree, dir=dir,
+                             lwidth=lwidth, lheight=lheight,
+                             show_root=show_root)
+  }
+
+  layout
+}

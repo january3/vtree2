@@ -8,27 +8,28 @@
 \method{plot}{vtree}(
   x,
   ...,
-  proportional = FALSE,
+  layout = "regular",
   palettes = c("Blues", "Greens", "Reds", "Oranges", "Purples"),
   na_fill = "white",
   show_root = TRUE,
+  var_labels = TRUE,
   lwidth = NA,
   lheight = NA,
   autofontsize = NA,
-  dir = "lr"
+  dir = c("lr", "rl", "tb", "bt")
 )
 
 plot_ggplot(
   x,
   ...,
-  lfontsize = NA,
-  lwidth = 0.7,
-  lheight = 0.8,
+  layout = c("regular", "proportional"),
   palettes = c("Blues", "Greens", "Reds", "Oranges", "Purples"),
   na_fill = "white",
   var_labels = TRUE,
+  lwidth = 0.7,
+  lheight = 0.8,
   dir = c("lr", "rl", "tb", "bt"),
-  proportional = FALSE,
+  lfontsize = NA,
   legend = FALSE
 )
 }
@@ -37,8 +38,9 @@ plot_ggplot(
 
 \item{...}{ignored}
 
-\item{proportional}{If TRUE, the node sizes are scaled by number of
-observations. If FALSE, all nodes have the same size.}
+\item{layout}{The layout type, either "regular" or "proportional". If
+"proportional", then the height of each node is proportional to the number
+of observations in that node.}
 
 \item{palettes}{A character vector with names of RColorBrewer palettes
 to use for the variables. By default these are the
@@ -48,6 +50,9 @@ default arguments to the vtree_palette() function.}
 
 \item{show_root}{If TRUE (default), show the root node (total
 population).}
+
+\item{var_labels}{If TRUE (default), add names of the variables to the
+plot.}
 
 \item{lwidth}{Label width relative to available space}
 
@@ -65,9 +70,6 @@ proportional plots (which often have very small nodes) and
 Default is "lr".}
 
 \item{lfontsize}{Font size for labels}
-
-\item{var_labels}{If TRUE (default), add names of the variables to the
-plot.}
 
 \item{legend}{If TRUE, a legend is added to the plot. Default is FALSE.}
 }

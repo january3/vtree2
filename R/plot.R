@@ -147,11 +147,13 @@ add_labels <- function(vtree,
   })
 
   y <- ifelse(top, -.1, 1.1)
+  lnn <- length(nn)
+  dx <- 1/(lnn + 1)
 
   df <- data.frame(
         label = nn,
         keys = keys,
-        x = seq(0, 1, length.out = 1 + length(nn))[-1],
+        x = seq(0, 1, by=dx)[-c(1, lnn + 2)] + dx/2,
         y = y
         )
 
@@ -365,6 +367,9 @@ normalize_vtree_for_plotting <- function(x, palettes, na_fill) {
 #' @param lfontsize Font size for labels
 #' @param lwidth Label width relative to available space
 #' @param lheight Label height relative to available space
+#' @param layout The layout type, either "regular" or "proportional". If
+#'        "proportional", then the height of each node is proportional to the number
+#'        of observations in that node.
 #' @param show_root If TRUE (default), show the root node (total
 #'        population).
 #' @param var_labels If TRUE (default), add names of the variables to the
@@ -382,8 +387,6 @@ normalize_vtree_for_plotting <- function(x, palettes, na_fill) {
 #'        proportional plots (which often have very small nodes) and
 #'        "fixed" for regular plots.
 #' @param na_fill The color to use for NA values. Default is "white".
-#' @param proportional If TRUE, the node sizes are scaled by number of
-#' observations. If FALSE, all nodes have the same size.
 #' @param legend If TRUE, a legend is added to the plot. Default is FALSE.
 #' @examples
 #' vt <- vtree_from_freqtable(Titanic)
@@ -423,7 +426,7 @@ normalize_vtree_for_plotting <- function(x, palettes, na_fill) {
 #' @importFrom grid gTree gpar gList
 #' @export
 plot.vtree <- function(x, ...,
-                      proportional = FALSE,
+                      layout = "regular",
                       palettes = c("Blues", "Greens", "Reds",
                                    "Oranges", "Purples"),
                       na_fill = "white",
@@ -431,14 +434,15 @@ plot.vtree <- function(x, ...,
                       var_labels = TRUE,
                       lwidth = NA, lheight = NA,
                       autofontsize = NA,
-                      dir = "lr") {
+                      dir = c("lr", "rl", "tb", "bt")) {
 
   dir <- match.arg(dir, c("lr", "rl", "bt", "tb"))
+  layout <- match.arg(layout, c("regular", "proportional"))
 
   x <- normalize_vtree_for_plotting(x, palettes, na_fill)
 
   if(proportional) {
-    layout <- layout_by_freq(x, dir,
+    layout <- layout(x, layout = "proportional", dir = dir,
                              lwidth=lwidth, lheight=lheight,
                              show_root = show_root)
     rgrob <- "rectGrob"
@@ -446,7 +450,7 @@ plot.vtree <- function(x, ...,
       autofontsize = "adaptive"
     }
   } else {
-    layout <- layout_regular(x, dir,
+    layout <- layout(x, layout = "regular", dir = dir,
                              lwidth=lwidth, lheight=lheight,
                              show_root = show_root)
     rgrob <- "roundrectGrob"
@@ -498,20 +502,19 @@ plot.vtree <- function(x, ...,
 #' @importFrom ggplot2 theme_void geom_text geom_label unit
 #' @importFrom ggplot2 scale_fill_manual scale_color_manual theme
 #' @export
-plot_ggplot <- function(x,
-                       ...,
-                       lfontsize = NA,
-                       lwidth = .7,
-                       lheight = .8,
+plot_ggplot <- function(x, ...,
+                       layout = c("regular", "proportional"),
                        palettes = c("Blues", "Greens", "Reds",
                                     "Oranges", "Purples"),
                        na_fill = "white",
                        var_labels = TRUE,
+                       lwidth = .7, lheight = .8,
                        dir = c("lr", "rl", "tb", "bt"),
-                       proportional = FALSE,
+                       lfontsize = NA,
                        legend = FALSE) {
 
   dir <- match.arg(dir)
+  layout <- match.arg(layout, c("regular", "proportional"))
 
   nodes <- as_tibble(x)
   if(! "fill" %in% colnames(nodes)) {
@@ -535,12 +538,11 @@ plot_ggplot <- function(x,
     x <- x |> add_labels()
   }
 
-  if(proportional) {
-    l <- layout_by_freq(x, lwidth = lwidth)
+  l <- layout(x, layout = layout, lwidth = lwidth)
+  if(layout == "proportional") {
     p <- plot_by_freq(l, fill_scale, color_scale,
                       lfontsize = lfontsize)
   } else {
-    l <- layout_regular(x, lwidth = lwidth, lheight = lheight)
     p <- plot_regular(l, fill_scale, color_scale,
                       lfontsize = lfontsize)
   }
