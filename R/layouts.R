@@ -156,6 +156,61 @@ layout_regular <- function(vtree, dir="lr",
    layout
 }
 
+layout_flushed <- function(vtree, dir="lr",
+                           lwidth=NA, lheight=NA,
+                           show_root=TRUE) {
+
+  sr <- as.integer(show_root)
+
+  layout <- .calc_nleafs(vtree)
+  nodes  <- as_tibble(layout)
+
+  nlevel <- max(nodes$level) + sr
+  #totleafs <- sum(nodes$nleafs[nodes$level == 1])
+  totleafs <- nodes$nleafs[nodes$node_id == 1]
+  if(is.na(lheight)) {
+    lheight <- .8 / totleafs
+    full_h <- 1 / totleafs
+  } else {
+    lheight <- lheight / totleafs
+    full_h <- 1 / totleafs
+  }
+
+  if(is.na(lwidth)) {
+    lwidth <- .35 / nlevel
+    full_w <- 1 / nlevel
+  } else {
+    lwidth <- lwidth / nlevel
+    full_w <- 1 / nlevel
+  }
+
+  layout <- layout |>
+    mutate(width = lwidth, height = lheight) |>
+    mutate(full_w = full_w, full_h = .data[["height"]]) |>
+    mutate(x = (.data[["level"]] + .5 - 1 + sr)/ nlevel) |>
+    mutate(y = 1 - .data[["offset_tot"]] / totleafs - lheight / 2)
+
+  nodes <- as_tibble(layout)
+
+  if(dir %in% c("tb", "bt")) {
+    dx <- lheight
+  } else {
+    dx <- lwidth
+  }
+  dx <- lwidth
+
+  layout <- layout |>
+    mutate(x1 = nodes$x[.data[["from"]]] + dx/2,
+           x2 = nodes$x[.data[["to"]]] - dx/2,
+           y1 = nodes$y[.data[["from"]]],
+           y2 = nodes$y[.data[["to"]]],
+           .edges = TRUE)
+
+
+   layout
+}
+
+
 
 #' Prepare a layout for plotting a vtree
 #'
@@ -169,8 +224,25 @@ layout_regular <- function(vtree, dir="lr",
 #' - "proportional" - a layout in which the height of each node is proportional
 #' to the number of observations in that node, and the nodes are spaced along
 #' the y-axis according to their cumulative frequencies.
+#'
+#' @section Custom layouts:
+#'
+#' You can also provide a custom layout function. The function should take a
+#' the following arguments: vtree, dir, lwidth, lheight, show_root. It
+#' should return a vtree object with following additional columns in the
+#' nodes data frame:
+#'
+#' - x, y: the coordinates of the center of the node
+#' - width, height: the width and height of the node
+#' - full_w, full_h: the width and height of the node including the margins
+#'
+#' In the edge data frame, the following additional columns should be added:
+#' - x1, y1: the coordinates of the start of the edge
+#' - x2, y2: the coordinates of the end of the edge
+#'
 #' @param vtree A vtree object
 #' @param layout The layout type, either "regular" or "proportional"
+#' @param layout_func A custom layout function.
 #' @param dir The direction of the layout, either "lr" (left to right), "rl"
 #'            (right to left), "tb" (top to bottom), or "bt" (bottom to top)
 #' @param lwidth,lheight The width and height of the nodes, as the fraction
@@ -181,23 +253,34 @@ layout_regular <- function(vtree, dir="lr",
 #' layout(vt, layout = "regular", dir = "lr") |> as_tibble()
 #' @export
 layout <- function(vtree,
-                   layout = c("regular", "proportional"),
+                   layout = c("regular", "proportional", "flushed"),
+                   layout_func = NULL,
                    dir="lr",
                    lwidth=NA, lheight=NA,
                    show_root=TRUE) {
 
 
-  layout <- match.arg(layout)
+  if(!is.null(layout_func)) {
+    layout <- "custom"
+  } else {
+    layout <- match.arg(layout)
+  }
 
   if(layout == "regular") {
-    layout <- layout_regular(vtree, dir=dir,
-                             lwidth=lwidth, lheight=lheight,
-                             show_root=show_root)
-  } else {
-    layout <- layout_by_freq(vtree, dir=dir,
-                             lwidth=lwidth, lheight=lheight,
-                             show_root=show_root)
+    layout_func <- layout_regular
+  } else if(layout == "proportional") {
+    layout_func <- layout_by_freq
+  } else if(layout == "flushed") {
+    layout_func <- layout_flushed
   }
+
+  if(is.null(layout_func)) {
+    cli_abort(c(x = "layout_func must be provided for custom layout"))
+  }
+
+  layout <- layout_func(vtree, dir=dir,
+                           lwidth=lwidth, lheight=lheight,
+                           show_root=show_root)
 
   layout
 }

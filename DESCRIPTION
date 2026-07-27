@@ -2,7 +2,10 @@ Package: vtree2
 Title: What the Package Does (One Line, Title Case)
 Version: 0.0.0.9000
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"))
+    person("John", "Doe", email = "john.doe@example.com", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0000-0000-0000"))
+Author: John Doe [aut, cre]
+Maintainer: John Doe <john.doe@example.com>
 Description: What the package does (one paragraph).
 License: GPL (>= 3)
 Encoding: UTF-8

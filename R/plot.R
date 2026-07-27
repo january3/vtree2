@@ -370,6 +370,8 @@ normalize_vtree_for_plotting <- function(x, palettes, na_fill) {
 #' @param layout The layout type, either "regular" or "proportional". If
 #'        "proportional", then the height of each node is proportional to the number
 #'        of observations in that node.
+#' @param layout_func Custom function to calculate layout (see
+#'        [vtree2::layout()] for details).
 #' @param show_root If TRUE (default), show the root node (total
 #'        population).
 #' @param var_labels If TRUE (default), add names of the variables to the
@@ -427,6 +429,7 @@ normalize_vtree_for_plotting <- function(x, palettes, na_fill) {
 #' @export
 plot.vtree <- function(x, ...,
                       layout = "regular",
+                      layout_func = NULL,
                       palettes = c("Blues", "Greens", "Reds",
                                    "Oranges", "Purples"),
                       na_fill = "white",
@@ -434,28 +437,28 @@ plot.vtree <- function(x, ...,
                       var_labels = TRUE,
                       lwidth = NA, lheight = NA,
                       autofontsize = NA,
-                      dir = c("lr", "rl", "tb", "bt")) {
+                      dir = "lr") {
 
   dir <- match.arg(dir, c("lr", "rl", "bt", "tb"))
-  layout <- match.arg(layout, c("regular", "proportional"))
+
+  layout_arg <- layout
 
   x <- normalize_vtree_for_plotting(x, palettes, na_fill)
+  layout <- layout(x, layout = layout_arg,
+                   layout_func = layout_func, dir = dir,
+                   lwidth=lwidth, lheight=lheight,
+                   show_root = show_root)
 
-  if(proportional) {
-    layout <- layout(x, layout = "proportional", dir = dir,
-                             lwidth=lwidth, lheight=lheight,
-                             show_root = show_root)
+  if(is.na(autofontsize)) {
+    autofontsize = "fixed"
+  }
+
+  rgrob <- "roundrectGrob"
+
+  if(layout_arg == "proportional") {
     rgrob <- "rectGrob"
     if(is.na(autofontsize)) {
       autofontsize = "adaptive"
-    }
-  } else {
-    layout <- layout(x, layout = "regular", dir = dir,
-                             lwidth=lwidth, lheight=lheight,
-                             show_root = show_root)
-    rgrob <- "roundrectGrob"
-    if(is.na(autofontsize)) {
-      autofontsize = "fixed"
     }
   }
 
@@ -485,7 +488,7 @@ plot.vtree <- function(x, ...,
           dir = dir,
           rgrob = rgrob,
           autofontsize = autofontsize,
-          proportional = proportional),
+          layout_type = layout_arg),
         layout = layout,
         margin = margins,
         name = "vtree",
@@ -509,11 +512,11 @@ plot_ggplot <- function(x, ...,
                        na_fill = "white",
                        var_labels = TRUE,
                        lwidth = .7, lheight = .8,
-                       dir = c("lr", "rl", "tb", "bt"),
+                       dir = "lr",
                        lfontsize = NA,
                        legend = FALSE) {
 
-  dir <- match.arg(dir)
+  dir <- match.arg(dir, c("lr", "rl", "bt", "tb"))
   layout <- match.arg(layout, c("regular", "proportional"))
 
   nodes <- as_tibble(x)
