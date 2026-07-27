@@ -2,13 +2,16 @@
 % Please edit documentation in R/plot.R
 \name{plot.vtree}
 \alias{plot.vtree}
+\alias{plot_vtree}
 \alias{plot_ggplot}
 \title{Plot a vtree}
 \usage{
-\method{plot}{vtree}(
+\method{plot}{vtree}(x, ...)
+
+plot_vtree(
   x,
-  ...,
   layout = "regular",
+  layout_func = NULL,
   palettes = c("Blues", "Greens", "Reds", "Oranges", "Purples"),
   na_fill = "white",
   show_root = TRUE,
@@ -16,19 +19,19 @@
   lwidth = NA,
   lheight = NA,
   autofontsize = NA,
-  dir = c("lr", "rl", "tb", "bt")
+  dir = "lr"
 )
 
 plot_ggplot(
   x,
-  ...,
-  layout = c("regular", "proportional"),
+  layout = "regular",
+  layout_func = NULL,
   palettes = c("Blues", "Greens", "Reds", "Oranges", "Purples"),
   na_fill = "white",
   var_labels = TRUE,
   lwidth = 0.7,
   lheight = 0.8,
-  dir = c("lr", "rl", "tb", "bt"),
+  dir = "lr",
   lfontsize = NA,
   legend = FALSE
 )
@@ -36,11 +39,14 @@ plot_ggplot(
 \arguments{
 \item{x}{A vtree object}
 
-\item{...}{ignored}
+\item{...}{Arguments passed to \code{plot_vtree()}}
 
-\item{layout}{The layout type, either "regular" or "proportional". If
+\item{layout}{The layout type, either "regular", "flushed" or "proportional". If
 "proportional", then the height of each node is proportional to the number
-of observations in that node.}
+of observations in that node. See \code{\link[=layout]{layout()}} for details.}
+
+\item{layout_func}{Custom function to calculate layout (see
+\code{\link[=layout]{layout()}} for details).}
 
 \item{palettes}{A character vector with names of RColorBrewer palettes
 to use for the variables. By default these are the
@@ -78,15 +84,19 @@ A grid::gTree object of class vtree_plot. \code{plot_ggplot()}
 returns a ggplot2 object.
 }
 \description{
-Plots a vtree object. By default, all nodes have the same size. If you
-specify \code{proportional = TRUE}, then node size will be proportional to the
-number of observations in that node.
+Plots a vtree object using a variety of layouts.
 }
 \details{
-The returned value is a ggplot2 object, which can be further customized
-using ggplot2 functions.
+\code{plot.vtree()} plots a vtree object using a variety of layouts. The
+default layout, "regular", simply shows the tree structure with all
+nodes having the same size. The "proportional" layout shows the nodes
+with sizes proportional to the number of observations in that node.
+
+Colors, fill colors, node labels and other details can be customized by
+modifying the vtree object directly with the \code{\link[=mutate.vtree]{mutate.vtree()}} function.
+Otherwise, default colors and labels are filled in automatically.
 }
-\section{Working with color palettes}{
+\section{Colors}{
 
 
 By default, fill colors are assigned automatically based on the variable
@@ -112,10 +122,8 @@ examples below).
 
 Similarly, some default labels are created automatically. However, if
 a \code{label} column is present in the nodes data frame, it will be used
-instead for node labels. The node labels at present use
-\code{\link[ggplot2:geom_text]{ggplot2::geom_text()}}, so no additional markdown/HTML formatting can be
-used. Here, there are several columns that can be used to create a
-label:
+instead for node labels. Here, there are several columns that can be
+used to create a label:
 \itemize{
 \item \code{freq}, the frequency for a node
 \item \code{n}, number of samples of a node
@@ -134,7 +142,8 @@ Manipulating these columns is straightforward using the
 \code{\link[=mutate.vtree]{mutate.vtree()}} function (see below).
 
 For variables which are not associated with the nodes and additional
-summary variables, see \code{\link[=summary_vt]{summary_vt()}}.
+summary variables (ranges, medians, standard deviations and more), see
+\code{\link[=summary_vt]{summary_vt()}}.
 }
 
 \examples{
@@ -170,4 +179,9 @@ vt |>
   mutate(fill = pal[round(abs_freq * 100) + 1]) |>
  plot()
 
+}
+\seealso{
+\code{\link[=mutate.vtree]{mutate.vtree()}} for modifying the node data frame, and
+\code{\link[=add_labels]{add_labels()}} for adding labels to the nodes. For layout
+details, see \code{\link[=layout]{layout()}}.
 }

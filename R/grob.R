@@ -108,35 +108,60 @@ find_fontsize <- function(labels, widths, heights) {
   })
 }
 
-# create node grobs from the nodes data frame
 #' @importFrom grid rectGrob roundrectGrob
-.get_node_rects <- function(nodes, rgrob) {
-  nodes <- nodes |>
-    filter(!is.na(.data[["x"]]) & !is.na(.data[["y"]]))
-
-  map(1:nrow(nodes), \(i) {
-    if(rgrob == "roundrectGrob") {
-    roundrectGrob(x = nodes$x[i],
-      y = nodes$y[i],
-      name = paste0("node_", nodes$ID[i]),
-      width = nodes$width[i],
-      height = nodes$height[i],
+#' @importFrom grid gpar unit
+.get_grob <- function(grobname, x, y,
+                      width, height,
+                      name, col, fill) {
+  if(grobname == "roundrectangle") {
+    ret <- roundrectGrob(x = x, y = y,
+      name = name,
+      width = width,
+      height = height,
       r = unit(.3, "snpc"),
       gp = gpar(
                lwd = 2,
-               col = "black",
-               fill = nodes$fill[i]))
-    } else {
-    rectGrob(x = nodes$x[i],
-      y = nodes$y[i],
-      name = paste0("node_", nodes$ID[i]),
-      width = nodes$width[i],
-      height = nodes$height[i],
+               col = col,
+               fill = fill))
+  } else if(grobname == "rectangle") {
+    ret <- rectGrob(x = x, y = y,
+      name = name,
+      width = width,
+      height = height,
       gp = gpar(
                lwd = 2,
-               col = "black",
-               fill = nodes$fill[i]))
-    }
+               col = col,
+               fill = fill))
+  } else {
+    cli_abort(c(x = "Invalid value for grobname: {.val {grobname}}. Must be one of {.val {c('rectangle', 'roundrectangle')}}"))
+  }
+
+  ret
+}
+
+# create node grobs from the nodes data frame
+#' @importFrom grid rectGrob roundrectGrob
+.get_node_rects <- function(nodes) {
+  nodes <- nodes |>
+    filter(!is.na(.data[["x"]]) & !is.na(.data[["y"]]))
+
+ #if(!is.na(rgrob)) {
+ #  nodes <- mutate(nodes, grob = rgrob)
+ #}
+
+  if(any(is.na(nodes$shape))) {
+    cli_abort(c(x = "NA values in the shape column"))
+  }
+
+  map(1:nrow(nodes), \(i) {
+    .get_grob(grobname = nodes$shape[i],
+              x = nodes$x[i],
+              y = nodes$y[i],
+              name = paste0("node_", nodes$ID[i]),
+              width = nodes$width[i],
+              height = nodes$height[i],
+              col = "black",
+              fill = nodes$fill[i])
   })
 }
 
@@ -203,6 +228,7 @@ makeContent.vtree_plot <- function(x) {
   nodes <- as_tibble(x$layout)
 
   if(x$param$autofontsize == "fixed") {
+    print("fixed font size")
     fs <- find_fontsize(nodes$label, .9 * nodes$width, .9 * nodes$height)
     for(i in seq_along(x$children$labels$children)) {
       x$children$labels$children[[i]]$gp$fontsize <- fs
@@ -241,7 +267,7 @@ makeContent.vtree_plot <- function(x) {
   edges <- activate(layout, "edges") |> as_tibble()
 
   # the rgrob param chooses between rectangle and roundrect
-  rects <- .get_node_rects(nodes, x$params$rgrob)
+  rects <- .get_node_rects(nodes)
   rects <- gTree(gp = gpar(),
                  children = do.call(gList, rects),
                  name = "nodes")

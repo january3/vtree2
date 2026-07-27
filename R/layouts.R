@@ -66,13 +66,13 @@ layout_by_freq <- function(vtree, dir="lr",
     full_w <- 1 / nlevel
   }
 
-
   layout <- layout |>
     mutate(width = lwidth, height = .data[["n"]] / totn) |>
     mutate(full_w = full_w, full_h = .data[["height"]]) |>
     mutate(x = (.data[["level"]] + .5 - 1 + sr)/ nlevel) |>
     mutate(y = 1 - .data[["offset_tot"]] / totn -
-           .data[["height"]] / 2)
+           .data[["height"]] / 2) |>
+    mutate(shape = "rectangle")
 
   if(!show_root) {
     layout <- layout |>
@@ -127,7 +127,8 @@ layout_regular <- function(vtree, dir="lr",
     mutate(full_w = full_w, full_h = .data[["height"]]) |>
     mutate(x = (.data[["level"]] + .5 - 1 + sr)/ nlevel) |>
     mutate(y = 1 - .data[["offset_tot"]] / totleafs -
-               .data[["nleafs"]] / 2 / totleafs)
+               .data[["nleafs"]] / 2 / totleafs) |>
+    mutate(shape = "roundrectangle")
 
 
   if(!show_root) {
@@ -188,7 +189,8 @@ layout_flushed <- function(vtree, dir="lr",
     mutate(width = lwidth, height = lheight) |>
     mutate(full_w = full_w, full_h = .data[["height"]]) |>
     mutate(x = (.data[["level"]] + .5 - 1 + sr)/ nlevel) |>
-    mutate(y = 1 - .data[["offset_tot"]] / totleafs - lheight / 2)
+    mutate(y = 1 - .data[["offset_tot"]] / totleafs - lheight / 2) |>
+    mutate(shape = "roundrectangle")
 
   nodes <- as_tibble(layout)
 
@@ -236,6 +238,10 @@ layout_flushed <- function(vtree, dir="lr",
 #' - width, height: the width and height of the node
 #' - full_w, full_h: the width and height of the node including the margins
 #'
+#' In addition, it can have the "shape" column which specifies the shape of
+#' the node to use. It can be "rectangle" or "roundrectangle". If not
+#' specified, the default is "roundrectangle".
+#'
 #' In the edge data frame, the following additional columns should be added:
 #' - x1, y1: the coordinates of the start of the edge
 #' - x2, y2: the coordinates of the end of the edge
@@ -253,7 +259,8 @@ layout_flushed <- function(vtree, dir="lr",
 #' layout(vt, layout = "regular", dir = "lr") |> as_tibble()
 #' @export
 layout <- function(vtree,
-                   layout = c("regular", "proportional", "flushed"),
+                   layout = c("regular", "proportional",
+                              "flushed", "precomputed"),
                    layout_func = NULL,
                    dir="lr",
                    lwidth=NA, lheight=NA,
@@ -264,6 +271,12 @@ layout <- function(vtree,
     layout <- "custom"
   } else {
     layout <- match.arg(layout)
+  }
+
+  if(layout == "precomputed") {
+    cli::cli_inform(c(i = paste("layout is 'precomputed',",
+                      "assuming that the vtree already has a layout")))
+    return(vtree)
   }
 
   if(layout == "regular") {

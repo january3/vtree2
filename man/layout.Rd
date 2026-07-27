@@ -6,7 +6,8 @@
 \usage{
 layout(
   vtree,
-  layout = c("regular", "proportional"),
+  layout = c("regular", "proportional", "flushed"),
+  layout_func = NULL,
   dir = "lr",
   lwidth = NA,
   lheight = NA,
@@ -17,6 +18,8 @@ layout(
 \item{vtree}{A vtree object}
 
 \item{layout}{The layout type, either "regular" or "proportional"}
+
+\item{layout_func}{A custom layout function.}
 
 \item{dir}{The direction of the layout, either "lr" (left to right), "rl"
 (right to left), "tb" (top to bottom), or "bt" (bottom to top)}
@@ -41,6 +44,26 @@ to the number of observations in that node, and the nodes are spaced along
 the y-axis according to their cumulative frequencies.
 }
 }
+\section{Custom layouts}{
+
+
+You can also provide a custom layout function. The function should take a
+the following arguments: vtree, dir, lwidth, lheight, show_root. It
+should return a vtree object with following additional columns in the
+nodes data frame:
+\itemize{
+\item x, y: the coordinates of the center of the node
+\item width, height: the width and height of the node
+\item full_w, full_h: the width and height of the node including the margins
+}
+
+In the edge data frame, the following additional columns should be added:
+\itemize{
+\item x1, y1: the coordinates of the start of the edge
+\item x2, y2: the coordinates of the end of the edge
+}
+}
+
 \examples{
 vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived)
 layout(vt, layout = "regular", dir = "lr") |> as_tibble()

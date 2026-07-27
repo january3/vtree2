@@ -51,7 +51,7 @@ vtree_palette <- function(vtree,
   #family <- families[(level - 1L) %% length(families) + 1L]
 
   if(!inherits(vtree, "vtree")) {
-    cli_abort(x = "vtree_palette() requires a vtree object")
+    cli_abort(c(x = "vtree_palette() requires a vtree object"))
   }
 
   levs <- levels(vtree)
@@ -80,7 +80,7 @@ add_palette <- function(vtree,
                              na_fill = "white") {
 
   if(!inherits(vtree, "vtree")) {
-    cli_abort(x = "add_palette() requires a vtree object")
+    cli_abort(c(x = "add_palette() requires a vtree object"))
   }
 
   pal <- vtree_palette(vtree, palettes = palettes)

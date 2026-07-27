@@ -286,7 +286,7 @@ normalize_layout <- function(layout) {
 # color, label, fill etc. information.
 normalize_vtree_for_plotting <- function(x, palettes, na_fill) {
   if(!inherits(x, "vtree")) {
-    cli_abort(x = "normalize_vtree() requires a vtree object")
+    cli_abort(c(x = "normalize_vtree() requires a vtree object"))
   }
 
   nodes <- as_tibble(x)
@@ -304,19 +304,28 @@ normalize_vtree_for_plotting <- function(x, palettes, na_fill) {
     x <- x |> add_labels()
   }
 
+  if(! "shape" %in% colnames(nodes)) {
+    x <- x |> activate("nodes") |>
+      mutate(shape = "roundrectangle")
+  }
+
   x
 }
 
 #' Plot a vtree
 #'
-#' Plots a vtree object. By default, all nodes have the same size. If you
-#' specify `proportional = TRUE`, then node size will be proportional to the
-#' number of observations in that node.
+#' Plots a vtree object using a variety of layouts.
 #'
-#' The returned value is a ggplot2 object, which can be further customized
-#' using ggplot2 functions.
+#' `plot.vtree()` plots a vtree object using a variety of layouts. The
+#' default layout, "regular", simply shows the tree structure with all
+#' nodes having the same size. The "proportional" layout shows the nodes
+#' with sizes proportional to the number of observations in that node.
 #'
-#' @section Working with color palettes:
+#' Colors, fill colors, node labels and other details can be customized by
+#' modifying the vtree object directly with the [vtree2::mutate.vtree()] function.
+#' Otherwise, default colors and labels are filled in automatically.
+#'
+#' @section Colors:
 #'
 #' By default, fill colors are assigned automatically based on the variable
 #' level in the tree. Each node gets its own palette, and from
@@ -339,10 +348,8 @@ normalize_vtree_for_plotting <- function(x, palettes, na_fill) {
 #'
 #' Similarly, some default labels are created automatically. However, if
 #' a `label` column is present in the nodes data frame, it will be used
-#' instead for node labels. The node labels at present use
-#' [ggplot2::geom_text()], so no additional markdown/HTML formatting can be
-#' used. Here, there are several columns that can be used to create a
-#' label:
+#' instead for node labels. Here, there are several columns that can be
+#' used to create a label:
 #'
 #'  * `freq`, the frequency for a node
 #'  * `n`, number of samples of a node
@@ -360,16 +367,19 @@ normalize_vtree_for_plotting <- function(x, palettes, na_fill) {
 #' [vtree2::mutate.vtree()] function (see below).
 #'
 #' For variables which are not associated with the nodes and additional
-#' summary variables, see [vtree2::summary_vt()].
+#' summary variables (ranges, medians, standard deviations and more), see
+#' [vtree2::summary_vt()].
 #'
 #' @param x A vtree object
-#' @param ... ignored
+#' @param ... Arguments passed to `plot_vtree()`
 #' @param lfontsize Font size for labels
 #' @param lwidth Label width relative to available space
 #' @param lheight Label height relative to available space
-#' @param layout The layout type, either "regular" or "proportional". If
+#' @param layout The layout type, either "regular", "flushed" or "proportional". If
 #'        "proportional", then the height of each node is proportional to the number
-#'        of observations in that node.
+#'        of observations in that node. See [vtree2::layout()] for details.
+#'        If layout is NA, then it is assumed that the vtree already has a
+#'        layout with all necessary columns and no layout is calculated.
 #' @param layout_func Custom function to calculate layout (see
 #'        [vtree2::layout()] for details).
 #' @param show_root If TRUE (default), show the root node (total
@@ -390,6 +400,9 @@ normalize_vtree_for_plotting <- function(x, palettes, na_fill) {
 #'        "fixed" for regular plots.
 #' @param na_fill The color to use for NA values. Default is "white".
 #' @param legend If TRUE, a legend is added to the plot. Default is FALSE.
+#' @seealso [vtree2::mutate.vtree()] for modifying the node data frame, and
+#' [vtree2::add_labels()] for adding labels to the nodes. For layout
+#' details, see [vtree2::layout()].
 #' @examples
 #' vt <- vtree_from_freqtable(Titanic)
 #'
@@ -427,7 +440,13 @@ normalize_vtree_for_plotting <- function(x, palettes, na_fill) {
 #' returns a ggplot2 object.
 #' @importFrom grid gTree gpar gList
 #' @export
-plot.vtree <- function(x, ...,
+plot.vtree <- function(x, ...) {
+  plot_vtree(x, ...)
+}
+
+#' @rdname plot.vtree
+#' @export
+plot_vtree <- function(x,
                       layout = "regular",
                       layout_func = NULL,
                       palettes = c("Blues", "Greens", "Reds",
@@ -450,15 +469,10 @@ plot.vtree <- function(x, ...,
                    show_root = show_root)
 
   if(is.na(autofontsize)) {
-    autofontsize = "fixed"
-  }
-
-  rgrob <- "roundrectGrob"
-
-  if(layout_arg == "proportional") {
-    rgrob <- "rectGrob"
-    if(is.na(autofontsize)) {
+    if(layout_arg == "proportional") {
       autofontsize = "adaptive"
+    } else {
+      autofontsize = "fixed"
     }
   }
 
@@ -486,7 +500,6 @@ plot.vtree <- function(x, ...,
   x <- gTree(
         params = list(
           dir = dir,
-          rgrob = rgrob,
           autofontsize = autofontsize,
           layout_type = layout_arg),
         layout = layout,
@@ -505,8 +518,9 @@ plot.vtree <- function(x, ...,
 #' @importFrom ggplot2 theme_void geom_text geom_label unit
 #' @importFrom ggplot2 scale_fill_manual scale_color_manual theme
 #' @export
-plot_ggplot <- function(x, ...,
-                       layout = c("regular", "proportional"),
+plot_ggplot <- function(x,
+                       layout = "regular",
+                       layout_func = NULL,
                        palettes = c("Blues", "Greens", "Reds",
                                     "Oranges", "Purples"),
                        na_fill = "white",
@@ -517,7 +531,6 @@ plot_ggplot <- function(x, ...,
                        legend = FALSE) {
 
   dir <- match.arg(dir, c("lr", "rl", "bt", "tb"))
-  layout <- match.arg(layout, c("regular", "proportional"))
 
   nodes <- as_tibble(x)
   if(! "fill" %in% colnames(nodes)) {
@@ -541,7 +554,10 @@ plot_ggplot <- function(x, ...,
     x <- x |> add_labels()
   }
 
-  l <- layout(x, layout = layout, lwidth = lwidth)
+  l <- layout(x, layout = layout,
+              layout_func = layout_func,
+              lwidth = lwidth)
+
   if(layout == "proportional") {
     p <- plot_by_freq(l, fill_scale, color_scale,
                       lfontsize = lfontsize)
