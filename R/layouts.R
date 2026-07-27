@@ -105,7 +105,7 @@ layout_by_freq <- function(vtree, dir="lr",
   }
 
   if(is.na(lwidth)) {
-    lwidth <- .35 / nlevel
+    lwidth <- .65 / nlevel
     full_w <- 1 / nlevel
   } else {
     lwidth <- lwidth / nlevel

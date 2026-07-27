@@ -20,7 +20,7 @@
 }
 
 # given a single grob, adapt the fontsize to fit a given w x h
-.adapt_fontsize_single <- function(grob, width, height, mar) {
+.adapt_fontsize_single <- function(grob, width, height, size_fct = 1) {
 
   mins <- 5
   maxs <- 150
@@ -30,7 +30,7 @@
     lw <- convertWidth(grobWidth(grob), "npc", valueOnly = TRUE)
     lh <-  convertHeight(grobHeight(grob), "npc", valueOnly = TRUE)
 
-    if(lw > mar * width || lh > mar * height) {
+    if(lw > size_fct * width || lh > size_fct * height) {
       maxs <- fs  
     } else {
       mins <- fs
@@ -38,9 +38,8 @@
 
   }
 
-  # .set_fontsize works with lists
-  grob <- .set_fontsize(list(grob), floor(mins))
-  grob[[1]]
+  grob$gp$fontsize <- floor(mins)
+  grob
 }
 
 # adapt the font size of each grob separately
@@ -48,20 +47,19 @@
 #' @importFrom grid convertHeight grobHeight
 adapt_fontsize <- function(grobs, widths, heights,
                            padding = .2) {
-  .mar <- 1 - padding
+  .size_fct <- 1 - padding
 
   grobs <- map(seq_along(grobs), \(i)
                .adapt_fontsize_single(grobs[[i]],
                                       widths[[i]],
                                       heights[[i]],
-                                      .mar))
+                                      .size_fct))
   return(grobs)
 }
 
 # given a vector of labels, figure out what fontsize fits them into the
 # widths x heights. Note that this is approximate only
 find_fontsize <- function(labels, widths, heights) {
-
   l <- strsplit(labels, "\n")
   maxh <- min(heights/sapply(l, length))
   maxw <- min(sapply(l, \(x) {
@@ -77,28 +75,30 @@ find_fontsize <- function(labels, widths, heights) {
   teststr <- paste0("WM\u00C1\u00C2\u00C4\u00C5\u00C9\u00CA",
                     "\u00CB\u00CD\u00CE\u00CF\u00D3\u00D4",
                     "\u00D6\u00DA\u00DB\u00DCgjpqy")
+  teststr <- "WMjpqy()%"
+  n <- nchar(teststr)
   teststr <- paste(rep(teststr, 3), collapse="\n")
 
-  n <- nchar(teststr)/3 - 2
+  #n <- nchar(teststr)/3 - 2
   g <- textGrob(teststr, gp=gpar(fontsize=20))
 
   mins <- 2
   maxs <- 150
 
-  while(maxs - mins > 1) {
+  while(maxs - mins > .1) {
     fs <- (maxs + mins)/2
     g$gp$fontsize <- fs
     w <- convertWidth(grobWidth(g), "npc", valueOnly = TRUE)
     h <- convertHeight(grobHeight(g), "npc", valueOnly = TRUE)
 
-    if(w/n > maxw || h > 3 * maxh) {
+    if(w/n > maxw || h/3 > maxh) {
       maxs <- fs  
     } else {
       mins <- fs
     }
   }
   
-  mins <- floor(mins)
+  mins <- round(mins)
   mins
 }
 

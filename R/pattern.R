@@ -204,7 +204,7 @@ plot.vtree_pattern <- function(x, ...,
                       palettes = c("Blues", "Greens", "Oranges",
                                    "Reds", "Purples"),
                       pattern_fill = "#fc9272",
-                      lwidth = .25, lheight = .9,
+                      lwidth = .4, lheight = .9,
                       show_root = FALSE) {
   vt <- vtree_from_pattern(x)
 
