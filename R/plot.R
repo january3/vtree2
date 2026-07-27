@@ -447,10 +447,11 @@ plot.vtree <- function(x, ...) {
 #' @rdname plot.vtree
 #' @export
 plot_vtree <- function(x,
-                      layout = "regular",
+                      layout = c("regular", "proportional",
+                              "flushed", "precomputed"),
                       layout_func = NULL,
-                      palettes = c("Blues", "Greens", "Reds",
-                                   "Oranges", "Purples"),
+                      palettes = c("Blues", "Greens", "Oranges",
+                                   "Reds", "Purples"),
                       na_fill = "white",
                       show_root = TRUE,
                       var_labels = TRUE,
@@ -460,7 +461,7 @@ plot_vtree <- function(x,
 
   dir <- match.arg(dir, c("lr", "rl", "bt", "tb"))
 
-  layout_arg <- layout
+  layout_arg <- match.arg(layout)
 
   x <- normalize_vtree_for_plotting(x, palettes, na_fill)
   layout <- layout(x, layout = layout_arg,
@@ -521,8 +522,8 @@ plot_vtree <- function(x,
 plot_ggplot <- function(x,
                        layout = "regular",
                        layout_func = NULL,
-                       palettes = c("Blues", "Greens", "Reds",
-                                    "Oranges", "Purples"),
+                       palettes = c("Blues", "Greens", "Oranges",
+                                    "Reds", "Purples"),
                        na_fill = "white",
                        var_labels = TRUE,
                        lwidth = .7, lheight = .8,
