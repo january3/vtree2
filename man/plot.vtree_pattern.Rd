@@ -7,7 +7,7 @@
 \method{plot}{vtree_pattern}(
   x,
   ...,
-  palettes = c("Blues", "Greens", "Oranges", "Reds", "Purples"),
+  palettes = c("Reds", "Blues", "Greens", "Oranges", "Purples"),
   pattern_fill = "#fc9272",
   lwidth = 0.4,
   lheight = 0.9,

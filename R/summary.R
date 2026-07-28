@@ -1,3 +1,8 @@
+.na_comp <- function(x, y) {
+  (is.na(x) & is.na(y)) |
+  (!is.na(x) & !is.na(y) & x == y)
+}
+
 # calculate the overall product of all matches to select the correct
 # classes
 .find_match_recursively <- function(df, path, match = TRUE) {
@@ -335,11 +340,18 @@ summary_vt_df <- function(cases, vtree, col, .col = NULL) {
 #'        with the counts and percentages of each level of the variable at
 #'        that node. If FALSE, return a named integer vector with the
 #'        counts of each level of the variable at that node.
+#' @param as_df Returns a data frame (tibble) with node column, value,
+#'        number of counts, frequency, denominator and label.
 #' @export
 #' @importFrom purrr map map_lgl map_dbl map_int
-summary_at_var <- function(vtree, varname, as_char = FALSE) {
+summary_at_var <- function(vtree, varname, as_char = FALSE,
+                           as_df = FALSE) {
   if(!inherits(vtree, "vtree")) {
     cli_abort(c(x = "summary_at_var() requires a vtree object"))
+  }
+
+  if(as_df) {
+    as_char = TRUE
   }
 
   nodes <- as_tibble(vtree)
@@ -395,16 +407,32 @@ summary_at_var <- function(vtree, varname, as_char = FALSE) {
 
   ret <- paste(names(counts[notna]),
         sprintf("%d (%.0f%%)", counts[notna], 100 * freqs[notna]),
-        sep = ": ", collapse = "\n")
+        sep = ": ")
 
-  if(counts[!notna] > 0) {
+        #, collapse = "\n")
+  names(ret) <- names(counts[notna])
+
+  if(counts[!notna] > 0 || as_df) {
     if(!vp) {
-    ret <- paste0(ret, "\nMissing: ",
+    ret <- c(ret, "Missing: ",
                   counts[!notna],
                   " (", sprintf("%.0f%%", 100 * freqs[!notna]), ")")
     } else {
-      ret <- paste0(ret, "\nMissing: ", counts[!notna])
+      ret <- c(ret, paste("Missing:", counts[!notna]))
     }
+    names(ret) <- names(counts)
   }
+
+  if(as_df) {
+    ret <- tibble(
+                  node_col = varname,
+                  node_val = names(counts),
+                  count = counts,
+                  freq = freqs,
+                  denom = N,
+                  label = ret)
+
+  }
+
   ret
 }

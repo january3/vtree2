@@ -4,7 +4,7 @@
 \alias{summary_at_var}
 \title{Summarize a variable at a given node of a vtree}
 \usage{
-summary_at_var(vtree, varname, as_char = FALSE)
+summary_at_var(vtree, varname, as_char = FALSE, as_df = FALSE)
 }
 \arguments{
 \item{vtree}{A vtree object}
@@ -15,6 +15,9 @@ summary_at_var(vtree, varname, as_char = FALSE)
 with the counts and percentages of each level of the variable at
 that node. If FALSE, return a named integer vector with the
 counts of each level of the variable at that node.}
+
+\item{as_df}{Returns a data frame (tibble) with node column, value,
+number of counts, frequency, denominator and label.}
 }
 \value{
 if \code{as_char} is TRUE, a character string with the counts and

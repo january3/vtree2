@@ -478,11 +478,12 @@ plot_vtree <- function(x,
                       layout = c("regular", "proportional",
                               "flushed", "precomputed"),
                       layout_func = NULL,
-                      palettes = c("Blues", "Greens", "Oranges",
-                                   "Reds", "Purples"),
+                      palettes = c("Reds", "Blues", "Greens",
+                                   "Oranges", "Purples"),
                       na_fill = "white",
                       show_root = TRUE,
                       var_labels = TRUE,
+                      legend = FALSE,
                       lwidth = NA, lheight = NA,
                       autofontsize = NA,
                       dir = "lr") {
@@ -508,7 +509,9 @@ plot_vtree <- function(x,
   }
 
   margins <- list(top = .01, right = .01,
-                  bottom = .01 + .09 * show_vl, left = .01)
+                  bottom = .01 + .09 * show_vl +
+                    .15 * legend,
+                  left = .01)
 
   if(dir == "rl") {
     layout <- .flip_horiz(layout)
@@ -526,14 +529,20 @@ plot_vtree <- function(x,
   }
 
   layout <- .fit_margins(layout, margins)
-
   layout <- normalize_layout(layout)
+
+  if(legend) {
+    legend <- layout_legend(layout, margins, dir)
+  } else {
+    legend <- NULL
+  }
 
   params <- list(
     dir = dir,
     fontsizes = list(nodes = 9, clabs = 11),
     autofontsize = autofontsize,
     var_labels = var_labels,
+    legend = legend,
     layout_type = layout_arg)
 
   x <- gTree(
@@ -557,8 +566,8 @@ plot_vtree <- function(x,
 plot_ggplot <- function(x,
                        layout = "regular",
                        layout_func = NULL,
-                       palettes = c("Blues", "Greens", "Oranges",
-                                    "Reds", "Purples"),
+                       palettes = c("Reds", "Blues", "Greens",
+                                    "Oranges", "Purples"),
                        na_fill = "white",
                        var_labels = TRUE,
                        lwidth = .7, lheight = .8,

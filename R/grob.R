@@ -57,6 +57,11 @@ adapt_fontsize <- function(grobs, widths, heights,
   return(grobs)
 }
 
+# find a unique fontsize for all the text grobs in the list
+adapt_fontsize_1fitsall <- function(gl) {
+
+}
+
 # given a vector of labels, figure out what fontsize fits them into the
 # widths x heights. Note that this is approximate only
 find_fontsize <- function(labels, widths, heights) {
@@ -116,7 +121,7 @@ find_fontsize <- function(labels, widths, heights) {
   map(1:nrow(nodes), \(i) {
              textGrob(x = nodes$x[i], y = nodes$y[i],
                       label = nodes$label[i],
-                      name = paste0("node_", nodes$node_key[i] %||% "NA"),
+                      name = paste0("label_", nodes$node_key[i] %||% "NA"),
                       gp = gpar(col = nodes$color[i] %||% color,
                       fontsize = fs))
   })
@@ -166,7 +171,12 @@ find_fontsize <- function(labels, widths, heights) {
   }
 
   nodes <- nodes |>
-    filter(!is.na(.data[["x"]]) & !is.na(.data[["y"]]))
+    filter(!is.na(.data[["x"]]) & !is.na(.data[["y"]])) |>
+    filter(!is.na(.data[["shape"]]))
+
+  if(nrow(nodes) < 1L) {
+    return(NULL)
+  }
 
  #if(!is.na(rgrob)) {
  #  nodes <- mutate(nodes, grob = rgrob)
@@ -242,21 +252,32 @@ find_fontsize <- function(labels, widths, heights) {
 
 # given a data frame with the node positions, grob column, and label
 # column, create a gTree with the node grobs and the labels.
-.get_nodes <- function(nodes, fs = 9) {
+.get_nodes <- function(nodes, fs = 9, name = "nodes") {
+
+  req_cols <- c("x", "y", "width", "height", "shape", "fill", "label")
+
+  if(!all(req_cols %in% colnames(nodes))) {
+    missing <- req_cols[!req_cols %in% colnames(nodes)]
+    cli_abort(
+     c(x = "Missing required columns in nodes data frame: {.val {missing}}"))
+  }
 
   rects <- .get_node_rects(nodes)
-  rects <- gTree(gp = gpar(),
-                 children = do.call(gList, rects),
-                 name = "nodes")
+
+  if(!is.null(rects)) {
+    rects <- gTree(gp = gpar(),
+                   children = do.call(gList, rects),
+                   name = paste0(name, "_boxes"))
+  }
 
   labels <- .get_labels(nodes, fs = fs)
   labels <- gTree(gp = gpar(),
                   children = do.call(gList, labels),
-                  name = "labels")
+                  name = paste0(name, "_labels"))
 
   gTree(gp = gpar(),
         children = gList(rects=rects, labels=labels),
-        name = "nodes")
+        name = name)
 }
 
 #' Hook for vtree plots
@@ -267,6 +288,7 @@ find_fontsize <- function(labels, widths, heights) {
 #'
 #' @param x A vtree_plot object
 #' @importFrom grid gTree gList setChildren makeContent
+#' @importFrom grid gPath
 #' @return A gTree object with the labels adjusted to fit into the allocated space.
 #' @export
 makeContent.vtree_plot <- function(x) {
@@ -276,6 +298,7 @@ makeContent.vtree_plot <- function(x) {
   autofontsize <- x$param$autofontsize
   mar <- x$margins
 
+  ## ugly, ugly, ugly code
   if(autofontsize == "fixed") {
     fs <- find_fontsize(nodes$label, .9 * nodes$width, .9 * nodes$height)
     for(i in seq_along(labels)) {
@@ -289,16 +312,33 @@ makeContent.vtree_plot <- function(x) {
       setChildren(x$children$nodes$children$labels, do.call(gList, labels))
   }
 
-  cnodes <- distinct(nodes, .data[["node_col"]], .keep_all = TRUE) |>
-    dplyr::slice(-1)
+  if(!is.null(x$param$legend)) {
+    df <- x$param$legend |>
+      filter(label_type == "var_name_label")
+    fs <- find_fontsize(df$label, df$width, df$height)
+    for(i in 1:nrow(df)) {
+      x$children$legend$children$legend_titles$children$legend_titles_labels$children[[i]]$gp$fontsize <- fs
+    }
 
-  if(x$params$dir %in% c("bt", "tb")) {
-    fs <- find_fontsize(cnodes$node_col, mar$left, .9 * cnodes$full_h[1])
-  } else {
-    fs <- find_fontsize(cnodes$node_col, .9 * cnodes$full_w[1], .9 * mar$bottom)
-  }
-  for(i in seq_along(x$children$clabs$children)) {
-    x$children$clabs$children[[i]]$gp$fontsize <- fs
+    df <- x$param$legend |>
+      filter(label_type == "var_level_label")
+    fs <- find_fontsize(df$label, df$width, df$height)
+    for(i in 1:nrow(df)) {
+      x$children$legend$children$legend_levels$children$legend_levels_labels$children[[i]]$gp$fontsize <- fs
+    }
+
+  } else if(!is.null(x$param$var_labels)) {
+    cnodes <- distinct(nodes, .data[["node_col"]], .keep_all = TRUE) |>
+      dplyr::slice(-1)
+
+    if(x$params$dir %in% c("bt", "tb")) {
+      fs <- find_fontsize(cnodes$node_col, mar$left, .9 * cnodes$full_h[1])
+    } else {
+      fs <- find_fontsize(cnodes$node_col, .9 * cnodes$full_w[1], .9 * mar$bottom)
+    }
+    for(i in seq_along(x$children$clabs$children)) {
+      x$children$clabs$children[[i]]$gp$fontsize <- fs
+    }
   }
 
   x
@@ -312,6 +352,7 @@ makeContent.vtree_plot <- function(x) {
   layout  <- x$layout
   varlabs <- x$params$var_labels
   fs      <- x$params$fontsizes$nodes
+  legend  <- x$params$legend
 
   nodes <- as_tibble(layout)
   edges <- activate(layout, "edges") |> as_tibble()
@@ -320,8 +361,19 @@ makeContent.vtree_plot <- function(x) {
   arrows <- .get_arrows(edges)
 
   # margin labels with the variable names
+  children <- gList(arrows=arrows, nodes=nodes_gt)
 
-  if(!is.null(varlabs)) {
+  if(!is.null(legend)) {
+    legend_labs <- .get_nodes(filter(legend, label_type == "var_level_label"),
+                                     fs = fs, name="legend_levels")
+    foo <- filter(legend, label_type == "var_name_label")
+    var_labs    <- .get_nodes(filter(legend, label_type == "var_name_label"),
+                                     fs = fs, name="legend_titles")
+    legend <- gTree(gp=gpar(), children = gList(titles = legend_labs,
+                                                levels = var_labs),
+                    name = "legend")
+    children <- gList(children, legend = legend)
+  } else if(!is.null(varlabs)) {
     cnodes <- distinct(nodes, .data[["node_col"]], .keep_all = TRUE) |>
       dplyr::slice(-1)
     clabs <- .get_clabs(cnodes, var_labels=varlabs,
@@ -332,10 +384,10 @@ makeContent.vtree_plot <- function(x) {
                     children = do.call(gList, clabs),
                     name = "clabs")
 
-    children <- gList(arrows=arrows, nodes=nodes_gt, clabs=clabs)
-  } else {
-    children <- gList(arrows=arrows, nodes=nodes_gt)
-  }
+    children <- gList(children, clabs=clabs)
+  } 
+  print(children)
+
   setChildren(x, children)
 }
 

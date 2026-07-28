@@ -105,20 +105,81 @@
 }
 
 # create a layout for the legend.
-layout_legend <- function(layout, dir="lr",
-                          margins,
-                          show_root=TRUE) {
+layout_legend <- function(layout, margins, dir="lr") {
 
+  #req_cols <- c("x", "y", "width", "height", "shape", "fill", "label"))
   cnms <- names(layout)
 
+  nodes <- as_tibble(layout) |>
+    filter(.data[["node_key"]] != "node_1") |>
+    select(all_of(c("node_key", "node_col", "node_val", "level",
+                    "x", "y", "width", "height", "full_w", "full_h",
+                    "shape", "fill", "color")))
+
+  lvls <- levels(layout)
+  summaries <- map_dfr(set_names(names(lvls)), \(var) {
+                     summary_at_var(layout, var, as_df=TRUE) |>
+                     mutate(pos = 1:n())
+  })
+
+  legend <- merge(nodes, summaries, by = c("node_col", "node_val")) |>
+    distinct(pick(c("node_col", "node_val")), .keep_all = TRUE) |>
+      mutate(node_key = paste0("legend_", 1:n())) |>
+      mutate(label_type = "var_level_label")
+
+  maxpos <- max(legend[["pos"]]) + 2
+
+  tmp <- legend |>
+    filter(!is.na(node_val)) |>
+    group_by(node_col) |>
+    summarize(fill = fill[pos == max(pos)])
+
   if(dir %in% c("tb", "bt")) {
-    lwidth <- margins[2]
+    legend <- legend |> 
+      mutate(height = .data[["full_h"]] / maxpos) |>
+      mutate(x = margins$left / 2) |>
+      mutate(width = .8 * margins$left) |>
+      mutate(y = .data[["y"]] - maxpos * .data[["height"]] / 2 + 
+             (maxpos - .data[["pos"]] - 1.5) * .data[["height"]])
+
+    titles <- legend |>
+      filter(pos == 1) |>
+      mutate(label = .data[["node_col"]]) |>
+      mutate(color = "black") |>
+      mutate(shape = NA) |>
+      mutate(y = y + .data[["height"]]) |>
+      mutate(height = .data[["height"]] * 2) |>
+      mutate(node_key = paste0("legend_title_", 1:n())) |>
+      mutate(label_type = "var_name_label")
+    titles$color <- tmp$fill
+
+    legend <- bind_rows(legend, titles)
+      
+  } else {
+    legend <- legend |>
+      mutate(x = .data[["x"]],
+             y = margins$bottom -
+               (.data[["pos"]] + 1) * margins$bottom / maxpos) |>
+      mutate(height = .9 * margins$bottom / maxpos) |>
+      mutate(width = .data[["width"]])
+
+    titles <- legend |>
+      filter(pos == 1) |>
+      mutate(label = .data[["node_col"]]) |>
+      mutate(color = "black") |>
+      mutate(shape = NA) |>
+      mutate(y = y + .data[["height"]] * 1.5) |>
+      mutate(height = .data[["height"]] * 2) |>
+      mutate(node_key = paste0("legend_title_", 1:n())) |>
+      mutate(label_type = "var_name_label")
+    titles$color <- tmp$fill
+
+    legend <- bind_rows(legend, titles)
   }
 
-  nodes <- as_tibble(layout) |>
-    filter(!duplicated(.data[["node_col"]]))
 
 
+  legend
 }
 
 layout_by_freq <- function(vtree, dir="lr",

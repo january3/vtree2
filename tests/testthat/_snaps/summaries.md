@@ -67,12 +67,20 @@
     Code
       sm1
     Output
-      [1] "1st: 294 (15%)\n2nd: 258 (13%)\n3rd: 633 (32%)\nCrew: 793 (40%)\nMissing: 223"
+                    1st               2nd               3rd              Crew 
+       "1st: 294 (15%)"  "2nd: 258 (13%)"  "3rd: 633 (32%)" "Crew: 793 (40%)" 
+                   <NA> 
+         "Missing: 223" 
 
 ---
 
     Code
       sm2
     Output
-      [1] "1st: 294 (13%)\n2nd: 258 (12%)\n3rd: 633 (29%)\nCrew: 793 (36%)\nMissing: 223 (10%)"
+                    1st               2nd               3rd              Crew 
+       "1st: 294 (13%)"  "2nd: 258 (12%)"  "3rd: 633 (29%)" "Crew: 793 (36%)" 
+                   <NA>              <NA>              <NA>              <NA> 
+            "Missing: "             "223"              " ("             "10%" 
+                   <NA> 
+                    ")" 
 

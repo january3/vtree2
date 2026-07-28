@@ -12,10 +12,11 @@ plot_vtree(
   x,
   layout = c("regular", "proportional", "flushed", "precomputed"),
   layout_func = NULL,
-  palettes = c("Blues", "Greens", "Oranges", "Reds", "Purples"),
+  palettes = c("Reds", "Blues", "Greens", "Oranges", "Purples"),
   na_fill = "white",
   show_root = TRUE,
   var_labels = TRUE,
+  legend = FALSE,
   lwidth = NA,
   lheight = NA,
   autofontsize = NA,
@@ -26,7 +27,7 @@ plot_ggplot(
   x,
   layout = "regular",
   layout_func = NULL,
-  palettes = c("Blues", "Greens", "Oranges", "Reds", "Purples"),
+  palettes = c("Reds", "Blues", "Greens", "Oranges", "Purples"),
   na_fill = "white",
   var_labels = TRUE,
   lwidth = 0.7,
@@ -65,6 +66,8 @@ names are the variable names and values are the labels to be
 displayed for those variables. If FALSE or NULL,
 no variable labels are shown.}
 
+\item{legend}{If TRUE, a legend is added to the plot. Default is FALSE.}
+
 \item{lwidth}{Label width relative to available space}
 
 \item{lheight}{Label height relative to available space}
@@ -81,8 +84,6 @@ proportional plots (which often have very small nodes) and
 Default is "lr".}
 
 \item{lfontsize}{Font size for labels}
-
-\item{legend}{If TRUE, a legend is added to the plot. Default is FALSE.}
 }
 \value{
 A grid::gTree object of class vtree_plot. \code{plot_ggplot()}

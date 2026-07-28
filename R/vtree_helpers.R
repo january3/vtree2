@@ -1,6 +1,11 @@
 ## helper functions for constructing vtrees
 
 .get_levels <- function(x, cnms) {
+  if(!all(cnms %in% names(x))) {
+    missing <- setdiff(cnms, names(x))
+    cli_abort(c(x = "x does not contain columns {missing}"))
+  }
+
   levels <- map(cnms, \(nm) {
     if(is.factor(x[[nm]])) {
       levels(x[[nm]])

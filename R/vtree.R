@@ -312,6 +312,10 @@ vtree <- function(cases, ..., .vp = TRUE, .cols = NULL) {
 
   if(!is.null(attr(cases, "levels"))) {
     levels <- attr(cases, "levels")
+    if(!all(cnms %in% names(levels))) {
+      cli_abort("not all column names in provided levels")
+    }
+    levels <- levels[cnms]
   } else {
     levels <- .get_levels(cases, cnms)
   }

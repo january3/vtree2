@@ -211,8 +211,8 @@ vtree_from_pattern <- function(pat) {
 #'         invisibly.
 #' @export
 plot.vtree_pattern <- function(x, ...,
-                      palettes = c("Blues", "Greens", "Oranges",
-                                   "Reds", "Purples"),
+                      palettes = c("Reds", "Blues", "Greens",
+                                   "Oranges", "Purples"),
                       pattern_fill = "#fc9272",
                       lwidth = .4, lheight = .9,
                       show_root = FALSE) {
