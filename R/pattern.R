@@ -185,7 +185,7 @@ vtree_from_pattern <- function(pat) {
                      directed = TRUE, node_key = "node_key")
 
   attr(vtree, "cols") <- c("pattern", cnms)
-  attr(vtree, "levels") <- c(pattern=NA, levels)
+  attr(vtree, "levels") <- c(pattern="", levels)
   ret <- as_vtree(vtree)
   class(ret) <- c("vtree_from_pattern", class(ret))
   ret
