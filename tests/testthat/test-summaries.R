@@ -61,11 +61,11 @@ test_that("summary_at_var works", {
   expect_error(summary_at_var(titanicNA, "Class", as_char=FALSE),
                "summary_at_var\\(\\) requires a vtree object")
 
-  sm1 <- summary_at_var(vt, "Class")
+  sm1 <- summary_at_var(vt, "Class", as_char=TRUE)
   expect_snapshot(sm1)
 
   vt <- vtree(titanicNA, Class, Sex, Survived, .vp = FALSE)
-  sm2 <- summary_at_var(vt, "Class")
+  sm2 <- summary_at_var(vt, "Class", as_char=TRUE)
   expect_snapshot(sm2)
 
   sm <- summary_at_var(vt, "Class", as_char=FALSE)
