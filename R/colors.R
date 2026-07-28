@@ -70,6 +70,15 @@ vtree_palette <- function(vtree,
   ret
 }
 
+.node_fill <- function(node_col, node_val, na_fill, pal) {
+
+  node_val <- as.character(node_val)
+  candidates <- map2_chr(node_val, node_col, \(val, var) {
+      pal[[var]][as.character(val)] %||% na_fill
+  })
+
+  ifelse(is.na(node_val), na_fill, candidates)
+}
 
 #' @rdname vtree_palette
 #' @importFrom purrr map2_chr map_chr
@@ -85,13 +94,12 @@ add_palette <- function(vtree,
 
   pal <- vtree_palette(vtree, palettes = palettes)
 
-  vtree |> activate("nodes") |>
+  foo <- vtree |>
     mutate(fill = ifelse(is.na(.data[["node_val"]]),
-                               na_fill,
-                               map2_chr(.data[["node_val"]],
-                           .data[["node_col"]], \(val, var) {
-      pal[[var]][as.character(val)] %||% na_fill
-    }))) |>
+                         na_fill,
+                         .node_fill(.data[["node_col"]],
+                                    .data[["node_val"]], na_fill, pal)
+           )) |>
     mutate(fill_class = map_chr(.data[["node_col"]], \(var) 
       pal[[var]][length(pal[[var]])] %||% na_fill))
 }
