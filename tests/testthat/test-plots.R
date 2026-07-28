@@ -1,6 +1,8 @@
+
+vt <- vtree_from_freqtable(Titanic, "Class", "Sex", "Survived")
+
 test_that("plotting works", {
 
-  vt <- vtree_from_freqtable(Titanic, "Class", "Sex", "Survived")
   p1 <- expect_no_error(plot(vt))
   expect_s3_class(p1, "vtree_plot")
   expect_s3_class(p1, "gTree")
@@ -24,9 +26,22 @@ test_that("plotting works", {
   expect_no_error(plot(vt, var_labels = FALSE))
 })
 
+test_that("var_labels argument works", {
+
+  expect_no_error(plot(vt, var_labels=FALSE))
+  expect_no_error(plot(vt, var_labels=NULL))
+  expect_no_error(plot(vt, var_labels=
+                       c(Class="C",
+                         Sex="G",
+                         Survived="S")))
+
+  expect_error(plot(vt, var_labels=c(foo="bar")),
+    "var_labels is missing names for variables: Class, Sex, and Survived")
+
+})
+
 test_that("ggplot plotting works", {
 
-  vt <- vtree_from_freqtable(Titanic, "Class", "Sex", "Survived")
   p1 <- expect_no_error(plot_ggplot(vt))
   expect_s3_class(p1, "ggplot")
 

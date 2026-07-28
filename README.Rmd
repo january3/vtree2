@@ -282,7 +282,7 @@ with the `labelvar` parameter. In vtree2 you can use the column labels you
 wish to see in the original data. If you have weird characters, use the
 backticks.
 
-XXX: use node_name!
+
 
 ```{r eval=FALSE}
 ## vtree::vtree(FakeData, "Severity Sex",

@@ -104,15 +104,21 @@ find_fontsize <- function(labels, widths, heights) {
 
 # create grobs for labels from the nodes data frame
 #' @importFrom grid textGrob
-.get_labels <- function(nodes, fs=9) {
+.get_labels <- function(nodes, fs=9, color = "black") {
+  req_cols <- c("x", "y", "label")
+  if(!all(req_cols %in% colnames(nodes))) {
+    missing <- req_cols[!req_cols %in% colnames(nodes)]
+    cli_abort(
+     c(
+     x = "Missing required columns in nodes data frame: {.val {missing}}"))
+  }
+
   map(1:nrow(nodes), \(i) {
-             textGrob(x = nodes$x[i],
-                        y = nodes$y[i],
-                        name = paste0("label_", nodes$node_key[i]),
-                        label = nodes$label[i],
-                        gp = gpar(
-                        col = nodes$color[i],
-                        fontsize = fs))
+             textGrob(x = nodes$x[i], y = nodes$y[i],
+                      label = nodes$label[i],
+                      name = paste0("node_", nodes$node_key[i] %||% "NA"),
+                      gp = gpar(col = nodes$color[i] %||% color,
+                      fontsize = fs))
   })
 }
 
@@ -150,6 +156,15 @@ find_fontsize <- function(labels, widths, heights) {
 # create node grobs from the nodes data frame
 #' @importFrom grid rectGrob roundrectGrob
 .get_node_rects <- function(nodes) {
+  req_cols <- c("x", "y", "width", "height", "shape", "fill")
+
+  if(!all(req_cols %in% colnames(nodes))) {
+    missing <- req_cols[!req_cols %in% colnames(nodes)]
+    cli_abort(
+     c(
+     x = "Missing required columns in nodes data frame: {.val {missing}}"))
+  }
+
   nodes <- nodes |>
     filter(!is.na(.data[["x"]]) & !is.na(.data[["y"]]))
 
@@ -165,7 +180,7 @@ find_fontsize <- function(labels, widths, heights) {
     .get_grob(grobname = nodes$shape[i],
               x = nodes$x[i],
               y = nodes$y[i],
-              name = paste0("node_", nodes$node_key[i]),
+              name = paste0("node_", nodes$node_key[i] %||% "NA"),
               width = nodes$width[i],
               height = nodes$height[i],
               col = "black",
@@ -190,10 +205,15 @@ find_fontsize <- function(labels, widths, heights) {
 }
 
 # get the labels of the variables
-.get_clabs <- function(nodes, dir, margin, fs) {
+.get_clabs <- function(nodes, var_labels, dir, margin, fs) {
 
   if(!"fill_class" %in% colnames(nodes)) {
     nodes$fill_class <- "black"
+  }
+
+  var_labels <- var_labels[nodes$node_col]
+  if(any(is.na(var_labels))) {
+    cli_abort(c(x = "Missing variable labels for some variables"))
   }
 
   if(dir %in% c("rl", "lr")) {
@@ -201,7 +221,7 @@ find_fontsize <- function(labels, widths, heights) {
                textGrob(x = nodes$x[i],
                         y = margin[1]/2,
                         name = paste0("label_", nodes$node_key[i]),
-                        label = nodes$node_col[i],
+                        label = var_labels[i],
                         gp = gpar(
                         col = nodes$fill_class[i],
                         fontsize = fs))
@@ -211,7 +231,7 @@ find_fontsize <- function(labels, widths, heights) {
                textGrob(y = nodes$y[i],
                         x = margin[2]/2,
                         name = paste0("label_", nodes$node_key[i]),
-                        label = nodes$node_col[i],
+                        label = var_labels[i],
                         gp = gpar(
                         col = nodes$fill_class[i],
                         fontsize = fs))
@@ -286,23 +306,25 @@ makeContent.vtree_plot <- function(x) {
 # create the grobs associated with the plot. This is the main function that
 # actually creates the plot.
 #' @importFrom grid gTree gpar gList setChildren
-.make_children <- function(x, fs=9, var_labels = TRUE) {
+.make_children <- function(x) {
 
-  layout <- x$layout
+  layout  <- x$layout
+  varlabs <- x$params$var_labels
+  fs      <- x$params$fontsizes$nodes
 
   nodes <- as_tibble(layout)
   edges <- activate(layout, "edges") |> as_tibble()
 
   nodes_gt <- .get_nodes(nodes, fs = fs)
-
   arrows <- .get_arrows(edges)
 
   # margin labels with the variable names
 
-  if(var_labels) {
+  if(!is.null(varlabs)) {
     cnodes <- distinct(nodes, .data[["node_col"]], .keep_all = TRUE) |>
       dplyr::slice(-1)
-    clabs <- .get_clabs(cnodes, dir=x$params$dir,
+    clabs <- .get_clabs(cnodes, var_labels=varlabs,
+                        dir=x$params$dir,
                         margin=x$margin, fs = fs)
 
     clabs <- gTree(gp = gpar(),

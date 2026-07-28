@@ -88,6 +88,12 @@
     }))
 }
 
+legend_layout <- function(layout, dir="lr", show_root=TRUE) {
+
+
+
+
+}
 
 layout_by_freq <- function(vtree, dir="lr",
                            lwidth=NA, lheight=NA,

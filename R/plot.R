@@ -312,6 +312,31 @@ normalize_vtree_for_plotting <- function(x, palettes, na_fill) {
   x
 }
 
+# checks and normalizes the var_labels parameter
+.normalize_var_labels <- function(cnms, var_labels) {
+  if(is.null(var_labels)) {
+    return(NULL)
+  } 
+
+  if(is.logical(var_labels)) {
+    if(var_labels) {
+      var_labels <- set_names(cnms)
+    } else {
+      var_labels <- NULL
+    }
+  } else {
+    if(!is.character(var_labels)) {
+      cli_abort(c(x = "var_labels must be a logical or character vector"))
+    }
+    if(!all(cnms %in% names(var_labels))) {
+      missing <- setdiff(cnms, names(var_labels))
+      cli_abort(c(x = "var_labels is missing names for variables: {missing}"))
+    }
+  }
+  var_labels
+}
+
+
 #' Plot a vtree
 #'
 #' Plots a vtree object using a variety of layouts.
@@ -385,7 +410,10 @@ normalize_vtree_for_plotting <- function(x, palettes, na_fill) {
 #' @param show_root If TRUE (default), show the root node (total
 #'        population).
 #' @param var_labels If TRUE (default), add names of the variables to the
-#'        plot.
+#'        plot. Alternatively, it can be a named character vector where
+#'        names are the variable names and values are the labels to be
+#'        displayed for those variables. If FALSE or NULL,
+#'        no variable labels are shown.
 #' @param dir direction of the tree. One of "lr" (left to right), "rl"
 #'        (right to left), "tb" (top to bottom), "bt" (bottom to top).
 #'        Default is "lr".
@@ -462,6 +490,8 @@ plot_vtree <- function(x,
   dir <- match.arg(dir, c("lr", "rl", "bt", "tb"))
 
   layout_arg <- match.arg(layout)
+  var_labels <- .normalize_var_labels(names(x), var_labels)
+  show_vl <- !is.null(var_labels)
 
   x <- normalize_vtree_for_plotting(x, palettes, na_fill)
   layout <- layout(x, layout = layout_arg,
@@ -477,13 +507,13 @@ plot_vtree <- function(x,
     }
   }
 
-  margins <- c(.01 + .04 * var_labels, 0.01, .01, .01)
+  margins <- c(.01 + .04 * show_vl, 0.01, .01, .01)
   if(dir == "rl") {
     layout <- .flip_horiz(layout)
   }
 
   if(dir %in% c("bt", "tb")) {
-    margins <- c(0.01, .01 + .09 * var_labels, 0.01, 0.01)
+    margins <- c(0.01, .01 + .09 * show_vl, 0.01, 0.01)
     layout <- .transpose(layout)
     layout <- .flip_horiz(layout)
   }
@@ -498,11 +528,15 @@ plot_vtree <- function(x,
 
   layout <- normalize_layout(layout)
 
+  params <- list(
+    dir = dir,
+    fontsizes = list(nodes = 9, clabs = 11),
+    autofontsize = autofontsize,
+    var_labels = var_labels,
+    layout_type = layout_arg)
+
   x <- gTree(
-        params = list(
-          dir = dir,
-          autofontsize = autofontsize,
-          layout_type = layout_arg),
+        params = params,
         layout = layout,
         margin = margins,
         name = "vtree",
@@ -510,7 +544,7 @@ plot_vtree <- function(x,
         cl = "vtree_plot",
         gp = gpar()
         )
-  .make_children(x, fs = 9, var_labels = var_labels)
+  .make_children(x)
 }
 
 #' @rdname plot.vtree
