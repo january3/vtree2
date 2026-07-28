@@ -298,3 +298,43 @@ summary_vt_df <- function(cases, vtree, col, .col = NULL) {
     select(all_of("ID"), everything())
   ret
 }
+
+# returns a formatted summary for a variable at the given node of the vtree
+summary_at_var <- function(vtree, varname, as_char = TRUE) {
+
+  nodes <- as_tibble(vtree)
+
+  sel <- purrr::map_lgl(nodes[["path"]], \(p) {
+    if(is.null(names(p))) {
+      return(FALSE)
+    }
+    varname %in% names(p)
+  })
+
+  values <- sapply(nodes[["path"]][sel], \(p) {
+    p[[varname]]
+  })
+
+  values <- factor(values)
+  counts <- purrr::map_int(levels(values), \(l) {
+    selval <- purrr::map_lgl(nodes[["path"]][sel], \(p) {
+      
+      is.na(l) && is.na(p[[varname]]) || p[[varname]] == l
+    })
+    sum(nodes[["n"]][sel][selval], na.rm = TRUE)
+  })
+  names(counts) <- levels(values)
+
+  levels <- list(summary(factor(values)))
+
+  if(!as_char) {
+    return(levels)
+  }
+
+  levels_str <- map_chr(levels,
+                        \(l) paste(names(l), l, sep = ": ", collapse = "\n"))
+
+  levels_str
+}
+
+
