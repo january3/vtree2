@@ -74,6 +74,9 @@
 #'              prune all following nodes.
 #' @param keep If TRUE, keeps the nodes that satisfy the condition and prunes
 #'              everything else.
+#' @param keep_follow If keep is specified, and keep_follow is true, then
+#'          nodes following the selected node (i.e., its children) are also
+#'          kept even if they do not fulfill the condition.
 #' @param mark_only If TRUE, marks the nodes that satisfy the condition in
 #'          the node data frame with a new column `mark` but does not prune
 #'          the graph. Useful for debugging. The values of the column are
@@ -233,7 +236,7 @@ find_precede_nodes <- function(vtree, mask) {
 # selected by the condition
 # na.rm: remove the NA nodes
 .prune <- function(vtree, condition,
-                   follow_only = FALSE,
+                   keep_follow = TRUE,
                    mark_only = FALSE,
                    keep = FALSE, na.rm = FALSE) {
 
@@ -246,6 +249,11 @@ find_precede_nodes <- function(vtree, mask) {
     # we need to keep them!
     precede <- find_precede_nodes(vtree, mask_cond)
     mask <- mask_cond | precede
+
+    if(keep_follow) {
+      follow <- find_follow_nodes(vtree, mask_cond)
+      mask <- mask | follow
+    }
 
     # now inverse the mask, so anything FALSE ("do not keep")
     # becomes TRUE ("prune")
@@ -279,8 +287,14 @@ find_precede_nodes <- function(vtree, mask) {
 
 #' @rdname prune
 #' @export
-keep <- function(vtree, condition, mark_only = FALSE) {
-  condition <- rlang::enquo(condition)
-  prune(vtree, !!condition, keep = TRUE, mark_only = mark_only)
+keep <- function(vtree, condition,
+                 keep_follow = TRUE,
+                 mark_only = FALSE) {
+  condition <- enquo(condition)
+  #prune(vtree, condition, keep = TRUE, mark_only = mark_only)
+  .prune(vtree, condition, follow_only = FALSE,
+         mark_only = mark_only,
+         keep = TRUE, na.rm = FALSE)
+
 }
 

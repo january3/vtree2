@@ -17,7 +17,7 @@ prune(
 
 find_nodes(vtree, condition)
 
-keep(vtree, condition, mark_only = FALSE)
+keep(vtree, condition, keep_follow = TRUE, mark_only = FALSE)
 }
 \arguments{
 \item{vtree}{A vtree graph object.}
@@ -44,6 +44,10 @@ everything else.}
 condition. If it is a character vector, then it is treated
 as a vector of column names for which all NA values should
 be removed.}
+
+\item{keep_follow}{If keep is specified, and keep_follow is true, then
+nodes following the selected node (i.e., its children) are also
+kept even if they do not fulfill the condition.}
 }
 \value{
 \code{keep()} and \code{prune()} return a pruned vtree object.

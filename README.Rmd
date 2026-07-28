@@ -146,6 +146,30 @@ calls.
 
 ### Quick HOWTO for vtree users
 
+#### Data pre-processing
+
+Several options of the original vtree are actually for pre-processing of
+the data. For example, the variable specification 'variable>value' in the
+vtree mini-language is used to split a numeric variable into two levels.
+
+I think that explicing splitting of the data before constructing the vtree
+is more fittin. It is easy, and for complex cases there are many
+specialized tools and packages dealing with that. For most cases, a simple
+`cut()` or `ifelse()` is enough.
+
+
+```{r eval=FALSE}
+iris |>
+  mutate(Sepal.Length = ifelse(Sepal.Length > 5.5, "long", "short")) |>
+  mutate(Sepal.Width = cut(Sepal.Width, breaks = c(2, 3, 4, 5))) |>
+  vtree(Sepal.Length, Sepal.Width, Species) |>
+  plot()
+
+```
+
+
+
+
 #### Pruning
 
 **Pruning.** In vtree2, you can prune the tree with the `prune()` function.
@@ -203,7 +227,6 @@ XXX
 ```{r eval=FALSE}
 #vtree::vtree(FakeData, "Severity Sex",
 #             keep=list(Severity=c("Moderate")))
-# this is not the same:
 vtree(FakeData, Severity, Sex) |>
   keep(Severity == "Moderate") |>
   plot()
@@ -258,7 +281,6 @@ vtree() call, but it is also way more flexible.
 custom label. In vtree2, you should simply replace the variable levels *in
 the data* before constructing the vtree.
 
-
 ```{r eval=FALSE}
 ## vtree::vtree(FakeData,"Group Sex",horiz=FALSE,
 ##        labelnode=list(Sex=c(Male="M",Female="F")))
@@ -267,6 +289,40 @@ FakeData |>
   vtree(Group, Sex) |>
   plot(dir = "tb")
 ```
+
+#### Targetting nodes
+
+Prune / keep and labelling operation might want to target certain nodes by
+their path. This is achieved in vtree using `tlabelnode`. In vtree2, each
+node has an `ID`, a character representation of a path, and a `path` column
+with the full path specified as list. You can use these to target nodes for
+pruning, keeping, labelling or coloring. More: you can use your prunning or
+keeping operation not to actually remove the nodes, but to just select them
+for further operations. Thus, you can find a node ID, use prune to find all
+nodes that *would* be removed, and then color them in red.
+
+
+```{r eval=FALSE}
+data(titanicNA)
+vt <- vtree(titanicNA, Class, Sex, Survived)
+vt |> keep(ID == "Class:1st/Sex:NA/Survived:Yes" |
+           ID == "Class:2nd/Sex:NA/Survived:Yes") |>
+  plot()
+
+vt |> add_labels() |>
+  add_palette() |>
+  mutate(label = ifelse(ID == "Class:1st", "First class", label)) |>
+  mutate(fill = ifelse(ID == "Class:1st", "red", fill)) |>
+  plot()
+
+vt |> prune(ID == "Class:2nd/Sex:NA", mark_only=TRUE) |>
+  add_palette() |>
+  mutate(fill = ifelse(mark != "keep", "red", fill)) |>
+  plot()
+```
+
+
+
 
 
 #### Plotting
@@ -352,14 +408,18 @@ code review / bug finding.
  * ~~plotting function for patterns~~
  * make sure that node_name is used for displaying variable names
  * how is vtree actually handling the palettes?
- * add the keep_children parameter to the keep() function, and also
-   keep_na. Generally make keep behave the same as in vtree.
+ * ~~add the keep_children parameter to the keep() function~~, and also
+   keep_na. - this is harder; because not all the NA nodes are kept, but
+   only these which are on the same level as a node that is kept.
+   Generally make keep behave the same as in vtree.
+ * ~~legends~~
  * should the vtree() function take cases or samples?
  * maybe gridtext for the labels so we can use some basic formatting
  * faster processing of cases into trees
  * questions to NB:
    - what is the difference between seq and pattern? I don't see any at
      least on simple plots (apart from the arrows)
+   - how are the NA nodes kept in pruning *exactly*?
 
 ## BUGS
 
