@@ -507,13 +507,16 @@ plot_vtree <- function(x,
     }
   }
 
-  margins <- c(.01 + .04 * show_vl, 0.01, .01, .01)
+  margins <- list(top = .01, right = .01,
+                  bottom = .01 + .09 * show_vl, left = .01)
+
   if(dir == "rl") {
     layout <- .flip_horiz(layout)
   }
 
   if(dir %in% c("bt", "tb")) {
-    margins <- c(0.01, .01 + .09 * show_vl, 0.01, 0.01)
+    margins <- list(top = .01, right = .01,
+                    bottom = .01, left = .01 + .09 * show_vl)
     layout <- .transpose(layout)
     layout <- .flip_horiz(layout)
   }
@@ -522,9 +525,7 @@ plot_vtree <- function(x,
     layout <- .flip_vert(layout)
   }
 
-  layout <- .scale(layout, margins[2], margins[1],
-                  1 - (margins[2] + margins[4]),
-                 1 - (margins[1] + margins[3]))
+  layout <- .fit_margins(layout, margins)
 
   layout <- normalize_layout(layout)
 
@@ -538,7 +539,7 @@ plot_vtree <- function(x,
   x <- gTree(
         params = params,
         layout = layout,
-        margin = margins,
+        margins = margins,
         name = "vtree",
         children = gList(),
         cl = "vtree_plot",

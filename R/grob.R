@@ -205,7 +205,7 @@ find_fontsize <- function(labels, widths, heights) {
 }
 
 # get the labels of the variables
-.get_clabs <- function(nodes, var_labels, dir, margin, fs) {
+.get_clabs <- function(nodes, var_labels, dir, margins, fs) {
 
   if(!"fill_class" %in% colnames(nodes)) {
     nodes$fill_class <- "black"
@@ -219,7 +219,7 @@ find_fontsize <- function(labels, widths, heights) {
   if(dir %in% c("rl", "lr")) {
     ret <- map(1:nrow(nodes), \(i) {
                textGrob(x = nodes$x[i],
-                        y = margin[1]/2,
+                        y = margins$bottom/2,
                         name = paste0("label_", nodes$node_key[i]),
                         label = var_labels[i],
                         gp = gpar(
@@ -229,7 +229,7 @@ find_fontsize <- function(labels, widths, heights) {
   } else {
     ret <- map(1:nrow(nodes), \(i) {
                textGrob(y = nodes$y[i],
-                        x = margin[2]/2,
+                        x = margins$bottom/2,
                         name = paste0("label_", nodes$node_key[i]),
                         label = var_labels[i],
                         gp = gpar(
@@ -274,6 +274,7 @@ makeContent.vtree_plot <- function(x) {
   labels <- x$children$nodes$children$labels$children
   nodes <- as_tibble(x$layout)
   autofontsize <- x$param$autofontsize
+  mar <- x$margins
 
   if(autofontsize == "fixed") {
     fs <- find_fontsize(nodes$label, .9 * nodes$width, .9 * nodes$height)
@@ -292,9 +293,9 @@ makeContent.vtree_plot <- function(x) {
     dplyr::slice(-1)
 
   if(x$params$dir %in% c("bt", "tb")) {
-    fs <- find_fontsize(cnodes$node_col, x$margin[2], .9 * cnodes$full_h[1])
+    fs <- find_fontsize(cnodes$node_col, mar$left, .9 * cnodes$full_h[1])
   } else {
-    fs <- find_fontsize(cnodes$node_col, .9 * cnodes$full_w[1], .9 * x$margin[1])
+    fs <- find_fontsize(cnodes$node_col, .9 * cnodes$full_w[1], .9 * mar$bottom)
   }
   for(i in seq_along(x$children$clabs$children)) {
     x$children$clabs$children[[i]]$gp$fontsize <- fs
@@ -325,7 +326,7 @@ makeContent.vtree_plot <- function(x) {
       dplyr::slice(-1)
     clabs <- .get_clabs(cnodes, var_labels=varlabs,
                         dir=x$params$dir,
-                        margin=x$margin, fs = fs)
+                        margins=x$margins, fs = fs)
 
     clabs <- gTree(gp = gpar(),
                     children = do.call(gList, clabs),

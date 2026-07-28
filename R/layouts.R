@@ -1,3 +1,19 @@
+.fit_margins <- function(layout, margins) {
+
+  if(is.null(margins)) {
+    return(layout)
+  }
+
+  layout <- .scale(layout,
+                   margins$left,
+                   margins$bottom,
+                   1 - (margins$left + margins$right),
+                   1 - (margins$bottom + margins$top))
+
+  layout
+}
+
+
 # flip a layout horizontally
 .flip_horiz <- function(layout) {
     mutate(layout, x = 1 - .data[["x"]]) |>
@@ -88,9 +104,19 @@
     }))
 }
 
-legend_layout <- function(layout, dir="lr", show_root=TRUE) {
+# create a layout for the legend.
+layout_legend <- function(layout, dir="lr",
+                          margins,
+                          show_root=TRUE) {
 
+  cnms <- names(layout)
 
+  if(dir %in% c("tb", "bt")) {
+    lwidth <- margins[2]
+  }
+
+  nodes <- as_tibble(layout) |>
+    filter(!duplicated(.data[["node_col"]]))
 
 
 }
@@ -283,12 +309,13 @@ layout_flushed <- function(vtree, dir="lr",
 #'
 #' You can also provide a custom layout function. The function should take a
 #' the following arguments: vtree, dir, lwidth, lheight, show_root. It
-#' should return a vtree object with following additional columns in the
+#' must return a vtree object with following additional columns in the
 #' nodes data frame:
 #'
 #' - x, y: the coordinates of the center of the node
 #' - width, height: the width and height of the node
-#' - full_w, full_h: the width and height of the node including the margins
+#' - full_w, full_h: the width and height of the total space allocated to
+#' the node including the margins
 #'
 #' In addition, it can have the "shape" column which specifies the shape of
 #' the node to use. It can be "rectangle" or "roundrectangle". If not
