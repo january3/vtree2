@@ -88,7 +88,7 @@ print.vtree_pattern <- function(x, ...) {
 #' @export
 pattern <- function(vtree) {
   if(!inherits(vtree, "vtree")) {
-    cli_abort(x = "pattern() requires a vtree object")
+    cli_abort(c(x = "pattern() requires a vtree object"))
   }
 
   nodes <- as_tibble(vtree)
@@ -120,6 +120,7 @@ pattern <- function(vtree) {
   attr(d1, "cols") <- cnms
   attr(d1, "N") <- attr(vtree, "N")
   attr(d1, "vp") <- attr(vtree, "vp")
+  attr(d1, "levels") <- attr(vtree, "levels")
   d1
 }
 
@@ -128,10 +129,11 @@ pattern <- function(vtree) {
 #' @importFrom dplyr last row_number
 vtree_from_pattern <- function(pat) {
   if(!inherits(pat, "vtree_pattern")) {
-    cli_abort(x = "Input must be a vtree_pattern object")
+    cli_abort(c(x = "Input must be a vtree_pattern object"))
   }
 
   cnms <- attr(pat, "cols")
+  levels <- attr(pat, "levels")
 
   # we create the vtree manually. This is mostly for plotting purposes.
   # first, the root.
@@ -183,6 +185,7 @@ vtree_from_pattern <- function(pat) {
                      directed = TRUE, node_key = "node_key")
 
   attr(vtree, "cols") <- c("pattern", cnms)
+  attr(vtree, "levels") <- c(pattern=NA, levels)
   ret <- as_vtree(vtree)
   class(ret) <- c("vtree_from_pattern", class(ret))
   ret

@@ -24,6 +24,11 @@ as_tbl_graph.vtree <- function(x, ...) {
 #' function expands the frequency table into a data frame of cases, where
 #' each row corresponds to one observation.
 #'
+#' If the columns of the frequency table are factors, the levels of the
+#' factors are recorded and assigned to the `levels` attribute of the
+#' returned data frame. If the columns are not factors, the unique values
+#' of the columns area stored in the `levels` attribute instead.
+#'
 #' This function is close to the `crosstabToCases()` function from
 #' the original vtree package.
 #' @param x A frequency table, as a data frame or a table object.
@@ -38,13 +43,17 @@ as_tbl_graph.vtree <- function(x, ...) {
 #'               .cols = c("Class", "Sex", "Survived"))
 #' @inheritParams vtree
 #' @importFrom rlang as_name
-#' @return A data frame of cases, one row per observation, one column per variable
+#' @return A tibble of cases, one row per observation, one column per variable
 #' @export
 cases_from_freqtable <- function(x, ..., .freq_col = "Freq", .cols = NULL) {
 
   if(!is.data.frame(x)) {
     x <- as.data.frame(x)
   }
+
+  rownames(x) <- NULL
+
+  x <- as_tibble(x)
 
   if (!is.null(.cols)) {
     cnms <- .cols
@@ -83,10 +92,13 @@ cases_from_freqtable <- function(x, ..., .freq_col = "Freq", .cols = NULL) {
     ))
   }
 
+  levels <- .get_levels(x, cnms)
+
   x <- x[ rep.int(seq_len(nrow(x)), x[[.freq_col]]), ]
   x <- x[ , cnms, drop = FALSE ]
 
   rownames(x) <- NULL
+  attr(x, "levels") <- levels
   x
 }
 
@@ -95,10 +107,6 @@ cases_from_freqtable <- function(x, ..., .freq_col = "Freq", .cols = NULL) {
 #' @export
 vtree_from_freqtable <- function(x, ..., .freq_col = "Freq", 
                                  .vp = TRUE, .cols = NULL) {
-
-  if(!is.data.frame(x)) {
-    x <- as.data.frame(x)
-  }
 
   if (!is.null(.cols)) {
     cnms <- .cols

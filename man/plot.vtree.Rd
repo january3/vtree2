@@ -60,7 +60,10 @@ default arguments to the vtree_palette() function.}
 population).}
 
 \item{var_labels}{If TRUE (default), add names of the variables to the
-plot.}
+plot. Alternatively, it can be a named character vector where
+names are the variable names and values are the labels to be
+displayed for those variables. If FALSE or NULL,
+no variable labels are shown.}
 
 \item{lwidth}{Label width relative to available space}
 

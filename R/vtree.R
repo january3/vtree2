@@ -65,6 +65,18 @@ mutate.vtree <- function(.data, ..., .edges = FALSE) {
 }
 
 
+#' Get the levels of a vtree object
+#'
+#' Get the levels of a vtree object
+#' 
+#' Returns a list of character vectors, one for each variable split in the tree,
+#' with each ordered vector containing the levels of that variable.
+#' @param x A vtree object.
+#' @return A list of character vectors, one for each variable split in the tree,
+#' @export
+levels.vtree <- function(x) {
+  attr(x, "levels")
+}
 
 
 #' Print a vtree object
@@ -138,9 +150,21 @@ as_vtree <- function(x) {
 
   cnms <- unique(nodes$node_col[ nodes$level > 0 ])
 
-  attr(x, "cols") <- cnms
-  attr(x, "N") <- N
-  attr(x, "vp") <- TRUE
+  if(is.null(attr(x, "cols"))) {
+    attr(x, "cols") <- cnms
+  }
+
+  if(is.null(attr(x, "N"))) {
+    attr(x, "N") <- N
+  }
+
+  if(is.null(attr(x, "vp"))) {
+    attr(x, "vp") <- TRUE
+  }
+
+  if(is.null(attr(x, "levels"))) {
+    cli_abort(c(x = "The vtree must have an attribute 'levels'"))
+  }
 
   if("vp" %in% colnames(nodes) & !all(nodes[["vp"]])) {
     attr(x, "vp") <- FALSE
@@ -298,6 +322,12 @@ vtree <- function(cases, ..., .vp = TRUE, .cols = NULL) {
     )
   }
 
+  if(!is.null(attr(cases, "levels"))) {
+    levels <- attr(cases, "levels")
+  } else {
+    levels <- .get_levels(cases, cnms)
+  }
+
   cases <- select(cases, all_of(cnms))
   N <- nrow(cases)
 
@@ -310,6 +340,7 @@ vtree <- function(cases, ..., .vp = TRUE, .cols = NULL) {
   vtree <- tbl_graph(nodes = df, edges = edges,
                      directed = TRUE, node_key = "node_key")
 
+  attr(vtree, "levels") <- levels
   as_vtree(vtree)
 }
 

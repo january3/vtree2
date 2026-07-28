@@ -19,7 +19,7 @@ the ... argument. This is useful when the column names are
 stored in a variable.}
 }
 \value{
-A data frame of cases, one row per observation, one column per variable
+A tibble of cases, one row per observation, one column per variable
 }
 \description{
 Convert a frequency table to a data frame of cases
@@ -30,6 +30,11 @@ unique combination of values of the variables, and a column (by default
 named "Freq") contains the frequency counts for that combination. This
 function expands the frequency table into a data frame of cases, where
 each row corresponds to one observation.
+
+If the columns of the frequency table are factors, the levels of the
+factors are recorded and assigned to the \code{levels} attribute of the
+returned data frame. If the columns are not factors, the unique values
+of the columns area stored in the \code{levels} attribute instead.
 
 This function is close to the \code{crosstabToCases()} function from
 the original vtree package.

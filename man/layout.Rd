@@ -53,12 +53,13 @@ the y-axis according to their cumulative frequencies.
 
 You can also provide a custom layout function. The function should take a
 the following arguments: vtree, dir, lwidth, lheight, show_root. It
-should return a vtree object with following additional columns in the
+must return a vtree object with following additional columns in the
 nodes data frame:
 \itemize{
 \item x, y: the coordinates of the center of the node
 \item width, height: the width and height of the node
-\item full_w, full_h: the width and height of the node including the margins
+\item full_w, full_h: the width and height of the total space allocated to
+the node including the margins
 }
 
 In addition, it can have the "shape" column which specifies the shape of

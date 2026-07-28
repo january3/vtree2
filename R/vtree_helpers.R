@@ -1,5 +1,16 @@
 ## helper functions for constructing vtrees
 
+.get_levels <- function(x, cnms) {
+  levels <- map(cnms, \(nm) {
+    if(is.factor(x[[nm]])) {
+      levels(x[[nm]])
+    } else {
+      unique(x[[nm]])
+    }
+  })
+  names(levels) <- cnms
+  levels
+}
 
 # converts a data frame to a pattern data frame, one line per each pattern
 # / path through the tree.

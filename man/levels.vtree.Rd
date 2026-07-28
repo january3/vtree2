@@ -5,17 +5,26 @@
 \title{Get the levels of a vtree object}
 \usage{
 \method{levels}{vtree}(x)
+
+\method{levels}{vtree}(x)
 }
 \arguments{
 \item{x}{A vtree object.}
 }
 \value{
 A list of character vectors, one for each variable split in the tree,
+
+A list of character vectors, one for each variable split in the tree,
 }
 \description{
 Get the levels of a vtree object
+
+Get the levels of a vtree object
 }
 \details{
+Returns a list of character vectors, one for each variable split in the tree,
+with each ordered vector containing the levels of that variable.
+
 Returns a list of character vectors, one for each variable split in the tree,
 with each ordered vector containing the levels of that variable.
 }
