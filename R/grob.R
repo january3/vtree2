@@ -2,13 +2,13 @@
 
 # get widths from a list of grobs
 .get_widths <- function(grobs) {
-    purrr::map_dbl(grobs, \(g) 
+    purrr::map_dbl(grobs, \(g)
       convertWidth(grobWidth(g), "npc", valueOnly = TRUE))
 }
 
 # get heights from a list of grobs
 .get_heights <- function(grobs) {
-    lhghs <- purrr::map_dbl(grobs, \(g) 
+    lhghs <- purrr::map_dbl(grobs, \(g)
       convertHeight(grobHeight(g), "npc", valueOnly = TRUE))
 }
 
@@ -31,7 +31,7 @@
     lh <-  convertHeight(grobHeight(grob), "npc", valueOnly = TRUE)
 
     if(lw > size_fct * width || lh > size_fct * height) {
-      maxs <- fs  
+      maxs <- fs
     } else {
       mins <- fs
     }
@@ -92,12 +92,12 @@ find_fontsize <- function(labels, widths, heights) {
     h <- convertHeight(grobHeight(g), "npc", valueOnly = TRUE)
 
     if(w/n > maxw || h/3 > maxh) {
-      maxs <- fs  
+      maxs <- fs
     } else {
       mins <- fs
     }
   }
-  
+
   mins <- round(mins)
   mins
 }
@@ -220,6 +220,25 @@ find_fontsize <- function(labels, widths, heights) {
   ret
 }
 
+# given a data frame with the node positions, grob column, and label
+# column, create a gTree with the node grobs and the labels.
+.get_nodes <- function(nodes, fs = 9) {
+
+  rects <- .get_node_rects(nodes)
+  rects <- gTree(gp = gpar(),
+                 children = do.call(gList, rects),
+                 name = "nodes")
+
+  labels <- .get_labels(nodes, fs = fs)
+  labels <- gTree(gp = gpar(),
+                  children = do.call(gList, labels),
+                  name = "labels")
+
+  gTree(gp = gpar(),
+        children = gList(rects=rects, labels=labels),
+        name = "nodes")
+}
+
 #' Hook for vtree plots
 #'
 #' This function is called whenever a vtree_plot is plotted on a device.
@@ -232,20 +251,21 @@ find_fontsize <- function(labels, widths, heights) {
 #' @export
 makeContent.vtree_plot <- function(x) {
 
-  labels <- x$children$labels$children
+  labels <- x$children$nodes$children$labels$children
   nodes <- as_tibble(x$layout)
+  autofontsize <- x$param$autofontsize
 
-  if(x$param$autofontsize == "fixed") {
+  if(autofontsize == "fixed") {
     fs <- find_fontsize(nodes$label, .9 * nodes$width, .9 * nodes$height)
-    for(i in seq_along(x$children$labels$children)) {
-      x$children$labels$children[[i]]$gp$fontsize <- fs
+    for(i in seq_along(labels)) {
+      x$children$nodes$children$labels$children[[i]]$gp$fontsize <- fs
     }
-  } else if(x$param$autofontsize == "adaptive") {
+  } else if(autofontsize == "adaptive") {
   # adaptive means: each label gets its own font size
     labels <- adapt_fontsize(labels, nodes$width, nodes$height,
                          padding = .4)
-    x$children$labels <-
-      setChildren(x$children$labels, do.call(gList, labels))
+    x$children$nodes$children$labels <-
+      setChildren(x$children$nodes$children$labels, do.call(gList, labels))
   }
 
   cnodes <- distinct(nodes, .data[["node_col"]], .keep_all = TRUE) |>
@@ -273,24 +293,15 @@ makeContent.vtree_plot <- function(x) {
   nodes <- as_tibble(layout)
   edges <- activate(layout, "edges") |> as_tibble()
 
-  # the rgrob param chooses between rectangle and roundrect
-  rects <- .get_node_rects(nodes)
-  rects <- gTree(gp = gpar(),
-                 children = do.call(gList, rects),
-                 name = "nodes")
-
-  labels <- .get_labels(nodes, fs = fs) 
-  labels <- gTree(gp = gpar(),
-                  children = do.call(gList, labels),
-                  name = "labels")
+  nodes_gt <- .get_nodes(nodes, fs = fs)
 
   arrows <- .get_arrows(edges)
 
   # margin labels with the variable names
-  cnodes <- distinct(nodes, .data[["node_col"]], .keep_all = TRUE) |>
-    dplyr::slice(-1)
 
   if(var_labels) {
+    cnodes <- distinct(nodes, .data[["node_col"]], .keep_all = TRUE) |>
+      dplyr::slice(-1)
     clabs <- .get_clabs(cnodes, dir=x$params$dir,
                         margin=x$margin, fs = fs)
 
@@ -298,9 +309,9 @@ makeContent.vtree_plot <- function(x) {
                     children = do.call(gList, clabs),
                     name = "clabs")
 
-    children <- gList(arrows=arrows, nodes=rects, labels=labels, clabs=clabs)
+    children <- gList(arrows=arrows, nodes=nodes_gt, clabs=clabs)
   } else {
-    children <- gList(arrows=arrows, nodes=rects, labels=labels)
+    children <- gList(arrows=arrows, nodes=nodes_gt)
   }
   setChildren(x, children)
 }
