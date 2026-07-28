@@ -35,3 +35,4 @@ Suggests:
     tidyverse
 VignetteBuilder: knitr
 Config/testthat/edition: 3
+LazyData: true

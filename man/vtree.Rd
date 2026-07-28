@@ -118,19 +118,7 @@ vt <- vtree_from_freqtable(Titanic, Class, Survived)
 plot(vt)
 plot(vt, layout = "proportional")
 
-if(requireNamespace('dplyr', quietly = TRUE)) {
-  library(dplyr)
-  set.seed(123)
-  # create a new data set with NAs
-  titanicNA <- cases_from_freqtable(Titanic) |>
-    # change all classes to character
-    mutate(across(everything(), as.character)) |>
-    # add some random NAs to each column
-    mutate(Class = ifelse(runif(n()) < 0.1, NA, Class)) |>
-    mutate(Sex = ifelse(runif(n()) < 0.1, NA, Sex)) |>
-    mutate(Age = ifelse(runif(n()) < 0.1, NA, Age))
-
-  vt <- vtree(titanicNA, Class, Sex, Survived)
-  plot(vt)
-}
+data(titanicNA)
+vt <- vtree(titanicNA, Class, Sex, Survived)
+plot(vt)
 }

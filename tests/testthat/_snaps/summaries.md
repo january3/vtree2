@@ -62,3 +62,17 @@
       [36] "Survived\nNo: 0\nYes: 18"              
       [37] "Survived\nNo: 0\nYes: 0\nNAs: 2"       
 
+# summary_at_var works
+
+    Code
+      sm1
+    Output
+      [1] "1st: 294 (15%)\n2nd: 258 (13%)\n3rd: 633 (32%)\nCrew: 793 (40%)\nMissing: 223"
+
+---
+
+    Code
+      sm2
+    Output
+      [1] "1st: 294 (13%)\n2nd: 258 (12%)\n3rd: 633 (29%)\nCrew: 793 (36%)\nMissing: 223 (10%)"
+

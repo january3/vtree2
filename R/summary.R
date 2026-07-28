@@ -1,4 +1,3 @@
-
 # calculate the overall product of all matches to select the correct
 # classes
 .find_match_recursively <- function(df, path, match = TRUE) {
@@ -300,41 +299,112 @@ summary_vt_df <- function(cases, vtree, col, .col = NULL) {
 }
 
 # returns a formatted summary for a variable at the given node of the vtree
-summary_at_var <- function(vtree, varname, as_char = TRUE) {
+
+#' Summarize a variable at a given node of a vtree
+#'
+#' Summarizes a variable at a given node of a vtree. It
+#' returns a character string with the counts and percentages of each level
+#' of the variable at that node. If the variable has missing values, it
+#' also includes the count and percentage of missing values.
+#'
+#' If the tree
+#' was constructed using valid percentages (`attr(vtree, "vp")` is TRUE),
+#' the percentages are calculated based on the valid (non-NA) counts. If
+#' the tree was constructed using total percentages, the percentages are
+#' calculated based on the total counts.
+#' @return if `as_char` is TRUE, a character string with the counts and
+#' percentages of each level of the variable at that node. If `as_char` 
+#' is FALSE (default), a named integer vector with the counts of each 
+#' level of the variable at that node.
+#'
+#' @examples
+#' vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived)
+#' summary_at_var(vt, "Class")
+#'
+#' data(titanicNA)
+#' vt2 <- vtree(titanicNA, Class, Sex, Survived)
+#' summary_at_var(vt2, "Class")
+#'
+#' # not using valid percentages - NAs count towards the total
+#' vt3 <- vtree(titanicNA, Class, Sex,
+#'                             Survived, .vp=FALSE)
+#' summary_at_var(vt3, "Class")
+#' @param vtree A vtree object
+#' @param varname The name of the variable to summarize
+#' @param as_char If TRUE (default), return a formatted character string
+#'        with the counts and percentages of each level of the variable at
+#'        that node. If FALSE, return a named integer vector with the
+#'        counts of each level of the variable at that node.
+#' @export
+#' @importFrom purrr map map_lgl map_dbl map_int
+summary_at_var <- function(vtree, varname, as_char = FALSE) {
+  if(!inherits(vtree, "vtree")) {
+    cli_abort(c(x = "summary_at_var() requires a vtree object"))
+  }
 
   nodes <- as_tibble(vtree)
+  vp <- attr(vtree, "vp")
 
-  sel <- purrr::map_lgl(nodes[["path"]], \(p) {
+  levels <- levels(vtree)[[varname]] %||%
+    cli_abort(c(
+      x = "Variable {varname} not found in vtree levels",
+      i = "Available variables: {paste(names(levels(vtree)), collapse = ', ')}"
+    ))
+
+  if(!any(is.na(levels))) {
+    levels <- c(levels, NA)
+  }
+
+  # which nodes are variable splits for our variable?
+  sel <- map_lgl(nodes[["path"]], \(p) {
     if(is.null(names(p))) {
       return(FALSE)
     }
-    varname %in% names(p)
+    varname == names(p)[length(p)]
   })
 
-  values <- sapply(nodes[["path"]][sel], \(p) {
-    p[[varname]]
-  })
-
-  values <- factor(values)
-  counts <- purrr::map_int(levels(values), \(l) {
-    selval <- purrr::map_lgl(nodes[["path"]][sel], \(p) {
-      
-      is.na(l) && is.na(p[[varname]]) || p[[varname]] == l
+  # get the selections for each level of the variable
+  selections <- map(levels, \(l) {
+    map_lgl(nodes[["path"]][sel], \(p) {
+      # TRUE if both p[[varname]] and l are NA, or if they are equal
+      (is.na(l) && is.na(p[[varname]])) ||
+      (!is.na(l) && !is.na(p[[varname]]) && p[[varname]] == l)
     })
+  })
+  names(selections) <- levels
+
+  # add the counts of the nodes that correspond to the variable and the
+  # level
+  counts <- map_int(selections, \(selval) {
     sum(nodes[["n"]][sel][selval], na.rm = TRUE)
   })
-  names(counts) <- levels(values)
-
-  levels <- list(summary(factor(values)))
 
   if(!as_char) {
-    return(levels)
+    return(counts)
   }
 
-  levels_str <- map_chr(levels,
-                        \(l) paste(names(l), l, sep = ": ", collapse = "\n"))
+  notna <- !is.na(names(counts))
 
-  levels_str
+  if(vp) {
+    N <- sum(counts[notna])
+  } else {
+    N <- sum(counts)
+  }
+
+  freqs <- map_dbl(counts, \(c) c / N)
+
+  ret <- paste(names(counts[notna]),
+        sprintf("%d (%.0f%%)", counts[notna], 100 * freqs[notna]),
+        sep = ": ", collapse = "\n")
+
+  if(counts[!notna] > 0) {
+    if(!vp) {
+    ret <- paste0(ret, "\nMissing: ",
+                  counts[!notna],
+                  " (", sprintf("%.0f%%", 100 * freqs[!notna]), ")")
+    } else {
+      ret <- paste0(ret, "\nMissing: ", counts[!notna])
+    }
+  }
+  ret
 }
-
-

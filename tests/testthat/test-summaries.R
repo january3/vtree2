@@ -51,3 +51,26 @@ test_that("summary_vt works", {
   expect_snapshot(s1txt)
 
 })
+
+
+test_that("summary_at_var works", {
+
+  data(titanicNA)
+  vt <- vtree(titanicNA, Class, Sex, Survived)
+
+  expect_error(summary_at_var(titanicNA, "Class", as_char=FALSE),
+               "summary_at_var\\(\\) requires a vtree object")
+
+  sm1 <- summary_at_var(vt, "Class")
+  expect_snapshot(sm1)
+
+  vt <- vtree(titanicNA, Class, Sex, Survived, .vp = FALSE)
+  sm2 <- summary_at_var(vt, "Class")
+  expect_snapshot(sm2)
+
+  sm <- summary_at_var(vt, "Class", as_char=FALSE)
+  expect_all_true(levels(vt)$Class %in% names(sm))
+  expect_all_true(sm == c(294, 258, 633, 793, 223))
+  sm4 <- summary_at_var(vt, "Class")
+  expect_identical(sm, sm4)
+})
