@@ -425,9 +425,9 @@ summary_at_var <- function(vtree, varname, as_char = FALSE,
 
   if(counts[!notna] > 0 || as_df) {
     if(!vp) {
-    ret <- c(ret, "Missing: ",
+    ret <- c(ret, paste0("Missing: ",
                   counts[!notna],
-                  " (", sprintf("%.0f%%", 100 * freqs[!notna]), ")")
+                  " (", sprintf("%.0f%%", 100 * freqs[!notna]), ")"))
     } else {
       ret <- c(ret, paste("Missing:", counts[!notna]))
     }

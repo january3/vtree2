@@ -77,10 +77,8 @@
     Code
       sm2
     Output
-                    1st               2nd               3rd              Crew 
-       "1st: 294 (13%)"  "2nd: 258 (12%)"  "3rd: 633 (29%)" "Crew: 793 (36%)" 
-                   <NA>              <NA>              <NA>              <NA> 
-            "Missing: "             "223"              " ("             "10%" 
-                   <NA> 
-                    ")" 
+                       1st                  2nd                  3rd 
+          "1st: 294 (13%)"     "2nd: 258 (12%)"     "3rd: 633 (29%)" 
+                      Crew                 <NA> 
+         "Crew: 793 (36%)" "Missing: 223 (10%)" 
 

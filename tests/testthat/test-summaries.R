@@ -73,4 +73,16 @@ test_that("summary_at_var works", {
   expect_all_true(sm == c(294, 258, 633, 793, 223))
   sm4 <- summary_at_var(vt, "Class")
   expect_identical(sm, sm4)
+  sm4 <- summary_at_var(vt, "Class", as_df=TRUE)
+  #expect_equal(nrow(sm5), 5)
+
+  sm5 <- summary_at_var(vt, "Sex", as_df=TRUE)
+  expect_equal(nrow(sm5), 3)
+  expect_s3_class(sm5, "data.frame")
+  expect_all_true(sm5[["count"]] == c(1553, 425, 223))
+  expect_all_equal(sm5[["denom"]], 2201)
+  expect_all_equal(sm5[["node_col"]], "Sex")
+
+
+
 })
