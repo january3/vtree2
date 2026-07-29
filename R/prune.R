@@ -148,10 +148,10 @@ find_nodes <- function(vtree, condition) {
 
 #' Find all nodes that follow or precede the nodes for which the mask is TRUE
 #'
-#' `find_follow_nodes` identifies all nodes in a vtree graph that follow the
+#' `find_children` identifies all nodes in a vtree graph that follow the
 #' nodes for which the provided mask is TRUE.
 #'
-#' `find_precede_nodes` identifies all nodes in a vtree graph that precede the
+#' `find_parents` identifies all nodes in a vtree graph that precede the
 #' nodes for which the provided mask is TRUE.
 #' @param vtree A vtree graph object.
 #' @param mask A logical vector indicating which nodes to consider for finding
@@ -159,8 +159,8 @@ find_nodes <- function(vtree, condition) {
 #' @examples
 #' vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived)
 #' mask <- find_nodes(vt, ID == "Class:1st/Sex:Male")
-#' follow <- find_follow_nodes(vt, mask)
-#' precede <- find_precede_nodes(vt, mask)
+#' follow <- find_children(vt, mask)
+#' precede <- find_parents(vt, mask)
 #' vt |> mutate(fill =
 #'             ifelse(ID == "Class:1st/Sex:Male", "green", "white")) |>
 #'       mutate(fill =
@@ -170,7 +170,7 @@ find_nodes <- function(vtree, condition) {
 #' 
 #' @return A logical vector indicating which nodes follow or precede the nodes
 #' @export
-find_follow_nodes <- function(vtree, mask) {
+find_children <- function(vtree, mask) {
 
   follow <- vtree |>
     mutate(.mask = mask) |>
@@ -184,10 +184,10 @@ find_follow_nodes <- function(vtree, mask) {
   follow
 }
 
-#' @rdname find_follow_nodes
+#' @rdname find_children
 #' @importFrom tidygraph map_bfs_back_lgl
 #' @export
-find_precede_nodes <- function(vtree, mask) {
+find_parents <- function(vtree, mask) {
 
   precede <- vtree |>
     mutate(.mask = mask) |>
@@ -236,6 +236,7 @@ find_precede_nodes <- function(vtree, mask) {
 # selected by the condition
 # na.rm: remove the NA nodes
 .prune <- function(vtree, condition,
+                   follow_only = FALSE,
                    keep_follow = TRUE,
                    mark_only = FALSE,
                    keep = FALSE, na.rm = FALSE) {
@@ -247,11 +248,11 @@ find_precede_nodes <- function(vtree, mask) {
   if(keep) {
     # first, which nodes precede our selected nodes?
     # we need to keep them!
-    precede <- find_precede_nodes(vtree, mask_cond)
+    precede <- find_parents(vtree, mask_cond)
     mask <- mask_cond | precede
 
     if(keep_follow) {
-      follow <- find_follow_nodes(vtree, mask_cond)
+      follow <- find_children(vtree, mask_cond)
       mask <- mask | follow
     }
 
@@ -263,7 +264,7 @@ find_precede_nodes <- function(vtree, mask) {
   }
 
   # find all nodes that follow a node
-  follow_mask <- find_follow_nodes(vtree, mask)
+  follow_mask <- find_children(vtree, mask)
 
   # pruning only follow nodes
   if(follow_only) {
