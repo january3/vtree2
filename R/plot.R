@@ -578,13 +578,8 @@ plot_ggplot <- function(x,
   dir <- match.arg(dir, c("lr", "rl", "bt", "tb"))
 
   nodes <- as_tibble(x)
-  if(! "fill" %in% colnames(nodes)) {
+  if(!all(c("fill", "color") %in% colnames(nodes))) {
     x <- add_palette(x, palettes = palettes, na_fill = na_fill)
-  }
-
-  if(! "color" %in% colnames(nodes)) {
-    x <- x |> activate("nodes") |>
-      mutate(color = contrast_color(.data[["fill"]]))
   }
 
   nodes <- as_tibble(x)

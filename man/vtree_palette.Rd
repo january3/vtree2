@@ -3,7 +3,7 @@
 \name{vtree_palette}
 \alias{vtree_palette}
 \alias{add_palette}
-\title{Get a color palette for a variable level}
+\title{Color palettes for a variable levels}
 \usage{
 vtree_palette(
   vtree,
@@ -25,20 +25,38 @@ subsequent columns in the vtree}
 \item{na_fill}{fill color used for nodes associated with NA values}
 }
 \value{
-A character vector of colors for the levels of the variable
+\code{vtree_palette()} returns a character vector of colors for the
+levels of the variable. \code{add_palette()} returns the vtree object with
+the columns \code{fill} and \code{color}, and with additional attributes \code{palette}
+and \code{palette_vars}.
 }
 \description{
-Get a color palette for a variable level
+Color palettes for a variable levels
 }
 \details{
-\code{vtree_palette} returns a color palette for a variable level in a vtree.
+\code{vtree_palette()} returns a color palette for a variable level in a vtree.
 The colors are chosen from the RColorBrewer package.
 
-\code{add_palette} assigns fill colors to the nodes of a vtree based on the
+\code{add_palette()} assigns fill colors to the nodes of a vtree based on the
 variable levels. The fill colors are stored in a new column in the nodes
-data frame called "fill".
+data frame called "fill". If a \code{color} column is missing, it will be
+added with automatic contrast colors as well, but it will not be
+overwritten if present.
 }
 \examples{
 vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived)
 vtree_palette(vt)
+
+# only blues for all variables!
+vt |> add_palette(palettes = "Blues") |> plot()
+# same as
+plot(vt, palettes = "Blues")
+
+# manipulate color for some of the nodes
+vt |> add_palette(palettes = "Blues") |>
+  # don't prune, just mark the nodes in the mark col
+  prune(ID == "Class:1st/Sex:Male", mark_only = TRUE) |>
+  # color the marked nodes in red
+  mutate(fill = ifelse(mark == "keep", fill, "red")) |>
+  plot()
 }
