@@ -104,10 +104,6 @@
     }))
 }
 
-die <- function(message = "Unspecified error.") {
-  cli_abort(c(x = message))
-}
-
 .get_fill <- function(node_col, node_val, pal) {
   Map(\(nc, nv) pal[[nc]][nv], node_col, node_val) |> unlist()
 }
