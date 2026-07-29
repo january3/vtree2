@@ -509,7 +509,7 @@ plot_vtree <- function(x,
   }
 
   margins <- list(top = .01, right = .01,
-                  bottom = .01 + .09 * show_vl +
+                  bottom = .01 + .06 * show_vl +
                     .15 * legend,
                   left = .01)
 
@@ -519,7 +519,7 @@ plot_vtree <- function(x,
 
   if(dir %in% c("bt", "tb")) {
     margins <- list(top = .01, right = .01,
-                    bottom = .01, left = .01 + .09 * show_vl)
+                    bottom = .01, left = .01 + .08 * show_vl)
     layout <- .transpose(layout)
     layout <- .flip_horiz(layout)
   }
