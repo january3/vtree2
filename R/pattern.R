@@ -112,8 +112,8 @@ pattern <- function(vtree) {
   }
 
   d1 <- d1 |>
-    mutate(ID = nodes$ID[match(.data[["node_id"]], nodes$node_id)]) |>
-    select(all_of(c("ID", "node_id")), everything())
+    mutate(path = nodes$path[match(.data[["node_id"]], nodes$node_id)]) |>
+    select(all_of(c("path", "node_id")), everything())
 
   d1 <- as_tibble(d1)
   class(d1) <- c("vtree_pattern", class(d1))
@@ -137,11 +137,11 @@ vtree_from_pattern <- function(pat) {
 
   # we create the vtree manually. This is mostly for plotting purposes.
   # first, the root.
-  root <- tibble(ID = "root",
+  root <- tibble(path = "root",
                  node_col = "root",
                  node_val = "",
                  parent = NA_character_,
-                 path = list(list()),
+                 path_l = list(list()),
                  level = 0,
                  n = attr(pat, "N"),
                  tot_n = attr(pat, "N"),
@@ -158,11 +158,11 @@ vtree_from_pattern <- function(pat) {
     # generate a "pattern" node to mimick the behavior of the original
     # vtree package with pattern=TRUE option.
     bind_rows(
-              tibble(ID = "pattern",
+              tibble(path = "pattern",
                      node_col = "pattern",
                      node_val = "",
                      parent = "root",
-                     path = list(list()),
+                     path_l = list(list()),
                      level = 1,
                      n = last(nn)[["n"]],
                      tot_n = attr(pat, "N"),

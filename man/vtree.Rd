@@ -73,7 +73,7 @@ information pertaining the different nodes of the vtree. Below is the
 list of the columns; in parentheses, you will find example values for a
 node from the \code{Titanic} example.
 \itemize{
-\item \code{ID}: human readable ID of the node (\verb{Class:1st/Sex:Female}). Note
+\item \code{path}: human readable path of the node (\verb{Class:1st/Sex:Female}). Note
 that if you are using slashes or colons in column names or values,
 this can be unreliable.
 \item \code{node_id}: unique numeric ID of the node.
@@ -83,7 +83,7 @@ node corresponds to (\code{Sex})
 \item \code{node_name}: node name used for labelling (\code{Sex}).
 \item \code{node_val}: the value of the node variable at this node (\code{Female}).
 \item \code{node_cv}: combination of node column and node value (\code{Sex:Female}).
-\item \code{parent}: ID of the parent node (\verb{Class:1st}).
+\item \code{parent}: path of the parent node (\verb{Class:1st}).
 \item \code{path}: is a list node; i.e., each element is a list. The path describes
 all nodes from the root to the current node, excluding the root and
 including the current node. (\code{list(Class = "1st", Sex = "Female")}.

@@ -158,11 +158,11 @@ find_nodes <- function(vtree, condition) {
 #'             their following or preceding nodes.
 #' @examples
 #' vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived)
-#' mask <- find_nodes(vt, ID == "Class:1st/Sex:Male")
+#' mask <- find_nodes(vt, path == "Class:1st/Sex:Male")
 #' follow <- find_children(vt, mask)
 #' precede <- find_parents(vt, mask)
 #' vt |> mutate(fill =
-#'             ifelse(ID == "Class:1st/Sex:Male", "green", "white")) |>
+#'             ifelse(path == "Class:1st/Sex:Male", "green", "white")) |>
 #'       mutate(fill =
 #'             ifelse(follow, "red",
 #'                    ifelse(precede, "blue", fill))) |>
@@ -260,7 +260,7 @@ find_parents <- function(vtree, mask) {
     # becomes TRUE ("prune")
     mask <- !mask
     #nodes <- as_tibble(vtree) |>
-    #  select(ID, freq) |>
+    #  select(path, freq) |>
     #  mutate(cond = mask_cond,
     #         precede = precede,
     #         follow = follow,

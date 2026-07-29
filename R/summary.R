@@ -295,11 +295,11 @@ summary_vt_df <- function(cases, vtree, col, .col = NULL) {
   # next create a match vector between the vtree and the cases data frame
   # probably a clever grouping operation would be more efficient rather
   # than looking for each combination of variables manually
-  matches <- map(nodes$path, \(p) .find_match_recursively(cases, p))
+  matches <- map(nodes$path_l, \(p) .find_match_recursively(cases, p))
 
   ret <- .get_summary(cases, col, matches) |>
-    mutate(ID = nodes$ID) |>
-    select(all_of("ID"), everything())
+    mutate(path = nodes$path) |>
+    select(all_of("path"), everything())
   ret
 }
 
@@ -379,7 +379,7 @@ summary_at_var <- function(vtree, varname, as_char = FALSE,
   }
 
   # which nodes are variable splits for our variable?
-  sel <- map_lgl(nodes[["path"]], \(p) {
+  sel <- map_lgl(nodes[["path_l"]], \(p) {
     if(is.null(names(p))) {
       return(FALSE)
     }
@@ -388,7 +388,7 @@ summary_at_var <- function(vtree, varname, as_char = FALSE,
 
   # get the selections for each level of the variable
   selections <- map(levels, \(l) {
-    map_lgl(nodes[["path"]][sel], \(p) {
+    map_lgl(nodes[["path_l"]][sel], \(p) {
       # TRUE if both p[[varname]] and l are NA, or if they are equal
       (is.na(l) && is.na(p[[varname]])) ||
       (!is.na(l) && !is.na(p[[varname]]) && p[[varname]] == l)

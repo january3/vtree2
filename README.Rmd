@@ -132,7 +132,7 @@ sm_txt <- summary_vt(tdf, vt, Age)
 vt |> 
   add_labels() |>
   mutate(label = paste0(label, "\n", sm_txt)) |>
-  keep(ID == "Class:3rd") |>
+  keep(path == "Class:3rd") |>
   plot(show_root = FALSE)
 ```
 
@@ -198,6 +198,21 @@ frequency less than 0.15 or number of cases less than 150, you can do
 `prune(vt, n < 150 | freq < .15)`. The result is always a vtree which you
 can then plot.
 
+The expression you pass to the prune() function, like `n < 150 | freq <
+.15`, is evaluated in the context of the vtree node data frame with added
+virtual columns for each of the variables in the vtree. Each row of the
+context data frame corresponds to a node in the vtree, so you can select
+all nodes which fullfill a certain condition.
+
+However, that also sometimes causes problems: if you specify that you want
+to prune all nodes where "Sex" is NA, you will have a problem. The virtual
+column "Sex" has a value for each node, also for nodes that correspond to
+"Class" or "Survived" - and that value is NA. Therefore, you have to use a
+more complex expression which involves checking whether a node corresponds
+to the variable "Sex": `node_col == "Sex" & is.na(Sex)`. That works.
+
+I am still thinking how to solve it in a better way.
+
 ```{r eval=FALSE}
 data(FakeData, package="vtree")
 
@@ -223,17 +238,41 @@ vtree(FakeData, Severity, Sex) |>
 ```
 
 **`follow`** 
+
+The way that prune() in vtree2 works, this requires a bit of thinking.
+We want to prune all branches below the severity levels *except* for the Mild
+and Moderate nodes. One could think that this is the way to do it: 
+`!Severity %in% c("Mild", "Moderate")`. Unfortunately, prune() matches the
+condition against a vector which contains the "Severity" values for other
+nodes - this doesn't make sense, so the value is NA. Which is not Mild or
+Moderate, and thus the condition prunes absolutely all nodes and we get an
+error.
+
+What one needs to do is to specify that we are looking only at nodes at the
+Severity variable:
+
 ```{r eval=FALSE}
 #vtree::vtree(FakeData, "Severity Sex",
 #        follow=list(Severity=c("Mild","Moderate")))
-# XXX doesn't work yet
+
 vtree(FakeData, Severity, Sex) |>
-  prune(!Severity %in% c("Mild", "Moderate"), follow_only = TRUE) |>
+  prune(node_col == "Severity" & !Severity %in% c("Mild", "Moderate"),
+        follow_only = TRUE) |>
   plot()
 ```
 
 **Targetted pruning.** Since vtree2 accepts any expression creating a
-logical vector for pruning, specifying a targetted pruning is easy.
+logical vector for pruning, specifying a targetted pruning is easy. Also,
+each node is associated with a path which is constructed from the path to
+the node, so this works:
+
+
+```{r eval=FALSE}
+vtree(FakeData, Severity, Sex) |>
+  prune(path == "Severity:Moderate/Sex:F") |>
+  plot()
+```
+
 
 **Keeping.** The keep parameter in vtree is a bit peculiar, because it
 silently keeps also the nodes which are NA *if* the valid percentages are
@@ -312,28 +351,28 @@ FakeData |>
 
 Prune / keep and labelling operation might want to target certain nodes by
 their path. This is achieved in vtree using `tlabelnode`. In vtree2, each
-node has an `ID`, a character representation of a path, and a `path` column
+node has an `path`, a character representation of a path, and a `path_l` column
 with the full path specified as list. You can use these to target nodes for
 pruning, keeping, labelling or coloring. More: you can use your prunning or
 keeping operation not to actually remove the nodes, but to just select them
-for further operations. Thus, you can find a node ID, use prune to find all
+for further operations. Thus, you can find a node path, use prune to find all
 nodes that *would* be removed, and then color them in red.
 
 
 ```{r eval=FALSE}
 data(titanicNA)
 vt <- vtree(titanicNA, Class, Sex, Survived)
-vt |> keep(ID == "Class:1st/Sex:NA/Survived:Yes" |
-           ID == "Class:2nd/Sex:NA/Survived:Yes") |>
+vt |> keep(path == "Class:1st/Sex:NA/Survived:Yes" |
+           path == "Class:2nd/Sex:NA/Survived:Yes") |>
   plot()
 
 vt |> add_labels() |>
   add_palette() |>
-  mutate(label = ifelse(ID == "Class:1st", "First class", label)) |>
-  mutate(fill = ifelse(ID == "Class:1st", "red", fill)) |>
+  mutate(label = ifelse(path == "Class:1st", "First class", label)) |>
+  mutate(fill = ifelse(path == "Class:1st", "red", fill)) |>
   plot()
 
-vt |> prune(ID == "Class:2nd/Sex:NA", mark_only=TRUE) |>
+vt |> prune(path == "Class:2nd/Sex:NA", mark_only=TRUE) |>
   add_palette() |>
   mutate(fill = ifelse(mark != "keep", "red", fill)) |>
   plot()

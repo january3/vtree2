@@ -9,7 +9,7 @@ test_that("summary_vt works", {
   expect_snapshot(stxt)
  
   s1 <- summary_vt_df(cases, vt, Age)
-  expect_in(c("ID", "n", "valid",
+  expect_in(c("path", "n", "valid",
               "missing", "unique",
               "levels", "levels_str"), colnames(s1))
 
@@ -24,7 +24,7 @@ test_that("summary_vt works", {
                cases$Sex == sx)
       id <- paste0("Class:", cl, "/",
                    "Sex:", sx)
-      n2 <- s1$n[ s1$ID == id ]
+      n2 <- s1$n[ s1$path == id ]
       expect_equal(n1, n2)
     }
   }
@@ -33,7 +33,7 @@ test_that("summary_vt works", {
   cases$foo <- rnorm(nrow(cases))
   s1 <- summary_vt_df(cases, vt, foo)
   expect_equal(nrow(s1), nrow(nodes))
-  expect_in(c("ID", "n", "mean", "sd", "min",
+  expect_in(c("path", "n", "mean", "sd", "min",
               "max", "median", "iqr", "q1", "q3",
               "valid", "missing"), colnames(s1))
 

@@ -172,10 +172,10 @@ as_vtree <- function(x) {
   # integrity checks
   # ------------------
   nodes <- as_tibble(x)
-  req_cols <- c("ID", "node_id", "node_key",
+  req_cols <- c("path", "node_id", "node_key",
                 "tot_n", "missing", "denom",
                 "parent_id", "node_col", "node_val",
-                "parent", "path", "level", "n", "freq")
+                "parent", "path_l", "level", "n", "freq")
   # this columns are usually created but not critical:
   # node_cv, node_name
 
@@ -272,7 +272,7 @@ as_vtree <- function(x) {
 #' list of the columns; in parentheses, you will find example values for a
 #' node from the `Titanic` example.
 #'
-#' * `ID`: human readable ID of the node (`Class:1st/Sex:Female`). Note
+#' * `path`: human readable path of the node (`Class:1st/Sex:Female`). Note
 #'   that if you are using slashes or colons in column names or values,
 #'   this can be unreliable.
 #' * `node_id`: unique numeric ID of the node.
@@ -282,7 +282,7 @@ as_vtree <- function(x) {
 #' * `node_name`: node name used for labelling (`Sex`).
 #' * `node_val`: the value of the node variable at this node (`Female`).
 #' * `node_cv`: combination of node column and node value (`Sex:Female`).
-#' * `parent`: ID of the parent node (`Class:1st`).
+#' * `parent`: path of the parent node (`Class:1st`).
 #' * `path`: is a list node; i.e., each element is a list. The path describes
 #'    all nodes from the root to the current node, excluding the root and
 #'    including the current node. (`list(Class = "1st", Sex = "Female")`.

@@ -8,7 +8,7 @@ test_that("pattern creates one row per leaf path", {
   expect_true(attr(pat, "vp"))
 
   expect_equal(nrow(pat), 8)
-  expect_in(c("ID", "node_id",
+  expect_in(c("path", "node_id",
               "Class", "Class_n", "Class_freq", "Class_tot_n",
               "Class_missing", "Class_denom",
               "Sex", "Sex_n", "Sex_freq", "Sex_tot_n",

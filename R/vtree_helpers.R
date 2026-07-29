@@ -161,21 +161,21 @@ collect_nodes <- function(pattern, columns) {
              denom = paste0(columns[i], "_denom")) |>
       mutate(level = i) |>
 
-      # this complex bit constructs the parent and ID columns. The parent
-      # is constructed from the previous columns, and the ID is constructed
-      # from all columns up to the current one. The ID consist of column
+      # this complex bit constructs the parent and path columns. The parent
+      # is constructed from the previous columns, and the path is constructed
+      # from all columns up to the current one. The path consist of column
       # name:value pairs separated by slashes.
       # the c_across is specifically for rowwise operations
       rowwise() |>
       mutate(parent = ifelse(i == 1, "root",
         paste0(paste0(columns[1:(i-1)], ":",
                       c_across(all_of(columns[1:(i-1)]))), collapse = "/"))) |>
-      mutate(ID = paste0(paste0(columns[1:i], ":",
+      mutate(path = paste0(paste0(columns[1:i], ":",
                       c_across(all_of(columns[1:i]))), collapse = "/")) |>
 
       # we want also to store the path as a list column for easier
       # processing downstream
-      mutate(path = list(as.list(pick(all_of(columns[1:i]))))) |>
+      mutate(path_l = list(as.list(pick(all_of(columns[1:i]))))) |>
 
 
       ungroup() |>
@@ -186,8 +186,8 @@ collect_nodes <- function(pattern, columns) {
       mutate(node_col = columns[i]) |>
       mutate(node_val = .data[[columns[i]]]) |>
 
-      select(all_of(c("ID", "node_col", "node_val", "parent",
-                      "path", "level", "n", "tot_n", "missing",
+      select(all_of(c("path", "node_col", "node_val", "parent",
+                      "path_l", "level", "n", "tot_n", "missing",
                       "freq", "denom")))
   })
 
@@ -202,11 +202,11 @@ pat2nodes <- function(pattern, columns) {
   N <- sum(ret |> filter(.data[["level"]] == 1) |> pull("n"))
 
   # that special root node
-  ret <- bind_rows(tibble(ID = "root",
+  ret <- bind_rows(tibble(path = "root",
                           node_col = "root",
                           node_val = "",
                           parent = NA_character_,
-                          path = list(NA),
+                          path_l = list(NA),
                           level = 0,
                           n = N,
                           tot_n = N,
@@ -215,15 +215,15 @@ pat2nodes <- function(pattern, columns) {
                           denom = N), ret)
   ret <- ret |>
     mutate(node_id = dplyr::row_number()) |>
-    mutate(parent_id = purrr::map_int(.data[["path"]],
-                       \(x) find_parent(x, .data[["path"]]))) |>
+    mutate(parent_id = purrr::map_int(.data[["path_l"]],
+                       \(x) find_parent(x, .data[["path_l"]]))) |>
     mutate(node_cv = paste0(.data[["node_col"]], ":",
                             .data[["node_val"]])) |>
-    mutate(node_name = ifelse(.data[["ID"]] == "root",
+    mutate(node_name = ifelse(.data[["path"]] == "root",
                               "", .data[["node_col"]])) |>
     mutate(node_key = paste0("node_", .data[["node_id"]])) |>
-    select(all_of(c("ID", "node_id", "node_key", "parent", "parent_id",
-                    "path", "level", "node_col", "node_name", "node_val",
+    select(all_of(c("path", "node_id", "node_key", "parent", "parent_id",
+                    "path_l", "level", "node_col", "node_name", "node_val",
                     "node_cv", "n", "tot_n", "missing", "freq", "denom")))
   ret
 }

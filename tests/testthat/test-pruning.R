@@ -12,7 +12,7 @@ test_that("masking works", {
   m <- find_nodes(vt, n > 20 & freq < .12)
   expect_equal(sum(m), 2)
 
-  expect_setequal(nodes$ID[m], c("Class:Crew/Sex:Female",
+  expect_setequal(nodes$path[m], c("Class:Crew/Sex:Female",
                                  "Class:3rd/Sex:Male/Age:Child"))
 
 })

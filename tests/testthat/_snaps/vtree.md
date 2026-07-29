@@ -4,7 +4,7 @@
       nodes
     Output
       # A tibble: 15 x 18
-         ID    node_id node_key parent parent_id path         level node_col node_name
+         path  node_id node_key parent parent_id path_l       level node_col node_name
          <chr>   <int> <chr>    <chr>      <int> <list>       <dbl> <chr>    <chr>    
        1 Clas~       7 node_7   Class~         2 <named list>     2 Sex      Sex      
        2 Clas~       8 node_8   Class~         2 <named list>     2 Sex      Sex      

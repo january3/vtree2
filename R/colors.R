@@ -51,7 +51,7 @@ contrast_color <- function(color) {
 #' # manipulate color for some of the nodes
 #' vt |> add_palette(palettes = "Blues") |>
 #'   # don't prune, just mark the nodes in the mark col
-#'   prune(ID == "Class:1st/Sex:Male", mark_only = TRUE) |>
+#'   prune(path == "Class:1st/Sex:Male", mark_only = TRUE) |>
 #'   # color the marked nodes in red
 #'   mutate(fill = ifelse(mark == "keep", fill, "red")) |>
 #'   plot()
