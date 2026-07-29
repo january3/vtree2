@@ -22,6 +22,20 @@ pak::pak("january3/vtree2")
 
 ### What is a vtree?
 
+### vtree2 workflow
+
+1.  Prepare the data with `vtree()` or `vtree_from_freqtable()`. After
+    this step, the data is immutable, frequencies and counts calculated
+    will not change any more.
+2.  Prune the tree for visualization with `prune()` or `keep()`.
+3.  Add labels and colors with `add_labels()` and `add_palette()` or by
+    directly manipulating the `label`, `color` and `fill` columns of the
+    vtree object. `find_nodes()` and `prune(..., mark_only = TRUE)` can
+    be used to select nodes for coloring or labeling. The `summary_vt()`
+    function can be used to produce additional per-node summaries which
+    can be used for labeling or coloring.
+4.  plot the tree with `plot()`.
+
 ### Basic plots
 
 You can construct a vtree roughly from two types of data:
@@ -36,11 +50,40 @@ from a frequency table and plot it with `vtree2`.
 
 ``` r
 library(vtree2)
+#> 
+#> Attaching package: 'vtree2'
+#> The following object is masked from 'package:graphics':
+#> 
+#>     layout
 tdf <- cases_from_freqtable(Titanic)
 vt <- vtree(tdf, Class, Sex, Survived)
 vt
-#> vtree object with 3 columns and 2201 observations
-#> Columns: Class, Sex, Survived
+#> vtree object with 3 variables and 2201 observations
+#> Variables: Class, Sex, Survived 
+#> Overview:
+#> # Tibble (class tbl_df) 7 x 29:
+#> # (Showing rows 1 - 20 out of 29)
+#>   │node_col│node_val│n    │freq │tot_n│missing│denom
+#>  1│root    │        │ 2201│1.000│ 2201│     NA│ 2201
+#>  2│Class   │1st     │  325│0.148│ 2201│      0│ 2201
+#>  3│Class   │2nd     │  285│0.129│ 2201│      0│ 2201
+#>  4│Class   │3rd     │  706│0.321│ 2201│      0│ 2201
+#>  5│Class   │Crew    │  885│0.402│ 2201│      0│ 2201
+#>  6│Sex     │Male    │  180│0.554│  325│      0│  325
+#>  7│Sex     │Female  │  145│0.446│  325│      0│  325
+#>  8│Sex     │Male    │  179│0.628│  285│      0│  285
+#>  9│Sex     │Female  │  106│0.372│  285│      0│  285
+#> 10│Sex     │Male    │  510│0.722│  706│      0│  706
+#> 11│Sex     │Female  │  196│0.278│  706│      0│  706
+#> 12│Sex     │Male    │  862│0.974│  885│      0│  885
+#> 13│Sex     │Female  │   23│0.026│  885│      0│  885
+#> 14│Survived│No      │  118│0.656│  180│      0│  180
+#> 15│Survived│Yes     │   62│0.344│  180│      0│  180
+#> 16│Survived│No      │    4│0.028│  145│      0│  145
+#> 17│Survived│Yes     │  141│0.972│  145│      0│  145
+#> 18│Survived│No      │  154│0.860│  179│      0│  179
+#> 19│Survived│Yes     │   25│0.140│  179│      0│  179
+#> 20│Survived│No      │   13│0.123│  106│      0│  106
 ```
 
 `vt` is now an object of class `vtree`, which is basically `tidygraph`’s
@@ -65,7 +108,7 @@ condition and remove them (along with their children) from the vtree:
 ucb <- cases_from_freqtable(UCBAdmissions)
 vt <- vtree(ucb, Dept, Gender, Admit) |>
   prune(n < 150 | freq < .15)
-plot(vt, proportional = TRUE)
+plot(vt, layout = "proportional")
 ```
 
 <img src="man/figures/README-example_pruning-1.png" alt="" width="100%" />
@@ -102,7 +145,8 @@ produce complex labels with a simple R expression using `sprintf()` or
 
 The tree can be used to produce per-node summaries of any data. For
 example, if you have an additional variable for your cases, you can add
-summary of the values as labels to the nodes.
+summary of the values as labels to the nodes. We select here only one
+node (1st Class), just to zoom in on that part of the graph.
 
 ``` r
 vt <- vtree(tdf, Class, Sex, Survived)
@@ -110,7 +154,9 @@ vt <- vtree(tdf, Class, Sex, Survived)
 sm_txt <- summary_vt(tdf, vt, Age)
 vt |> 
   add_labels() |>
-  mutate(label = paste0(label, "\n", sm_txt)) |> plot()
+  mutate(label = paste0(label, "\n", sm_txt)) |>
+  keep(ID == "Class:1st") |>
+  plot(show_root = FALSE)
 ```
 
 <img src="man/figures/README-example_summary-1.png" alt="" width="100%" />
@@ -139,6 +185,213 @@ summaries for other purposes (e.g. to produce simple tables). `vtree2`
 separates data preparation, label construction, node selection and
 plotting into four separate steps. This comes at the cost of more
 verbose function calls.
+
+### Quick HOWTO for vtree users
+
+#### Data pre-processing
+
+Several options of the original vtree are actually for pre-processing of
+the data. For example, the variable specification ‘variable\>value’ in
+the vtree mini-language is used to split a numeric variable into two
+levels.
+
+I think that explicing splitting of the data before constructing the
+vtree is more fittin. It is easy, and for complex cases there are many
+specialized tools and packages dealing with that. For most cases, a
+simple `cut()` or `ifelse()` is enough.
+
+``` r
+iris |>
+  mutate(Sepal.Length = ifelse(Sepal.Length > 5.5, "long", "short")) |>
+  mutate(Sepal.Width = cut(Sepal.Width, breaks = c(2, 3, 4, 5))) |>
+  vtree(Sepal.Length, Sepal.Width, Species) |>
+  plot()
+```
+
+#### Pruning
+
+**Pruning.** In vtree2, you can prune the tree with the `prune()`
+function. It takes a logical vector of length equal to the number of
+nodes in the vtree object. You can use the variables in from the vtree
+node data frame to construct the logical vector. For example, to prune
+all nodes with frequency less than 0.15 or number of cases less than
+150, you can do `prune(vt, n < 150 | freq < .15)`. The result is always
+a vtree which you can then plot.
+
+``` r
+data(FakeData, package="vtree")
+
+# vtree::vtree(FakeData, "Severity Sex")
+vtree(FakeData, Severity, Sex) |> plot()
+
+#vtree::vtree(FakeData,"Severity Sex",
+#      prune=list(Severity=c("Mild","Moderate")))
+vtree(FakeData, Severity, Sex) |>
+  prune(Severity %in% c("Mild", "Moderate")) |>
+  plot()
+```
+
+**`prunebelow`**
+
+``` r
+#vtree::vtree(FakeData, "Severity Sex",
+#        prunebelow=list(Severity=c("Mild","Moderate")))
+vtree(FakeData, Severity, Sex) |>
+  prune(Severity %in% c("Mild", "Moderate"),
+        follow_only=TRUE) |>
+  plot()
+```
+
+**`follow`**
+
+``` r
+#vtree::vtree(FakeData, "Severity Sex",
+#        follow=list(Severity=c("Mild","Moderate")))
+# XXX doesn't work yet
+vtree(FakeData, Severity, Sex) |>
+  prune(!Severity %in% c("Mild", "Moderate"), follow_only = TRUE) |>
+  plot()
+```
+
+**Targetted pruning.** Since vtree2 accepts any expression creating a
+logical vector for pruning, specifying a targetted pruning is easy.
+
+**Keeping.** The keep parameter in vtree is a bit peculiar, because it
+silently keeps also the nodes which are NA *if* the valid percentages
+are used. Also, both the *children* and the *parents* of the selected
+nodes are kept.
+
+XXX
+
+``` r
+#vtree::vtree(FakeData, "Severity Sex",
+#             keep=list(Severity=c("Moderate")))
+vtree(FakeData, Severity, Sex) |>
+  keep(Severity == "Moderate") |>
+  plot()
+```
+
+**`prunesmaller`** This is for selecting nodes based on the number of
+observations. In vtree2, you can use any column from the node data
+frame - including `n`, the number of observations in the node, `freq`,
+the calculated proportion, `denominator` etc etc.
+
+``` r
+#vtree::vtree(FakeData, "Severity Sex Age Category", prunesmaller = 3)
+# XXX: again, vtree keeps NA nodes even if they are smaller than 3
+FakeData |> mutate(Age = as.character(Age)) |>
+  vtree(Severity, Sex, Age, Category) |>
+  prune(n < 3, na.rm = FALSE) |>
+  plot()
+```
+
+#### Formatting labels
+
+In vtree2, there are some functions that construct automatic labels, but
+for any more complex case you can use standard R functions to construct
+your own labels.
+
+By default, `add_labels()` construct the labels implicitly when you call
+plot() on a vtree object. However, you can add the labels yourself
+either with `add_labels()` (which is quite flexible) or by directly
+modifying the `label` column in the vtree. `plot.vtree()` will not
+overwrite labels if they already exist.
+
+For example, to mimick the `sameline` option in vtree, you can first
+generate the standard automatic labels and then replace the newline
+character with a space:
+
+``` r
+## vtree::vtree(FakeData, "Severity Sex", sameline = TRUE)
+vtree(FakeData, Severity, Sex) |>
+  add_labels() |>
+  mutate(label = gsub("\n", " ", label)) |>
+  plot(lwidth = .9)
+```
+
+Arguably, that is way more code than just adding `sameline = TRUE` to
+the vtree() call, but it is also way more flexible.
+
+**`labelnode`**. This is used in vtree to replace a variable level with
+a custom label. In vtree2, you should simply replace the variable levels
+*in the data* before constructing the vtree.
+
+``` r
+## vtree::vtree(FakeData,"Group Sex",horiz=FALSE,
+##        labelnode=list(Sex=c(Male="M",Female="F")))
+FakeData |>
+  mutate(Sex = dplyr::recode(Sex, M = "Male", F = "Female")) |>
+  vtree(Group, Sex) |>
+  plot(dir = "tb")
+```
+
+#### Targetting nodes
+
+Prune / keep and labelling operation might want to target certain nodes
+by their path. This is achieved in vtree using `tlabelnode`. In vtree2,
+each node has an `ID`, a character representation of a path, and a
+`path` column with the full path specified as list. You can use these to
+target nodes for pruning, keeping, labelling or coloring. More: you can
+use your prunning or keeping operation not to actually remove the nodes,
+but to just select them for further operations. Thus, you can find a
+node ID, use prune to find all nodes that *would* be removed, and then
+color them in red.
+
+``` r
+data(titanicNA)
+vt <- vtree(titanicNA, Class, Sex, Survived)
+vt |> keep(ID == "Class:1st/Sex:NA/Survived:Yes" |
+           ID == "Class:2nd/Sex:NA/Survived:Yes") |>
+  plot()
+
+vt |> add_labels() |>
+  add_palette() |>
+  mutate(label = ifelse(ID == "Class:1st", "First class", label)) |>
+  mutate(fill = ifelse(ID == "Class:1st", "red", fill)) |>
+  plot()
+
+vt |> prune(ID == "Class:2nd/Sex:NA", mark_only=TRUE) |>
+  add_palette() |>
+  mutate(fill = ifelse(mark != "keep", "red", fill)) |>
+  plot()
+```
+
+#### Plotting
+
+The **`horiz=TRUE`** option in vtree directs whether the tree is plotted
+horizontally or vertically. In vtree2, you can specify the direction of
+the plot with the `dir` parameter in `plot()`. The default is “lr” (left
+to right), but you can also use “tb”, “bt”, or “rl”.
+
+**Changing variable labels**. In vtree, you can specify variable labels
+with the `labelvar` parameter. In vtree2 you can use the column labels
+you wish to see in the original data. If you have weird characters, use
+the backticks.
+
+``` r
+## vtree::vtree(FakeData, "Severity Sex",
+##       horiz = FALSE,
+##       labelvar=c(Severity="Initial severity"))
+FakeData |>
+  rename(`Initial\nseverity` = Severity) |>
+  vtree(`Initial\nseverity`, Sex) |>
+  plot(dir = "tb")
+```
+
+#### Missing functionality
+
+The following are not yet implemented in vtree2:
+
+- font styling
+- the various variable processing options, like turning a numeric
+  variable into a factor with a specified number of levels
+- ~~a fundamental problem of vtree2 concept is that the original data is
+  not kept with the vtree object (maybe I should change that?). That is
+  why the legend produced by vtree2 is different when the tree is
+  pruned: the legend is based on the *current*, pruned vtree and not on
+  the original data. For now, I will just keep the original
+  *summaries*.~~ -\> now the summaries are kept so the legend is always
+  the same.
 
 ### Design principles for vtree2
 
@@ -195,5 +448,26 @@ Also, for code review / bug finding.
 
 ## TODO
 
-- plotting function for patterns
+- ~~plotting function for patterns~~
+- make sure that node_name is used for displaying variable names
+- how is vtree actually handling the palettes?
+- ~~add the keep_children parameter to the keep() function~~, and also
+  keep_na. - this is harder; because not all the NA nodes are kept, but
+  only these which are on the same level as a node that is kept.
+  Generally make keep behave the same as in vtree.
+- ~~legends~~
 - should the vtree() function take cases or samples?
+- maybe gridtext for the labels so we can use some basic formatting
+- faster processing of cases into trees
+- questions to NB:
+  - what is the difference between seq and pattern? I don’t see any at
+    least on simple plots (apart from the arrows)
+  - how are the NA nodes kept in pruning *exactly*?
+
+## BUGS
+
+- prune(!Severity %in% c(“Mild”, “Moderate”), follow_only = TRUE) does
+  not work
+- na.rm handling in prune() is not consistent, at least not with vtree’s
+  behavior
+- layout=“proportional” stopped working

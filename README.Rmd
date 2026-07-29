@@ -34,6 +34,21 @@ pak::pak("january3/vtree2")
 
 ### What is a vtree?
 
+
+### vtree2 workflow
+
+ 1. Prepare the data with `vtree()` or `vtree_from_freqtable()`. After this
+    step, the data is immutable, frequencies and counts calculated will not
+    change any more.
+ 2. Prune the tree for visualization with `prune()` or `keep()`.
+ 3. Add labels and colors with `add_labels()` and `add_palette()` or by
+    directly manipulating the `label`, `color` and `fill` columns of the
+    vtree object. `find_nodes()` and `prune(..., mark_only = TRUE)` can be
+    used to select nodes for coloring or labeling. The `summary_vt()`
+    function can be used to produce additional per-node summaries which can
+    be used for labeling or coloring.
+ 4. plot the tree with `plot()`.
+
 ### Basic plots
 
 You can construct a vtree roughly from two types of data:
@@ -72,7 +87,7 @@ condition and remove them (along with their children) from the vtree:
 ucb <- cases_from_freqtable(UCBAdmissions)
 vt <- vtree(ucb, Dept, Gender, Admit) |>
   prune(n < 150 | freq < .15)
-plot(vt, proportional = TRUE)
+plot(vt, layout = "proportional")
 ```
 
 **There is more:** with `find_nodes()` you can find nodes which fullfill a
@@ -106,7 +121,8 @@ produce complex labels with a simple R expression using `sprintf()` or
 
 The tree can be used to produce per-node summaries of any data. For
 example, if you have an additional variable for your cases, you can add
-summary of the values as labels to the nodes.
+summary of the values as labels to the nodes. We select here only one node
+(1st Class), just to zoom in on that part of the graph.
 
 
 ```{r example_summary,fig.width=14,fig.height=30}
@@ -115,7 +131,9 @@ vt <- vtree(tdf, Class, Sex, Survived)
 sm_txt <- summary_vt(tdf, vt, Age)
 vt |> 
   add_labels() |>
-  mutate(label = paste0(label, "\n", sm_txt)) |> plot()
+  mutate(label = paste0(label, "\n", sm_txt)) |>
+  keep(ID == "Class:1st") |>
+  plot(show_root = FALSE)
 ```
 
 **There is more:** `summary_vt()` can be used to calculate any summary
@@ -238,7 +256,7 @@ including `n`, the number of observations in the node, `freq`, the
 calculated proportion, `denominator` etc etc.
 
 
-```{r}
+```{r eval=FALSE}
 #vtree::vtree(FakeData, "Severity Sex Age Category", prunesmaller = 3)
 # XXX: again, vtree keeps NA nodes even if they are smaller than 3
 FakeData |> mutate(Age = as.character(Age)) |>
@@ -358,6 +376,12 @@ The following are not yet implemented in vtree2:
  * font styling
  * the various variable processing options, like turning a numeric variable
    into a factor with a specified number of levels
+ * ~~a fundamental problem of vtree2 concept is that the original data is not
+   kept with the vtree object (maybe I should change that?). That is why
+   the legend produced by vtree2 is different when the tree is pruned: the
+   legend is based on the *current*, pruned vtree and not on the original
+   data. For now, I will just keep the original *summaries*.~~ -> now the
+   summaries are kept so the legend is always the same.
 
 ### Design principles for vtree2
 
