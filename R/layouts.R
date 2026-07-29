@@ -142,12 +142,15 @@ layout_legend <- function(layout, margins, dir="lr") {
       mutate(y = .data[["y"]] - maxpos * .data[["height"]] / 2 + 
              (maxpos - .data[["pos"]] - 1.5) * .data[["height"]])
 
+    maxy <- max(legend[["y"]])
     titles <- legend |>
-      filter(pos == 1) |>
+      group_by(node_col) |>
+      dplyr::slice(1) |>
+      ungroup() |>
       mutate(label = .data[["node_col"]]) |>
       mutate(color = "black") |>
       mutate(shape = NA) |>
-      mutate(y = y + .data[["height"]]) |>
+      mutate(y = maxy + .data[["height"]]) |>
       mutate(height = .data[["height"]] * 2) |>
       mutate(node_key = paste0("legend_title_", 1:n())) |>
       mutate(label_type = "var_name_label")
@@ -162,13 +165,16 @@ layout_legend <- function(layout, margins, dir="lr") {
                (.data[["pos"]] + 1) * margins$bottom / maxpos) |>
       mutate(height = .9 * margins$bottom / maxpos) |>
       mutate(width = .data[["width"]])
+    maxy <- max(legend[["y"]])
 
     titles <- legend |>
-      filter(pos == 1) |>
+      group_by(node_col) |>
+      dplyr::slice(1) |>
+      ungroup() |>
       mutate(label = .data[["node_col"]]) |>
       mutate(color = "black") |>
       mutate(shape = NA) |>
-      mutate(y = y + .data[["height"]] * 1.5) |>
+      mutate(y = maxy + .data[["height"]] * 1.5) |>
       mutate(height = .data[["height"]] * 2) |>
       mutate(node_key = paste0("legend_title_", 1:n())) |>
       mutate(label_type = "var_name_label")
