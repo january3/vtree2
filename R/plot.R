@@ -336,6 +336,21 @@ normalize_vtree_for_plotting <- function(x, palettes, na_fill) {
   var_labels
 }
 
+.normalize_margins <- function(margins) {
+  if(length(margins) != 4 || !is.numeric(margins)) {
+    die("margins should be a numeric vector with four elements, t-r-b-l")
+  }
+
+  if(!all(margins >= 0) || !all(margins <= 1)) {
+    die("all margins must be values in the range [0,1]")
+  }
+
+  list(top = margins[1],
+       right = margins[2],
+       bottom = margins[3],
+       left = margins[4])
+}
+
 
 #' Plot a vtree
 #'
@@ -407,6 +422,8 @@ normalize_vtree_for_plotting <- function(x, palettes, na_fill) {
 #'        layout with all necessary columns and no layout is calculated.
 #' @param layout_func Custom function to calculate layout (see
 #'        [vtree2::layout()] for details).
+#' @param margins numerical vector: top/right/bottom/left margins in
+#'        fraction of available space (from 0 to 1).
 #' @param show_root If TRUE (default), show the root node (total
 #'        population).
 #' @param var_labels If TRUE (default), add names of the variables to the
@@ -484,11 +501,16 @@ plot_vtree <- function(x,
                       show_root = TRUE,
                       var_labels = TRUE,
                       legend = FALSE,
+                      margins = NULL,
                       lwidth = NA, lheight = NA,
                       autofontsize = NA,
                       dir = "lr") {
 
   dir <- match.arg(dir, c("lr", "rl", "bt", "tb"))
+
+  if(!is.null(margins)) {
+    margins <- .normalize_margins(margins)
+  }
 
   layout_arg <- match.arg(layout)
   var_labels <- .normalize_var_labels(names(x), var_labels)
@@ -508,17 +530,19 @@ plot_vtree <- function(x,
     }
   }
 
-  margins <- list(top = .01, right = .01,
-                  bottom = .01 + .06 * show_vl +
-                    .15 * legend,
-                  left = .01)
+  if(dir %in% c("rl", "lr")) {
+    margins <- margins %||% list(top = .01, right = .01,
+                    bottom = .01 + .03 * show_vl +
+                      .15 * legend,
+                    left = .01)
+  }
 
   if(dir == "rl") {
     layout <- .flip_horiz(layout)
   }
 
   if(dir %in% c("bt", "tb")) {
-    margins <- list(top = .01, right = .01,
+    margins <- margins %||% list(top = .01, right = .01,
                     bottom = .01, left = .01 + .08 * show_vl)
     layout <- .transpose(layout)
     layout <- .flip_horiz(layout)
