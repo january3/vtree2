@@ -122,7 +122,8 @@ print.vtree <- function(x, ...) {
   cat(cli::col_blue(paste("vtree object with",
                length(cols), "variables and", N, "observations\n")))
   cat("Variables:", paste(cols, collapse = ", "), "\n")
-  col_to_show <- c("node_col", "node_val", "n", "freq", "tot_n", "missing", "denom")
+  col_to_show <- c("path", "n", "freq",
+                   "tot_n", "missing", "denom")
   cat(cli::col_blue("Overview:\n"))
   colorDF::print_colorDF(as_tibble(x |> select(all_of(col_to_show))), ...)
   invisible(x)
