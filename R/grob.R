@@ -239,7 +239,7 @@ find_fontsize <- function(labels, widths, heights) {
   } else {
     ret <- map(1:nrow(nodes), \(i) {
                textGrob(y = nodes$y[i],
-                        x = margins$bottom/2,
+                        x = margins$left/2,
                         name = paste0("label_", nodes$node_key[i]),
                         label = var_labels[i],
                         gp = gpar(
