@@ -17,6 +17,7 @@ plot_vtree(
   show_root = TRUE,
   var_labels = TRUE,
   legend = FALSE,
+  margins = NULL,
   lwidth = NA,
   lheight = NA,
   autofontsize = NA,
@@ -67,6 +68,9 @@ displayed for those variables. If FALSE or NULL,
 no variable labels are shown.}
 
 \item{legend}{If TRUE, a legend is added to the plot. Default is FALSE.}
+
+\item{margins}{numerical vector: top/right/bottom/left margins in
+fraction of available space (from 0 to 1).}
 
 \item{lwidth}{Label width relative to available space}
 

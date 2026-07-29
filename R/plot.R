@@ -71,7 +71,7 @@ add_labels <- function(vtree,
 
   # this only looks complicated because we have to use .data
   if(template == "simple") {
-    fmt <- quo(ifelse(.data[["node_val"]] == "",
+    fmt <- quo(ifelse(!is.na(.data[["node_val"]]) & .data[["node_val"]] == "",
                sprintf("%d\n(%.0f%%)", .data[["n"]], .data[["freq"]] * 100),
                sprintf("%s\n%d (%.0f%%)",
          .data[["node_val"]],
