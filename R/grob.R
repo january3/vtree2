@@ -293,7 +293,7 @@ find_fontsize <- function(labels, widths, heights) {
 #' @export
 makeContent.vtree_plot <- function(x) {
 
-  labels <- x$children$nodes$children$labels$children
+  labels <- x$children$nodes$children$nodes_labels$children
   nodes <- as_tibble(x$layout)
   autofontsize <- x$param$autofontsize
   mar <- x$margins
@@ -302,14 +302,14 @@ makeContent.vtree_plot <- function(x) {
   if(autofontsize == "fixed") {
     fs <- find_fontsize(nodes$label, .9 * nodes$width, .9 * nodes$height)
     for(i in seq_along(labels)) {
-      x$children$nodes$children$labels$children[[i]]$gp$fontsize <- fs
+      x$children$nodes$children$nodes_labels$children[[i]]$gp$fontsize <- fs
     }
   } else if(autofontsize == "adaptive") {
   # adaptive means: each label gets its own font size
     labels <- adapt_fontsize(labels, nodes$width, nodes$height,
                          padding = .4)
-    x$children$nodes$children$labels <-
-      setChildren(x$children$nodes$children$labels, do.call(gList, labels))
+    x$children$nodes$children$nodes_labels <-
+      setChildren(x$children$nodes$children$nodes_labels, do.call(gList, labels))
   }
 
   if(!is.null(x$param$legend)) {
@@ -386,7 +386,6 @@ makeContent.vtree_plot <- function(x) {
 
     children <- gList(children, clabs=clabs)
   } 
-  print(children)
 
   setChildren(x, children)
 }

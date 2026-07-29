@@ -351,8 +351,13 @@ FakeData |>
 ```
 
 
+#### Missing functionality
 
+The following are not yet implemented in vtree2:
 
+ * font styling
+ * the various variable processing options, like turning a numeric variable
+   into a factor with a specified number of levels
 
 ### Design principles for vtree2
 
@@ -425,3 +430,4 @@ code review / bug finding.
 
  * prune(!Severity %in% c("Mild", "Moderate"), follow_only = TRUE) does not work
  * na.rm handling in prune() is not consistent, at least not with vtree's behavior
+ * layout="proportional" stopped working
