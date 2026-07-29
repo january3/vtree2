@@ -53,7 +53,7 @@ names.vtree <- function(x) {
 #' data(titanicNA)
 #' vt <- vtree(titanicNA)
 #' is_vp(vt) # TRUE
-#' vt <- vtree(titanicNA, vp = FALSE)
+#' vt <- vtree(titanicNA, Class, Survived, .vp = FALSE)
 #' is_vp(vt) # FALSE
 #' @return TRUE if the object is based on valid percentages, FALSE
 #'         otherwise.
@@ -148,13 +148,13 @@ print.vtree <- function(x, ...) {
 #'  * `freq`: frequency of this level relative to the denominator
 #'  * `denom`: the denominator used to calculate the frequency
 #'  * `label`: a printable label constructed from these values
-#' @param x A vtree object.
+#' @param object A vtree object.
 #' @param ... Ignored
 #' @return A data frame with summaries (counts and frequencies) for each
 #' level of each variable in the vtree.
 #' @export
-summary.vtree <- function(x, ...) {
-  attr(x, "summary")
+summary.vtree <- function(object, ...) {
+  attr(object, "summary")
 }
 
 

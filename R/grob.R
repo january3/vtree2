@@ -314,14 +314,14 @@ makeContent.vtree_plot <- function(x) {
 
   if(!is.null(x$param$legend)) {
     df <- x$param$legend |>
-      filter(label_type == "var_name_label")
+      filter(.data[["label_type"]] == "var_name_label")
     fs <- find_fontsize(df$label, df$width, df$height)
     for(i in 1:nrow(df)) {
       x$children$legend$children$legend_titles$children$legend_titles_labels$children[[i]]$gp$fontsize <- fs
     }
 
     df <- x$param$legend |>
-      filter(label_type == "var_level_label")
+      filter(.data[["label_type"]] == "var_level_label")
     fs <- find_fontsize(df$label, df$width, df$height)
     for(i in 1:nrow(df)) {
       x$children$legend$children$legend_levels$children$legend_levels_labels$children[[i]]$gp$fontsize <- fs
@@ -364,10 +364,11 @@ makeContent.vtree_plot <- function(x) {
   children <- gList(arrows=arrows, nodes=nodes_gt)
 
   if(!is.null(legend)) {
-    legend_labs <- .get_nodes(filter(legend, label_type == "var_level_label"),
+    legend_labs <- .get_nodes(filter(legend,
+                                     .data[["label_type"]] == "var_level_label"),
                                      fs = fs, name="legend_levels")
-    foo <- filter(legend, label_type == "var_name_label")
-    var_labs    <- .get_nodes(filter(legend, label_type == "var_name_label"),
+    var_labs    <- .get_nodes(filter(legend,
+                                     .data[["label_type"]] == "var_name_label"),
                                      fs = fs, name="legend_titles")
     legend <- gTree(gp=gpar(), children = gList(titles = legend_labs,
                                                 levels = var_labs),

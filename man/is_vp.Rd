@@ -28,6 +28,6 @@ with vp=FALSE, it is 30\%.
 data(titanicNA)
 vt <- vtree(titanicNA)
 is_vp(vt) # TRUE
-vt <- vtree(titanicNA, vp = FALSE)
+vt <- vtree(titanicNA, Class, Survived, .vp = FALSE)
 is_vp(vt) # FALSE
 }

@@ -167,7 +167,7 @@ layout_legend <- function(layout, margins, dir="lr") {
     group_by(.data[["node_col"]]) |>
     mutate(pos = 1:n()) |>
     ungroup() |>
-    filter(count != 0) |>
+    filter(.data[["count"]] != 0) |>
     mutate(fill = .get_fill(.data[["node_col"]],
                             .data[["node_val"]], pals)) |>
     mutate(color = contrast_color(.data[["fill"]]))
@@ -179,7 +179,7 @@ layout_legend <- function(layout, margins, dir="lr") {
   maxpos <- max(legend[["pos"]]) + 2
 
   titles <- legend |>
-    group_by(node_col) |>
+    group_by(.data[["node_col"]]) |>
     dplyr::slice(1) |>
     ungroup() |>
     mutate(node_key = paste0("legend_title_", 1:n())) |>

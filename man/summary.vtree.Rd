@@ -4,10 +4,10 @@
 \alias{summary.vtree}
 \title{Show per-variable summaries of a vtree object}
 \usage{
-\method{summary}{vtree}(x, ...)
+\method{summary}{vtree}(object, ...)
 }
 \arguments{
-\item{x}{A vtree object.}
+\item{object}{A vtree object.}
 
 \item{...}{Ignored}
 }
