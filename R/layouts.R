@@ -104,86 +104,99 @@
     }))
 }
 
+die <- function(message = "Unspecified error.") {
+  cli_abort(c(x = message))
+}
+
+.get_fill <- function(node_col, node_val, pal) {
+  Map(\(nc, nv) pal[[nc]][nv], node_col, node_val) |> unlist()
+}
+
+# vertical legend arrangement
+.legend_vertical <- function(legend, titles, maxpos, margins) {
+
+  legend <- legend |> 
+    mutate(height = .data[["full_h"]] / maxpos) |>
+    mutate(x = margins$left / 2) |>
+    mutate(width = .8 * margins$left) |>
+    mutate(y = .data[["y"]] - .data[["full_h"]] / 2 + 
+           (maxpos - .data[["pos"]] - 1.5) * .data[["height"]])
+
+  titles <- titles |>
+    mutate(height = 2 * .data[["full_h"]] / maxpos) |>
+    mutate(x = margins$left / 2) |>
+    mutate(width = .8 * margins$left) |>
+    mutate(y = .data[["y"]] + maxpos * .data[["height"]]/4 -
+           2*.data[["height"]]/3)
+
+  bind_rows(legend, titles)
+}
+
+.legend_horizontal <- function(legend, titles, maxpos, margins) {
+  legend <- legend |>
+    mutate(x = .data[["x"]],
+           y = margins$bottom -
+             (.data[["pos"]] + 1) * margins$bottom / maxpos) |>
+    mutate(height = .9 * margins$bottom / maxpos) |>
+    mutate(width = .data[["width"]])
+
+  maxy <- max(legend[["y"]])
+
+  titles <- titles |>
+    mutate(height = .9 * margins$bottom / maxpos) |>
+    mutate(y = maxy + .data[["height"]] * 1.1) |>
+    mutate(height = .data[["height"]] * 2)
+
+  bind_rows(legend, titles)
+}
+
 # create a layout for the legend.
 layout_legend <- function(layout, margins, dir="lr") {
 
   #req_cols <- c("x", "y", "width", "height", "shape", "fill", "label"))
   cnms <- names(layout)
 
-  nodes <- as_tibble(layout) |>
+  pospar <- as_tibble(layout) |>
     filter(.data[["node_key"]] != "node_1") |>
-    select(all_of(c("node_key", "node_col", "node_val", "level",
-                    "x", "y", "width", "height", "full_w", "full_h",
-                    "shape", "fill", "color")))
+    distinct(pick("node_col"), .keep_all = TRUE) |>
+    select(all_of(c("node_col", "level", "x", "y", "width", "height", "full_w",
+                    "full_h", "shape")))
+
 
   lvls <- levels(layout)
-  summaries <- map_dfr(set_names(names(lvls)), \(var) {
-                     summary_at_var(layout, var, as_df=TRUE) |>
-                     mutate(pos = 1:n())
-  })
+  pals <- attr(layout, "palette") %||% die()
+  pals_v <- attr(layout, "palette_vars") %||% die()
 
-  legend <- merge(nodes, summaries, by = c("node_col", "node_val")) |>
-    distinct(pick(c("node_col", "node_val")), .keep_all = TRUE) |>
+  summaries <- summary(layout) |>
+    group_by(.data[["node_col"]]) |>
+    mutate(pos = 1:n()) |>
+    ungroup() |>
+    filter(count != 0) |>
+    mutate(fill = .get_fill(.data[["node_col"]],
+                            .data[["node_val"]], pals)) |>
+    mutate(color = contrast_color(.data[["fill"]]))
+
+  legend <- merge(pospar, summaries, by = "node_col", all.y=TRUE) |>
       mutate(node_key = paste0("legend_", 1:n())) |>
       mutate(label_type = "var_level_label")
 
   maxpos <- max(legend[["pos"]]) + 2
 
-  tmp <- legend |>
-    filter(!is.na(node_val)) |>
+  titles <- legend |>
     group_by(node_col) |>
-    summarize(fill = fill[pos == max(pos)])
+    dplyr::slice(1) |>
+    ungroup() |>
+    mutate(node_key = paste0("legend_title_", 1:n())) |>
+    mutate(label = .data[["node_col"]]) |>
+    mutate(color = pals_v[ .data[["node_col"]] ]) |>
+    mutate(label_type = "var_name_label") |>
+    mutate(shape = NA)
 
   if(dir %in% c("tb", "bt")) {
-    legend <- legend |> 
-      mutate(height = .data[["full_h"]] / maxpos) |>
-      mutate(x = margins$left / 2) |>
-      mutate(width = .8 * margins$left) |>
-      mutate(y = .data[["y"]] - maxpos * .data[["height"]] / 2 + 
-             (maxpos - .data[["pos"]] - 1.5) * .data[["height"]])
-
-    maxy <- max(legend[["y"]])
-    titles <- legend |>
-      group_by(node_col) |>
-      dplyr::slice(1) |>
-      ungroup() |>
-      mutate(label = .data[["node_col"]]) |>
-      mutate(color = "black") |>
-      mutate(shape = NA) |>
-      mutate(y = maxy + .data[["height"]]) |>
-      mutate(height = .data[["height"]] * 2) |>
-      mutate(node_key = paste0("legend_title_", 1:n())) |>
-      mutate(label_type = "var_name_label")
-    titles$color <- tmp$fill
-
-    legend <- bind_rows(legend, titles)
-      
+    legend <- .legend_vertical(legend, titles, maxpos, margins)
   } else {
-    legend <- legend |>
-      mutate(x = .data[["x"]],
-             y = margins$bottom -
-               (.data[["pos"]] + 1) * margins$bottom / maxpos) |>
-      mutate(height = .9 * margins$bottom / maxpos) |>
-      mutate(width = .data[["width"]])
-    maxy <- max(legend[["y"]])
-
-    titles <- legend |>
-      group_by(node_col) |>
-      dplyr::slice(1) |>
-      ungroup() |>
-      mutate(label = .data[["node_col"]]) |>
-      mutate(color = "black") |>
-      mutate(shape = NA) |>
-      mutate(y = maxy + .data[["height"]] * 1.5) |>
-      mutate(height = .data[["height"]] * 2) |>
-      mutate(node_key = paste0("legend_title_", 1:n())) |>
-      mutate(label_type = "var_name_label")
-    titles$color <- tmp$fill
-
-    legend <- bind_rows(legend, titles)
+    legend <- .legend_horizontal(legend, titles, maxpos, margins)
   }
-
-
 
   legend
 }
