@@ -30,7 +30,10 @@ test_that("pruning works", {
   vt3 <- vt2 |> prune(na.rm = TRUE)
   expect_equal(nrow(vt3 |> as_tibble()), 36)
 
-  vt2 <- vt |> keep(freq > .12)
+  vt2 <- vt |> keep(freq > .12, keep_follow = FALSE)
+  expect_equal(nrow(vt2 |> as_tibble()), 49)
+
+  vt2 <- vt |> keep(freq > .12, keep_follow = TRUE)
   expect_equal(nrow(vt2 |> as_tibble()), 49)
 
   # now with some missing values

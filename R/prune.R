@@ -37,7 +37,7 @@
 #'
 #' `keep()` is a convenience function that keeps only the nodes that
 #' satisfy the condition and prunes everything else, except for any node
-#' that precedes the selected nodes. 
+#' that precedes the selected nodes.
 #'
 #' `find_nodes()` returns a logical vector identifying the nodes which
 #' fullfill a certain condition.
@@ -167,7 +167,7 @@ find_nodes <- function(vtree, condition) {
 #'             ifelse(follow, "red",
 #'                    ifelse(precede, "blue", fill))) |>
 #'       plot()
-#' 
+#'
 #' @return A logical vector indicating which nodes follow or precede the nodes
 #' @export
 find_children <- function(vtree, mask) {
@@ -252,13 +252,21 @@ find_parents <- function(vtree, mask) {
     mask <- mask_cond | precede
 
     if(keep_follow) {
-      follow <- find_children(vtree, mask_cond)
+      follow <- find_children(vtree, !mask_cond)
       mask <- mask | follow
     }
 
     # now inverse the mask, so anything FALSE ("do not keep")
     # becomes TRUE ("prune")
     mask <- !mask
+    #nodes <- as_tibble(vtree) |>
+    #  select(ID, freq) |>
+    #  mutate(cond = mask_cond,
+    #         precede = precede,
+    #         follow = follow,
+    #         mask = mask) |>
+    #colorDF::print_colorDF()
+
   } else {
     mask <- mask_cond
   }
@@ -275,12 +283,18 @@ find_parents <- function(vtree, mask) {
 
   if(mark_only) {
     ret <- vtree |>
-      mutate(mark = ifelse(mask, 
+      mutate(mark = ifelse(mask,
                            "prune", "keep")) |>
       mutate(mark = ifelse(mask_cond, "hit", .data[["mark"]]))
   } else {
     ret <- vtree |>
       filter(!mask)
+  }
+
+
+  nodes <- as_tibble(ret)
+  if(nrow(nodes) < 1) {
+    die("No nodes remain after pruning")
   }
 
   as_vtree(ret)
@@ -295,7 +309,6 @@ keep <- function(vtree, condition,
   #prune(vtree, condition, keep = TRUE, mark_only = mark_only)
   .prune(vtree, condition, follow_only = FALSE,
          mark_only = mark_only,
-         keep = TRUE, na.rm = FALSE)
+         keep = TRUE, keep_follow = keep_follow, na.rm = FALSE)
 
 }
-
