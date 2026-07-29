@@ -312,6 +312,9 @@ summary_vt_df <- function(cases, vtree, col, .col = NULL) {
 #' of the variable at that node. If the variable has missing values, it
 #' also includes the count and percentage of missing values.
 #'
+#' Note that if a tree was pruned, these summaries will differ from the
+#' summaries shown by `summary(vtree)`
+#'
 #' If the tree
 #' was constructed using valid percentages (`attr(vtree, "vp")` is TRUE),
 #' the percentages are calculated based on the valid (non-NA) counts. If
@@ -325,6 +328,8 @@ summary_vt_df <- function(cases, vtree, col, .col = NULL) {
 #' @examples
 #' vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived)
 #' summary_at_var(vt, "Class")
+#' summary_at_var(vt, "Class", as_char = TRUE)
+#' summary_at_var(vt, "Class", as_df = TRUE)
 #'
 #' data(titanicNA)
 #' vt2 <- vtree(titanicNA, Class, Sex, Survived)
@@ -334,6 +339,12 @@ summary_vt_df <- function(cases, vtree, col, .col = NULL) {
 #' vt3 <- vtree(titanicNA, Class, Sex,
 #'                             Survived, .vp=FALSE)
 #' summary_at_var(vt3, "Class")
+#'
+#' # summaries differ if you prune the tree!
+#' vt_p <- prune(vt, freq < .15) 
+#' summary_at_var(vt_p, "Class", as_df = TRUE)
+#' # compare with:
+#' summary(vt_p)
 #' @param vtree A vtree object
 #' @param varname The name of the variable to summarize
 #' @param as_char If TRUE (default), return a formatted character string

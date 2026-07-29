@@ -129,6 +129,34 @@ print.vtree <- function(x, ...) {
 }
 
 
+#' Show per-variable summaries of a vtree object
+#'
+#' Show per-variable summaries of a vtree object
+#'
+#' For each variable included in a vtree object, and for all levels of that
+#' variable, the counts and calculated frequencies of that level in the
+#' variable are shown, as well as labels that can be used for displaying
+#' information. The frequency calculation depends on whether the tree was
+#' constructed with valid percentages (i.e., excluding the NAs), or with
+#' all samples.
+#'
+#' The returned data frame (tibble) contains the following columns:
+#'  * `node_col`: the name of the variable
+#'  * `node_val`: the level of the variable
+#'  * `count`: number of samples which have this level
+#'  * `freq`: frequency of this level relative to the denominator
+#'  * `denom`: the denominator used to calculate the frequency
+#'  * `label`: a printable label constructed from these values
+#' @param x A vtree object.
+#' @param ... Ignored
+#' @return A data frame with summaries (counts and frequencies) for each
+#' level of each variable in the vtree.
+#' @export
+summary.vtree <- function(x, ...) {
+  attr(x, "summary")
+}
+
+
 
 #' Convert a tbl_graph to a vtree
 #'
@@ -362,7 +390,16 @@ vtree <- function(cases, ..., .vp = TRUE, .cols = NULL) {
                      directed = TRUE, node_key = "node_key")
 
   attr(vtree, "levels") <- levels
-  as_vtree(vtree)
+  vtree <- as_vtree(vtree)
+
+  summaries <- map_dfr(set_names(names(levels)), \(var) {
+                     summary_at_var(vtree, var, as_df=TRUE)
+  })
+
+  attr(vtree, "summary") <- summaries
+  vtree
+
+
 }
 
 

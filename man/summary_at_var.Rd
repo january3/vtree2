@@ -32,6 +32,9 @@ of the variable at that node. If the variable has missing values, it
 also includes the count and percentage of missing values.
 }
 \details{
+Note that if a tree was pruned, these summaries will differ from the
+summaries shown by \code{summary(vtree)}
+
 If the tree
 was constructed using valid percentages (\code{attr(vtree, "vp")} is TRUE),
 the percentages are calculated based on the valid (non-NA) counts. If
@@ -41,6 +44,8 @@ calculated based on the total counts.
 \examples{
 vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived)
 summary_at_var(vt, "Class")
+summary_at_var(vt, "Class", as_char = TRUE)
+summary_at_var(vt, "Class", as_df = TRUE)
 
 data(titanicNA)
 vt2 <- vtree(titanicNA, Class, Sex, Survived)
@@ -50,4 +55,10 @@ summary_at_var(vt2, "Class")
 vt3 <- vtree(titanicNA, Class, Sex,
                             Survived, .vp=FALSE)
 summary_at_var(vt3, "Class")
+
+# summaries differ if you prune the tree!
+vt_p <- prune(vt, freq < .15) 
+summary_at_var(vt_p, "Class", as_df = TRUE)
+# compare with:
+summary(vt_p)
 }
