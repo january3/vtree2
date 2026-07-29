@@ -235,7 +235,11 @@ as_vtree <- function(x) {
 
 #' Create a vtree object from a data frame
 #'
-#' Create a vtree object from a data frame of cases
+#' Create a vtree object from a data frame of cases. That is, a data frame
+#' containing one row per sample and one column per variable. For
+#' converting frequency tables, where one of the columns gives the number
+#' of samples that correspond to a combination of variable levels, see
+#' [vtree_from_freqtable()].
 #'
 #' The cases data frame used as a first argument should have one row per
 #' observation. The selected columns will correspond to the nodes of the vtree.
@@ -243,6 +247,9 @@ as_vtree <- function(x) {
 #' With `vtree_from_freqtable()`, you can create a vtree from a frequency
 #' table, where each row corresponds to a unique combination of values and
 #' a frequency count.
+#'
+#' There are several basic methods implemented for vtrees: [summary.vtree()],
+#' [plot.vtree()], [levels.vtree()], [print.vtree()], [names.vtree()].
 #'
 #' @section Manipulating a vtree object:
 #'

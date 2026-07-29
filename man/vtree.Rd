@@ -32,7 +32,11 @@ stored in a variable.}
 an object of class vtree
 }
 \description{
-Create a vtree object from a data frame of cases
+Create a vtree object from a data frame of cases. That is, a data frame
+containing one row per sample and one column per variable. For
+converting frequency tables, where one of the columns gives the number
+of samples that correspond to a combination of variable levels, see
+\code{\link[=vtree_from_freqtable]{vtree_from_freqtable()}}.
 }
 \details{
 The cases data frame used as a first argument should have one row per
@@ -41,6 +45,9 @@ observation. The selected columns will correspond to the nodes of the vtree.
 With \code{vtree_from_freqtable()}, you can create a vtree from a frequency
 table, where each row corresponds to a unique combination of values and
 a frequency count.
+
+There are several basic methods implemented for vtrees: \code{\link[=summary.vtree]{summary.vtree()}},
+\code{\link[=plot.vtree]{plot.vtree()}}, \code{\link[=levels.vtree]{levels.vtree()}}, \code{\link[=print.vtree]{print.vtree()}}, \code{\link[=names.vtree]{names.vtree()}}.
 }
 \section{Manipulating a vtree object}{
 
