@@ -125,14 +125,14 @@ summary of the values as labels to the nodes. We select here only one node
 (1st Class), just to zoom in on that part of the graph.
 
 
-```{r example_summary,fig.width=14,fig.height=30}
+```{r example_summary,fig.width=12,fig.height=8}
 vt <- vtree(tdf, Class, Sex, Survived)
                                          
 sm_txt <- summary_vt(tdf, vt, Age)
 vt |> 
   add_labels() |>
   mutate(label = paste0(label, "\n", sm_txt)) |>
-  keep(ID == "Class:1st") |>
+  keep(ID == "Class:3rd") |>
   plot(show_root = FALSE)
 ```
 

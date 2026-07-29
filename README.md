@@ -155,7 +155,7 @@ sm_txt <- summary_vt(tdf, vt, Age)
 vt |> 
   add_labels() |>
   mutate(label = paste0(label, "\n", sm_txt)) |>
-  keep(ID == "Class:1st") |>
+  keep(ID == "Class:3rd") |>
   plot(show_root = FALSE)
 ```
 
