@@ -70,9 +70,21 @@ vt
 `vt` is now an object of class `vtree`, which is basically `tidygraph`'s `tbl_graph` with some extra attributes. You can plot it with `plot()`:
 
 
-```{r example_plot,fig.width=16,fig.height=15,warning=FALSE,message=FALSE}
+```{r eval=FALSE}
 plot(vt)
+plot(vt, layout = "proportional", legend=TRUE, show_root=FALSE)
 ```
+
+
+```{r example_plot,fig.width=16,fig.height=15,warning=FALSE,message=FALSE,echo=FALSE}
+library(cowplot)
+p1 <- plot(vt)
+p2 <- plot(vt, layout = "proportional", legend=TRUE, show_root=FALSE)
+plot_grid(p1, p2)
+```
+
+
+
 
 **There is more:** trees can be oriented vertically or horizontally, 
 top to bottom, bottom to top, left to right, right to left;
@@ -87,7 +99,7 @@ condition and remove them (along with their children) from the vtree:
 ucb <- cases_from_freqtable(UCBAdmissions)
 vt <- vtree(ucb, Dept, Gender, Admit) |>
   prune(n < 150 | freq < .15)
-plot(vt, layout = "proportional")
+plot(vt)
 ```
 
 **There is more:** with `find_nodes()` you can find nodes which fullfill a
@@ -101,13 +113,13 @@ While colors and labels can be generated automatically, it is possible to
 customize them by modifying the `label` and `fill` columns of the vtree object:
 
 
-```{r example_labelling,fig.width=8,fig.height=8}
+```{r example_labelling,fig.width=12,fig.height=12}
 vt <- vtree(tdf, Class, Survived)
 vt <- vt |> add_labels() |> # add default labels
   add_palette() |>
   mutate(label = gsub("No", "Not survived", label)) |>
-  mutate(fill = ifelse(node_col == "Survived" &
-                       node_val == "No", "red", fill))
+  mutate(fill = ifelse(node_col == "Survived" & node_val == "No",
+                       "red", fill))
 
 plot(vt)
 ```
@@ -122,7 +134,9 @@ produce complex labels with a simple R expression using `sprintf()` or
 The tree can be used to produce per-node summaries of any data. For
 example, if you have an additional variable for your cases, you can add
 summary of the values as labels to the nodes. We select here only one node
-(1st Class), just to zoom in on that part of the graph.
+(1st Class), just to zoom in on that part of the graph. You can also select
+the nodes for which you want to manipulate the label, for example with
+`mark()`:
 
 
 ```{r example_summary,fig.width=12,fig.height=8}
@@ -131,7 +145,11 @@ vt <- vtree(tdf, Class, Sex, Survived)
 sm_txt <- summary_vt(tdf, vt, Age)
 vt |> 
   add_labels() |>
-  mutate(label = paste0(label, "\n", sm_txt)) |>
+  # only for the leaf nodes. leaf is a column in the vt nodes data frame
+  # which contains TRUE for leafs and FALSE for other nodes
+  mutate(label = ifelse(leaf,
+                        paste0(label, "\n", sm_txt),
+                        label)) |>
   keep(path == "Class:3rd") |>
   plot(show_root = FALSE)
 ```
@@ -164,13 +182,10 @@ code review / bug finding.
  * should the vtree() function take cases or samples?
  * maybe gridtext for the labels so we can use some basic formatting
  * faster processing of cases into trees
- * questions to NB:
-   - what is the difference between seq and pattern? I don't see any at
-     least on simple plots (apart from the arrows)
-   - how are the NA nodes kept in pruning *exactly*?
 
 ## BUGS
 
- * prune(!Severity %in% c("Mild", "Moderate"), follow_only = TRUE) does not work
+ * if some variables disappear from the plot, the legend throws an error
+ * ~~prune(!Severity %in% c("Mild", "Moderate"), follow_only = TRUE) does not work~~
  * na.rm handling in prune() is not consistent, at least not with vtree's behavior
- * layout="proportional" stopped working
+ * ~~layout="proportional" stopped working~~
