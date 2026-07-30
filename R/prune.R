@@ -30,6 +30,11 @@
 
 #' Find nodes and prune a vtree graph
 #'
+#' `prune()` prunes the tree by condition, `mark()` marks nodes by
+#' condition, `keep()` prunes everything but the nodes that fullfil a
+#' condition and `find_nodes()` returns a logical vector for nodes by
+#' condition.
+#'
 #' `prune()` prunes a vtree graph by removing nodes that satisfy a given condition.
 #' The condition is evaluated in the context of the node attributes,
 #' allowing for flexible pruning based on node values.
@@ -40,7 +45,14 @@
 #' that precedes the selected nodes.
 #'
 #' `find_nodes()` returns a logical vector identifying the nodes which
-#' fullfill a certain condition.
+#' fullfill a certain condition. With `follow_only=TRUE`, it returns TRUE
+#' for each node which *follows* (directly or indirectly) a node which
+#' fullfills the condition.
+#'
+#' `mark()` is the same as `find_nodes()`, except that the logical vector
+#' is then inserted into the column `mark` of the node data frame in the
+#' vtree and the vtree is returned. It is a shortcut for `prune(condition,
+#' mark_only=TRUE)`.
 #'
 #' `condition` can be any logical vector that refers to either the columns
 #' in the node data frame of the vtree object, or the names of the vtree
@@ -104,6 +116,15 @@
 #'
 #' # mark these nodes with red color on the plot
 #' vt |> mutate(fill = ifelse(mask, "red", "white")) |> plot()
+#'
+#' # mark the nodes directly
+#' mark(vt, node_col == "Survived" & node_val == "No" & freq > .2) |>
+#'   mutate(fill = ifelse(mark, "red", "white")) |> plot()
+#'
+#' # mark all nodes that follow the 3rd Class node
+#' mark(vt, path == "Class:3rd", follow_only=TRUE) |>
+#'   mutate(fill = ifelse(mark, "red", "white")) |> plot()
+#'
 #' @importFrom rlang is_empty enquo eval_tidy expr
 #' @importFrom stats na.omit
 #' @importFrom dplyr bind_cols n
@@ -138,10 +159,13 @@ prune <- function(vtree, condition, follow_only = FALSE,
 
 #' @rdname prune
 #' @export
-find_nodes <- function(vtree, condition) {
+find_nodes <- function(vtree, condition, follow_only = FALSE) {
   condition <- enquo(condition)
 
   mask <- .get_mask(vtree, condition)
+  if(follow_only) {
+    mask <- find_children(vtree, mask)
+  }
   mask
 }
 
@@ -239,9 +263,14 @@ find_parents <- function(vtree, mask) {
                    follow_only = FALSE,
                    keep_follow = TRUE,
                    mark_only = FALSE,
+                   find_only = FALSE,
                    keep = FALSE, na.rm = FALSE) {
 
   mask_cond <- .get_mask(vtree, condition, na.rm)
+
+  if(find_only) {
+    return(vtree |> mutate(mark = mask_cond))
+  }
 
   # inverse mask if we want to keep the nodes
   # that satisfy the condition
@@ -283,9 +312,10 @@ find_parents <- function(vtree, mask) {
 
   if(mark_only) {
     ret <- vtree |>
-      mutate(mark = ifelse(mask,
-                           "prune", "keep")) |>
-      mutate(mark = ifelse(mask_cond, "hit", .data[["mark"]]))
+     mutate(mark = mask)
+     #mutate(mark = ifelse(mask,
+     #                     "prune", "keep")) |>
+     #mutate(mark = ifelse(mask_cond, "hit", .data[["mark"]]))
   } else {
     ret <- vtree |>
       filter(!mask)
@@ -311,4 +341,17 @@ keep <- function(vtree, condition,
          mark_only = mark_only,
          keep = TRUE, keep_follow = keep_follow, na.rm = FALSE)
 
+}
+
+#' @rdname prune
+#' @export
+mark <- function(vtree, condition, follow_only=FALSE) {
+
+  condition <- enquo(condition)
+  mask <- .get_mask(vtree, condition)
+
+  if(follow_only) {
+    mask <- find_children(vtree, mask)
+  }
+  mutate(vtree, mark = mask)
 }

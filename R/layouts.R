@@ -111,11 +111,11 @@
 # vertical legend arrangement
 .legend_vertical <- function(legend, titles, maxpos, margins) {
 
-  legend <- legend |> 
+  legend <- legend |>
     mutate(height = .data[["full_h"]] / maxpos) |>
     mutate(x = margins$left / 2) |>
     mutate(width = .8 * margins$left) |>
-    mutate(y = .data[["y"]] - .data[["full_h"]] / 2 + 
+    mutate(y = .data[["y"]] - .data[["full_h"]] / 2 +
            (maxpos - .data[["pos"]] - 1.5) * .data[["height"]])
 
   titles <- titles |>

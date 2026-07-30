@@ -335,7 +335,7 @@ Arguably, that is way more code than just adding `sameline = TRUE` to the
 vtree() call, but it is also way more flexible.
 
 **`labelnode`**. This is used in vtree to replace a variable level with a
-custom label. In vtree2, you should simply replace the variable levels *in
+custom label. In vtree2, you can simply replace the variable levels *in
 the data* before constructing the vtree.
 
 ```{r eval=FALSE}
@@ -346,6 +346,32 @@ FakeData |>
   vtree(Group, Sex) |>
   plot(dir = "tb")
 ```
+
+How about changing M to Male and F to Female but only for the nodes in
+group A? In vtree2, you need to manipulate the node labels. You can
+construct the nodes from scratch, or use substitution to clean up nodes.
+One of several ways of doing that is this: you find the nodes that are
+below the node "Group:A", and then substitute M with Male and F with Female
+for these nodes only:
+
+
+```{r}
+vtree(FakeData, Group, Sex) |>
+  add_labels() |>
+  prune(path == "Group:A", mark_only=TRUE) |>
+  mutate(label = ifelse(mark == "prune",
+                        gsub("^F", "Female", label),
+                        label)) |>
+  mutate(label = ifelse(mark == "prune",
+                        gsub("^M", "Male", label),
+                        label)) |>
+  plot()
+```
+
+This is of course much more code, but is not only more flexible, but also
+less exotic.
+ 
+
 
 #### Targetting nodes
 

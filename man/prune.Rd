@@ -4,6 +4,7 @@
 \alias{prune}
 \alias{find_nodes}
 \alias{keep}
+\alias{mark}
 \title{Find nodes and prune a vtree graph}
 \usage{
 prune(
@@ -15,9 +16,11 @@ prune(
   na.rm = FALSE
 )
 
-find_nodes(vtree, condition)
+find_nodes(vtree, condition, follow_only = FALSE)
 
 keep(vtree, condition, keep_follow = TRUE, mark_only = FALSE)
+
+mark(vtree, condition, follow_only = FALSE)
 }
 \arguments{
 \item{vtree}{A vtree graph object.}
@@ -54,18 +57,29 @@ kept even if they do not fulfill the condition.}
 \code{find_nodes()} returns a logical vector corresponding to the tree nodes
 }
 \description{
+\code{prune()} prunes the tree by condition, \code{mark()} marks nodes by
+condition, \code{keep()} prunes everything but the nodes that fullfil a
+condition and \code{find_nodes()} returns a logical vector for nodes by
+condition.
+}
+\details{
 \code{prune()} prunes a vtree graph by removing nodes that satisfy a given condition.
 The condition is evaluated in the context of the node attributes,
 allowing for flexible pruning based on node values.
 If a node is pruned, all subsequent nodes in the path are also pruned.
-}
-\details{
+
 \code{keep()} is a convenience function that keeps only the nodes that
 satisfy the condition and prunes everything else, except for any node
 that precedes the selected nodes.
 
 \code{find_nodes()} returns a logical vector identifying the nodes which
-fullfill a certain condition.
+fullfill a certain condition. With \code{follow_only=TRUE}, it returns TRUE
+for each node which \emph{follows} (directly or indirectly) a node which
+fullfills the condition.
+
+\code{mark()} is the same as \code{find_nodes()}, except that the logical vector
+is then inserted into the column \code{mark} of the node data frame in the
+vtree and the vtree is returned. It is a shortcut for \code{prune(condition, mark_only=TRUE)}.
 
 \code{condition} can be any logical vector that refers to either the columns
 in the node data frame of the vtree object, or the names of the vtree
@@ -107,4 +121,13 @@ mask <- find_nodes(vt, node_col == "Survived" &
 
 # mark these nodes with red color on the plot
 vt |> mutate(fill = ifelse(mask, "red", "white")) |> plot()
+
+# mark the nodes directly
+mark(vt, node_col == "Survived" & node_val == "No" & freq > .2) |>
+  mutate(fill = ifelse(mark, "red", "white")) |> plot()
+
+# mark all nodes that follow the 3rd Class node
+mark(vt, path == "Class:3rd", follow_only=TRUE) |>
+  mutate(fill = ifelse(mark, "red", "white")) |> plot()
+
 }

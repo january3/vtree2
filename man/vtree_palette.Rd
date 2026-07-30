@@ -55,8 +55,12 @@ plot(vt, palettes = "Blues")
 # manipulate color for some of the nodes
 vt |> add_palette(palettes = "Blues") |>
   # don't prune, just mark the nodes in the mark col
-  prune(path == "Class:1st/Sex:Male", mark_only = TRUE) |>
+  mark(path == "Class:1st/Sex:Male") |>
   # color the marked nodes in red
-  mutate(fill = ifelse(mark == "keep", fill, "red")) |>
+  mutate(fill = ifelse(mark, "red", fill)) |>
   plot()
+
+# color the NA nodes with red
+vt |> add_palette(palettes = "Blues", na_fill = "red") |>
+   plot()
 }

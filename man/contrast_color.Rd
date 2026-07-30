@@ -15,7 +15,7 @@ A character string representing the contrasting color
 ("black" or "white")
 }
 \description{
-Get a contrasting color
+Get a color contrasting to another color
 }
 \details{
 Returns a contrasting color (black or white) for a given color. This is

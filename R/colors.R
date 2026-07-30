@@ -1,6 +1,6 @@
 #' Get a contrasting color
 #'
-#' Get a contrasting color
+#' Get a color contrasting to another color
 #'
 #' Returns a contrasting color (black or white) for a given color. This is
 #' useful for ensuring that text is readable against a background color.
@@ -42,7 +42,7 @@ contrast_color <- function(color) {
 #' @examples
 #' vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived)
 #' vtree_palette(vt)
-#' 
+#'
 #' # only blues for all variables!
 #' vt |> add_palette(palettes = "Blues") |> plot()
 #' # same as
@@ -51,10 +51,14 @@ contrast_color <- function(color) {
 #' # manipulate color for some of the nodes
 #' vt |> add_palette(palettes = "Blues") |>
 #'   # don't prune, just mark the nodes in the mark col
-#'   prune(path == "Class:1st/Sex:Male", mark_only = TRUE) |>
+#'   mark(path == "Class:1st/Sex:Male") |>
 #'   # color the marked nodes in red
-#'   mutate(fill = ifelse(mark == "keep", fill, "red")) |>
+#'   mutate(fill = ifelse(mark, "red", fill)) |>
 #'   plot()
+#'
+#' # color the NA nodes with red
+#' vt |> add_palette(palettes = "Blues", na_fill = "red") |>
+#'    plot()
 #' @return `vtree_palette()` returns a character vector of colors for the
 #' levels of the variable. `add_palette()` returns the vtree object with
 #' the columns `fill` and `color`, and with additional attributes `palette`
@@ -118,7 +122,7 @@ add_palette <- function(vtree,
                          .node_fill(.data[["node_col"]],
                                     .data[["node_val"]], na_fill, pal)
            )) |>
-    mutate(fill_class = map_chr(.data[["node_col"]], \(var) 
+    mutate(fill_class = map_chr(.data[["node_col"]], \(var)
       pal[[var]][length(pal[[var]])] %||% na_fill))
 
   nodes <- as_tibble(vtree)
@@ -128,7 +132,7 @@ add_palette <- function(vtree,
       mutate(color = contrast_color(.data[["fill"]]))
   }
 
-  pal_vars <- map_chr(set_names(names(pal)), \(var) 
+  pal_vars <- map_chr(set_names(names(pal)), \(var)
                   pal[[var]][ length(pal[[var]]) ])
 
   attr(vtree, "palette") <- pal

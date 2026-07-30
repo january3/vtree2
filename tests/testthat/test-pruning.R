@@ -48,5 +48,21 @@ test_that("pruning works", {
   vt2 <- prune(vt1, Sex == "Male")
   expect_equal(nrow(vt2 |> as_tibble()), 29)
 
-
 })
+
+
+test_that("marking works", {
+
+  vt2 <- mark(vt, freq < .12)
+  n2 <- as_tibble(vt2)
+  expect_equal(sum(n2$mark), 7)
+  expect_all_true(n2$freq[n2$mark] < .12)
+  expect_all_true(n2$freq[!n2$mark] >= .12)
+
+  vt3 <- mark(vt, path == "Class:3rd", follow_only = TRUE)
+  n3 <- as_tibble(vt3)
+  expect_all_true(grepl("Class:3rd", n3$path[n3$mark]))
+  expect_all_true(!grepl("Class:3rd/", n3$path[!n3$mark]))
+  expect_true(!n3$mark[n3$path == "Class:3rd"])
+})
+
