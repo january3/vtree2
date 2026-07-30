@@ -32,7 +32,8 @@ Suggests:
     knitr,
     rmarkdown,
     testthat (>= 3.0.0),
-    tidyverse
+    tidyverse,
+    vtree
 VignetteBuilder: knitr
 Config/testthat/edition: 3
 LazyData: true

@@ -559,7 +559,7 @@ plot_vtree <- function(x,
 
   if(dir %in% c("rl", "lr")) {
     margins <- margins %||% list(top = .01, right = .01,
-                    bottom = .01 + .03 * show_vl +
+                    bottom = .01 + .05 * show_vl +
                       .15 * legend,
                     left = .01)
   }
