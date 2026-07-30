@@ -40,15 +40,15 @@
 #' @examples
 #' vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived)
 #' # look at the labels
-#' vt |> add_labels() |> pull(label)
-#' vt |> add_labels() |> plot()
+#' add_labels(vt) |> pull(label)
+#' add_labels(vt) |> plot()
 #'
 #' vt |> add_labels(template = "long") |> plot()
 #'
-#' # add only labels to some nodes
-#'
+#' # only add labels to some nodes
 #' mask <- find_nodes(vt, freq > .30)
-#' vt |> add_labels(mask = mask) |> plot()
+#' vt |> add_labels(mask = mask) |>
+#'   plot(layout = "proportional")
 #'
 #' # customize the format
 #' vt |>
@@ -435,11 +435,11 @@ normalize_vtree_for_plotting <- function(x, palettes, na_fill) {
 #' @param lheight Label height relative to available space
 #' @param layout The layout type, either "regular", "flushed" or "proportional". If
 #'        "proportional", then the height of each node is proportional to the number
-#'        of observations in that node. See [vtree2::layout()] for details.
+#'        of observations in that node. See [vtree2::add_layout()] for details.
 #'        If layout is NA, then it is assumed that the vtree already has a
 #'        layout with all necessary columns and no layout is calculated.
 #' @param layout_func Custom function to calculate layout (see
-#'        [vtree2::layout()] for details).
+#'        [vtree2::add_layout()] for details).
 #' @param margins numerical vector: top/right/bottom/left margins in
 #'        fraction of available space (from 0 to 1).
 #' @param show_root If TRUE (default), show the root node (total
@@ -466,7 +466,7 @@ normalize_vtree_for_plotting <- function(x, palettes, na_fill) {
 #' @param legend If TRUE, a legend is added to the plot. Default is FALSE.
 #' @seealso [vtree2::mutate.vtree()] for modifying the node data frame, and
 #' [vtree2::add_labels()] for adding labels to the nodes. For layout
-#' details, see [vtree2::layout()].
+#' details, see [vtree2::add_layout()].
 #' @examples
 #' vt <- vtree_from_freqtable(Titanic)
 #'
@@ -537,7 +537,7 @@ plot_vtree <- function(x,
   show_vl <- !is.null(var_labels)
 
   x <- normalize_vtree_for_plotting(x, palettes, na_fill)
-  layout <- layout(x, layout = layout_arg,
+  layout <- add_layout(x, layout = layout_arg,
                    layout_func = layout_func, dir = dir,
                    lwidth=lwidth, lheight=lheight,
                    show_root = show_root)
@@ -632,7 +632,7 @@ plot_ggplot <- function(x,
     x <- x |> add_labels()
   }
 
-  l <- layout(x, layout = layout,
+  l <- add_layout(x, layout = layout,
               layout_func = layout_func,
               lwidth = lwidth)
 

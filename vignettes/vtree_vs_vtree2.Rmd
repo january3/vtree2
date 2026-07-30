@@ -55,14 +55,15 @@ Disadvantages of vtree2:
 vtree2 is meant to be natural for tidyverse users. You split the operations
 by their domain - i.e, you don't mix calculations, topology manipulation
 and plotting, but build the plot in stages: first prepare the data, then
-pass it on to prune / find / select nodes, then you add labels and colors
-and finally you plot it.
+pass it on to prune / find / select nodes, then you add labels and colors,
+add a layout and finally you plot it.
 
-However, to make it more concise, if you do not add labels / colors
-yourself, the plot function will do it for you. Alternatively, you can
-manipulate them in stages. The following two plots are based on the same data
-set - titanicNA, which is the same as the Titanic data set, but with some
-values in the columns Class, Age and Sex replaced by NAs.
+However, to make it more concise, if you do not add labels / colors /
+layouts yourself, the plot function will do it for you. The important part
+is that you can manipulate them in stages. The following two plots are
+based on the same data set - titanicNA, which is the same as the Titanic
+data set, but with some values in the columns Class, Age and Sex replaced
+by NAs.
 
 
 ```{r eval=FALSE}
@@ -76,17 +77,21 @@ vt <- vtree(titanicNA)
 # extra statistics
 stats <- summary_vt(titanicNA, vt, Age)
 
-# prune returns a pruned vtree which we
-# then pass down the pipeline
-prune(vt, freq < .2) |>
+vt |>
+  # prune returns a pruned vtree which we
+  # then pass down the pipeline
+  prune(freq < .2) |>
   # adds labels, returns a vtree
-  add_labels() |>
+  add_labels(template = "long") |>
   # leaf is a column in the node data frame
   # TRUE for a leaf node
   mutate(label = ifelse(leaf,
                         paste0(label, "\n",
                                stats),
                         label)) |>
+  # adds palettes, returns a vtree
+  add_palette(palettes = c("Oranges", "Greys", "BuGn", "Purples")) |>
+  # and, finally, a plot
   plot(lwidth = .7)
 ```
 
@@ -105,13 +110,16 @@ stats <- summary_vt(titanicNA, vt, Age)
 # prune returns a pruned vtree which we
 # then pass down the pipeline
 p2 <- prune(vt, freq < .15) |>
-  add_labels() |>
+  add_labels(template = "long") |>
   # leaf is a column in the node data frame
   # TRUE for a leaf node
   mutate(label = ifelse(leaf,
                         paste0(label, "\n",
                                stats),
                         label)) |>
+  # adds palettes, returns a vtree
+  add_palette(palettes = c("Oranges", "Greys", "BuGn", "Purples")) |>
+  # and, finally, a plot
   plot(lwidth = .7, legend = TRUE,
        show_root = FALSE)
 
@@ -144,6 +152,34 @@ iris |>
   plot()
 
 ```
+
+**crosstabToCases**. This `vtree` function converts frequency tables to
+cases tables. The relevant `vtree2` function is `cases_from_freqtable`. Compare:
+
+
+```{r}
+# this is frequency table; the Freq column informs how many samples
+# correspond to the given combination of levels
+head(data.frame(Titanic))
+nrow(data.frame(Titanic))
+
+# this is cases: one row per sample
+head(cases_from_freqtable(Titanic))
+nrow(cases_from_freqtable(Titanic))
+
+vt <- cases_from_freqtable(Titanic) |>
+        vtree(Class, Sex, Survived)
+```
+
+There is a second function that combines `cases_from_freqtable` and
+`vtree`:
+
+
+```{r fig.width=14,fig.height=7}
+vtree_from_freqtable(Titanic, Class, Sex, Survived) |>
+  plot()
+```
+
 
 
 #### Pruning, keeping, finding, conditional operations
@@ -394,9 +430,6 @@ p4 <- plot(vt, dir="bt")
 plot_grid(p1, p2, p3, p4, ncol=2)
 ```
 
-
-
-
 **Changing variable labels**. In vtree, you can specify alternative
 variable labels with the `labelvar` parameter. In vtree2 you can use the
 column labels you wish to see in the original data. If you have weird
@@ -411,6 +444,17 @@ FakeData |>
   dplyr::rename(`Initial\nseverity` = Severity) |>
   vtree(`Initial\nseverity`, Sex) |>
   plot(dir = "tb", margins=c(0, 0, 0, .2))
+```
+
+**Legends.** The `showlegend=TRUE` argument from `vtree` is 
+`legend=TRUE` in `vtree2`. That works both for regular and proportional
+plots:
+
+```{r fig.width=15,fig.height=8,eval=TRUE}
+vt <- vtree_from_freqtable(Titanic)
+p1 <- plot(vt, legend=TRUE)
+p2 <- plot(vt, legend=TRUE, layout = "proportional")
+plot_grid(p1, p2)
 ```
 
 

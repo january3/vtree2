@@ -15,5 +15,6 @@
 Invisibly returns the input object.
 }
 \description{
-Print a vtree object
+Prints a vtree object and shows selected columns from the node data
+frame.
 }

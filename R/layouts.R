@@ -412,11 +412,11 @@ layout_flushed <- function(vtree, dir="lr",
 #' @param show_root Whether to show the root node in the layout.
 #' @examples
 #' vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived)
-#' layout(vt, layout = "regular", dir = "lr") |> tibble::as_tibble()
+#' add_layout(vt, layout = "regular", dir = "lr") |> tibble::as_tibble()
 #' @return an object of class vtree with additional columns in the nodes
 #'         and edges data frames
 #' @export
-layout <- function(vtree,
+add_layout <- function(vtree,
                    layout = c("regular", "proportional",
                               "flushed", "precomputed"),
                    layout_func = NULL,

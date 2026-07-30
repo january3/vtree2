@@ -19,12 +19,10 @@ A list of character vectors, one for each variable split in the tree,
 \description{
 Get the levels of a vtree object
 
-Get the levels of a vtree object
-}
-\details{
 Returns a list of character vectors, one for each variable split in the tree,
 with each ordered vector containing the levels of that variable.
-
+}
+\details{
 Returns a list of character vectors, one for each variable split in the tree,
 with each ordered vector containing the levels of that variable.
 }

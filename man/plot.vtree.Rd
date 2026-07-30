@@ -46,12 +46,12 @@ plot_ggplot(
 
 \item{layout}{The layout type, either "regular", "flushed" or "proportional". If
 "proportional", then the height of each node is proportional to the number
-of observations in that node. See \code{\link[=layout]{layout()}} for details.
+of observations in that node. See \code{\link[=add_layout]{add_layout()}} for details.
 If layout is NA, then it is assumed that the vtree already has a
 layout with all necessary columns and no layout is calculated.}
 
 \item{layout_func}{Custom function to calculate layout (see
-\code{\link[=layout]{layout()}} for details).}
+\code{\link[=add_layout]{add_layout()}} for details).}
 
 \item{palettes}{A character vector with names of RColorBrewer palettes
 to use for the variables. By default these are the
@@ -196,5 +196,5 @@ vt |>
 \seealso{
 \code{\link[=mutate.vtree]{mutate.vtree()}} for modifying the node data frame, and
 \code{\link[=add_labels]{add_labels()}} for adding labels to the nodes. For layout
-details, see \code{\link[=layout]{layout()}}.
+details, see \code{\link[=add_layout]{add_layout()}}.
 }

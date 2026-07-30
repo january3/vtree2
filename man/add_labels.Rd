@@ -63,15 +63,15 @@ node_name to whatever you like, while node_col must remain unchanged)
 \examples{
 vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived)
 # look at the labels
-vt |> add_labels() |> pull(label)
-vt |> add_labels() |> plot()
+add_labels(vt) |> pull(label)
+add_labels(vt) |> plot()
 
 vt |> add_labels(template = "long") |> plot()
 
-# add only labels to some nodes
-
+# only add labels to some nodes
 mask <- find_nodes(vt, freq > .30)
-vt |> add_labels(mask = mask) |> plot()
+vt |> add_labels(mask = mask) |>
+  plot(layout = "proportional")
 
 # customize the format
 vt |>

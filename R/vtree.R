@@ -121,8 +121,6 @@ mutate.vtree <- function(.data, ..., .edges = FALSE, .check = TRUE) {
 
 
 #' Get the levels of a vtree object
-#'
-#' Get the levels of a vtree object
 #' 
 #' Returns a list of character vectors, one for each variable split in the tree,
 #' with each ordered vector containing the levels of that variable.
@@ -136,8 +134,8 @@ levels.vtree <- function(x) {
 
 #' Print a vtree object
 #'
-#' Print a vtree object
-#'
+#' Prints a vtree object and shows selected columns from the node data
+#' frame.
 #' @param x A vtree object.
 #' @param ... Ignored
 #' @return Invisibly returns the input object.

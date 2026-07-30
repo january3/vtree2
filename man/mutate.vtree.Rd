@@ -4,7 +4,7 @@
 \alias{mutate.vtree}
 \title{Create, modify, and delete node columns}
 \usage{
-\method{mutate}{vtree}(.data, ..., .edges = FALSE)
+\method{mutate}{vtree}(.data, ..., .edges = FALSE, .check = TRUE)
 }
 \arguments{
 \item{.data}{A vtree object.}
@@ -15,6 +15,9 @@ value defines its contents. The expressions are evaluated using
 tidy evaluation in the context of the node table.}
 
 \item{.edges}{If TRUE, modify the edges rather than the nodes.}
+
+\item{.check}{If TRUE, make sure that the immutable columns did not
+change}
 }
 \value{
 An object of class vtree
@@ -22,6 +25,13 @@ An object of class vtree
 \description{
 This is a wrapper around the regular \code{\link[dplyr:mutate]{dplyr::mutate()}}
 function which preserves the vtree class.
+}
+\details{
+Immutable columns: some columns of the vtree are immutable. Changing
+them can result in very bad things happening, starting with plots that
+don't work and ending up with incorrect numbers on your figure. Of course,
+there are many ways to modify them if you really want to, but at least
+this mutate gives some protection.
 }
 \seealso{
 \code{\link[dplyr:mutate]{dplyr::mutate()}}, \code{\link[tidygraph:activate]{tidygraph::activate()}}
