@@ -73,8 +73,16 @@ is_vp <- function(x) {
 #'
 #' This is a wrapper around the regular [dplyr::mutate()]
 #' function which preserves the vtree class.
+#'
+#' Immutable columns: some columns of the vtree are immutable. Changing
+#' them can result in very bad things happening, starting with plots that
+#' don't work and ending up with incorrect numbers on your figure. Of course,
+#' there are many ways to modify them if you really want to, but at least
+#' this mutate gives some protection.
 #' @param .data A vtree object.
 #' @param .edges If TRUE, modify the edges rather than the nodes.
+#' @param .check If TRUE, make sure that the immutable columns did not
+#'        change
 #' @param ... Name-value pairs of expressions, passed to [dplyr::mutate()].
 #'   The name gives the name of the new or modified node attribute, and the
 #'   value defines its contents. The expressions are evaluated using
@@ -83,14 +91,32 @@ is_vp <- function(x) {
 #' @seealso
 #' [dplyr::mutate()], [tidygraph::activate()]
 #' @export
-mutate.vtree <- function(.data, ..., .edges = FALSE) {
+mutate.vtree <- function(.data, ..., .edges = FALSE, .check = TRUE) {
   if(.edges) {
     .data <- .data |> activate("edges")
   } else {
     .data <- .data |> activate("nodes")
   }
+
   class(.data) <- setdiff(class(.data), "vtree")
-  .data |> mutate(...) |> activate("nodes") |> as_vtree()
+  ret <- .data |> mutate(...) |> activate("nodes") |> as_vtree()
+  if(!.check) {
+    return(ret)
+  }
+
+  immutable <- c("node_col", "node_id", "path", "freq", "count",
+                 "denom", "node_key", "tot_n", "vp")
+
+  all_good <- purrr::map_lgl(set_names(immutable), \(col) {
+                   all(as_tibble(ret)[[col]] == as_tibble(.data)[[col]])
+                 })
+  if(!all(all_good)) {
+    changed <- immutable[!all_good]
+    cli_abort(c(x = 
+     "you tried to modify following immutable column(s) of a vtree object:",
+     "{changed}"))
+  }
+  ret
 }
 
 
