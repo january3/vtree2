@@ -197,6 +197,9 @@ Also, for code review / bug finding.
 
 ## BUGS
 
+- legend titles sometimes overlap with the legend
+- ~~if some variables disappear from the plot, the legend throws an
+  error~~
 - ~~prune(!Severity %in% c(“Mild”, “Moderate”), follow_only = TRUE) does
   not work~~
 - na.rm handling in prune() is not consistent, at least not with vtree’s
