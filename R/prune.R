@@ -77,6 +77,18 @@
 #' because the subsequent nodes – like percentage of survivorship for
 #' female crew members – are above 15%.
 #'
+#' @section keep_na_sisters:
+#'
+#' If the tree was created with valid percentages (`.vp=TRUE`), then the
+#' percentage and count for a node cannot be used to calculate the
+#' total count for that variable. For example, if we know that in the 1st
+#' Class on the Titanic there were 120 (46%) females (as in the titanicNA
+#' data set), we cannot calculate the total number of passengers in the 1st
+#' class without knowing for how many passengers in the 1st class we lack
+#' the information about their sex. Therefore, by default NA nodes are kept
+#' if the tree was created with `.vp = TRUE` (see also [is_vp()]). You can
+#' control this behavior with `keep_na_sisters`.
+#'
 #' @param vtree A vtree graph object.
 #' @param condition A logical expression that defines the pruning
 #'              condition. If no condition is provided, no pruning is done,
@@ -89,6 +101,9 @@
 #' @param keep_follow If keep is specified, and keep_follow is true, then
 #'          nodes following the selected node (i.e., its children) are also
 #'          kept even if they do not fulfill the condition.
+#' @param keep_na_sisters If TRUE, then when pruning/keeping nodes, NA
+#'        nodes which are sisters with a kept node (share the same parent) 
+#'        are also kept.
 #' @param mark_only If TRUE, marks the nodes that satisfy the condition in
 #'          the node data frame with a new column `mark` but does not prune
 #'          the graph. Useful for debugging. The values of the column are
@@ -125,6 +140,15 @@
 #' mark(vt, path == "Class:3rd", follow_only=TRUE) |>
 #'   mutate(fill = ifelse(mark, "red", "white")) |> plot()
 #'
+#' # how keep_na_sisters influences the plot
+#' vt <- vtree(titanicNA)
+#' vt |> keep(path == "Class:1st/Sex:Female") |>
+#'   plot()
+#' vt |>
+#'   keep(path == "Class:1st/Sex:Female",
+#'        keep_na_sisters = FALSE) |>
+#'   plot()
+#'
 #' @importFrom rlang is_empty enquo eval_tidy expr
 #' @importFrom stats na.omit
 #' @importFrom dplyr bind_cols n
@@ -132,10 +156,16 @@
 #' @export
 prune <- function(vtree, condition, follow_only = FALSE,
                   mark_only = FALSE,
+                  keep_na_sisters = is_vp(vtree),
                   keep = FALSE, na.rm = FALSE) {
   if(missing(condition)) {
     condition <- expr(FALSE)
   }
+
+  if(na.rm) {
+    keep_na_sisters <- FALSE
+  }
+
   condition <- enquo(condition)
 
   if(is.character(na.rm)) {
@@ -152,6 +182,7 @@ prune <- function(vtree, condition, follow_only = FALSE,
 
   .prune(vtree, condition, follow_only = follow_only,
          mark_only = mark_only,
+         keep_na_sisters = keep_na_sisters,
          keep = keep, na.rm = na.rm)
 
 }
@@ -254,6 +285,41 @@ find_parents <- function(vtree, mask) {
   mask
 }
 
+# given a node_id, find out whether there is a sister node (sharing the
+# same parent) with an NA value and return its node_id
+.find_sister_na <- function(nodes, node_key) {
+  sel <- node_key == nodes$node_key
+  node_id <- nodes$node_id[sel]
+  parent_id <- nodes$parent_id[sel]
+
+  if(is.na(parent_id)) {
+    return(character(0))
+  }
+
+  nasel <- nodes$node_key[ nodes$parent_id == parent_id &
+                          is.na(nodes$node_val) ]
+  return(nasel)
+}
+
+# return a logical vector where each element corresponds to a node; nodes
+# are marked TRUE if 1) they are NA and 2) they are sister nodes of a node
+# which is shown on the figure.
+.find_sister_na_nodes <- function(vtree, mask) {
+  nodes <- as_tibble(vtree)
+
+  if(!length(mask) == nrow(nodes)) {
+    die("Incorrect mask length: mask={length(mask)} vs vtree={nrow(nodes)}")
+  }
+
+  node_keys <- nodes$node_key[ mask ]
+
+  nasiss <- map(node_keys, \(nk) .find_sister_na(nodes, nk)) |>
+    unlist()
+
+  mask <- nodes$node_key %in% nasiss
+  mask
+}
+
 
 # here we actually do the pruning
 # follow only: prune only the following nodes, not the nodes that are
@@ -264,6 +330,7 @@ find_parents <- function(vtree, mask) {
                    keep_follow = TRUE,
                    mark_only = FALSE,
                    find_only = FALSE,
+                   keep_na_sisters = TRUE,
                    keep = FALSE, na.rm = FALSE) {
 
   mask_cond <- .get_mask(vtree, condition, na.rm)
@@ -311,6 +378,11 @@ find_parents <- function(vtree, mask) {
     mask <- mask | follow_mask
   }
 
+  if(keep_na_sisters) {
+    sisters <- !.find_sister_na_nodes(vtree, !mask)
+    mask <- mask & sisters
+  }
+
   if(mark_only) {
     ret <- vtree |>
      mutate(mark = mask)
@@ -335,12 +407,15 @@ find_parents <- function(vtree, mask) {
 #' @export
 keep <- function(vtree, condition,
                  keep_follow = TRUE,
+                 keep_na_sisters = is_vp(vtree),
                  mark_only = FALSE) {
   condition <- enquo(condition)
   #prune(vtree, condition, keep = TRUE, mark_only = mark_only)
   .prune(vtree, condition, follow_only = FALSE,
          mark_only = mark_only,
-         keep = TRUE, keep_follow = keep_follow, na.rm = FALSE)
+         keep = TRUE, keep_follow = keep_follow,
+         keep_na_sisters = keep_na_sisters,
+         na.rm = FALSE)
 
 }
 

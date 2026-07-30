@@ -1,4 +1,6 @@
 vt <- vtree_from_freqtable(Titanic, Class, Sex, Age, Survived)
+vtNA <- vtree(titanicNA, Class, Sex, Survived)
+
 nodes <- vt |> as_tibble()
 
 test_that("masking works", {
@@ -26,9 +28,8 @@ test_that("pruning works", {
   vt2 <- vt |> prune(freq < .12, follow_only = TRUE)
   expect_equal(nrow(as_tibble(vt2)), 43)
 
-  vt2 <- vt |> mutate(node_val = ifelse(freq < .12, NA, node_val))
-  vt3 <- vt2 |> prune(na.rm = TRUE)
-  expect_equal(nrow(as_tibble(vt3)), 36)
+  vt2 <- vtNA |> prune(na.rm = TRUE)
+  expect_equal(nrow(as_tibble(vt2)), 29)
 
   vt2 <- vt |> keep(freq > .12, keep_follow = FALSE)
   expect_equal(nrow(as_tibble(vt2)), 49)
@@ -51,7 +52,25 @@ test_that("pruning works", {
   expect_equal(nrow(vt2 |> as_tibble()), 31)
   vt2 <- prune(vt1, Sex == "Male")
   expect_equal(nrow(vt2 |> as_tibble()), 29)
+})
 
+test_that("keep_na_sisters works", {
+  vt2 <- vtNA |> prune(freq < .12)
+  expect_equal(nrow(as_tibble(vt2)), 34)
+
+  vt2 <- vtNA |> prune(freq < .12, keep_na_sisters = TRUE)
+  expect_equal(nrow(as_tibble(vt2)), 34)
+
+  vt2 <- vtNA |> prune(node_col == "Class" & (is.na(Class) | !Class == "1st"))
+  expect_equal(nrow(as_tibble(vt2)), 12)
+
+  # this one is without vp, so the NA sister should not be kept
+  vtNA2 <- vtree(titanicNA, Class, Sex, Survived, .vp=FALSE)
+  vt2 <- vtNA2 |> prune(node_col == "Class" & (is.na(Class) | !Class == "1st"))
+  expect_equal(nrow(as_tibble(vt2)), 11)
+
+  vt2 <- vtNA |> prune(freq < .12, keep_na_sisters = FALSE, follow_only = TRUE)
+  expect_equal(nrow(as_tibble(vt2)), 36)
 })
 
 
