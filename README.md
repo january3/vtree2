@@ -50,11 +50,6 @@ from a frequency table and plot it with `vtree2`.
 
 ``` r
 library(vtree2)
-#> 
-#> Attaching package: 'vtree2'
-#> The following object is masked from 'package:graphics':
-#> 
-#>     layout
 tdf <- cases_from_freqtable(Titanic)
 vt <- vtree(tdf, Class, Sex, Survived)
 vt
@@ -183,17 +178,23 @@ Also, for code review / bug finding.
 
 ## TODO
 
+- root node should not show percentages on default labels
+- add prefix and suffix parameters to add_labels, to make the handling
+  easier
 - ~~plotting function for patterns~~
 - make sure that node_name is used for displaying variable names
 - how is vtree actually handling the palettes?
-- ~~add the keep_children parameter to the keep() function~~, and also
+- ~~add the keep_children parameter to the keep() function~~, ~~and also
   keep_na. - this is harder; because not all the NA nodes are kept, but
   only these which are on the same level as a node that is kept.
-  Generally make keep behave the same as in vtree.
+  Generally make keep behave the same as in vtree.~~
 - ~~legends~~
 - should the vtree() function take cases or samples?
 - maybe gridtext for the labels so we can use some basic formatting
 - faster processing of cases into trees
+- questions to N:
+  - which NA nodes are kept when vp=TRUE, only the sisters or all on the
+    same level?
 
 ## BUGS
 

@@ -30,6 +30,7 @@ Imports:
     tidyselect
 Suggests: 
     cowplot,
+    glue,
     knitr,
     rmarkdown,
     testthat (>= 3.0.0),

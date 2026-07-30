@@ -296,13 +296,12 @@ calculated proportion, `denominator` etc etc.
 
 ```{r fig.width=14,fig.height=8,eval=TRUE}
 #vtree::vtree(FakeData, "Severity Sex Age Category", prunesmaller = 3)
-# XXX: again, vtree keeps NA nodes even if they are smaller than 3
 p1 <- FakeData |> mutate(Age = as.character(Age)) |>
   vtree(Severity, Sex, Age, Category) |>
   plot()
 p2 <- FakeData |> mutate(Age = as.character(Age)) |>
   vtree(Severity, Sex, Age, Category) |>
-  prune(n < 3, na.rm = FALSE) |>
+  prune(n < 3) |>
   plot()
 plot_grid(p1, p2)
 ```
@@ -409,6 +408,133 @@ plot_grid(p1, p2)
 ```
 
 
+#### Summaries
+
+More complex summaries can be achieved with `summary_vt()`. This function
+takes a cases data frame as the first argument and a vtree - a vtree object
+only keeps track of the variables that were assigned from start and ignores
+other columns in the cases data frame. However, with `summary_vt()` it is
+possible to generate summaries for any other variables. For example:
+
+
+```{r}
+## vtree(FakeData, "Severity", summary="Score", horiz=FALSE)
+
+vt <- vtree(FakeData, Severity)
+
+# first, prep the summary
+sum_labs <- summary_vt(FakeData, vt, Score)
+
+# add standard labels
+vt |> add_labels() |>
+  mutate(label = paste0(label, "\n", sum_labs)) |>
+  plot(dir = "tb", lwidth=.8)
+```
+
+There is also a `summary_at_var()` function which generates per-variable
+summaries from a vtree, which can also be used in a plot.
+
+
+```{r}
+vt <- vtree(FakeData, Category)
+summary_at_var(vt, "Category", as_df=TRUE)
+```
+
+In `vtree`, it is also possible, with a shorthand notation, to get
+summaries for variables only for a given category. In `vtree2`, it is
+possible, but requires a bit of coding:
+
+```{r}
+## vtree(FakeData,"Severity",summary="Category=single",horiz=FALSE)
+vt <- vtree(FakeData, Severity)
+
+library(dplyr)
+library(purrr)
+
+# this gives us, in the levels column, the counts
+smvt <- summary_vt_df(FakeData, vt, Category) |>
+  mutate(single = map_int(levels, ~ .x["single"])) |>
+  mutate(single_freq = single / n) |>
+  mutate(label = sprintf("Category=single: %d (%.0f%%)",
+                         single, 100 * single_freq))
+
+vt |> add_labels() |>
+  mutate(label = paste0(label, "\n", smvt$label)) |>
+  plot(dir = "tb")
+```
+
+I agree, this is way more complicated, but then also way more verbose. In a
+way the code above, with some modifications, replaces all the other
+summary-related options in `vtree`.
+
+For example, the `vtree` mini-language has also a number of "control codes"
+for selecting nodes for which summaries should be generated, e.g. for
+variable manipulation, such as `%noroot%` (all nodes except for the root),
+`%leafonly%`, `%var=v%`, `%node=n%`. All this can be achieved in a rather
+(I think) natural way in `vtree2` using conditions passed to functions such
+as `find_nodes()` or `mark()`, which can then be used to selectively add
+summaries to the nodes.
+
+Similarly, the different summary formatting options and codes in the vtree
+mini-language are replaced directly by R expressions.
+
+
+```{r fig.width=10,fig.height=4}
+## vtree(FakeData,"Severity",summary="Score \nmean score\n%mean%",sameline=TRUE,horiz=FALSE)
+
+vt <- vtree(FakeData, Severity)
+smvt <- summary_vt(FakeData, vt, Score, fmt = sprintf("mean score\n%.1f",
+                                                      mean))
+vt |> add_labels() |>
+  mutate(label = paste0(label, "\n", smvt)) |>
+  plot(dir = "tb")
+```
+
+To get the missing value information as well but only if missing values are
+present, we need a more complex approach. In the example below, I will use
+`summary_vt_df` (returning a data frame) and `glue` instead of `sprintf`:
+
+
+```{r fig.width=10,fig.height=4}
+library(glue)
+smvt <- summary_vt_df(FakeData, vt, Score) |>
+  mutate(label = ifelse(missing > 0,
+                    glue("mean score\n{round(mean, 1)} mv = {missing}"),
+                    glue("mean score\n{round(mean, 1)}")))
+
+vt |> add_labels() |>
+  mutate(label = paste0(label, "\n", smvt$label)) |>
+  plot(dir = "tb")
+```
+
+
+**R expressions.** In the vtree mini-language it is possible to include
+some R code to make ad hoc calcuations. In `vtree2`, this stage is
+separated from vtree construction - if you want an additional variable,
+then by all means, create it explicitely:
+
+```{r fig.width=10,fig.height=4}
+## vtree(FakeData,"Severity Category",
+##  summary="(Post-Pre)/Pre \nmean = %mean%",sameline=TRUE,horiz=FALSE,cdigits=1)
+
+library(glue)
+
+vt <- vtree(FakeData, Severity, Category)
+
+smvt <- FakeData |>
+  mutate(RelDiff = (Post - Pre)/Pre) |>
+  summary_vt_df(vt, RelDiff) |>
+  mutate(label = ifelse(missing > 0,
+                    glue("mean(RD) = {round(mean, 1)} mv = {missing}"),
+                    glue("mean(RD) = {round(mean, 1)}")))
+
+vt |> 
+  add_labels(fmt = glue("{node_val} {n} ({round(100 * freq)}%)")) |>
+  #mutate(label = gsub("\n",  ", ", label)) |>
+  mutate(label = paste0(label, "\n", smvt$label)) |>
+  plot(dir = "tb")
+```
+
 
 
 
@@ -458,6 +584,47 @@ plot_grid(p1, p2)
 ```
 
 
+#### Patterns
+
+The `vtree` patterns show all combinations of variable levels in the data,
+one line at a time. They can be understood as all possible paths through
+the tree. They are sorted by their frequency.
+
+In `vtree2`, pattern are generated with the `pattern()` function, which
+takes a vtree and returns a data frame (tibble) with the `vtree_pattern`
+class. This data frame is not sorted, but you can sort it yourself
+according to needs:
+
+
+
+```{r eval=FALSE}
+# vtree(FakeData,"Severity Sex")
+# vtree(FakeData,"Severity Sex",pattern=TRUE)
+
+library(dplyr)
+vt <- vtree(FakeData, Severity, Sex)
+plot(vt)
+
+pattern(vt) |> arrange(Sex_n) |>
+  plot(palettes = c("Blues", "Greens"))
+```
+
+```{r echo=FALSE,fig.width=10,fig.height=5}
+# vtree(FakeData,"Severity Sex")
+# vtree(FakeData,"Severity Sex",pattern=TRUE)
+
+library(dplyr)
+vt <- vtree(FakeData, Severity, Sex)
+p1 <- plot(vt)
+p2 <- pattern(vt) |> arrange(Sex_n) |>
+  plot(palettes = c("Blues", "Greens"))
+plot_grid(p1, p2)
+```
+
+
+
+
+
 #### Missing functionality
 
 The following are not yet implemented in vtree2:
@@ -472,6 +639,10 @@ The following are not yet implemented in vtree2:
    legend is based on the *current*, pruned vtree and not on the original
    data. For now, I will just keep the original *summaries*.~~ -> now the
    summaries are kept so the legend is always the same.
+ * the summary expressions in the original vtree package are very powerful.
+   While most of what can be done in `vtree` can also be achieved in
+   `vtree2`, it requires a few more lines of code. Maybe some shortcuts are
+   in order.
 
 ### Design principles for vtree2
 
