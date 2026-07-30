@@ -21,7 +21,6 @@ plot_vtree(
   fontsizes = NULL,
   lwidth = NA,
   lheight = NA,
-  autofontsize = NA,
   dir = "lr"
 )
 
@@ -83,13 +82,6 @@ each label will be fit separately.}
 \item{lwidth}{Label width relative to available space}
 
 \item{lheight}{Label height relative to available space}
-
-\item{autofontsize}{If "adaptive", the font size is adjusted to fit the
-each node, which may result in nodes having different font sizes.
-If "fixed", all nodes have the same font size, adjusted to fit
-the smallest node. If NA (default), then "adaptive" is used for
-proportional plots (which often have very small nodes) and
-"fixed" for regular plots.}
 
 \item{dir}{direction of the tree. One of "lr" (left to right), "rl"
 (right to left), "tb" (top to bottom), "bt" (bottom to top).

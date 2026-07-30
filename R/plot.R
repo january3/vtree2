@@ -461,12 +461,6 @@ normalize_vtree_for_plotting <- function(x, palettes, na_fill) {
 #'        "adaptive"; "fixed" means that all objects within the group will
 #'        have the same automatically adjusted font, and "adaptive" that
 #'        each label will be fit separately.
-#' @param autofontsize If "adaptive", the font size is adjusted to fit the
-#'        each node, which may result in nodes having different font sizes.
-#'        If "fixed", all nodes have the same font size, adjusted to fit
-#'        the smallest node. If NA (default), then "adaptive" is used for
-#'        proportional plots (which often have very small nodes) and
-#'        "fixed" for regular plots.
 #' @param na_fill The color to use for NA values. Default is "white".
 #' @param legend If TRUE, a legend is added to the plot. Default is FALSE.
 #' @seealso [vtree2::mutate.vtree()] for modifying the node data frame, and
@@ -528,7 +522,6 @@ plot_vtree <- function(x,
                       margins = NULL,
                       fontsizes = NULL,
                       lwidth = NA, lheight = NA,
-                      autofontsize = NA,
                       dir = "lr") {
 
   dir <- match.arg(dir, c("lr", "rl", "bt", "tb"))
@@ -548,14 +541,6 @@ plot_vtree <- function(x,
                    show_root = show_root)
 
   fontsizes <- .normalize_fontsizes(fontsizes, layout_arg)
-
-  if(is.na(autofontsize)) {
-    if(layout_arg == "proportional") {
-      autofontsize = "adaptive"
-    } else {
-      autofontsize = "fixed"
-    }
-  }
 
   if(dir %in% c("rl", "lr")) {
     margins <- margins %||% list(top = .01, right = .01,
@@ -591,7 +576,6 @@ plot_vtree <- function(x,
   params <- list(
     dir = dir,
     fontsizes = fontsizes,
-    autofontsize = autofontsize,
     var_labels = var_labels,
     legend = legend,
     layout_type = layout_arg)
