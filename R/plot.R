@@ -461,6 +461,7 @@ normalize_vtree_for_plotting <- function(x, palettes, na_fill) {
 #'        "adaptive"; "fixed" means that all objects within the group will
 #'        have the same automatically adjusted font, and "adaptive" that
 #'        each label will be fit separately.
+#' @param lwd line width for use with plotting
 #' @param na_fill The color to use for NA values. Default is "white".
 #' @param legend If TRUE, a legend is added to the plot. Default is FALSE.
 #' @seealso [vtree2::mutate.vtree()] for modifying the node data frame, and
@@ -522,6 +523,7 @@ plot_vtree <- function(x,
                       margins = NULL,
                       fontsizes = NULL,
                       lwidth = NA, lheight = NA,
+                      lwd = 1,
                       dir = "lr") {
 
   dir <- match.arg(dir, c("lr", "rl", "bt", "tb"))
@@ -577,6 +579,7 @@ plot_vtree <- function(x,
     dir = dir,
     fontsizes = fontsizes,
     var_labels = var_labels,
+    lwd = lwd,
     legend = legend,
     layout_type = layout_arg)
 

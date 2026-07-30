@@ -21,6 +21,7 @@ plot_vtree(
   fontsizes = NULL,
   lwidth = NA,
   lheight = NA,
+  lwd = 1,
   dir = "lr"
 )
 
@@ -82,6 +83,8 @@ each label will be fit separately.}
 \item{lwidth}{Label width relative to available space}
 
 \item{lheight}{Label height relative to available space}
+
+\item{lwd}{line width for use with plotting}
 
 \item{dir}{direction of the tree. One of "lr" (left to right), "rl"
 (right to left), "tb" (top to bottom), "bt" (bottom to top).

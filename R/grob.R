@@ -172,7 +172,7 @@ adjust_fontsize <- function(x, path, font="fixed",
 #' @importFrom grid gpar unit
 .get_grob <- function(grobname, x, y,
                       width, height,
-                      name, col, fill) {
+                      name, col, fill, lwd=1) {
   if(grobname == "roundrectangle") {
     ret <- roundrectGrob(x = x, y = y,
       name = name,
@@ -180,7 +180,7 @@ adjust_fontsize <- function(x, path, font="fixed",
       height = height,
       r = unit(.3, "snpc"),
       gp = gpar(
-               lwd = 2,
+               lwd = lwd,
                col = col,
                fill = fill))
   } else if(grobname == "rectangle") {
@@ -189,7 +189,7 @@ adjust_fontsize <- function(x, path, font="fixed",
       width = width,
       height = height,
       gp = gpar(
-               lwd = 2,
+               lwd = lwd,
                col = col,
                fill = fill))
   } else {
@@ -201,7 +201,7 @@ adjust_fontsize <- function(x, path, font="fixed",
 
 # create node grobs from the nodes data frame
 #' @importFrom grid rectGrob roundrectGrob
-.get_node_rects <- function(nodes) {
+.get_node_rects <- function(nodes, lwd=1) {
   req_cols <- c("x", "y", "width", "height", "shape", "fill")
 
   if(!all(req_cols %in% colnames(nodes))) {
@@ -235,7 +235,7 @@ adjust_fontsize <- function(x, path, font="fixed",
               width = nodes$width[i],
               height = nodes$height[i],
               col = "black",
-              fill = nodes$fill[i])
+              fill = nodes$fill[i], lwd=lwd)
   })
 }
 
@@ -293,7 +293,7 @@ adjust_fontsize <- function(x, path, font="fixed",
 
 # given a data frame with the node positions, grob column, and label
 # column, create a gTree with the node grobs and the labels.
-.get_nodes <- function(nodes, fs = 9, name = "nodes") {
+.get_nodes <- function(nodes, fs = 9, lwd = 1, name = "nodes") {
 
   req_cols <- c("x", "y", "width", "height", "shape", "fill", "label")
 
@@ -303,7 +303,7 @@ adjust_fontsize <- function(x, path, font="fixed",
      c(x = "Missing required columns in nodes data frame: {.val {missing}}"))
   }
 
-  rects <- .get_node_rects(nodes)
+  rects <- .get_node_rects(nodes, lwd = lwd)
 
   if(!is.null(rects)) {
     rects <- gTree(gp = gpar(),
@@ -391,11 +391,12 @@ makeContent.vtree_plot <- function(x) {
   layout  <- x$layout
   varlabs <- x$params$var_labels
   legend  <- x$params$legend
+  lwd     <- x$params$lwd
 
   nodes <- as_tibble(layout)
   edges <- activate(layout, "edges") |> as_tibble()
 
-  nodes_gt <- .get_nodes(nodes, fs = 9)
+  nodes_gt <- .get_nodes(nodes, fs = 9, lwd = lwd)
   arrows <- .get_arrows(edges)
 
   # margin labels with the variable names
@@ -404,10 +405,12 @@ makeContent.vtree_plot <- function(x) {
   if(!is.null(legend)) {
     legend_labs <- .get_nodes(filter(legend,
                                      .data[["label_type"]] == "var_level_label"),
-                                     fs = 9, name="legend_levels")
+                              fs = 9, name="legend_levels",
+                              lwd = lwd)
     var_labs    <- .get_nodes(filter(legend,
                                      .data[["label_type"]] == "var_name_label"),
-                                     fs = 9, name="legend_titles")
+                              fs = 9, name="legend_titles",
+                              lwd = lwd)
     legend <- gTree(gp=gpar(), children = gList(titles = legend_labs,
                                                 levels = var_labs),
                     name = "legend")
