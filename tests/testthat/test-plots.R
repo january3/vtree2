@@ -58,6 +58,10 @@ test_that("plotting works", {
   expect_no_error(plot(vt, lwidth = .1, layout = "flushed"))
   expect_no_error(plot(vt, show_root = FALSE))
   expect_no_error(plot(vt, var_labels = FALSE))
+  expect_no_error(plot(vt, fontsizes = list(nodes=9, var_labels=10,
+                                            legend_labels=11)))
+  expect_no_error(plot(vt, fontsizes = list(nodes="adaptive", var_labels=10,
+                                            legend_labels="adaptive")))
 })
 
 test_that("var_labels argument works", {

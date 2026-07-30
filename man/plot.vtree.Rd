@@ -18,6 +18,7 @@ plot_vtree(
   var_labels = TRUE,
   legend = FALSE,
   margins = NULL,
+  fontsizes = NULL,
   lwidth = NA,
   lheight = NA,
   autofontsize = NA,
@@ -71,6 +72,13 @@ no variable labels are shown.}
 
 \item{margins}{numerical vector: top/right/bottom/left margins in
 fraction of available space (from 0 to 1).}
+
+\item{fontsizes}{Manually select font sizes. A named list with following
+optional fields: \code{nodes}, \code{var_labels}, \code{legend_labels}. Each
+element can be either a number (font size), or either "fixed" or
+"adaptive"; "fixed" means that all objects within the group will
+have the same automatically adjusted font, and "adaptive" that
+each label will be fit separately.}
 
 \item{lwidth}{Label width relative to available space}
 

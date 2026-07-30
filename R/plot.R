@@ -351,6 +351,24 @@ normalize_vtree_for_plotting <- function(x, palettes, na_fill) {
        left = margins[4])
 }
 
+.normalize_fontsizes <- function(fontsizes, layout) {
+
+  # fields: nodes, var_labels, legend_labels
+  nodes <- ifelse(layout == "proportional",
+                       "adaptive", "fixed")
+
+  ret <- list(nodes = nodes,
+              var_labels = "fixed",
+              legend_labels = "fixed")
+
+  if(!is.null(fontsizes)) {
+    ret <- purrr::imap(ret, \(val, nm) fontsizes[[nm]] %||% ret[[nm]])
+  }
+
+  ret
+
+}
+
 
 #' Plot a vtree
 #'
@@ -437,6 +455,12 @@ normalize_vtree_for_plotting <- function(x, palettes, na_fill) {
 #' @param palettes A character vector with names of RColorBrewer palettes
 #'                 to use for the variables. By default these are the
 #'                 default arguments to the vtree_palette() function.
+#' @param fontsizes Manually select font sizes. A named list with following
+#'        optional fields: `nodes`, `var_labels`, `legend_labels`. Each
+#'        element can be either a number (font size), or either "fixed" or
+#'        "adaptive"; "fixed" means that all objects within the group will
+#'        have the same automatically adjusted font, and "adaptive" that
+#'        each label will be fit separately.
 #' @param autofontsize If "adaptive", the font size is adjusted to fit the
 #'        each node, which may result in nodes having different font sizes.
 #'        If "fixed", all nodes have the same font size, adjusted to fit
@@ -502,6 +526,7 @@ plot_vtree <- function(x,
                       var_labels = TRUE,
                       legend = FALSE,
                       margins = NULL,
+                      fontsizes = NULL,
                       lwidth = NA, lheight = NA,
                       autofontsize = NA,
                       dir = "lr") {
@@ -521,6 +546,8 @@ plot_vtree <- function(x,
                    layout_func = layout_func, dir = dir,
                    lwidth=lwidth, lheight=lheight,
                    show_root = show_root)
+
+  fontsizes <- .normalize_fontsizes(fontsizes, layout_arg)
 
   if(is.na(autofontsize)) {
     if(layout_arg == "proportional") {
@@ -563,7 +590,7 @@ plot_vtree <- function(x,
 
   params <- list(
     dir = dir,
-    fontsizes = list(nodes = 9, clabs = 11),
+    fontsizes = fontsizes,
     autofontsize = autofontsize,
     var_labels = var_labels,
     legend = legend,
