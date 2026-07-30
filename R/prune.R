@@ -281,20 +281,21 @@ find_parents <- function(vtree, mask) {
     mask <- mask_cond | precede
 
     if(keep_follow) {
-      follow <- find_children(vtree, !mask_cond)
+      follow <- find_children(vtree, mask_cond)
       mask <- mask | follow
     }
 
     # now inverse the mask, so anything FALSE ("do not keep")
     # becomes TRUE ("prune")
     mask <- !mask
-    #nodes <- as_tibble(vtree) |>
-    #  select(path, freq) |>
-    #  mutate(cond = mask_cond,
-    #         precede = precede,
-    #         follow = follow,
-    #         mask = mask) |>
-    #colorDF::print_colorDF()
+
+    # nodes <- as_tibble(vtree) |>
+    #   select(path, freq) |>
+    #   mutate(cond = mask_cond,
+    #          precede = precede,
+    #          follow = follow,
+    #          mask = mask) |>
+    # colorDF::print_colorDF()
 
   } else {
     mask <- mask_cond
