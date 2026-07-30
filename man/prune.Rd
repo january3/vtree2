@@ -12,13 +12,20 @@ prune(
   condition,
   follow_only = FALSE,
   mark_only = FALSE,
+  keep_na_sisters = is_vp(vtree),
   keep = FALSE,
   na.rm = FALSE
 )
 
 find_nodes(vtree, condition, follow_only = FALSE)
 
-keep(vtree, condition, keep_follow = TRUE, mark_only = FALSE)
+keep(
+  vtree,
+  condition,
+  keep_follow = TRUE,
+  keep_na_sisters = is_vp(vtree),
+  mark_only = FALSE
+)
 
 mark(vtree, condition, follow_only = FALSE)
 }
@@ -39,6 +46,10 @@ the graph. Useful for debugging. The values of the column are
 \code{hit} for the nodes that satisfy the condition, otherwise
 \code{keep} for the nodes that would be kept, and \code{prune} for the
 nodes that would be pruned.}
+
+\item{keep_na_sisters}{If TRUE, then when pruning/keeping nodes, NA
+nodes which are sisters with a kept node (share the same parent)
+are also kept.}
 
 \item{keep}{If TRUE, keeps the nodes that satisfy the condition and prunes
 everything else.}
@@ -106,6 +117,20 @@ because the subsequent nodes – like percentage of survivorship for
 female crew members – are above 15\%.
 }
 
+\section{keep_na_sisters}{
+
+
+If the tree was created with valid percentages (\code{.vp=TRUE}), then the
+percentage and count for a node cannot be used to calculate the
+total count for that variable. For example, if we know that in the 1st
+Class on the Titanic there were 120 (46\%) females (as in the titanicNA
+data set), we cannot calculate the total number of passengers in the 1st
+class without knowing for how many passengers in the 1st class we lack
+the information about their sex. Therefore, by default NA nodes are kept
+if the tree was created with \code{.vp = TRUE} (see also \code{\link[=is_vp]{is_vp()}}). You can
+control this behavior with \code{keep_na_sisters}.
+}
+
 \examples{
 vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived)
 
@@ -129,5 +154,14 @@ mark(vt, node_col == "Survived" & node_val == "No" & freq > .2) |>
 # mark all nodes that follow the 3rd Class node
 mark(vt, path == "Class:3rd", follow_only=TRUE) |>
   mutate(fill = ifelse(mark, "red", "white")) |> plot()
+
+# how keep_na_sisters influences the plot
+vt <- vtree(titanicNA)
+vt |> keep(path == "Class:1st/Sex:Female") |>
+  plot()
+vt |>
+  keep(path == "Class:1st/Sex:Female",
+       keep_na_sisters = FALSE) |>
+  plot()
 
 }
