@@ -413,6 +413,9 @@ layout_flushed <- function(vtree, dir="lr",
 #' @examples
 #' vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived)
 #' add_layout(vt, layout = "regular", dir = "lr") |> tibble::as_tibble()
+#' # the layout parameter from plot() is passed on to add_layout()
+#' plot(vt, layout="proportional")
+#' plot(vt, layout="flushed", dir="tb")
 #' @return an object of class vtree with additional columns in the nodes
 #'         and edges data frames
 #' @export
