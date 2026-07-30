@@ -50,7 +50,8 @@ A vtree plot (a grid::gTree object) of the pattern object, invisibly.
 
 ## See also
 
-[`plot.vtree()`](plot.vtree.md) for plotting vtree objects.
+[`plot.vtree()`](https://january3.github.io/vtree2/reference/plot.vtree.md)
+for plotting vtree objects.
 
 ## Examples
 

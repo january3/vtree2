@@ -1,7 +1,8 @@
 # Add labels to a plot
 
 Adds or modifies a column called `label` to the node data frame of a
-vtree object. Labels are used by the [`plot.vtree()`](plot.vtree.md)
+vtree object. Labels are used by the
+[`plot.vtree()`](https://january3.github.io/vtree2/reference/plot.vtree.md)
 function to show as node labels.
 
 ## Usage

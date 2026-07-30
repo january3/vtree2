@@ -137,8 +137,8 @@ set), we cannot calculate the total number of passengers in the 1st
 class without knowing for how many passengers in the 1st class we lack
 the information about their sex. Therefore, by default NA nodes are kept
 if the tree was created with `.vp = TRUE` (see also
-[`is_vp()`](is_vp.md)). You can control this behavior with
-`keep_na_sisters`.
+[`is_vp()`](https://january3.github.io/vtree2/reference/is_vp.md)). You
+can control this behavior with `keep_na_sisters`.
 
 ## Examples
 

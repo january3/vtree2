@@ -9,10 +9,12 @@ library(vtree2)
 ### Motivation
 
 The original vtree package implements most of its functionality in a
-single function [`vtree()`](../reference/vtree.md) with more than a
-hundred options and producing a plot. The function implements its own
-mini-language for specifying formats of labels, variables, conditions to
-select nodes and so on. This allows for simple and terse function calls.
+single function
+[`vtree()`](https://january3.github.io/vtree2/reference/vtree.md) with
+more than a hundred options and producing a plot. The function
+implements its own mini-language for specifying formats of labels,
+variables, conditions to select nodes and so on. This allows for simple
+and terse function calls.
 
 However, this limits the flexibility of the package. It is not possible
 to fully customize the labels, inspect the interim data, use the various
@@ -156,13 +158,13 @@ vtree_from_freqtable(Titanic, Class, Sex, Survived) |>
 #### Pruning, keeping, finding, conditional operations
 
 **Pruning.** In vtree2, you can prune the tree with the
-[`prune()`](../reference/prune.md) function. It takes a logical vector
-of length equal to the number of nodes in the vtree object. You can use
-the variables in from the vtree node data frame to construct the logical
-vector. For example, to prune all nodes with frequency less than 0.15 or
-number of cases less than 150, you can do
-`prune(vt, n < 150 | freq < .15)`. The result is always a vtree which
-you can then plot.
+[`prune()`](https://january3.github.io/vtree2/reference/prune.md)
+function. It takes a logical vector of length equal to the number of
+nodes in the vtree object. You can use the variables in from the vtree
+node data frame to construct the logical vector. For example, to prune
+all nodes with frequency less than 0.15 or number of cases less than
+150, you can do `prune(vt, n < 150 | freq < .15)`. The result is always
+a vtree which you can then plot.
 
 The expression you pass to the prune() function, like
 `n < 150 | freq < .15`, is evaluated in the context of the vtree node
@@ -294,13 +296,15 @@ In vtree2, there are some functions that construct automatic labels, but
 for any more complex case you can use standard R functions to construct
 your own labels.
 
-By default, [`add_labels()`](../reference/add_labels.md) construct the
-labels implicitly when you call plot() on a vtree object. However, you
-can add the labels yourself either with
-[`add_labels()`](../reference/add_labels.md) (which is quite flexible)
-or by directly modifying the `label` column in the vtree.
-[`plot.vtree()`](../reference/plot.vtree.md) will not overwrite labels
-if they already exist.
+By default,
+[`add_labels()`](https://january3.github.io/vtree2/reference/add_labels.md)
+construct the labels implicitly when you call plot() on a vtree object.
+However, you can add the labels yourself either with
+[`add_labels()`](https://january3.github.io/vtree2/reference/add_labels.md)
+(which is quite flexible) or by directly modifying the `label` column in
+the vtree.
+[`plot.vtree()`](https://january3.github.io/vtree2/reference/plot.vtree.md)
+will not overwrite labels if they already exist.
 
 For example, to mimick the `sameline` option in vtree, you can first
 generate the standard automatic labels and then replace the newline
@@ -401,12 +405,14 @@ plot_grid(p1, p2)
 #### Summaries
 
 More complex summaries can be achieved with
-[`summary_vt()`](../reference/summary_vt.md). This function takes a
-cases data frame as the first argument and a vtree - a vtree object only
-keeps track of the variables that were assigned from start and ignores
-other columns in the cases data frame. However, with
-[`summary_vt()`](../reference/summary_vt.md) it is possible to generate
-summaries for any other variables. For example:
+[`summary_vt()`](https://january3.github.io/vtree2/reference/summary_vt.md).
+This function takes a cases data frame as the first argument and a
+vtree - a vtree object only keeps track of the variables that were
+assigned from start and ignores other columns in the cases data frame.
+However, with
+[`summary_vt()`](https://january3.github.io/vtree2/reference/summary_vt.md)
+it is possible to generate summaries for any other variables. For
+example:
 
 ``` r
 ## vtree(FakeData, "Severity", summary="Score", horiz=FALSE)
@@ -424,7 +430,8 @@ vt |> add_labels() |>
 
 ![](vtree_vs_vtree2_files/figure-html/unnamed-chunk-16-1.png)
 
-There is also a [`summary_at_var()`](../reference/summary_at_var.md)
+There is also a
+[`summary_at_var()`](https://january3.github.io/vtree2/reference/summary_at_var.md)
 function which generates per-variable summaries from a vtree, which can
 also be used in a plot.
 
@@ -487,9 +494,10 @@ codes” for selecting nodes for which summaries should be generated,
 e.g. for variable manipulation, such as `%noroot%` (all nodes except for
 the root), `%leafonly%`, `%var=v%`, `%node=n%`. All this can be achieved
 in a rather (I think) natural way in `vtree2` using conditions passed to
-functions such as [`find_nodes()`](../reference/prune.md) or
-[`mark()`](../reference/prune.md), which can then be used to selectively
-add summaries to the nodes.
+functions such as
+[`find_nodes()`](https://january3.github.io/vtree2/reference/prune.md)
+or [`mark()`](https://january3.github.io/vtree2/reference/prune.md),
+which can then be used to selectively add summaries to the nodes.
 
 Similarly, the different summary formatting options and codes in the
 vtree mini-language are replaced directly by R expressions.
@@ -612,9 +620,10 @@ data, one line at a time. They can be understood as all possible paths
 through the tree. They are sorted by their frequency.
 
 In `vtree2`, pattern are generated with the
-[`pattern()`](../reference/pattern.md) function, which takes a vtree and
-returns a data frame (tibble) with the `vtree_pattern` class. This data
-frame is not sorted, but you can sort it yourself according to needs:
+[`pattern()`](https://january3.github.io/vtree2/reference/pattern.md)
+function, which takes a vtree and returns a data frame (tibble) with the
+`vtree_pattern` class. This data frame is not sorted, but you can sort
+it yourself according to needs:
 
 ``` r
 # vtree(FakeData,"Severity Sex")
@@ -664,7 +673,8 @@ The following are not yet implemented in vtree2:
 ### Practical differences
 
 - In vtree2, you first prepare the data with
-  [`vtree()`](../reference/vtree.md) and then plot it with
+  [`vtree()`](https://january3.github.io/vtree2/reference/vtree.md) and
+  then plot it with
   [`plot()`](https://rdrr.io/r/graphics/plot.default.html). This means
   one more function call, but a much more flexible plotting system.
 - Given that a vtree object is a tbl_graph, you are not limited to the

@@ -60,9 +60,11 @@ table, where each row corresponds to a unique combination of values and
 a frequency count.
 
 There are several basic methods implemented for vtrees:
-[`summary.vtree()`](summary.vtree.md), [`plot.vtree()`](plot.vtree.md),
-[`levels.vtree()`](levels.vtree.md), [`print.vtree()`](print.vtree.md),
-[`names.vtree()`](names.vtree.md).
+[`summary.vtree()`](https://january3.github.io/vtree2/reference/summary.vtree.md),
+[`plot.vtree()`](https://january3.github.io/vtree2/reference/plot.vtree.md),
+[`levels.vtree()`](https://january3.github.io/vtree2/reference/levels.vtree.md),
+[`print.vtree()`](https://january3.github.io/vtree2/reference/print.vtree.md),
+[`names.vtree()`](https://january3.github.io/vtree2/reference/names.vtree.md).
 
 ## Manipulating a vtree object
 

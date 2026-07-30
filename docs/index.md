@@ -17,18 +17,24 @@ pak::pak("january3/vtree2")
 
 ### vtree2 workflow
 
-1.  Prepare the data with [`vtree()`](reference/vtree.md) or
-    [`vtree_from_freqtable()`](reference/vtree.md). After this step, the
-    data is immutable, frequencies and counts calculated will not change
-    any more.
+1.  Prepare the data with
+    [`vtree()`](https://january3.github.io/vtree2/reference/vtree.md) or
+    [`vtree_from_freqtable()`](https://january3.github.io/vtree2/reference/vtree.md).
+    After this step, the data is immutable, frequencies and counts
+    calculated will not change any more.
 2.  Prune the tree for visualization with
-    [`prune()`](reference/prune.md) or [`keep()`](reference/prune.md).
-3.  Add labels and colors with [`add_labels()`](reference/add_labels.md)
-    and [`add_palette()`](reference/vtree_palette.md) or by directly
-    manipulating the `label`, `color` and `fill` columns of the vtree
-    object. [`find_nodes()`](reference/prune.md) and
-    `prune(..., mark_only = TRUE)` can be used to select nodes for
-    coloring or labeling. The [`summary_vt()`](reference/summary_vt.md)
+    [`prune()`](https://january3.github.io/vtree2/reference/prune.md) or
+    [`keep()`](https://january3.github.io/vtree2/reference/prune.md).
+3.  Add labels and colors with
+    [`add_labels()`](https://january3.github.io/vtree2/reference/add_labels.md)
+    and
+    [`add_palette()`](https://january3.github.io/vtree2/reference/vtree_palette.md)
+    or by directly manipulating the `label`, `color` and `fill` columns
+    of the vtree object.
+    [`find_nodes()`](https://january3.github.io/vtree2/reference/prune.md)
+    and `prune(..., mark_only = TRUE)` can be used to select nodes for
+    coloring or labeling. The
+    [`summary_vt()`](https://january3.github.io/vtree2/reference/summary_vt.md)
     function can be used to produce additional per-node summaries which
     can be used for labeling or coloring.
 4.  plot the tree with
@@ -96,9 +102,10 @@ colors can be freely customized, trees can be pruned for display.
 
 ### Vtree pruning
 
-With the [`prune()`](reference/prune.md) function, you can find nodes
-which fullfill a certain condition and remove them (along with their
-children) from the vtree:
+With the
+[`prune()`](https://january3.github.io/vtree2/reference/prune.md)
+function, you can find nodes which fullfill a certain condition and
+remove them (along with their children) from the vtree:
 
 ``` r
 ucb <- cases_from_freqtable(UCBAdmissions)
@@ -109,11 +116,13 @@ plot(vt)
 
 ![](reference/figures/README-example_pruning-1.png)
 
-**There is more:** with [`find_nodes()`](reference/prune.md) you can
-find nodes which fullfill a certain condition. The produced mask (a
-simple logical vector) can be used to select nodes for changing labels
-or colors. With [`keep()`](reference/prune.md), you can select the nodes
-you want to keep and remove other nodes.
+**There is more:** with
+[`find_nodes()`](https://january3.github.io/vtree2/reference/prune.md)
+you can find nodes which fullfill a certain condition. The produced mask
+(a simple logical vector) can be used to select nodes for changing
+labels or colors. With
+[`keep()`](https://january3.github.io/vtree2/reference/prune.md), you
+can select the nodes you want to keep and remove other nodes.
 
 ### Labelling and colors
 
@@ -134,9 +143,10 @@ plot(vt)
 
 ![](reference/figures/README-example_labelling-1.png)
 
-**There is more:** [`add_labels()`](reference/add_labels.md) is highly
-customizable and you can produce complex labels with a simple R
-expression using [`sprintf()`](https://rdrr.io/r/base/sprintf.html) or
+**There is more:**
+[`add_labels()`](https://january3.github.io/vtree2/reference/add_labels.md)
+is highly customizable and you can produce complex labels with a simple
+R expression using [`sprintf()`](https://rdrr.io/r/base/sprintf.html) or
 `glue()`.
 
 ### Summaries
@@ -146,7 +156,8 @@ example, if you have an additional variable for your cases, you can add
 summary of the values as labels to the nodes. We select here only one
 node (1st Class), just to zoom in on that part of the graph. You can
 also select the nodes for which you want to manipulate the label, for
-example with [`mark()`](reference/prune.md):
+example with
+[`mark()`](https://january3.github.io/vtree2/reference/prune.md):
 
 ``` r
 vt <- vtree(tdf, Class, Sex, Survived)
@@ -165,12 +176,15 @@ vt |>
 
 ![](reference/figures/README-example_summary-1.png)
 
-**There is more:** [`summary_vt()`](reference/summary_vt.md) can be used
-to calculate any summary of categorical or continuous variables as a
-character vector which can be then used as labels for the nodes.
-[`summary_vt_df()`](reference/summary_vt.md) produces a data frame with
-per-node summary statistics (different for categorical and continuous
-variables) which can be used for further analysis.
+**There is more:**
+[`summary_vt()`](https://january3.github.io/vtree2/reference/summary_vt.md)
+can be used to calculate any summary of categorical or continuous
+variables as a character vector which can be then used as labels for the
+nodes.
+[`summary_vt_df()`](https://january3.github.io/vtree2/reference/summary_vt.md)
+produces a data frame with per-node summary statistics (different for
+categorical and continuous variables) which can be used for further
+analysis.
 
 ## AI disclosure
 

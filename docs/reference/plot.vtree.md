@@ -55,14 +55,16 @@ plot_ggplot(
   The layout type, either "regular", "flushed" or "proportional". If
   "proportional", then the height of each node is proportional to the
   number of observations in that node. See
-  [`add_layout()`](add_layout.md) for details. If layout is NA, then it
-  is assumed that the vtree already has a layout with all necessary
-  columns and no layout is calculated.
+  [`add_layout()`](https://january3.github.io/vtree2/reference/add_layout.md)
+  for details. If layout is NA, then it is assumed that the vtree
+  already has a layout with all necessary columns and no layout is
+  calculated.
 
 - layout_func:
 
   Custom function to calculate layout (see
-  [`add_layout()`](add_layout.md) for details).
+  [`add_layout()`](https://january3.github.io/vtree2/reference/add_layout.md)
+  for details).
 
 - palettes:
 
@@ -138,8 +140,9 @@ with sizes proportional to the number of observations in that node.
 
 Colors, fill colors, node labels and other details can be customized by
 modifying the vtree object directly with the
-[`mutate.vtree()`](mutate.vtree.md) function. Otherwise, default colors
-and labels are filled in automatically.
+[`mutate.vtree()`](https://january3.github.io/vtree2/reference/mutate.vtree.md)
+function. Otherwise, default colors and labels are filled in
+automatically.
 
 ## Colors
 
@@ -157,7 +160,8 @@ being assigned automatically.
 If the vtree object contains a column called "color", then the text
 colors will be taken from that column. Otherwise, the either white or
 black will be chosen depending on the fill color for each node. You can
-easily create this column with the [`mutate.vtree()`](mutate.vtree.md)
+easily create this column with the
+[`mutate.vtree()`](https://january3.github.io/vtree2/reference/mutate.vtree.md)
 function (see examples below).
 
 ## Labels
@@ -182,21 +186,24 @@ used to create a label:
 (the difference between node_col and node_name is that you can set
 node_name to whatever you like, while node_col must remain unchanged)
 
-See [`vtree()`](vtree.md) for a list of all columns in the node data
-frame.
+See [`vtree()`](https://january3.github.io/vtree2/reference/vtree.md)
+for a list of all columns in the node data frame.
 
 Manipulating these columns is straightforward using the
-[`mutate.vtree()`](mutate.vtree.md) function (see below).
+[`mutate.vtree()`](https://january3.github.io/vtree2/reference/mutate.vtree.md)
+function (see below).
 
 For variables which are not associated with the nodes and additional
 summary variables (ranges, medians, standard deviations and more), see
-[`summary_vt()`](summary_vt.md).
+[`summary_vt()`](https://january3.github.io/vtree2/reference/summary_vt.md).
 
 ## See also
 
-[`mutate.vtree()`](mutate.vtree.md) for modifying the node data frame,
-and [`add_labels()`](add_labels.md) for adding labels to the nodes. For
-layout details, see [`add_layout()`](add_layout.md).
+[`mutate.vtree()`](https://january3.github.io/vtree2/reference/mutate.vtree.md)
+for modifying the node data frame, and
+[`add_labels()`](https://january3.github.io/vtree2/reference/add_labels.md)
+for adding labels to the nodes. For layout details, see
+[`add_layout()`](https://january3.github.io/vtree2/reference/add_layout.md).
 
 ## Examples
 
