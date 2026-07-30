@@ -174,7 +174,8 @@ layout_legend <- function(layout, margins, dir="lr") {
 
   legend <- merge(pospar, summaries, by = "node_col", all.y=TRUE) |>
       mutate(node_key = paste0("legend_", 1:n())) |>
-      mutate(label_type = "var_level_label")
+      mutate(label_type = "var_level_label") |>
+      filter(!is.na(.data[["x"]]))
 
   maxpos <- max(legend[["pos"]]) + 2
 
