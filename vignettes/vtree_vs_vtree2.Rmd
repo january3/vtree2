@@ -1,5 +1,5 @@
 ---
-title: "vtree vs vtree2"
+title: "vtree2 for vtree users"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{vtree vs vtree2}
@@ -18,16 +18,15 @@ knitr::opts_chunk$set(
 library(vtree2)
 ```
 
-### Vtree patterns
-
 ## Differences between vtree2 and the original vtree
 
 ### Motivation
 
 The original vtree package implements most of its functionality in a single
-function `vtree()` producing a plot. The function implements its own
-mini-language for specifying formats of labels, variables, conditions to
-select nodes and so on. This allows for simple and terse function calls.
+function `vtree()` with more than a hundred options and producing a plot.
+The function implements its own mini-language for specifying formats of
+labels, variables, conditions to select nodes and so on. This allows for
+simple and terse function calls.
 
 However, this limits the flexibility of the package. It is not possible to
 fully customize the labels, inspect the interim data, use the various
@@ -35,6 +34,21 @@ summaries for other purposes (e.g. to produce simple tables). `vtree2`
 separates data preparation, label construction, node selection and plotting
 into four separate steps. This comes at the cost of more verbose function
 calls.
+
+Some other advantages of vtree2:
+
+ * plotting produces a grid graphics object - that means it works out of
+   the box for most devices and can be used in connection with packages
+   like `cowplot` or `patchwork` to produce complex figures.
+ * proportional plots allow to graphically represent the number of samples
+   in the different levels.
+
+Disadvantages of vtree2:
+
+ * No HTML-like formatting of the labels
+ * no RedCap integration
+ * several of the straightforward vtree options require some thinking in
+   vtree2
 
 ### Quick HOWTO for vtree users
 
