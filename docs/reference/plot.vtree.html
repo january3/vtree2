@@ -76,7 +76,7 @@
 <span>  fontsizes <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  lwidth <span class="op">=</span> <span class="cn">NA</span>,</span>
 <span>  lheight <span class="op">=</span> <span class="cn">NA</span>,</span>
-<span>  autofontsize <span class="op">=</span> <span class="cn">NA</span>,</span>
+<span>  lwd <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  dir <span class="op">=</span> <span class="st">"lr"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
@@ -169,13 +169,8 @@ each label will be fit separately.</p></dd>
 <dd><p>Label height relative to available space</p></dd>
 
 
-<dt id="arg-autofontsize">autofontsize<a class="anchor" aria-label="anchor" href="#arg-autofontsize"></a></dt>
-<dd><p>If "adaptive", the font size is adjusted to fit the
-each node, which may result in nodes having different font sizes.
-If "fixed", all nodes have the same font size, adjusted to fit
-the smallest node. If NA (default), then "adaptive" is used for
-proportional plots (which often have very small nodes) and
-"fixed" for regular plots.</p></dd>
+<dt id="arg-lwd">lwd<a class="anchor" aria-label="anchor" href="#arg-lwd"></a></dt>
+<dd><p>line width for use with plotting</p></dd>
 
 
 <dt id="arg-dir">dir<a class="anchor" aria-label="anchor" href="#arg-dir"></a></dt>

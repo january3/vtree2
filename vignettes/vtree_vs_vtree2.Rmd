@@ -65,7 +65,7 @@ set - titanicNA, which is the same as the Titanic data set, but with some
 values in the columns Class, Age and Sex replaced by NAs.
 
 
-```{r}
+```{r eval=FALSE}
 library(vtree2)
 
 # minimal code
@@ -79,6 +79,7 @@ stats <- summary_vt(titanicNA, vt, Age)
 # prune returns a pruned vtree which we
 # then pass down the pipeline
 prune(vt, freq < .2) |>
+  # adds labels, returns a vtree
   add_labels() |>
   # leaf is a column in the node data frame
   # TRUE for a leaf node
@@ -89,7 +90,7 @@ prune(vt, freq < .2) |>
   plot(lwidth = .7)
 ```
 
-```{r fig.width=9,fig.height=12,echo=FALSE}
+```{r fig.width=9,fig.height=12,echo=FALSE,warning=FALSE,message=FALSE}
 library(cowplot)
 library(vtree2)
 
@@ -244,10 +245,10 @@ kept.
 
 p1 <- vtree(FakeData, Severity, Sex) |>
   keep(Severity == "Moderate") |>
-  plot()
+  plot(lheight=.2, lwidth=.4)
 p2 <- vtree(FakeData, Severity, Sex) |>
   keep(Severity == "Moderate", keep_follow = FALSE) |>
-  plot()
+  plot(lheight=.2, lwidth=.4)
 plot_grid(p1, p2)
 ```
 
@@ -323,21 +324,20 @@ for these nodes only:
 ```{r fig.width=5,fig.height=5}
 vtree(FakeData, Group, Sex) |>
   add_labels() |>
-  prune(path == "Group:A", mark_only=TRUE) |>
-  mutate(label = ifelse(mark == "prune",
+  mark(path == "Group:A", follow_only = TRUE) |>
+  mutate(label = ifelse(mark,
                         gsub("^F", "Female", label),
                         label)) |>
-  mutate(label = ifelse(mark == "prune",
+  mutate(label = ifelse(mark,
                         gsub("^M", "Male", label),
                         label)) |>
   plot()
 ```
 
 This is of course much more code, but is not only more flexible, but also
-less exotic.
+less exotic. Once you get your head around the fact that you are using just
+R expressions to define conditions, it becomes quite easy.
  
-
-
 #### Targetting nodes
 
 Prune / keep and labelling operation might want to target certain nodes by
@@ -350,13 +350,16 @@ for further operations. Thus, you can find a node path, use prune to find all
 nodes that *would* be removed, and then color them in red.
 
 
-```{r eval=TRUE}
+```{r targetting1,fig.width=6,fig.height=5,eval=TRUE}
 data(titanicNA)
 vt <- vtree(titanicNA, Class, Sex, Survived)
 vt |> keep(path == "Class:1st/Sex:NA/Survived:Yes" |
            path == "Class:2nd/Sex:NA/Survived:Yes") |>
-  plot()
+  # btw: lheight and lwidth as fractions of the available space
+  plot(lheight=.3, lwidth=.4)
+```
 
+```{r targetting2,fig.width=12,fig.height=9,eval=TRUE}
 p1 <- vt |> add_labels() |>
   mutate(label = ifelse(path == "Class:1st", "First class", label)) |>
   mutate(fill = ifelse(path == "Class:1st", "red", "white")) |>
@@ -397,7 +400,7 @@ plot_grid(p1, p2, p3, p4, ncol=2)
 **Changing variable labels**. In vtree, you can specify alternative
 variable labels with the `labelvar` parameter. In vtree2 you can use the
 column labels you wish to see in the original data. If you have weird
-characters, use the backticks.
+characters (like spaces or newlines), use the backticks.
 
 
 ```{r fig.width=5,fig.height=5,eval=TRUE}
@@ -407,7 +410,7 @@ characters, use the backticks.
 FakeData |>
   dplyr::rename(`Initial\nseverity` = Severity) |>
   vtree(`Initial\nseverity`, Sex) |>
-  plot(dir = "tb")
+  plot(dir = "tb", margins=c(0, 0, 0, .2))
 ```
 
 
