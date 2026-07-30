@@ -38,15 +38,14 @@
 
   }
 
-  grob$gp$fontsize <- floor(mins)
-  grob
+  mins
 }
 
 # adapt the font size of each grob separately
 #' @importFrom grid convertWidth grobWidth
 #' @importFrom grid convertHeight grobHeight
 adapt_fontsize <- function(grobs, widths, heights,
-                           padding = .2) {
+                           padding = .2, ret_min = FALSE) {
   .size_fct <- 1 - padding
 
   if(length(widths) == 1L) {
@@ -57,94 +56,65 @@ adapt_fontsize <- function(grobs, widths, heights,
     heights <- rep(heights, length(grobs))
   }
 
-  grobs <- map(seq_along(grobs), \(i)
+  ret <- map_dbl(seq_along(grobs), \(i)
                .adapt_fontsize_single(grobs[[i]],
                                       widths[[i]],
                                       heights[[i]],
                                       .size_fct))
-  return(grobs)
+  if(ret_min) {
+    return(min(ret))
+  } else {
+    return(ret)
+  }
 }
 
-# given a vector of labels, figure out what fontsize fits them into the
-# widths x heights. Note that this is approximate only
-find_fontsize <- function(labels, widths, heights) {
-  l <- strsplit(labels, "\n")
-  maxh <- min(heights/sapply(l, length))
-  maxw <- min(sapply(l, \(x) {
-                       if(length(x) == 0) {
-                         return(1)
-                       }
-                       min(widths/max(nchar(x)))
-              }
-  ))
+fixed_fontsize <- function(grobs, widths, heights,
+                            padding = .2) {
+  adapt_fontsize(grobs, widths, heights, padding, ret_min = TRUE)
+}
 
-  # we want to find a font size that will roughly give us a char w of maxw
-  # and a line height of maxs.
-  teststr <- paste0("WM\u00C1\u00C2\u00C4\u00C5\u00C9\u00CA",
-                    "\u00CB\u00CD\u00CE\u00CF\u00D3\u00D4",
-                    "\u00D6\u00DA\u00DB\u00DCgjpqy")
-  teststr <- "WMjpqy()%"
-  n <- nchar(teststr)
-  teststr <- paste(rep(teststr, 3), collapse="\n")
-
-  #n <- nchar(teststr)/3 - 2
-  g <- textGrob(teststr, gp=gpar(fontsize=20))
-
-  mins <- 2
-  maxs <- 150
-
-  while(maxs - mins > .1) {
-    fs <- (maxs + mins)/2
-    g$gp$fontsize <- fs
-    w <- convertWidth(grobWidth(g), "npc", valueOnly = TRUE)
-    h <- convertHeight(grobHeight(g), "npc", valueOnly = TRUE)
-
-    if(w/n > maxw || h/3 > maxh) {
-      maxs <- fs
-    } else {
-      mins <- fs
-    }
+# sets a fontsize for a number of grobs
+set_fontsize <- function(grobs, fs) {
+  if(length(fs) == 1L) {
+    fs <- rep(fs, length(grobs))
   }
-
-  mins <- round(mins)
-  mins
+  if(length(grobs) != length(fs)) {
+    die("incorrect length of fontsize")
+  }
+  ret <- map(seq_along(grobs), \(i) {
+                    l <- grobs[[i]]
+                    l$gp$fontsize <- fs[i]
+                    l
+        })
+  ret
 }
 
 #' @importFrom grid getGrob setGrob setChildren gPath gList
 adjust_fontsize <- function(x, path, font="fixed",
                             padding = .1,
-                            widths, heights,
-                            labels = NULL) {
+                            widths, heights) {
   path <- gPath(path)
   sizef <- 1 - padding
 
-  grob <- getGrob(x, gPath = path)
-  label_grobs <- grob$children
+  mutter <- getGrob(x, gPath = path)
+  kinder <- mutter$children
 
   if(is.numeric(font)) {
-    label_grobs <- map(label_grobs, \(l) {
-                    l$gp$fontsize <- font
-                    l
-        })
+    fs <- font
   } else if(font == "fixed") {
-    stopifnot(!is.null(labels))
-    fs <- find_fontsize(labels, sizef * widths, sizef * heights)
-    label_grobs <- map(label_grobs, \(l) {
-                    l$gp$fontsize <- fs
-                    l
-        })
+    fs <- fixed_fontsize(kinder, widths, heights,
+                         padding = padding)
   } else if(font == "adaptive") {
-    label_grobs <- adapt_fontsize(label_grobs,
-                         widths, heights,
-                         padding = .3)
-
+    fs <- adapt_fontsize(kinder, widths, heights, padding = padding)
   } else {
     cli_abort(c(x = "Unsupported mode: {mode}"))
   }
 
-  grob <- setChildren(grob, do.call(gList, label_grobs))
+  kinder <- set_fontsize(kinder, fs)
 
-  x <- setGrob(x, gPath = path, grob)
+  mutter <- setChildren(mutter, do.call(gList, kinder))
+
+  x <- setGrob(x, gPath = path, mutter)
   x
 }
 
@@ -340,25 +310,22 @@ makeContent.vtree_plot <- function(x) {
 
   x <- adjust_fontsize(x, c("nodes", "nodes_labels"),
                        font = fonts$nodes,
-                       padding = 0,
-                       widths = nodes$width, heights = nodes$height,
-                       labels = nodes$label)
+                       padding = 0.15,
+                       widths = nodes$width, heights = nodes$height)
 
   if(!is.null(x$param$legend)) {
     df <- x$param$legend |>
       filter(.data[["label_type"]] == "var_name_label")
     x <- adjust_fontsize(x, c("legend", "legend_titles", "legend_titles_labels"),
                          font = fonts$var_labels,
-                         widths = df$width, heights = df$height,
-                         labels = df$label)
+                         widths = df$width, heights = df$height)
 
     df <- x$param$legend |>
       filter(.data[["label_type"]] == "var_level_label")
 
     x <- adjust_fontsize(x, c("legend", "legend_levels", "legend_levels_labels"),
                          font = fonts$legend_labels,
-                         widths = df$width, heights = df$height,
-                         labels = df$label)
+                         widths = df$width, heights = df$height)
 
   } else if(!is.null(x$param$var_labels)) {
     cnodes <- distinct(nodes, .data[["node_col"]], .keep_all = TRUE) |>
@@ -376,8 +343,7 @@ makeContent.vtree_plot <- function(x) {
 
     x <- adjust_fontsize(x, "clabs",
                          font = fonts$var_labels,
-                         widths = widths, heights = heights,
-                         labels = labs)
+                         widths = widths, heights = heights)
   }
 
   x
