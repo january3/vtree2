@@ -49,18 +49,55 @@ test_that("plotting works without a palette assigned", {
 })
 
     
-    
-
-test_that("plotting works", {
-
-  p1 <- expect_no_error(plot(vt))
+test_that("plot returns a gTree object", {
+  p1 <- plot(vt)
   expect_s3_class(p1, "vtree_plot")
   expect_s3_class(p1, "gTree")
 
+  expect_setequal(c("edges", "nodes", "legend"), names(p1$children))
+  expect_named(p1$children$legend$children, c("titles"))
+
+  expect_named(p1$children$nodes$children, c("rect", "text"))
+  expect_true("spec" %in% names(p1$params))
+  expect_true("labels" %in% names(p1$params$spec))
+
+  p2 <- plot(vt, legend = TRUE)
+  expect_s3_class(p2, "vtree_plot")
+  expect_s3_class(p2, "gTree")
+  expect_setequal(c("edges", "nodes", "legend"), names(p2$children))
+  expect_setequal(names(p2$children$legend$children), c("titles", "levels"))
+
+  p3 <- plot(vt, var_labels = FALSE)
+  expect_setequal(c("edges", "nodes"), names(p3$children))
+})
+    
+test_that("plot creates normalized layout columns", {
+  vt <- vtree_from_freqtable(Titanic, Class, Sex)
+  p <- plot(vt, layout = "regular")
+
+  nodes <- as_tibble(p$layout)
+  edges <- activate(p$layout, "edges") |> as_tibble()
+
+  expect_true(all(c("x", "y", "width", "height") %in% names(nodes)))
+  expect_true(all(c("x1", "y1", "x2", "y2") %in% names(edges)))
+
+  expect_true(all(!is.na(nodes$x)))
+  expect_true(all(!is.na(nodes$y)))
+})
+
+
+test_that("plotting works (smoke tests)", {
+
+  expect_no_error(plot(vt))
+  expect_no_error(plot(vt, legend=TRUE))
   expect_no_error(plot(vt, dir = "bt"))
+  expect_no_error(plot(vt, dir = "bt", legend=TRUE))
   expect_no_error(plot(vt, dir = "tb"))
+  expect_no_error(plot(vt, dir = "tb", legend=TRUE))
   expect_no_error(plot(vt, dir = "rl"))
+  expect_no_error(plot(vt, dir = "rl", legend=TRUE))
   expect_no_error(plot(vt, layout = "proportional"))
+  expect_no_error(plot(vt, layout = "proportional", show_root = FALSE))
   expect_no_error(plot(vt, layout = "proportional", dir = "bt"))
   expect_no_error(plot(vt, layout = "proportional", dir = "tb"))
   expect_no_error(plot(vt, layout = "proportional", dir = "rl"))
@@ -95,17 +132,39 @@ test_that("var_labels argument works", {
 
 })
 
+test_that("plot preserves user-provided labels and colors", {
+  vt <- vtree_from_freqtable(Titanic, Class, Sex) |>
+    mutate(label = paste0("node-", node_id),
+      fill = "pink",
+      color = "blue")
 
+  p <- plot(vt)
+  nodes <- as_tibble(p$layout)
 
-test_that("adding labels works", {
-  vt <- vtree_from_freqtable(Titanic, "Class", "Sex", "Survived")
+  expect_equal(nodes$label, paste0("node-", nodes$node_id))
+  expect_equal(unique(nodes$fill), "pink")
+  expect_equal(unique(nodes$color), "blue")
 
-  nodes <- vt |> add_labels() |> as_tibble()
-  expect_in("label", colnames(nodes))
-
-  nodes <- vt |> add_labels(template = "long") |> as_tibble()
-  expect_in("label", colnames(nodes))
-
-  nodes <- vt |> add_labels(fmt = "foo", fmt_na = "foo") |> as_tibble()
-  expect_true(all(nodes$label == "foo"))
+  # check that the grobs preserve the user-provided labels and colors
+  labels <- sapply(p$children$nodes$children$text$children, \(x) x$label)
+  expect_all_true(nodes$label == labels)
+  colors <- sapply(p$children$nodes$children$text$children, \(x) x$gp$col)
+  expect_all_equal(colors, "blue")
+  fills <- sapply(p$children$nodes$children$rect$children, \(x) x$gp$fill)
+  expect_all_equal(fills, "pink")
 })
+
+test_that("makeContent applies fixed font size to node labels", {
+  vt <- vtree_from_freqtable(Titanic, Class, Sex)
+  p <- plot(vt, fontsizes = list(nodes = 8), var_labels = FALSE)
+
+  p2 <- grid::makeContent(p)
+
+  labels <- grid::getGrob(p2, grid::gPath("nodes", "text"))$children
+  sizes <- sapply(labels, \(g) g$gp$fontsize)
+
+  expect_all_equal(sizes, 8)
+})
+
+
+

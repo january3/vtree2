@@ -118,4 +118,14 @@ test_that("vtree calculations are correct", {
 })
 
 
+test_that("summary works", {
 
+  vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived)
+  sm <- summary(vt)
+  expect_s3_class(sm, "data.frame")
+  expect_named(sm, c("node_col", "node_val", "count",
+                     "freq", "denom", "label"))
+  expect_equal(nrow(sm), 11)
+  expect_all_true(sm$count == c(325, 285, 706, 885, 0, 1731, 470,
+                                0, 1490, 711, 0))
+})
