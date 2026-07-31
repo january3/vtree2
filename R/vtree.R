@@ -1,34 +1,6 @@
 # A list of character vectors, one for each variable split in the tree,
 # with each ordered vector containing the levels of that variable
 
-#' Get the levels of a vtree object
-#'
-#' Get the levels of a vtree object
-#'
-#' Returns a list of character vectors, one for each variable split in the tree,
-#' with each ordered vector containing the levels of that variable.
-#' @param x A vtree object.
-#' @return A list of character vectors, one for each variable split in the tree,
-#' @importFrom cli cli_abort
-#' @export
-levels.vtree <- function(x) {
-  nodes <- as_tibble(x)
-
-  cnms <- attr(x, "cols") |> set_names()
-
-  ret <- map(cnms, \(cn) {
-    vals <- nodes$node_val[nodes$node_col == cn]
-
-    if(is.factor(vals)) {
-      vals <- levels(vals)
-    } else {
-      vals <- unique(vals)
-    }
-  })
-  ret <- ret[ names(ret) %in% nodes$node_col ]
-  ret
-}
-
 #' Get the variable names of a vtree object
 #'
 #' @param x A vtree object.
