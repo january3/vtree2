@@ -131,6 +131,19 @@ levels.vtree <- function(x) {
   attr(x, "levels")
 }
 
+#' Get the column names of a vtree object
+#'
+#' Returns the column names of the node data frame of a vtree object.
+#' @param x A vtree object.
+#' @return A character vector of column names
+#' @examples
+#' vt <- vtree(Titanic, Class, Sex, Survived)
+#' nodecols(vt)
+#' @export
+nodecols <- function(x) {
+  colnames(as_tibble(x))
+}
+
 
 #' Print a vtree object
 #'
