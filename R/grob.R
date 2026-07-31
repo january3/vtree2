@@ -95,7 +95,6 @@ adjust_fontsize <- function(x, path, font="fixed",
                             widths, heights) {
   padding <- padding %||% .1
   path <- gPath(path)
-  sizef <- 1 - padding
 
   mutter <- getGrob(x, gPath = path)
   kinder <- mutter$children
@@ -108,7 +107,7 @@ adjust_fontsize <- function(x, path, font="fixed",
   } else if(font == "adaptive") {
     fs <- adapt_fontsize(kinder, widths, heights, padding = padding)
   } else {
-    cli_abort(c(x = "Unsupported mode: {mode}"))
+    cli_abort(c(x = "Unsupported fontsize mode: {font}"))
   }
 
   kinder <- set_fontsize(kinder, fs)
@@ -284,7 +283,7 @@ makeContent.vtree_plot <- function(x) {
 # create the grobs associated with the plot. This is the main function that
 # actually creates the plot.
 #' @importFrom grid gTree gpar gList setChildren
-.make_children <- function(x, params, layout) {
+.make_children <- function(params, layout) {
   x <- gTree(params = params,
              layout = layout,
              name = "vtree",
@@ -292,9 +291,9 @@ makeContent.vtree_plot <- function(x) {
              cl = "vtree_plot",
              gp = gpar())
 
-  legend    <- x$params$legend
-  lwd       <- x$params$lwd
-  fontsizes <- x$params$fontsizes
+  legend    <- params$legend
+  lwd       <- params$lwd
+  fontsizes <- params$fontsizes
 
   # basic grobs: nodes and edges, always shown
   nodes <- as_tibble(layout)

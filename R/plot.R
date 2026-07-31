@@ -80,7 +80,7 @@ normalize_layout <- function(layout) {
 .normalize_var_labels <- function(cnms, var_labels) {
   if(is.null(var_labels)) {
     return(NULL)
-  } 
+  }
 
   default <- set_names(cnms)
 
@@ -91,7 +91,7 @@ normalize_layout <- function(layout) {
       var_labels <- NULL
     }
     return(var_labels)
-  } 
+  }
 
   if(!is.character(var_labels) || is.null(names(var_labels))) {
     cli_abort(c(x = "var_labels must be a logical or a named character vector"))
@@ -349,5 +349,5 @@ plot_vtree <- function(x,
     legend = legend,
     layout_type = layout_arg)
 
-  .make_children(x, params = params, layout = layout)
+  .make_children(params = params, layout = layout)
 }
