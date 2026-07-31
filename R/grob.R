@@ -215,6 +215,7 @@ adjust_fontsize <- function(x, path, font="fixed",
 
   segmentsGrob(x0 = edges$x1, y0 = edges$y1,
                x1 = edges$x2, y1 = edges$y2,
+               name = "edges",
                arrow = arrow(
                              length=unit(arr_length, "npc"),
                              angle=15,
