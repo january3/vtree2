@@ -73,19 +73,20 @@ add_labels <- function(vtree,
   if(template == "simple") {
     fmt <- quo(ifelse(!is.na(.data[["node_val"]]) & .data[["node_val"]] == "",
                sprintf("%d\n(%.0f%%)", .data[["n"]], .data[["freq"]] * 100),
-               sprintf("%s\n%d (%.0f%%)",
-         .data[["node_val"]],
-         .data[["n"]], .data[["freq"]] * 100)))
+               sprintf("%s\n%d (%.0f%%)", .data[["node_val"]],
+                                          .data[["n"]], .data[["freq"]] * 100)))
     fmt_na = quo(ifelse(!is.na(.data[["node_val"]]) & .data[["node_val"]] == "",
                         sprintf("%d", .data[["n"]]),
                         sprintf("%s\n%d", .data[["node_val"]], .data[["n"]]))
                        )
   } else if(template == "long") {
-    fmt <- quo(sprintf("%s: %s\nN = %d (%.0f%%)",
-         .data[["node_name"]],
-         .data[["node_val"]],
-         .data[["n"]],
-         .data[["freq"]] * 100))
+    fmt <- quo(ifelse(!is.na(.data[["node_val"]]) & .data[["node_val"]] == "",
+               sprintf("All samples\nN = %d (100%%)", .data[["n"]]),
+               sprintf("%s: %s\nN = %d (%.0f%%)",
+                           .data[["node_name"]],
+                           .data[["node_val"]],
+                           .data[["n"]],
+                           .data[["freq"]] * 100)))
     fmt_na = quo(sprintf("%s: %s\n%d", .data[["node_name"]],
                             .data[["node_val"]], .data[["n"]]))
   }

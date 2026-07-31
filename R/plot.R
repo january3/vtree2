@@ -222,7 +222,6 @@ normalize_layout <- function(layout) {
 #'
 #' @param x A vtree object
 #' @param ... Arguments passed to `plot_vtree()`
-#' @param lfontsize Font size for labels
 #' @param lwidth Label width relative to available space
 #' @param lheight Label height relative to available space
 #' @param layout The layout type, either "regular", "flushed" or "proportional". If

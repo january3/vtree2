@@ -74,8 +74,6 @@ each label will be fit separately.}
 \item{dir}{direction of the tree. One of "lr" (left to right), "rl"
 (right to left), "tb" (top to bottom), "bt" (bottom to top).
 Default is "lr".}
-
-\item{lfontsize}{Font size for labels}
 }
 \value{
 A grid::gTree object of class vtree_plot.

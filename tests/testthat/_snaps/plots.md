@@ -19,7 +19,7 @@
     Code
       as_tibble(vt2)$label
     Output
-       [1] ": \nN = 2201 (100%)"          "Class: 1st\nN = 325 (15%)"   
+       [1] "All samples\nN = 2201 (100%)" "Class: 1st\nN = 325 (15%)"   
        [3] "Class: 2nd\nN = 285 (13%)"    "Class: 3rd\nN = 706 (32%)"   
        [5] "Class: Crew\nN = 885 (40%)"   "Sex: Male\nN = 180 (55%)"    
        [7] "Sex: Female\nN = 145 (45%)"   "Sex: Male\nN = 179 (63%)"    
