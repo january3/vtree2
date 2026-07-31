@@ -194,7 +194,7 @@ print.vtree <- function(x, ...) {
 #' level of each variable in the vtree.
 #' @export
 summary.vtree <- function(object, ...) {
-  attr(object, "summary")
+  attr(object, "source_summary")
 }
 
 
@@ -444,7 +444,8 @@ vtree <- function(cases, ..., .vp = TRUE, .cols = NULL) {
                      summary_at_var(vtree, var, as_df=TRUE)
   })
 
-  attr(vtree, "summary") <- summaries
+  attr(vtree, "source_summary") <- summaries
+  attr(vtree, "pruned") <- FALSE
   vtree
 
 

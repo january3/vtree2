@@ -400,6 +400,7 @@ find_parents <- function(vtree, mask) {
     die("No nodes remain after pruning")
   }
 
+  attr(ret, "pruned") <- TRUE
   as_vtree(ret)
 }
 
