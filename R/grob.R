@@ -1,5 +1,11 @@
 # ok, a better plotting approach with grobs.
-
+# calculate line width as a fraction of the device size
+lwd_npc <- function(frac) {
+  min(
+    convertWidth(unit(frac, "npc"), "points", valueOnly = TRUE),
+    convertHeight(unit(frac, "npc"), "points", valueOnly = TRUE)
+  )
+}
 # get widths from a list of grobs
 .get_widths <- function(grobs) {
     purrr::map_dbl(grobs, \(g)
@@ -268,7 +274,7 @@ adjust_fontsize <- function(x, path, font="fixed",
 #' @return A gTree object with the labels adjusted to fit into the allocated space.
 #' @export
 makeContent.vtree_plot <- function(x) {
-  spec <- x$params$spec
+  spec <- x$params$spec_fontsize
 
   for(i in seq_along(spec)) {
     s <- spec[[i]]
@@ -341,7 +347,7 @@ makeContent.vtree_plot <- function(x) {
     children <- gList(children, legend = legend)
   }
 
-  x$params$spec <- spec
+  x$params$spec_fontsize <- spec
   setChildren(x, children)
 }
 
