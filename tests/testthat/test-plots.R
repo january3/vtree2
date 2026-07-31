@@ -35,6 +35,22 @@ test_that("add_labels works", {
 
 })
 
+test_that("plotting works without a palette assigned", {    
+  vt2 <- vt_na |> add_labels() |>
+  mutate(label = ifelse(path == "Class:1st", "First class", label)) |>
+  mutate(fill = ifelse(path == "Class:1st", "red", "white"))
+
+  expect_no_error(plot(vt2))
+
+  vt2 <- vt |> prune(path == "Class:2nd/Sex:NA", mark_only=TRUE) |>
+  mutate(fill = ifelse(!mark, "white", "red"))
+  
+  expect_no_error(plot(vt2))
+})
+
+    
+    
+
 test_that("plotting works", {
 
   p1 <- expect_no_error(plot(vt))
@@ -73,8 +89,9 @@ test_that("var_labels argument works", {
                          Sex="G",
                          Survived="S")))
 
+  expect_no_error(plot(vt, var_labels=c(Sex="S")))
   expect_error(plot(vt, var_labels=c(foo="bar")),
-    "var_labels is missing names for variables: Class, Sex, and Survived")
+    "incorrect var_labels - no such variable\\(s\\): foo")
 
 })
 

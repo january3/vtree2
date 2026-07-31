@@ -201,18 +201,24 @@ layout_legend <- function(layout, margins, dir="lr") {
 # just the variable titles
 layout_legend_minimal <- function(layout, margins, dir="lr",
                                   var_labels = NULL) {
-  pals_v <- attr(layout, "palette_vars") %||% die()
-
   nodes <- as_tibble(layout) |>
     distinct(.data[["node_col"]], .keep_all = TRUE) |>
     dplyr::slice(-1) |>
     mutate(node_key = paste0("legend_title_", 1:n())) |>
     mutate(label = .data[["node_col"]]) |>
-    mutate(color = pals_v[ .data[["node_col"]] ]) |>
     mutate(label_type = "var_name_label") |>
     mutate(shape = NA)
 
+  pals_v <- attr(layout, "palette_vars")
+
+  if(!is.null(pals_v)) {
+    nodes$color <- pals_v[ nodes[["node_col"]] ]
+  } else {
+    nodes$color <- "black"
+  }
+
   if(!is.null(var_labels)) {
+    var_labels <- var_labels[ names(var_labels) %in% nodes$node_col ]
     nodes[ match(names(var_labels), nodes$node_col),
           "label" ] <- var_labels
   }

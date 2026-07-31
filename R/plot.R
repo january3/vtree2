@@ -320,25 +320,31 @@ normalize_vtree_for_plotting <- function(x, palettes, na_fill) {
 
   default <- set_names(cnms)
 
+
   if(is.logical(var_labels)) {
     if(var_labels) {
       var_labels <- default
     } else {
       var_labels <- NULL
     }
-  } else {
+    return(var_labels)
+  } 
 
-    if(!is.character(var_labels)) {
-      cli_abort(c(x = "var_labels must be a logical or character vector"))
-    }
-
-    for(n in names(default)) {
-      if(!n %in% names(var_labels)) {
-        var_labels[n] <- default[n]
-      }
-    }
-
+  if(!is.character(var_labels) || is.null(names(var_labels))) {
+    cli_abort(c(x = "var_labels must be a logical or a named character vector"))
   }
+
+  if(any(!names(var_labels) %in% default)) {
+    incorrect <- names(var_labels)[!names(var_labels) %in% default]
+    cli_abort(c(x = "incorrect var_labels - no such variable(s): {incorrect}"))
+  }
+
+  for(n in names(default)) {
+    if(!n %in% names(var_labels)) {
+      var_labels[n] <- default[n]
+    }
+  }
+
   var_labels
 }
 
