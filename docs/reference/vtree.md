@@ -109,7 +109,7 @@ node from the `Titanic` example.
 
 - `parent`: path of the parent node (`Class:1st`).
 
-- `path`: is a list node; i.e., each element is a list. The path
+- `path_l`: is a list node; i.e., each element is a list. The path
   describes all nodes from the root to the current node, excluding the
   root and including the current node.
   (`list(Class = "1st", Sex = "Female")`.

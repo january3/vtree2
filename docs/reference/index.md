@@ -18,8 +18,6 @@
   [`find_parents()`](https://january3.github.io/vtree2/reference/find_children.md)
   : Find all nodes that follow or precede the nodes for which the mask
   is TRUE
-- [`geom_rrect()`](https://january3.github.io/vtree2/reference/geom_rrect.md)
-  : Rounded rectangles
 - [`is_vp()`](https://january3.github.io/vtree2/reference/is_vp.md) : Is
   the vtree based on valid percentages?
 - [`levels(`*`<vtree>`*`)`](https://january3.github.io/vtree2/reference/levels.vtree.md)
@@ -36,7 +34,6 @@
   : Convert a vtree to a pattern
 - [`plot(`*`<vtree>`*`)`](https://january3.github.io/vtree2/reference/plot.vtree.md)
   [`plot_vtree()`](https://january3.github.io/vtree2/reference/plot.vtree.md)
-  [`plot_ggplot()`](https://january3.github.io/vtree2/reference/plot.vtree.md)
   : Plot a vtree
 - [`plot(`*`<vtree_pattern>`*`)`](https://january3.github.io/vtree2/reference/plot.vtree_pattern.md)
   : Plot a pattern object

@@ -78,6 +78,8 @@ variable are shown, as well as labels that can be used for displaying
 information. The frequency calculation depends on whether the tree was
 constructed with valid percentages (i.e., excluding the NAs), or with
 all samples.</p>
+<p>These sumaries are calculate the original data summaries; they do not
+change when the vtree object is modified.</p>
 <p>The returned data frame (tibble) contains the following columns:</p><ul><li><p><code>node_col</code>: the name of the variable</p></li>
 <li><p><code>node_val</code>: the level of the variable</p></li>
 <li><p><code>count</code>: number of samples which have this level</p></li>

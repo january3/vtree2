@@ -33,6 +33,9 @@ information. The frequency calculation depends on whether the tree was
 constructed with valid percentages (i.e., excluding the NAs), or with
 all samples.
 
+These sumaries are calculate the original data summaries; they do not
+change when the vtree object is modified.
+
 The returned data frame (tibble) contains the following columns:
 
 - `node_col`: the name of the variable
