@@ -84,7 +84,7 @@ node corresponds to (\code{Sex})
 \item \code{node_val}: the value of the node variable at this node (\code{Female}).
 \item \code{node_cv}: combination of node column and node value (\code{Sex:Female}).
 \item \code{parent}: path of the parent node (\verb{Class:1st}).
-\item \code{path}: is a list node; i.e., each element is a list. The path describes
+\item \code{path_l}: is a list node; i.e., each element is a list. The path describes
 all nodes from the root to the current node, excluding the root and
 including the current node. (\code{list(Class = "1st", Sex = "Female")}.
 \item \code{level}: the level of the node, with 0 for the root node. Equal to the

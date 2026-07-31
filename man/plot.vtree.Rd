@@ -3,7 +3,6 @@
 \name{plot.vtree}
 \alias{plot.vtree}
 \alias{plot_vtree}
-\alias{plot_ggplot}
 \title{Plot a vtree}
 \usage{
 \method{plot}{vtree}(x, ...)
@@ -23,20 +22,6 @@ plot_vtree(
   lheight = NA,
   lwd = 1,
   dir = "lr"
-)
-
-plot_ggplot(
-  x,
-  layout = "regular",
-  layout_func = NULL,
-  palettes = c("Reds", "Blues", "Greens", "Oranges", "Purples"),
-  na_fill = "white",
-  var_labels = TRUE,
-  lwidth = 0.7,
-  lheight = 0.8,
-  dir = "lr",
-  lfontsize = NA,
-  legend = FALSE
 )
 }
 \arguments{
@@ -93,8 +78,7 @@ Default is "lr".}
 \item{lfontsize}{Font size for labels}
 }
 \value{
-A grid::gTree object of class vtree_plot. \code{plot_ggplot()}
-returns a ggplot2 object.
+A grid::gTree object of class vtree_plot.
 }
 \description{
 Plots a vtree object using a variety of layouts.

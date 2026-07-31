@@ -135,105 +135,6 @@ add_labels <- function(vtree,
 }
 
 
-.add_level_labels <- function(vtree, top = FALSE) {
-
-  nn <- names(vtree)
-  nodes <- as_tibble(vtree)
-
-  # we reuse the node_key which is bound to the color
-  # we pick the last fill/color combination, because that is usually the
-  # strongest color
-  keys <- purrr::map_chr(nn, \(x) {
-    nodes |> filter(.data[["node_col"]] == x) |>
-      dplyr::last() |> pull("node_key")
-  })
-
-  y <- ifelse(top, -.1, 1.1)
-  lnn <- length(nn)
-  dx <- 1/(lnn + 1)
-
-  df <- data.frame(
-        label = nn,
-        keys = keys,
-        x = seq(0, 1, by=dx)[-c(1, lnn + 2)] + dx/2,
-        y = y
-        )
-
-  geom_label(data = df,
-             aes(x = .data[["x"]], y = .data[["y"]],
-                 label = .data[["label"]],
-                 fill = .data[["keys"]],
-                 color = .data[["keys"]]),
-             size = 9,
-             inherit.aes = FALSE)
-}
-
-# plot by frequency
-plot_by_freq <- function(layout, fill_scale, color_scale,
-                         lfontsize = NA) {
-
-  # calculate the local offsets for each descendant of each node
-  nodes <- as_tibble(layout)
-  edges <- activate(layout, "edges") |> as_tibble()
-
-  nodes |> ggplot(aes(x = .data[["x"]], y = .data[["y"]],
-                      height = .data[["height"]],
-                      label = .data[["label"]])) +
-    geom_segment(data = edges,
-                 aes(x = .data[["x1"]],
-                     y = .data[["y1"]],
-                     xend = .data[["x2"]],
-                     yend = .data[["y2"]]),
-                 inherit.aes = FALSE) +
-    geom_rect(aes(x = .data[["x"]],
-                  y = .data[["y"]],
-                  width = .data[["width"]],
-                  height = .data[["height"]],
-                  fill = .data[["node_key"]]),
-              color = "black") +
-    geom_text(aes(color = .data[["node_key"]]),
-                  size = lfontsize) +
-    fill_scale +
-    color_scale
-}
-
-
-
-
-# just the nodes, no resizing according to frequency
-#' @importFrom ggplot2 arrow coord_flip
-plot_regular <- function(layout, fill_scale, color_scale,
-                         lfontsize = NA) {
-
-
-  nodes <- as_tibble(layout)
-  edges <- activate(layout, "edges") |> as_tibble()
-
-  p <- nodes |> ggplot(aes(x = .data[["x"]],
-                      y = .data[["y"]],
-                      label = .data[["label"]])) +
-    geom_segment(data = edges,
-                 aes(x = .data[["x1"]],
-                     y = .data[["y1"]],
-                     xend = .data[["x2"]],
-                     yend = .data[["y2"]]),
-                 arrow = arrow(angle = 15, type = "closed"),
-                 inherit.aes = FALSE) +
-    geom_rrect(aes(xmin = .data[["x"]] - .data[["width"]]/2,
-                   xmax = .data[["x"]] + .data[["width"]]/2,
-                   ymin = .data[["y"]] - .data[["height"]]/2,
-                   ymax = .data[["y"]] + .data[["height"]]/2,
-                   fill = .data[["node_key"]]),
-               color = "black", radius = .4) +
-    geom_text(aes(color = .data[["node_key"]]),
-              size = lfontsize) +
-    # reverse y axis
-    fill_scale +
-    color_scale
-
-  p
-}
-
 # we check that the layout is correct and has the required columns
 # for some columns, we make sure that there are no NAs
 normalize_layout <- function(layout) {
@@ -350,7 +251,23 @@ normalize_vtree_for_plotting <- function(x, palettes, na_fill) {
   var_labels
 }
 
-.normalize_margins <- function(margins) {
+.normalize_margins <- function(margins, dir, show_vl, legend) {
+
+  # default margins
+  if(is.null(margins)) {
+    if(dir %in% c("lr", "rl")) {
+      margins <- margins %||% list(top = .01, right = .01,
+                    bottom = .01 + .05 * show_vl +
+                      .15 * legend,
+                    left = .01)
+    } else {
+      margins <- margins %||% list(top = .01, right = .01,
+                    bottom = .01, left = .01 + .08 * show_vl)
+
+    }
+    return(margins)
+  }
+
   if(length(margins) != 4 || !is.numeric(margins)) {
     die("margins should be a numeric vector with four elements, t-r-b-l")
   }
@@ -514,8 +431,7 @@ normalize_vtree_for_plotting <- function(x, palettes, na_fill) {
 #'   mutate(fill = pal[round(abs_freq * 100) + 1]) |>
 #'  plot()
 #'
-#' @return A grid::gTree object of class vtree_plot. `plot_ggplot()`
-#' returns a ggplot2 object.
+#' @return A grid::gTree object of class vtree_plot.
 #' @importFrom grid gTree gpar gList
 #' @export
 plot.vtree <- function(x, ...) {
@@ -542,43 +458,19 @@ plot_vtree <- function(x,
 
   dir <- match.arg(dir, c("lr", "rl", "bt", "tb"))
 
-  if(!is.null(margins)) {
-    margins <- .normalize_margins(margins)
-  }
-
   layout_arg <- match.arg(layout)
   var_labels <- .normalize_var_labels(names(x), var_labels)
   show_vl <- !is.null(var_labels)
+  margins <- .normalize_margins(margins, dir, show_vl, legend)
 
   x <- normalize_vtree_for_plotting(x, palettes, na_fill)
+
   layout <- add_layout(x, layout = layout_arg,
                    layout_func = layout_func, dir = dir,
                    lwidth=lwidth, lheight=lheight,
                    show_root = show_root)
 
   fontsizes <- .normalize_fontsizes(fontsizes, layout_arg)
-
-  if(dir %in% c("rl", "lr")) {
-    margins <- margins %||% list(top = .01, right = .01,
-                    bottom = .01 + .05 * show_vl +
-                      .15 * legend,
-                    left = .01)
-  }
-
-  if(dir == "rl") {
-    layout <- .flip_horiz(layout)
-  }
-
-  if(dir %in% c("bt", "tb")) {
-    margins <- margins %||% list(top = .01, right = .01,
-                    bottom = .01, left = .01 + .08 * show_vl)
-    layout <- .transpose(layout)
-    layout <- .flip_horiz(layout)
-  }
-
-  if(dir == "tb") {
-    layout <- .flip_vert(layout)
-  }
 
   layout <- .fit_margins(layout, margins)
   layout <- normalize_layout(layout)
@@ -609,81 +501,3 @@ plot_vtree <- function(x,
         )
   .make_children(x)
 }
-
-#' @rdname plot.vtree
-#' @importFrom ggplot2 ggplot aes geom_segment geom_rect
-#' @importFrom ggplot2 scale_x_reverse scale_y_reverse coord_cartesian
-#' @importFrom ggplot2 theme_void geom_text geom_label unit
-#' @importFrom ggplot2 scale_fill_manual scale_color_manual theme
-#' @export
-plot_ggplot <- function(x,
-                       layout = "regular",
-                       layout_func = NULL,
-                       palettes = c("Reds", "Blues", "Greens",
-                                    "Oranges", "Purples"),
-                       na_fill = "white",
-                       var_labels = TRUE,
-                       lwidth = .7, lheight = .8,
-                       dir = "lr",
-                       lfontsize = NA,
-                       legend = FALSE) {
-
-  dir <- match.arg(dir, c("lr", "rl", "bt", "tb"))
-
-  nodes <- as_tibble(x)
-  if(!all(c("fill", "color") %in% colnames(nodes))) {
-    x <- add_palette(x, palettes = palettes, na_fill = na_fill)
-  }
-
-  nodes <- as_tibble(x)
-
-  fill_scale  <- scale_fill_manual(name = NULL,
-                                   values  = set_names(nodes$fill,
-                                                       nodes$node_key))
-  color_scale <- scale_color_manual(name = NULL,
-                                    values = set_names(nodes$color,
-                                                       nodes$node_key))
-  if(! "label" %in% colnames(nodes)) {
-    x <- x |> add_labels()
-  }
-
-  l <- add_layout(x, layout = layout,
-              layout_func = layout_func,
-              lwidth = lwidth)
-
-  if(layout == "proportional") {
-    p <- plot_by_freq(l, fill_scale, color_scale,
-                      lfontsize = lfontsize)
-  } else {
-    p <- plot_regular(l, fill_scale, color_scale,
-                      lfontsize = lfontsize)
-  }
-
-  # plot orientation
-  if(dir == "rl") {
-    p <- p + scale_x_reverse() + scale_y_reverse()
-  } else if(dir == "lr") {
-    p <- p + scale_y_reverse()
-  } else if(dir == "tb") {
-    p <- p + coord_flip() + scale_x_reverse()
-  } else if(dir == "bt") {
-    p <- p + coord_flip()
-  }
-
-  # add labels
-  if(var_labels) {
-    p <- p + .add_level_labels(x)
-  }
-
-  #p <- p + theme_void() +
-  p <- p + #coord_cartesian(clip = "off") +
-    theme(plot.margin = unit(rep(1, 4), "cm"))
-
-  if(!legend) {
-    p <- p + theme(legend.position = "none")
-  }
-
-  p
-}
-
-

@@ -95,25 +95,6 @@ test_that("var_labels argument works", {
 
 })
 
-test_that("ggplot plotting works", {
-
-  p1 <- expect_no_error(plot_ggplot(vt))
-  expect_s3_class(p1, "ggplot")
-
-  expect_no_error(plot_ggplot(vt, dir = "bt"))
-  expect_no_error(plot_ggplot(vt, dir = "tb"))
-  expect_no_error(plot_ggplot(vt, dir = "rl"))
-  expect_no_error(plot_ggplot(vt, layout = "proportional"))
-  expect_no_error(plot_ggplot(vt, layout = "proportional", dir = "bt"))
-  expect_no_error(plot_ggplot(vt, layout = "proportional", dir = "tb"))
-  expect_no_error(plot_ggplot(vt, layout = "proportional", dir = "rl"))
-  expect_no_error(plot_ggplot(vt, lfontsize = 11))
-  expect_no_error(plot_ggplot(vt, lheight = .1))
-  expect_no_error(plot_ggplot(vt, lwidth = .1))
-  expect_no_error(plot_ggplot(vt, lwidth = .1, layout = "proportional"))
-  expect_no_error(plot_ggplot(vt, var_labels = FALSE))
-})
-
 
 
 test_that("adding labels works", {

@@ -495,5 +495,18 @@ add_layout <- function(vtree,
                            lwidth=lwidth, lheight=lheight,
                            show_root=show_root)
 
+  if(dir == "rl") {
+    layout <- .flip_horiz(layout)
+  }
+
+  if(dir %in% c("bt", "tb")) {
+    layout <- .transpose(layout)
+    layout <- .flip_horiz(layout)
+  }
+
+  if(dir == "tb") {
+    layout <- .flip_vert(layout)
+  }
+
   layout
 }
