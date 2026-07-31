@@ -318,20 +318,26 @@ normalize_vtree_for_plotting <- function(x, palettes, na_fill) {
     return(NULL)
   } 
 
+  default <- set_names(cnms)
+
   if(is.logical(var_labels)) {
     if(var_labels) {
-      var_labels <- set_names(cnms)
+      var_labels <- default
     } else {
       var_labels <- NULL
     }
   } else {
+
     if(!is.character(var_labels)) {
       cli_abort(c(x = "var_labels must be a logical or character vector"))
     }
-    if(!all(cnms %in% names(var_labels))) {
-      missing <- setdiff(cnms, names(var_labels))
-      cli_abort(c(x = "var_labels is missing names for variables: {missing}"))
+
+    for(n in names(default)) {
+      if(!n %in% names(var_labels)) {
+        var_labels[n] <- default[n]
+      }
     }
+
   }
   var_labels
 }
@@ -571,6 +577,8 @@ plot_vtree <- function(x,
 
   if(legend) {
     legend <- layout_legend(layout, margins, dir)
+  } else if(show_vl) {
+    legend <- layout_legend_minimal(layout, margins, dir, var_labels)
   } else {
     legend <- NULL
   }
@@ -578,7 +586,6 @@ plot_vtree <- function(x,
   params <- list(
     dir = dir,
     fontsizes = fontsizes,
-    var_labels = var_labels,
     lwd = lwd,
     legend = legend,
     layout_type = layout_arg)

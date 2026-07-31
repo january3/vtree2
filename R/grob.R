@@ -93,6 +93,7 @@ set_fontsize <- function(grobs, fs) {
 adjust_fontsize <- function(x, path, font="fixed",
                             padding = .1,
                             widths, heights) {
+  padding <- padding %||% .1
   path <- gPath(path)
   sizef <- 1 - padding
 
@@ -225,42 +226,6 @@ adjust_fontsize <- function(x, path, font="fixed",
                        lwd = 2))
 }
 
-# get the labels of the variables
-.get_clabs <- function(nodes, var_labels, dir, margins, fs) {
-
-  if(!"fill_class" %in% colnames(nodes)) {
-    nodes$fill_class <- "black"
-  }
-
-  var_labels <- var_labels[nodes$node_col]
-  if(any(is.na(var_labels))) {
-    cli_abort(c(x = "Missing variable labels for some variables"))
-  }
-
-  if(dir %in% c("rl", "lr")) {
-    ret <- map(1:nrow(nodes), \(i) {
-               textGrob(x = nodes$x[i],
-                        y = margins$bottom/2,
-                        name = paste0("label_", nodes$node_key[i]),
-                        label = var_labels[i],
-                        gp = gpar(
-                        col = nodes$fill_class[i],
-                        fontsize = fs))
-    })
-  } else {
-    ret <- map(1:nrow(nodes), \(i) {
-               textGrob(y = nodes$y[i],
-                        x = margins$left/2,
-                        name = paste0("label_", nodes$node_key[i]),
-                        label = var_labels[i],
-                        gp = gpar(
-                        col = nodes$fill_class[i],
-                        fontsize = fs))
-    })
-  }
-  ret
-}
-
 # given a data frame with the node positions, grob column, and label
 # column, create a gTree with the node grobs and the labels.
 .get_nodes <- function(nodes, fs = 9, lwd = 1, name = "nodes") {
@@ -278,13 +243,13 @@ adjust_fontsize <- function(x, path, font="fixed",
   if(!is.null(rects)) {
     rects <- gTree(gp = gpar(),
                    children = do.call(gList, rects),
-                   name = paste0(name, "_boxes"))
+                   name = "rect")
   }
 
   labels <- .get_labels(nodes, fs = fs)
   labels <- gTree(gp = gpar(),
                   children = do.call(gList, labels),
-                  name = paste0(name, "_labels"))
+                  name = "text")
 
   gTree(gp = gpar(),
         children = gList(rects=rects, labels=labels),
@@ -303,47 +268,14 @@ adjust_fontsize <- function(x, path, font="fixed",
 #' @return A gTree object with the labels adjusted to fit into the allocated space.
 #' @export
 makeContent.vtree_plot <- function(x) {
+  spec <- x$params$spec
 
-  nodes <- as_tibble(x$layout)
-  fonts <- x$param$fontsizes
-  mar <- x$margins
-
-  x <- adjust_fontsize(x, c("nodes", "nodes_labels"),
-                       font = fonts$nodes,
-                       padding = 0.15,
-                       widths = nodes$width, heights = nodes$height)
-
-  if(!is.null(x$param$legend)) {
-    df <- x$param$legend |>
-      filter(.data[["label_type"]] == "var_name_label")
-    x <- adjust_fontsize(x, c("legend", "legend_titles", "legend_titles_labels"),
-                         font = fonts$var_labels,
-                         widths = df$width, heights = df$height)
-
-    df <- x$param$legend |>
-      filter(.data[["label_type"]] == "var_level_label")
-
-    x <- adjust_fontsize(x, c("legend", "legend_levels", "legend_levels_labels"),
-                         font = fonts$legend_labels,
-                         widths = df$width, heights = df$height)
-
-  } else if(!is.null(x$param$var_labels)) {
-    cnodes <- distinct(nodes, .data[["node_col"]], .keep_all = TRUE) |>
-      dplyr::slice(-1)
-
-    labs <- cnodes$node_col
-
-    if(x$params$dir %in% c("bt", "tb")) {
-      widths <- mar$left
-      heights <- .9 * cnodes$full_h[1]
-    } else {
-      widths <- .9 * cnodes$full_w[1]
-      heights <- .9 * mar$bottom
-    }
-
-    x <- adjust_fontsize(x, "clabs",
-                         font = fonts$var_labels,
-                         widths = widths, heights = heights)
+  for(i in seq_along(spec)) {
+    s <- spec[[i]]
+    x <- adjust_fontsize(x, s$path, font=s$fs, 
+                         padding = s$padding,
+                         widths = s$widths,
+                         heights = s$heights)
   }
 
   x
@@ -355,46 +287,56 @@ makeContent.vtree_plot <- function(x) {
 .make_children <- function(x) {
 
   layout  <- x$layout
-  varlabs <- x$params$var_labels
   legend  <- x$params$legend
   lwd     <- x$params$lwd
+  fontsizes <- x$params$fontsizes
 
+  # basic grobs: nodes and edges, always shown
   nodes <- as_tibble(layout)
   edges <- activate(layout, "edges") |> as_tibble()
 
   nodes_gt <- .get_nodes(nodes, fs = 9, lwd = lwd)
-  arrows <- .get_arrows(edges)
+  arrows   <- .get_arrows(edges)
+
+  # spec contains information necessary to adjust the font sizes
+  spec <- list()
+  spec$labels <- list(path = c("nodes", "text"),
+                      fs = fontsizes$nodes,
+                      widths = nodes$width,
+                      heights = nodes$height,
+                      padding = .15)
 
   # margin labels with the variable names
   children <- gList(arrows=arrows, nodes=nodes_gt)
 
   if(!is.null(legend)) {
-    legend_labs <- .get_nodes(filter(legend,
-                                     .data[["label_type"]] == "var_level_label"),
-                              fs = 9, name="legend_levels",
-                              lwd = lwd)
-    var_labs    <- .get_nodes(filter(legend,
-                                     .data[["label_type"]] == "var_name_label"),
-                              fs = 9, name="legend_titles",
-                              lwd = lwd)
-    legend <- gTree(gp=gpar(), children = gList(titles = legend_labs,
-                                                levels = var_labs),
+    kinder <- list()
+
+    # levels for layout_legend when legend=TRUE
+    if(!is.null(legend$levels)) {
+      kinder <- list(.get_nodes(legend$levels, name="levels", lwd = lwd))
+      spec$legend_levels <- list(path = c("legend", "levels", "text"),
+                                 fs = fontsizes$legend_labels,
+                                 widths = legend$levels$width,
+                                 heights = legend$levels$height)
+    }
+
+    # titles when legend=TRUE or var_labels != FALSE
+    kinder <- c(kinder,
+                list(.get_nodes(legend$titles, name="titles", lwd = lwd)))
+
+    spec$legend_titles <- list(path = c("legend", "titles", "text"),
+                               fs = fontsizes$var_labels,
+                               widths = legend$titles$width,
+                               heights = legend$titles$height,
+                               padding = .2)
+
+    legend <- gTree(gp=gpar(), children = do.call(gList, kinder),
                     name = "legend")
     children <- gList(children, legend = legend)
-  } else if(!is.null(varlabs)) {
-    cnodes <- distinct(nodes, .data[["node_col"]], .keep_all = TRUE) |>
-      dplyr::slice(-1)
-    clabs <- .get_clabs(cnodes, var_labels=varlabs,
-                        dir=x$params$dir,
-                        margins=x$margins, fs = 9)
+  }
 
-    clabs <- gTree(gp = gpar(),
-                    children = do.call(gList, clabs),
-                    name = "clabs")
-
-    children <- gList(children, clabs=clabs)
-  } 
-
+  x$params$spec <- spec
   setChildren(x, children)
 }
 

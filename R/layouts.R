@@ -125,7 +125,7 @@
     mutate(y = .data[["y"]] + maxpos * .data[["height"]]/4 -
            2*.data[["height"]]/3)
 
-  bind_rows(legend, titles)
+  list(levels=legend, titles=titles)
 }
 
 .legend_horizontal <- function(legend, titles, maxpos, margins) {
@@ -143,7 +143,7 @@
     mutate(y = maxy + .data[["height"]] * 1.1) |>
     mutate(height = .data[["height"]] * 2)
 
-  bind_rows(legend, titles)
+  list(levels=legend, titles=titles)
 }
 
 # create a layout for the legend.
@@ -197,6 +197,39 @@ layout_legend <- function(layout, margins, dir="lr") {
 
   legend
 }
+
+# just the variable titles
+layout_legend_minimal <- function(layout, margins, dir="lr",
+                                  var_labels = NULL) {
+  pals_v <- attr(layout, "palette_vars") %||% die()
+
+  nodes <- as_tibble(layout) |>
+    distinct(.data[["node_col"]], .keep_all = TRUE) |>
+    dplyr::slice(-1) |>
+    mutate(node_key = paste0("legend_title_", 1:n())) |>
+    mutate(label = .data[["node_col"]]) |>
+    mutate(color = pals_v[ .data[["node_col"]] ]) |>
+    mutate(label_type = "var_name_label") |>
+    mutate(shape = NA)
+
+  if(!is.null(var_labels)) {
+    nodes[ match(names(var_labels), nodes$node_col),
+          "label" ] <- var_labels
+  }
+
+  if(dir %in% c("bt", "tb")) {
+    nodes$width <- margins$left
+    nodes$height <- nodes$full_h[1]
+    nodes$x <- margins$left / 2
+  } else {
+    nodes$width <- nodes$full_w[1]
+    nodes$height <- margins$bottom
+    nodes$y <- margins$bottom / 2
+  }
+
+  list(titles = nodes)
+}
+
 
 layout_by_freq <- function(vtree, dir="lr",
                            lwidth=NA, lheight=NA,
