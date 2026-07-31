@@ -147,7 +147,7 @@
 }
 
 # create a layout for the legend.
-layout_legend <- function(layout, margins, dir="lr") {
+layout_legend <- function(layout, margins, var_labels, dir="lr") {
 
   #req_cols <- c("x", "y", "width", "height", "shape", "fill", "label"))
   cnms <- names(layout)
@@ -188,6 +188,11 @@ layout_legend <- function(layout, margins, dir="lr") {
     mutate(color = pals_v[ .data[["node_col"]] ]) |>
     mutate(label_type = "var_name_label") |>
     mutate(shape = NA)
+
+  if(!is.null(var_labels)) {
+    titles <- titles |>
+      mutate(label = var_labels[ .data[["node_col"]] ])
+  }
 
   if(dir %in% c("tb", "bt")) {
     legend <- .legend_vertical(legend, titles, maxpos, margins)

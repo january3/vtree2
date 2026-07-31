@@ -476,7 +476,7 @@ plot_vtree <- function(x,
   layout <- normalize_layout(layout)
 
   if(legend) {
-    legend <- layout_legend(layout, margins, dir)
+    legend <- layout_legend(layout, margins, var_labels, dir)
   } else if(!is.null(var_labels)) {
     legend <- layout_legend_minimal(layout, margins, dir, var_labels)
   } else {
