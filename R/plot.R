@@ -96,6 +96,8 @@ add_labels <- function(vtree,
 
   if(!quo_is_null(userfmt_na)) {
     fmt_na <- userfmt_na
+  } else if(!quo_is_null(userfmt)) {
+    fmt_na <- userfmt
   }
 
   if(quo_is_null(fmt) || quo_is_null(fmt_na)) {
