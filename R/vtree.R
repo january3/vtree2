@@ -178,6 +178,9 @@ print.vtree <- function(x, ...) {
 #' constructed with valid percentages (i.e., excluding the NAs), or with
 #' all samples.
 #'
+#' These sumaries are calculate the original data summaries; they do not
+#' change when the vtree object is modified.
+#'
 #' The returned data frame (tibble) contains the following columns:
 #'  * `node_col`: the name of the variable
 #'  * `node_val`: the level of the variable
@@ -321,7 +324,7 @@ as_vtree <- function(x) {
 #' * `node_val`: the value of the node variable at this node (`Female`).
 #' * `node_cv`: combination of node column and node value (`Sex:Female`).
 #' * `parent`: path of the parent node (`Class:1st`).
-#' * `path`: is a list node; i.e., each element is a list. The path describes
+#' * `path_l`: is a list node; i.e., each element is a list. The path describes
 #'    all nodes from the root to the current node, excluding the root and
 #'    including the current node. (`list(Class = "1st", Sex = "Female")`.
 #' * `level`: the level of the node, with 0 for the root node. Equal to the
