@@ -251,7 +251,8 @@ normalize_vtree_for_plotting <- function(x, palettes, na_fill) {
   var_labels
 }
 
-.normalize_margins <- function(margins, dir, show_vl, legend) {
+.normalize_margins <- function(margins, dir, var_labels, legend) {
+  show_vl <- !is.null(var_labels)
 
   # default margins
   if(is.null(margins)) {
@@ -460,8 +461,7 @@ plot_vtree <- function(x,
 
   layout_arg <- match.arg(layout)
   var_labels <- .normalize_var_labels(names(x), var_labels)
-  show_vl <- !is.null(var_labels)
-  margins <- .normalize_margins(margins, dir, show_vl, legend)
+  margins <- .normalize_margins(margins, dir, var_labels, legend)
 
   x <- normalize_vtree_for_plotting(x, palettes, na_fill)
 
@@ -477,27 +477,19 @@ plot_vtree <- function(x,
 
   if(legend) {
     legend <- layout_legend(layout, margins, dir)
-  } else if(show_vl) {
+  } else if(!is.null(var_labels)) {
     legend <- layout_legend_minimal(layout, margins, dir, var_labels)
   } else {
     legend <- NULL
   }
 
   params <- list(
+    mar = margins,
     dir = dir,
     fontsizes = fontsizes,
     lwd = lwd,
     legend = legend,
     layout_type = layout_arg)
 
-  x <- gTree(
-        params = params,
-        layout = layout,
-        margins = margins,
-        name = "vtree",
-        children = gList(),
-        cl = "vtree_plot",
-        gp = gpar()
-        )
-  .make_children(x)
+  .make_children(x, params = params, layout = layout)
 }

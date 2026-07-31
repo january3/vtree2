@@ -284,11 +284,16 @@ makeContent.vtree_plot <- function(x) {
 # create the grobs associated with the plot. This is the main function that
 # actually creates the plot.
 #' @importFrom grid gTree gpar gList setChildren
-.make_children <- function(x) {
+.make_children <- function(x, params, layout) {
+  x <- gTree(params = params,
+             layout = layout,
+             name = "vtree",
+             children = gList(),
+             cl = "vtree_plot",
+             gp = gpar())
 
-  layout  <- x$layout
-  legend  <- x$params$legend
-  lwd     <- x$params$lwd
+  legend    <- x$params$legend
+  lwd       <- x$params$lwd
   fontsizes <- x$params$fontsizes
 
   # basic grobs: nodes and edges, always shown
