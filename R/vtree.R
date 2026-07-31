@@ -139,9 +139,10 @@ print.vtree <- function(x, ...) {
 }
 
 
-#' Show per-variable summaries of a vtree object
+#' Show per-variable summaries of a vtree object data
 #'
-#' Show per-variable summaries of a vtree object
+#' Show per-variable summaries of the data on which a vtree object was
+#' constructed. The summary does not change when the vtree object is modified.
 #'
 #' For each variable included in a vtree object, and for all levels of that
 #' variable, the counts and calculated frequencies of that level in the
@@ -150,8 +151,8 @@ print.vtree <- function(x, ...) {
 #' constructed with valid percentages (i.e., excluding the NAs), or with
 #' all samples.
 #'
-#' These sumaries are calculate the original data summaries; they do not
-#' change when the vtree object is modified.
+#' Summary returned by `summary.vtree()` is the original data summary; it
+#' does not change when the vtree object is modified.
 #'
 #' The returned data frame (tibble) contains the following columns:
 #'  * `node_col`: the name of the variable
