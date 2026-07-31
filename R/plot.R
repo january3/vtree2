@@ -12,17 +12,6 @@ normalize_layout <- function(layout) {
     cli_abort(c(x = "layout is missing required columns: {missing}"))
   }
 
-  # if full_w or full_h are missing, replace them with width/height
-  if(!"full_w" %in% colnames(nodes)) {
-    layout <- layout |>
-      mutate(full_w = .data[["width"]])
-  }
-
-  if(!"full_h" %in% colnames(nodes)) {
-    layout <- layout |>
-      mutate(full_h = .data[["height"]])
-  }
-
   # check edges; required are x1, x2, y1, y2
   req_cols_edges <- c("x1", "x2", "y1", "y2")
   if(!all(req_cols_edges %in% colnames(edges))) {
