@@ -585,16 +585,25 @@ backticks.</p>
 <span>  <span class="fu"><a href="../reference/vtree.html">vtree</a></span><span class="op">(</span><span class="va">`Initial\nseverity`</span>, <span class="va">Sex</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span>dir <span class="op">=</span> <span class="st">"tb"</span>, margins<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span>, <span class="fl">0</span>, <span class="fl">.2</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="vtree_vs_vtree2_files/figure-html/unnamed-chunk-23-1.png" class="r-plt" alt="" width="480"></p>
+<p>This has the advantage that if you use variable names in the node
+labels, they will show correctly.</p>
+<p>There is also another possibility, if you only want to change the
+margin labels:</p>
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">FakeData</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/vtree.html">vtree</a></span><span class="op">(</span><span class="va">Severity</span>, <span class="va">Sex</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span>dir <span class="op">=</span> <span class="st">"tb"</span>, margins<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span>, <span class="fl">0</span>, <span class="fl">.2</span><span class="op">)</span>,</span>
+<span>     var_labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>Severity <span class="op">=</span> <span class="st">"Initial\nSeverity"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><strong>Legends.</strong> The <code>showlegend=TRUE</code> argument
 from <code>vtree</code> is <code>legend=TRUE</code> in
 <code>vtree2</code>. That works both for regular and proportional
 plots:</p>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">vt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/vtree.html">vtree_from_freqtable</a></span><span class="op">(</span><span class="va">Titanic</span><span class="op">)</span></span>
 <span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">vt</span>, legend<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">p2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">vt</span>, legend<span class="op">=</span><span class="cn">TRUE</span>, layout <span class="op">=</span> <span class="st">"proportional"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/plot_grid.html" class="external-link">plot_grid</a></span><span class="op">(</span><span class="va">p1</span>, <span class="va">p2</span><span class="op">)</span></span></code></pre></div>
-<p><img src="vtree_vs_vtree2_files/figure-html/unnamed-chunk-24-1.png" class="r-plt" alt="" width="1440"></p>
+<p><img src="vtree_vs_vtree2_files/figure-html/unnamed-chunk-25-1.png" class="r-plt" alt="" width="1440"></p>
 </div>
 <div class="section level4">
 <h4 id="patterns">Patterns<a class="anchor" aria-label="anchor" href="#patterns"></a>
@@ -607,7 +616,7 @@ possible paths through the tree. They are sorted by their frequency.</p>
 frame (tibble) with the <code>vtree_pattern</code> class. This data
 frame is not sorted, but you can sort it yourself according to
 needs:</p>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># vtree(FakeData,"Severity Sex")</span></span>
 <span><span class="co"># vtree(FakeData,"Severity Sex",pattern=TRUE)</span></span>
 <span></span>
@@ -617,7 +626,7 @@ needs:</p>
 <span></span>
 <span><span class="fu"><a href="../reference/pattern.html">pattern</a></span><span class="op">(</span><span class="va">vt</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">Sex_n</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span>palettes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Blues"</span>, <span class="st">"Greens"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><img src="vtree_vs_vtree2_files/figure-html/unnamed-chunk-26-1.png" class="r-plt" alt="" width="960"></p>
+<p><img src="vtree_vs_vtree2_files/figure-html/unnamed-chunk-27-1.png" class="r-plt" alt="" width="960"></p>
 </div>
 <div class="section level4">
 <h4 id="missing-functionality">Missing functionality<a class="anchor" aria-label="anchor" href="#missing-functionality"></a>

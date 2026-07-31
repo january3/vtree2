@@ -256,6 +256,8 @@ Also, for code review / bug finding.
   : Create, modify, and delete node columns
 - [`names(`*`<vtree>`*`)`](https://january3.github.io/vtree2/reference/names.vtree.md)
   : Get the variable names of a vtree object
+- [`nodecols()`](https://january3.github.io/vtree2/reference/nodecols.md)
+  : Get the column names of a vtree object
 - [`pattern()`](https://january3.github.io/vtree2/reference/pattern.md)
   : Convert a vtree to a pattern
 - [`plot(`*`<vtree>`*`)`](https://january3.github.io/vtree2/reference/plot.vtree.md)
@@ -294,5 +296,5 @@ Also, for code review / bug finding.
 ### All vignettes
 
 - [vtree2 for vtree
-  users](https://january3.github.io/vtree2/articles/vtree_vs_vtree2.md):
+  users](https://january3.github.io/vtree2/articles/vtree2_for_vtree_users.md):
 - [vtree2](https://january3.github.io/vtree2/articles/vtree2.md):

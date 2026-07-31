@@ -30,6 +30,8 @@
   : Create, modify, and delete node columns
 - [`names(`*`<vtree>`*`)`](https://january3.github.io/vtree2/reference/names.vtree.md)
   : Get the variable names of a vtree object
+- [`nodecols()`](https://january3.github.io/vtree2/reference/nodecols.md)
+  : Get the column names of a vtree object
 - [`pattern()`](https://january3.github.io/vtree2/reference/pattern.md)
   : Convert a vtree to a pattern
 - [`plot(`*`<vtree>`*`)`](https://january3.github.io/vtree2/reference/plot.vtree.md)

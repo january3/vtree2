@@ -561,7 +561,6 @@ variable labels with the `labelvar` parameter. In vtree2 you can use the
 column labels you wish to see in the original data. If you have weird
 characters (like spaces or newlines), use the backticks.
 
-
 ```{r fig.width=5,fig.height=5,eval=TRUE}
 ## vtree::vtree(FakeData, "Severity Sex",
 ##       horiz = FALSE,
@@ -571,6 +570,24 @@ FakeData |>
   vtree(`Initial\nseverity`, Sex) |>
   plot(dir = "tb", margins=c(0, 0, 0, .2))
 ```
+
+This has the advantage that if you use variable names in the node labels,
+they will show correctly.
+
+There is also another possibility, if you only want to change the margin
+labels:
+
+
+```{r fig.width=5,fig.height=5,eval=FALSE}
+FakeData |>
+  vtree(Severity, Sex) |>
+  plot(dir = "tb", margins=c(0, 0, 0, .2),
+     var_labels = c(Severity = "Initial\nSeverity"))
+```
+
+
+
+
 
 **Legends.** The `showlegend=TRUE` argument from `vtree` is 
 `legend=TRUE` in `vtree2`. That works both for regular and proportional

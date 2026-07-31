@@ -600,6 +600,19 @@ FakeData |>
 
 ![](vtree_vs_vtree2_files/figure-html/unnamed-chunk-23-1.png)
 
+This has the advantage that if you use variable names in the node
+labels, they will show correctly.
+
+There is also another possibility, if you only want to change the margin
+labels:
+
+``` r
+FakeData |>
+  vtree(Severity, Sex) |>
+  plot(dir = "tb", margins=c(0, 0, 0, .2),
+     var_labels = c(Severity = "Initial\nSeverity"))
+```
+
 **Legends.** The `showlegend=TRUE` argument from `vtree` is
 `legend=TRUE` in `vtree2`. That works both for regular and proportional
 plots:
@@ -611,7 +624,7 @@ p2 <- plot(vt, legend=TRUE, layout = "proportional")
 plot_grid(p1, p2)
 ```
 
-![](vtree_vs_vtree2_files/figure-html/unnamed-chunk-24-1.png)
+![](vtree_vs_vtree2_files/figure-html/unnamed-chunk-25-1.png)
 
 #### Patterns
 
@@ -637,7 +650,7 @@ pattern(vt) |> arrange(Sex_n) |>
   plot(palettes = c("Blues", "Greens"))
 ```
 
-![](vtree_vs_vtree2_files/figure-html/unnamed-chunk-26-1.png)
+![](vtree_vs_vtree2_files/figure-html/unnamed-chunk-27-1.png)
 
 #### Missing functionality
 
