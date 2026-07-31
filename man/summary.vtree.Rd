@@ -2,7 +2,7 @@
 % Please edit documentation in R/vtree.R
 \name{summary.vtree}
 \alias{summary.vtree}
-\title{Show per-variable summaries of a vtree object}
+\title{Show per-variable summaries of a vtree object data}
 \usage{
 \method{summary}{vtree}(object, ...)
 }
@@ -16,7 +16,8 @@ A data frame with summaries (counts and frequencies) for each
 level of each variable in the vtree.
 }
 \description{
-Show per-variable summaries of a vtree object
+Show per-variable summaries of the data on which a vtree object was
+constructed. The summary does not change when the vtree object is modified.
 }
 \details{
 For each variable included in a vtree object, and for all levels of that
@@ -26,8 +27,8 @@ information. The frequency calculation depends on whether the tree was
 constructed with valid percentages (i.e., excluding the NAs), or with
 all samples.
 
-These sumaries are calculate the original data summaries; they do not
-change when the vtree object is modified.
+Summary returned by \code{summary.vtree()} is the original data summary; it
+does not change when the vtree object is modified.
 
 The returned data frame (tibble) contains the following columns:
 \itemize{
