@@ -368,13 +368,20 @@ makeContent.vtree_plot <- function(x) {
   spec_lwd <- list()
   kinder <- list()
 
-  nodes <- nodes |> mutate(shape = "rectangle")
+  pad <- nodes$width * .05 # padding
+  fl <- 1/5  # fraction for the label
+
   rects <- .get_node_rects(nodes, lwd = lwd)
 
+  nodes <- nodes |>
+    mutate(empty = is.na(label) | label == "") |>
+    mutate(frac_l = ifelse(empty, 0, fl)) |>
+    mutate(width = width - 2 * pad)
+
   gnodes <- nodes |>
-    mutate(y = y - height/2 + height/20) |>
-    mutate(height = 3/4 * height) |>
-    mutate(width = 9/10 * width) |>
+    mutate(y = y - height / 2 + pad) |> # set to bottom
+                                        # plust pad
+    mutate(height = height * (1 - frac_l) - 1.5 * pad) |>
     mutate(y = y + height / 2)
 
   grobs <- map(seq_along(nodes$grob), \(i) {
@@ -388,21 +395,16 @@ makeContent.vtree_plot <- function(x) {
                  children = do.call(gList, grobs),
                  name = "plot_obj")
 
-  nodes$y <- nodes$y + nodes$height / 2
-  nodes$y <- nodes$y + (- 1/4 + 1/7.5) * nodes$height
-  nodes$height <- nodes$height / 8
-  labels <- .get_labels(nodes, fs = 9)
+  nodes <- mutate(nodes, y = y + height/2 - pad) |> # set to top
+    mutate(height = frac_l * height - 1.5 * pad) |>
+    mutate(y = y - height / 2)
 
+  labels <- .get_labels(nodes, fs = 9)
   spec$plots <- list(path = c("plots", "text"),
                              fs = "adaptive",
                              widths = nodes$width,
                              heights = nodes$height)
 
-
-# labels <- gTree(gp = gpar(),
-#                 children = do.call(gList, labels),
-#                 name = "text")
-#
   ret <- gTree(gp = gpar(),
         children = gList(rects=rects, grobs = grobs, text=labels),
         name = "plots")
@@ -439,11 +441,9 @@ makeContent.vtree_plot <- function(x) {
   if("grob" %in% colnames(nodes)) {
     grobnodes <- map_lgl(nodes[["grob"]],
                          \(g) {
-                           print(length(g))
-                           length(g) > 0L
+                           !any(is.na(g))
                          })
     if(sum(grobnodes) > 0) {
-      message("found ", sum(grobnodes), " grobnodes")
       gn <- .make_grobs(nodes[grobnodes, ], params)
       children <- c(children, list(plots = gn$ret))
 
