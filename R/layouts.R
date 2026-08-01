@@ -470,7 +470,6 @@ add_layout <- function(vtree,
                    lwidth=NA, lheight=NA,
                    show_root=TRUE) {
 
-
   if(!is.null(layout_func)) {
     layout <- "custom"
   } else {
@@ -481,6 +480,12 @@ add_layout <- function(vtree,
     cli::cli_inform(c(i = paste("layout is 'precomputed',",
                       "assuming that the vtree already has a layout")))
     return(vtree)
+  }
+
+  if(dir %in% c("tb", "bt")) {
+    .t <- lwidth
+    lwidth <- lheight
+    lheight <- .t
   }
 
   if(layout == "regular") {
