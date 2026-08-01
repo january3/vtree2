@@ -59,7 +59,7 @@ test_that("plot returns a gTree object", {
 
   expect_named(p1$children$nodes$children, c("rect", "text"))
   expect_true("spec_fontsize" %in% names(p1$params))
-  expect_true("labels" %in% names(p1$params$spec))
+  expect_true("labels" %in% names(p1$params$spec_fontsize))
 
   p2 <- plot(vt, legend = TRUE)
   expect_s3_class(p2, "vtree_plot")

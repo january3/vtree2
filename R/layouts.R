@@ -329,7 +329,6 @@ layout_regular <- function(vtree, dir="lr",
                .data[["nleafs"]] / 2 / totleafs) |>
     mutate(shape = "roundrectangle")
 
-
   if(!show_root) {
     layout <- layout |>
       mutate(x = ifelse(.data[["level"]] == 0, NA, .data[["x"]]),
@@ -346,7 +345,7 @@ layout_regular <- function(vtree, dir="lr",
   dx <- lwidth
 
   layout <- layout |>
-    mutate(x1 = nodes$x[.data[["from"]]] + dx/2,
+    mutate(x1 = nodes$x[.data[["from"]]],# + dx/2,
            x2 = nodes$x[.data[["to"]]] - dx/2,
            y1 = nodes$y[.data[["from"]]],
            y2 = nodes$y[.data[["to"]]],

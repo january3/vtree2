@@ -95,6 +95,28 @@ set_fontsize <- function(grobs, fs) {
   ret
 }
 
+adjust_linewidth <- function(x, path, lwd, nokids = FALSE) {
+  path <- gPath(path)
+
+  mutter <- getGrob(x, gPath = path)
+
+  if(nokids) {
+    mutter$gp$lwd <- lwd
+  } else {
+    kinder <- mutter$children
+
+    kinder <- map(kinder, \(g) {
+      g$gp$lwd <- lwd
+      g
+    })
+
+    mutter <- setChildren(mutter, do.call(gList, kinder))
+  }
+
+  x <- setGrob(x, gPath = path, mutter)
+  x
+}
+
 #' @importFrom grid getGrob setGrob setChildren gPath gList
 adjust_fontsize <- function(x, path, font="fixed",
                             padding = .1,
@@ -284,6 +306,14 @@ makeContent.vtree_plot <- function(x) {
                          heights = s$heights)
   }
 
+  spec_lwd <- x$params$spec_lwd
+  lwd <- lwd_npc(0.001 * x$params$lwd)
+  for(i in seq_along(spec_lwd)) {
+    s <- spec_lwd[[i]]
+    x <- adjust_linewidth(x, s$path,
+                          lwd = x$params$lwd, s$nokids %||% FALSE)
+  }
+
   x
 }
 
@@ -302,20 +332,24 @@ makeContent.vtree_plot <- function(x) {
   lwd       <- params$lwd
   fontsizes <- params$fontsizes
 
+  spec <- list()
+  spec_lwd <- list()
+
   # basic grobs: nodes and edges, always shown
   nodes <- as_tibble(layout)
   edges <- activate(layout, "edges") |> as_tibble()
 
   nodes_gt <- .get_nodes(nodes, fs = 9, lwd = lwd)
   arrows   <- .get_arrows(edges)
+  spec_lwd$edges <- list(path = c("edges"), nokids = TRUE)
 
   # spec contains information necessary to adjust the font sizes
-  spec <- list()
   spec$labels <- list(path = c("nodes", "text"),
                       fs = fontsizes$nodes,
                       widths = nodes$width,
                       heights = nodes$height,
                       padding = .15)
+  spec_lwd$nodes <- list(path = c("nodes", "rect"))
 
   # margin labels with the variable names
   children <- gList(arrows=arrows, nodes=nodes_gt)
@@ -330,6 +364,7 @@ makeContent.vtree_plot <- function(x) {
                                  fs = fontsizes$legend_labels,
                                  widths = legend$levels$width,
                                  heights = legend$levels$height)
+      spec_lwd$legend_levels <- list(path = c("legend", "levels", "rect"))
     }
 
     # titles when legend=TRUE or var_labels != FALSE
@@ -348,6 +383,7 @@ makeContent.vtree_plot <- function(x) {
   }
 
   x$params$spec_fontsize <- spec
+  x$params$spec_lwd <- spec_lwd
   setChildren(x, children)
 }
 
