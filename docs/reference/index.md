@@ -47,7 +47,7 @@
   [`mark()`](https://january3.github.io/vtree2/reference/prune.md) :
   Find nodes and prune a vtree graph
 - [`summary(`*`<vtree>`*`)`](https://january3.github.io/vtree2/reference/summary.vtree.md)
-  : Show per-variable summaries of a vtree object
+  : Show per-variable summaries of a vtree object data
 - [`summary_at_var()`](https://january3.github.io/vtree2/reference/summary_at_var.md)
   : Summarize a variable at a given node of a vtree
 - [`summary_vt()`](https://january3.github.io/vtree2/reference/summary_vt.md)

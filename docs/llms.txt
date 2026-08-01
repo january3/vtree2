@@ -193,8 +193,13 @@ However, I did use an LLM based chat to discuss some of the design
 issues (e.g. to compare existing packages for graph representation).
 Also, for code review / bug finding.
 
+## Documentation
+
+More docs available [here](https://january3.github.io/vtree2/).
+
 ## TODO
 
+- write a manual in the main vignette
 - root node should not show percentages on default labels
 - add prefix and suffix parameters to add_labels, to make the handling
   easier
@@ -206,7 +211,9 @@ Also, for code review / bug finding.
   only these which are on the same level as a node that is kept.
   Generally make keep behave the same as in vtree.~~
 - ~~legends~~
-- should the vtree() function take cases or samples?
+- ~~should the vtree() function take cases or samples? Maybe instead of
+  vtree_from_freqtable, we can just use vtree(…, .freq_col=“Freq”) or
+  something like this.~~ nah, better make it explicit.
 - maybe gridtext for the labels so we can use some basic formatting
 - faster processing of cases into trees
 - questions to N:
@@ -273,7 +280,7 @@ Also, for code review / bug finding.
   [`mark()`](https://january3.github.io/vtree2/reference/prune.md) :
   Find nodes and prune a vtree graph
 - [`summary(`*`<vtree>`*`)`](https://january3.github.io/vtree2/reference/summary.vtree.md)
-  : Show per-variable summaries of a vtree object
+  : Show per-variable summaries of a vtree object data
 - [`summary_at_var()`](https://january3.github.io/vtree2/reference/summary_at_var.md)
   : Summarize a variable at a given node of a vtree
 - [`summary_vt()`](https://january3.github.io/vtree2/reference/summary_vt.md)

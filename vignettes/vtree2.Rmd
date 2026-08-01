@@ -507,3 +507,33 @@ value; therefore, for small devices the lines may appeary too thick.
 
 
 
+## Inset plots
+
+
+```{r}
+vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived) |>
+  keep(path == "Class:1st") # only keep the first class passengers
+mask <- find_nodes(vt, leaf) # leaf is a logical vector
+```
+
+```{r}
+vt <- add_labels(vt, mask = !mask, template = "long") |>
+  add_labels(mask = mask, fmt = glue("{node_val}"))
+
+library(ggplot2)
+pl <- ggplot(iris,
+             aes(x = Sepal.Width, y = Sepal.Length, color=Species)) +
+  geom_point() +
+  theme_minimal() +
+  theme(legend.position = "none")
+pl <- ggplotGrob(pl)
+vt <- vt |>
+  mutate(grob = ifelse(path == "Class:1st/Sex:Female/Survived:No",
+                       list(pl), list(list())))
+
+plot(vt, var_labels = FALSE, dir="tb", show_root = FALSE,
+       lwidth = 0.5, lheight = 0.5)
+```
+
+
+

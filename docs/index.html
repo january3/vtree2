@@ -191,9 +191,15 @@
 <p>I have not used LLMs directly in writing the code or documentation. However, I did use an LLM based chat to discuss some of the design issues (e.g. to compare existing packages for graph representation). Also, for code review / bug finding.</p>
 </div>
 <div class="section level2">
+<h2 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a>
+</h2>
+<p>More docs available <a href="https://january3.github.io/vtree2/">here</a>.</p>
+</div>
+<div class="section level2">
 <h2 id="todo">TODO<a class="anchor" aria-label="anchor" href="#todo"></a>
 </h2>
 <ul>
+<li>write a manual in the main vignette</li>
 <li>root node should not show percentages on default labels</li>
 <li>add prefix and suffix parameters to add_labels, to make the handling easier</li>
 <li><del>plotting function for patterns</del></li>
@@ -203,7 +209,8 @@
 <del>add the keep_children parameter to the keep() function</del>, <del>and also keep_na. - this is harder; because not all the NA nodes are kept, but only these which are on the same level as a node that is kept. Generally make keep behave the same as in vtree.</del>
 </li>
 <li><del>legends</del></li>
-<li>should the vtree() function take cases or samples?</li>
+<li>
+<del>should the vtree() function take cases or samples? Maybe instead of vtree_from_freqtable, we can just use vtree(…, .freq_col=“Freq”) or something like this.</del> nah, better make it explicit.</li>
 <li>maybe gridtext for the labels so we can use some basic formatting</li>
 <li>faster processing of cases into trees</li>
 <li>questions to N:

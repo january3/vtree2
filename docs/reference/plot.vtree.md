@@ -108,10 +108,6 @@ plot_vtree(
   direction of the tree. One of "lr" (left to right), "rl" (right to
   left), "tb" (top to bottom), "bt" (bottom to top). Default is "lr".
 
-- lfontsize:
-
-  Font size for labels
-
 ## Value
 
 A grid::gTree object of class vtree_plot.

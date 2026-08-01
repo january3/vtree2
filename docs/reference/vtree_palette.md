@@ -74,7 +74,6 @@ vt |> add_palette(palettes = "Blues") |> plot()
 # same as
 plot(vt, palettes = "Blues")
 
-
 # manipulate color for some of the nodes
 vt |> add_palette(palettes = "Blues") |>
   # don't prune, just mark the nodes in the mark col
