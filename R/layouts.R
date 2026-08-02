@@ -245,6 +245,7 @@ layout_legend_minimal <- function(layout, margins, dir="lr",
 layout_by_freq <- function(vtree, dir="lr",
                            lwidth=NA, lheight=NA,
                            varspace=NULL,
+                           varsize=NULL,
                            show_root=TRUE) {
 
   sr <- as.integer(show_root)
@@ -293,7 +294,9 @@ layout_by_freq <- function(vtree, dir="lr",
   layout
 }
 
-.apply_varspace <- function(layout, varspace, lwidth) {
+# calculate the x positions of the nodes based on the variable space, size
+# and lwidth.
+.apply_varspace <- function(layout, varspace, varsize, lwidth) {
 
   nlevel <- length(varspace)
 
@@ -302,7 +305,7 @@ layout_by_freq <- function(vtree, dir="lr",
 
   layout <- layout |>
     mutate(full_w = varspace[node_col],
-           width = varspace[node_col] * lwidth) |>
+           width = varspace[node_col] * varsize[node_col] * lwidth) |>
     mutate(x = xpos[node_col])
 
   layout
@@ -312,6 +315,7 @@ layout_by_freq <- function(vtree, dir="lr",
 layout_regular <- function(vtree, dir="lr",
                            lwidth=NA, lheight=NA,
                            varspace=NULL,
+                           varsize=NULL,
                            show_root=TRUE) {
 
   sr <- as.integer(show_root)
@@ -338,15 +342,11 @@ layout_regular <- function(vtree, dir="lr",
 
   if(nlevel != length(varspace)) {
     message(nlevel, "!=", length(varspace))
-    print(varspace)
     die("nlevel" != length(varspace))
   }
 
-  if(!show_root) {
-    varspace <- varspace[ names(varspace) != "root" ]
-  }
-
-  layout <- .apply_varspace(layout, varspace, lwidth)
+  # calculate the x positions and label widths
+  layout <- .apply_varspace(layout, varspace, varsize, lwidth)
 
   layout <- layout |>
     mutate(height = lheight) |>
@@ -377,6 +377,7 @@ layout_regular <- function(vtree, dir="lr",
 layout_flushed <- function(vtree, dir="lr",
                            lwidth=NA, lheight=NA,
                            varspace=NULL,
+                           varsize=NULL,
                            show_root=TRUE) {
 
   sr <- as.integer(show_root)
@@ -430,8 +431,44 @@ layout_flushed <- function(vtree, dir="lr",
    layout
 }
 
-.normalize_varspace <- function(varspace, layout) {
+# calculate the actual sizes for the variables
+.normalize_varsize <- function(varsize, varspace, layout) {
   vars <- unique(as_tibble(layout)$node_col)
+
+  vars <- names(varspace)
+
+  if(is.null(varsize)) {
+    varsize <- rep(1, length(vars))
+    names(varsize) <- vars
+    return(varsize)
+  }
+
+  if(!all(vars %in% names(varsize))) {
+    missing <- vars[ !vars %in% names(varsize) ]
+    cli_abort(c(x="varsize lacks required names: {missing}"))
+  }
+
+  if(!is.numeric(varsize)) {
+    die("varsize argument must be numeric")
+  }
+
+  varsize <- varsize[vars]
+
+  if(!all(varsize <= 1)) {
+    cli_abort(
+      c(x = "varsize must be less than or equal to 1 for all variables",
+        i = "varsize: {varsize}"))
+  }
+
+  varsize
+}
+
+.normalize_varspace <- function(varspace, layout, show_root) {
+  vars <- unique(as_tibble(layout)$node_col)
+
+  if(!show_root) {
+    vars <- vars[ vars != "root" ]
+  }
 
   if(is.null(varspace)) {
     varspace <- rep(1/length(vars), length(vars))
@@ -490,7 +527,13 @@ layout_flushed <- function(vtree, dir="lr",
 #' @param vtree A vtree object
 #' @param varspace named numerical vector with relative spaces for each
 #'        variable. The names must include all variables present in the
-#'        tree plus "root".
+#'        tree plus "root". Space describes the total amount of horizontal
+#'        or vertical (for vertical layouts) space allocated to a variable.
+#' @param varsize named numerical vector with relative sizes for each
+#'        variable. The names must include all variables present in the
+#'        tree plus "root". Size describes the actual horizontal or
+#'        vertical (for vertical layouts) size of the nodes. It is
+#'        cumulative with lwidth.
 #' @param layout The layout type, either "regular" or "proportional"
 #' @param layout_func A custom layout function.
 #' @param dir The direction of the layout, either "lr" (left to right), "rl"
@@ -514,9 +557,8 @@ add_layout <- function(vtree,
                    dir="lr",
                    lwidth=NA, lheight=NA,
                    varspace = NULL,
+                   varsize = NULL,
                    show_root=TRUE) {
-
-  varspace <- .normalize_varspace(varspace, vtree)
 
   if(!is.null(layout_func)) {
     layout <- "custom"
@@ -525,10 +567,15 @@ add_layout <- function(vtree,
   }
 
   if(layout == "precomputed") {
+    # XXX actually, maybe add_layout should take that precomputed layout
+    # and fit it into margins, rotate etc.
     cli::cli_inform(c(i = paste("layout is 'precomputed',",
                       "assuming that the vtree already has a layout")))
     return(vtree)
   }
+
+  varspace <- .normalize_varspace(varspace, vtree, show_root)
+  varsize  <- .normalize_varsize(varsize, varspace, vtree)
 
   if(dir %in% c("tb", "bt")) {
     .t <- lwidth
@@ -551,6 +598,7 @@ add_layout <- function(vtree,
   layout <- layout_func(vtree, dir=dir,
                            lwidth=lwidth, lheight=lheight,
                            varspace = varspace,
+                           varsize = varsize,
                            show_root=show_root)
 
   if(dir == "rl") {
