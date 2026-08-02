@@ -244,6 +244,7 @@ layout_legend_minimal <- function(layout, margins, dir="lr",
 
 layout_by_freq <- function(vtree, dir="lr",
                            lwidth=NA, lheight=NA,
+                           varspace=NULL,
                            show_root=TRUE) {
 
   sr <- as.integer(show_root)
@@ -292,9 +293,25 @@ layout_by_freq <- function(vtree, dir="lr",
   layout
 }
 
+.apply_varspace <- function(layout, varspace, lwidth) {
+
+  nlevel <- length(varspace)
+
+  xpos <- cumsum(lag(varspace, 1, default=0)) + varspace/2
+  names(xpos) <- names(varspace)
+
+  layout <- layout |>
+    mutate(full_w = varspace[node_col],
+           width = varspace[node_col] * lwidth) |>
+    mutate(x = xpos[node_col])
+
+  layout
+}
+
 
 layout_regular <- function(vtree, dir="lr",
                            lwidth=NA, lheight=NA,
+                           varspace=NULL,
                            show_root=TRUE) {
 
   sr <- as.integer(show_root)
@@ -307,24 +324,33 @@ layout_regular <- function(vtree, dir="lr",
   totleafs <- nodes$nleafs[nodes$node_id == 1]
   if(is.na(lheight)) {
     lheight <- .8 / totleafs
-    full_h <- 1 / totleafs
   } else {
     lheight <- lheight / totleafs
-    full_h <- 1 / totleafs
   }
 
   if(is.na(lwidth)) {
-    lwidth <- .35 / nlevel
-    full_w <- 1 / nlevel
-  } else {
-    lwidth <- lwidth / nlevel
-    full_w <- 1 / nlevel
+    lwidth <- .35
   }
 
+  if(is.null(varspace)) {
+    die("varspace is NULL")
+  }
+
+  if(nlevel != length(varspace)) {
+    message(nlevel, "!=", length(varspace))
+    print(varspace)
+    die("nlevel" != length(varspace))
+  }
+
+  if(!show_root) {
+    varspace <- varspace[ names(varspace) != "root" ]
+  }
+
+  layout <- .apply_varspace(layout, varspace, lwidth)
+
   layout <- layout |>
-    mutate(width = lwidth, height = lheight) |>
-    mutate(full_w = full_w, full_h = .data[["height"]]) |>
-    mutate(x = (.data[["level"]] + .5 - 1 + sr)/ nlevel) |>
+    mutate(height = lheight) |>
+    mutate(full_h = 1 / totleafs) |>
     mutate(y = 1 - .data[["offset_tot"]] / totleafs -
                .data[["nleafs"]] / 2 / totleafs) |>
     mutate(shape = "roundrectangle")
@@ -337,16 +363,9 @@ layout_regular <- function(vtree, dir="lr",
 
   nodes <- as_tibble(layout)
 
-  if(dir %in% c("tb", "bt")) {
-    dx <- lheight
-  } else {
-    dx <- lwidth
-  }
-  dx <- lwidth
-
   layout <- layout |>
     mutate(x1 = nodes$x[.data[["from"]]],# + dx/2,
-           x2 = nodes$x[.data[["to"]]] - dx/2,
+           x2 = nodes$x[.data[["to"]]] - nodes$width[.data[["to"]]]/2,
            y1 = nodes$y[.data[["from"]]],
            y2 = nodes$y[.data[["to"]]],
            .edges = TRUE)
@@ -357,6 +376,7 @@ layout_regular <- function(vtree, dir="lr",
 
 layout_flushed <- function(vtree, dir="lr",
                            lwidth=NA, lheight=NA,
+                           varspace=NULL,
                            show_root=TRUE) {
 
   sr <- as.integer(show_root)
@@ -410,7 +430,29 @@ layout_flushed <- function(vtree, dir="lr",
    layout
 }
 
+.normalize_varspace <- function(varspace, layout) {
+  vars <- unique(as_tibble(layout)$node_col)
 
+  if(is.null(varspace)) {
+    varspace <- rep(1/length(vars), length(vars))
+    names(varspace) <- vars
+    return(varspace)
+  }
+
+  if(!all(vars %in% names(varspace))) {
+    missing <- vars[ !vars %in% names(varspace) ]
+    cli_abort(c(x="varspace lacks required names: {missing}"))
+  }
+
+  if(!is.numeric(varspace)) {
+    die("varspace argument must be numeric")
+  }
+
+  varspace <- varspace[vars]
+  varspace <- varspace / sum(varspace)
+
+  varspace
+}
 
 #' Prepare a layout for plotting a vtree
 #'
@@ -446,6 +488,9 @@ layout_flushed <- function(vtree, dir="lr",
 #' - x2, y2: the coordinates of the end of the edge
 #'
 #' @param vtree A vtree object
+#' @param varspace named numerical vector with relative spaces for each
+#'        variable. The names must include all variables present in the
+#'        tree plus "root".
 #' @param layout The layout type, either "regular" or "proportional"
 #' @param layout_func A custom layout function.
 #' @param dir The direction of the layout, either "lr" (left to right), "rl"
@@ -468,7 +513,10 @@ add_layout <- function(vtree,
                    layout_func = NULL,
                    dir="lr",
                    lwidth=NA, lheight=NA,
+                   varspace = NULL,
                    show_root=TRUE) {
+
+  varspace <- .normalize_varspace(varspace, vtree)
 
   if(!is.null(layout_func)) {
     layout <- "custom"
@@ -502,6 +550,7 @@ add_layout <- function(vtree,
 
   layout <- layout_func(vtree, dir=dir,
                            lwidth=lwidth, lheight=lheight,
+                           varspace = varspace,
                            show_root=show_root)
 
   if(dir == "rl") {
