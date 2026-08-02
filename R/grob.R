@@ -433,7 +433,10 @@ makeContent.vtree_plot <- function(x) {
   spec_lwd <- list()
 
   # basic grobs: nodes and edges, always shown
-  nodes <- as_tibble(layout)
+  nodes <- as_tibble(layout) |>
+    filter(!is.na(.data[["x"]]) & !is.na(.data[["y"]])) |>
+    filter(!is.na(.data[["width"]]) & !is.na(.data[["height"]]))
+
   edges <- activate(layout, "edges") |> as_tibble()
 
   children <- list()
