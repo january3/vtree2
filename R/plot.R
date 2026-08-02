@@ -218,8 +218,6 @@ normalize_layout <- function(layout) {
 #'        of observations in that node. See [vtree2::add_layout()] for details.
 #'        If layout is NA, then it is assumed that the vtree already has a
 #'        layout with all necessary columns and no layout is calculated.
-#' @param layout_func Custom function to calculate layout (see
-#'        [vtree2::add_layout()] for details).
 #' @param margins numerical vector: top/right/bottom/left margins in
 #'        fraction of available space (from 0 to 1).
 #' @param show_root If TRUE (default), show the root node (total
@@ -292,7 +290,6 @@ plot.vtree <- function(x, ...) {
 plot_vtree <- function(x,
                       layout = c("regular", "proportional",
                               "flushed", "precomputed"),
-                      layout_func = NULL,
                       palettes = c("Reds", "Blues", "Greens",
                                    "Oranges", "Purples"),
                       na_fill = "white",
@@ -315,7 +312,7 @@ plot_vtree <- function(x,
   x <- .normalize_vtree_for_plotting(x, palettes, na_fill)
 
   layout <- add_layout(x, layout = layout_arg,
-                   layout_func = layout_func, dir = dir,
+                   dir = dir,
                    lwidth=lwidth, lheight=lheight,
                    show_root = show_root)
 
