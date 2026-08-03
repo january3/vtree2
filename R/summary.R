@@ -508,21 +508,21 @@ vtree_apply <- function(cases, vtree, FUN, ..., .mask=NULL) {
 
   nodes <- as_tibble(vtree)
 
-  if(is.null(mask)) {
-    mask <- rep(TRUE, nrow(nodes))
+  if(is.null(.mask)) {
+    .mask <- rep(TRUE, nrow(nodes))
   } else {
-    if(length(mask) != nrow(nodes)) {
+    if(length(.mask) != nrow(nodes)) {
       cli_abort(c(
         x = "The length of .mask must be equal to the number of nodes in the vtree",
-        i = "You provided a mask of length {length(mask)} for a vtree with {nrow(nodes)} nodes"
+        i = "You provided a mask of length {length(.mask)} for a vtree with {nrow(nodes)} nodes"
       ))
     }
   }
 
   # next create a match vector between the vtree and the cases data frame
-  matches <- map(nodes$path_l[mask], \(p) .find_match_recursively(cases, p))
+  matches <- map(nodes$path_l[.mask], \(p) .find_match_recursively(cases, p))
 
   ret <- map(matches, \(m) FUN(cases[m, , drop = FALSE], ...))
-  names(ret) <- nodes$node_key[mask]
+  names(ret) <- nodes$node_key[.mask]
   ret
 }
