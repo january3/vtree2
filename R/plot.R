@@ -150,6 +150,85 @@ normalize_layout <- function(layout) {
 
 }
 
+# figure out a direction from a precomputed layout
+.get_dir <- function(layout) {
+
+  if(!is.null(attr(layout, "dir"))) {
+    return(attr(layout, "dir"))
+  }
+
+  nodes <- as_tibble(layout)
+
+  # first, check if x is constant for a given node_col
+  # then it is a horizontal layout, otherwise vertical
+  vert <- TRUE
+  if(all(tapply(nodes$x, nodes$node_col,
+                \(x) length(unique(x))) == 1)) {
+    vert <- FALSE
+  } else if(all(tapply(nodes$y, nodes$node_col,
+                \(x) length(unique(x))) == 1)) {
+    vert <- TRUE
+  } else {
+    cli_abort(c(x = "cannot determine direction of precomputed layout"))
+  }
+
+  # if vert, check whether x are increasing or decreasing with node_col
+  if(vert) {
+    x_means <- tapply(nodes$x, nodes$node_col, mean)
+    if(all(diff(x_means) > 0)) {
+      return("bt")
+    } else if(all(diff(x_means) < 0)) {
+      return("tb")
+    } else {
+      cli_abort(c(x = "cannot determine direction of precomputed layout"))
+    }
+  } else {
+    y_means <- tapply(nodes$y, nodes$node_col, mean)
+    if(all(diff(y_means) > 0)) {
+      return("lr")
+    } else if(all(diff(y_means) < 0)) {
+      return("rl")
+    } else {
+      cli_abort(c(x = "cannot determine direction of precomputed layout"))
+    }
+  }
+}
+
+
+
+# check whether vtree already has a layout. If so, return vtree
+.normalize_layout <- function(vtree, layout_arg, lwidth, lheight, show_root, dir) {
+
+  nodes <- as_tibble(vtree)
+  edges <- activate(vtree, "edges") |> as_tibble()
+
+  has_cols <- all(c("x", "y", "width", "height") %in% colnames(nodes)) &&
+              all(c("x1", "x2", "y1", "y2") %in% colnames(edges))
+
+  if(inherits(vtree, "vtree_layout") || has_cols) {
+    if(!is.na(lwidth) || !is.na(lheight)) {
+      cli::cli_warn(
+       c(i = "vtree already has a layout; ignoring lwidth and lheight"))
+    } else {
+      cli::cli_inform(c(i = "vtree already has a layout; using it as is"))
+    }
+
+    if(is.null(attr(vtree, "dir"))) {
+      attr(vtree, "dir") <- .get_dir(vtree)
+    }
+
+    return(vtree)
+  }
+
+  layout <- add_layout(vtree, layout = layout_arg,
+                   dir = dir,
+                   lwidth=lwidth, lheight=lheight,
+                   show_root = show_root)
+
+
+  layout
+}
+
 
 #' Plot a vtree
 #'
@@ -288,8 +367,7 @@ plot.vtree <- function(x, ...) {
 #' @rdname plot.vtree
 #' @export
 plot_vtree <- function(x,
-                      layout = c("regular", "proportional",
-                              "flushed", "precomputed"),
+                      layout = c("regular", "proportional", "flushed"),
                       palettes = c("Reds", "Blues", "Greens",
                                    "Oranges", "Purples"),
                       na_fill = "white",
@@ -311,18 +389,17 @@ plot_vtree <- function(x,
 
   x <- .normalize_vtree_for_plotting(x, palettes, na_fill)
 
-  layout <- add_layout(x, layout = layout_arg,
-                   dir = dir,
-                   lwidth=lwidth, lheight=lheight,
-                   show_root = show_root)
+  layout <- .normalize_layout(x, layout_arg, lwidth, lheight, show_root, dir)
+
+  dir <- attr(layout, "dir") %||% dir
 
   layout <- .fit_margins(layout, margins)
   layout <- normalize_layout(layout)
 
   if(legend) {
-    legend <- layout_legend(layout, margins, var_labels, dir)
+    legend <- layout_legend(layout, margins, var_labels)
   } else if(!is.null(var_labels)) {
-    legend <- layout_legend_minimal(layout, margins, dir, var_labels)
+    legend <- layout_legend_minimal(layout, margins, var_labels)
   } else {
     legend <- NULL
   }
