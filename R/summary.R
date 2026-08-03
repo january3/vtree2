@@ -447,3 +447,82 @@ summary_at_var <- function(vtree, varname, as_char = FALSE,
 
   ret
 }
+
+
+#' Apply a function to a data frame by nodes in the vtree
+#'
+#' Apply a function to a data frame by nodes in the vtree. The data frame
+#' must contain the same variables as the vtree. It is split by the levels
+#' of the variables such that for each node in the vtree, the function is
+#' applied to the subset of data that matches the path to that node.
+#' @param cases A data frame of cases, with one row per observation.
+#' @param vtree A vtree object.
+#' @param FUN A function to apply to the subset of cases that match the path
+#'            to each node in the vtree.
+#' @param .mask An optional logical vector of the same length as the number of
+#'              nodes in the vtree. If provided,
+#'              only the nodes for which .mask is TRUE will be processed.
+#' @param ... Additional arguments to pass to FUN.
+#' @return A list of the results of applying FUN to each subset of cases
+#'         named with the node_key of the corresponding node in the vtree.
+#' @examples
+#' vt <- vtree_from_freqtable(Titanic, Class, Sex)
+#'
+#' # only leaf nodes
+#' mask <- find_nodes(vt, leaf)
+#'
+#' # prepare labels with summary of Survived for each node
+#' sm <- vtree_apply(titanicNA, vt, \(df) summary(df$Survived), .mask = mask) |>
+#'   map_chr(\(x) paste0(names(x), ": ", x, collapse = "\n"))
+#'
+#' # plot with custom layout making more space for the labels in the last
+#' # node ("Sex")
+#' vt |> add_labels() |>
+#'   mutate(label = ifelse(mask, paste0(label, "\n", sm[node_key]), label)) |>
+#'   add_layout(varspace = c(root=1, Class=1, Sex=3),
+#'              dir="tb", lheight=.8) |>
+#'   plot(dir="tb")
+#' @export
+vtree_apply <- function(cases, vtree, FUN, ..., .mask=NULL) {
+
+  if(!inherits(vtree, "vtree")) {
+    cli_abort(c(x = "vtree_apply() requires a vtree object"))
+  }
+
+  if(!is.data.frame(cases)) {
+    cli_abort(c(x = "vtree_apply() requires a data frame for cases"))
+  }
+
+
+  # check that all necessary variables are in the colnames of cases
+  cols <- names(vtree)
+  if(!all(cols %in% colnames(cases))) {
+    missing_cols <- setdiff(cols, colnames(cases))
+    cli_abort(c(
+      x = "Some columns in the vtree are not found in the cases data frame",
+      i = "All columns from the vtree must be present in the cases data frame",
+      i = "Missing columns: {missing_cols}",
+      i = "Columns in cases: {colnames(cases)}"
+    ))
+  }
+
+  nodes <- as_tibble(vtree)
+
+  if(is.null(mask)) {
+    mask <- rep(TRUE, nrow(nodes))
+  } else {
+    if(length(mask) != nrow(nodes)) {
+      cli_abort(c(
+        x = "The length of .mask must be equal to the number of nodes in the vtree",
+        i = "You provided a mask of length {length(mask)} for a vtree with {nrow(nodes)} nodes"
+      ))
+    }
+  }
+
+  # next create a match vector between the vtree and the cases data frame
+  matches <- map(nodes$path_l[mask], \(p) .find_match_recursively(cases, p))
+
+  ret <- map(matches, \(m) FUN(cases[m, , drop = FALSE], ...))
+  names(ret) <- nodes$node_key[mask]
+  ret
+}
