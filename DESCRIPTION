@@ -29,7 +29,9 @@ Imports:
     tidyselect
 Suggests: 
     cowplot,
+    ggplot2,
     glue,
+    jpeg,
     knitr,
     rmarkdown,
     testthat (>= 3.0.0),
