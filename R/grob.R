@@ -415,6 +415,7 @@ makeContent.vtree_plot <- function(x) {
                                         width = gnodes$width[i],
                                         height = gnodes$height[i])
                  g})
+
   grobs <- .make_unique_names(grobs, names = nodes$node_key, prefix = "grob_")
   grobs <- gTree(gp = gpar(),
                  children = do.call(gList, grobs),
@@ -464,7 +465,10 @@ makeContent.vtree_plot <- function(x) {
 
   edges <- activate(layout, "edges") |> as_tibble()
 
-  children <- list()
+  arrows   <- .get_arrows(edges)
+  spec_lwd$edges <- list(path = c("edges"), nokids = TRUE)
+  children <- list(arrows=arrows)
+
 
   if("grob" %in% colnames(nodes)) {
     grobnodes <- map_lgl(nodes[["grob"]],
@@ -481,8 +485,6 @@ makeContent.vtree_plot <- function(x) {
   }
 
   nodes_gt <- .get_nodes(nodes, fs = 9, lwd = lwd)
-  arrows   <- .get_arrows(edges)
-  spec_lwd$edges <- list(path = c("edges"), nokids = TRUE)
 
   # spec contains information necessary to adjust the font sizes
   spec$labels <- list(path = c("nodes", "text"),
@@ -493,7 +495,7 @@ makeContent.vtree_plot <- function(x) {
   spec_lwd$nodes <- list(path = c("nodes", "rect"))
 
   # margin labels with the variable names
-  children <- c(children, list(arrows=arrows, nodes=nodes_gt))
+  children <- c(children, list(nodes=nodes_gt))
 
   if(!is.null(legend)) {
     ll <- .make_legend(legend, params)
