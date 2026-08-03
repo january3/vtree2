@@ -158,7 +158,6 @@ layout_legend <- function(layout, margins, var_labels, dir="lr") {
     select(all_of(c("node_col", "level", "x", "y", "width", "height", "full_w",
                     "full_h", "shape")))
 
-
   lvls <- levels(layout)
   pals <- attr(layout, "palette") %||% die()
   pals_v <- attr(layout, "palette_vars") %||% die()
@@ -507,19 +506,21 @@ layout_flushed <- function(vtree, dir="lr",
 #'
 #' @section Custom layouts:
 #'
-#' You can also provide a custom layout function. The function should take a
-#' the following arguments: vtree, dir, lwidth, lheight, show_root. It
-#' must return a vtree object with following additional columns in the
-#' nodes data frame:
+#' You can also provide a custom layout function. The function should take
+#' a the following arguments: vtree, dir, lwidth, lheight, varspace,
+#' varsize, show_root. It must return a vtree object with following
+#' additional columns in the nodes data frame:
 #'
 #' - x, y: the coordinates of the center of the node
 #' - width, height: the width and height of the node
-#' - full_w, full_h: the width and height of the total space allocated to
-#' the node including the margins
 #'
 #' In addition, it can have the "shape" column which specifies the shape of
 #' the node to use. It can be "rectangle" or "roundrectangle". If not
 #' specified, the default is "roundrectangle".
+#'
+#' The function should be called from add_layout(), such that the layout is
+#' transformed according to the dir argument and gets converted to the
+#' vtree_layout class.
 #'
 #' In the edge data frame, the following additional columns should be added:
 #' - x1, y1: the coordinates of the start of the edge
@@ -553,7 +554,7 @@ layout_flushed <- function(vtree, dir="lr",
 #' @export
 add_layout <- function(vtree,
                    layout = c("regular", "proportional",
-                              "flushed", "precomputed"),
+                              "flushed"),
                    layout_func = NULL,
                    dir="lr",
                    lwidth=NA, lheight=NA,
@@ -565,14 +566,6 @@ add_layout <- function(vtree,
     layout <- "custom"
   } else {
     layout <- match.arg(layout)
-  }
-
-  if(layout == "precomputed") {
-    # XXX actually, maybe add_layout should take that precomputed layout
-    # and fit it into margins, rotate etc.
-    cli::cli_inform(c(i = paste("layout is 'precomputed',",
-                      "assuming that the vtree already has a layout")))
-    return(vtree)
   }
 
   varspace <- .normalize_varspace(varspace, vtree, show_root)
@@ -614,6 +607,16 @@ add_layout <- function(vtree,
   if(dir == "tb") {
     layout <- .flip_vert(layout)
   }
+
+  as_vtree_layout(layout, dir, show_root)
+}
+
+#' @rdname add_layout
+#' @export
+as_vtree_layout <- function(layout, dir, show_root) {
+  attr(layout, "dir") <- dir
+  attr(layout, "show_root") <- show_root
+  class(layout) <- c("vtree_layout", class(layout))
 
   layout
 }
