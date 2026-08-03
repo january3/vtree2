@@ -147,7 +147,9 @@
 }
 
 # create a layout for the legend.
-layout_legend <- function(layout, margins, var_labels, dir="lr") {
+layout_legend <- function(layout, margins, var_labels) {
+
+  dir <- attr(layout, "dir")
 
   #req_cols <- c("x", "y", "width", "height", "shape", "fill", "label"))
   cnms <- names(layout)
@@ -203,8 +205,10 @@ layout_legend <- function(layout, margins, var_labels, dir="lr") {
 }
 
 # just the variable titles
-layout_legend_minimal <- function(layout, margins, dir="lr",
-                                  var_labels = NULL) {
+layout_legend_minimal <- function(layout, margins, var_labels = NULL) {
+
+  dir <- attr(layout, "dir")
+
   nodes <- as_tibble(layout) |>
     distinct(.data[["node_col"]], .keep_all = TRUE) |>
     dplyr::slice(-1) |>
