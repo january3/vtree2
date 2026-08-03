@@ -374,15 +374,15 @@ makeContent.vtree_plot <- function(x) {
   rects <- .get_node_rects(nodes, lwd = lwd)
 
   nodes <- nodes |>
-    mutate(empty = is.na(label) | label == "") |>
-    mutate(frac_l = ifelse(empty, 0, fl)) |>
-    mutate(width = width - 2 * pad)
+    mutate(empty = is.na(.data[["label"]]) | .data[["label"]] == "") |>
+    mutate(frac_l = ifelse(.data[["empty"]], 0, fl)) |>
+    mutate(width = .data[["width"]] - 2 * pad)
 
   gnodes <- nodes |>
-    mutate(y = y - height / 2 + pad) |> # set to bottom
+    mutate(y = .data[["y"]] - .data[["height"]] / 2 + pad) |> # set to bottom
                                         # plust pad
-    mutate(height = height * (1 - frac_l) - 1.5 * pad) |>
-    mutate(y = y + height / 2)
+    mutate(height = .data[["height"]] * (1 - .data[["frac_l"]]) - 1.5 * pad) |>
+    mutate(y = .data[["y"]] + .data[["height"]] / 2)
 
   grobs <- map(seq_along(nodes$grob), \(i) {
                  g <- gnodes$grob[[i]]
@@ -395,9 +395,9 @@ makeContent.vtree_plot <- function(x) {
                  children = do.call(gList, grobs),
                  name = "plot_obj")
 
-  nodes <- mutate(nodes, y = y + height/2 - pad) |> # set to top
-    mutate(height = frac_l * height - 1.5 * pad) |>
-    mutate(y = y - height / 2)
+  nodes <- mutate(nodes, y = .data[["y"]] + .data[["height"]]/2 - pad) |>
+    mutate(height = .data[["frac_l"]] * .data[["height"]] - 1.5 * pad) |>
+    mutate(y = .data[["y"]] - .data[["height"]] / 2)
 
   labels <- .get_labels(nodes, fs = 9)
   spec$plots <- list(path = c("plots", "text"),
