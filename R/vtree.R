@@ -109,7 +109,7 @@ levels.vtree <- function(x) {
 #' @param x A vtree object.
 #' @return A character vector of column names
 #' @examples
-#' vt <- vtree(Titanic, Class, Sex, Survived)
+#' vt <- vtree(titanicNA, Class, Sex, Survived)
 #' nodecols(vt)
 #' @export
 nodecols <- function(x) {
