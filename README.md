@@ -27,7 +27,7 @@ pak::pak("january3/vtree2")
 1.  Prepare the data with `vtree()` or `vtree_from_freqtable()`. After
     this step, the data is immutable, frequencies and counts calculated
     will not change any more.
-2.  Prune the tree for visualization with `prune()` or `keep()`.
+2.  Prune the tree for visualization with `prune()` or `retain()`.
 3.  Add labels and colors with `add_labels()` and `add_palette()` or by
     directly manipulating the `label`, `color` and `fill` columns of the
     vtree object. `find_nodes()` and `prune(..., mark_only = TRUE)` can
@@ -111,7 +111,7 @@ plot(vt)
 
 **There is more:** with `find_nodes()` you can find nodes which fullfill
 a certain condition. The produced mask (a simple logical vector) can be
-used to select nodes for changing labels or colors. With `keep()`, you
+used to select nodes for changing labels or colors. With `retain()`, you
 can select the nodes you want to keep and remove other nodes.
 
 ### Labelling and colors
@@ -157,7 +157,7 @@ vt |>
   mutate(label = ifelse(leaf,
                         paste0(label, "\n", sm_txt),
                         label)) |>
-  keep(path == "Class:3rd") |>
+  retain(path == "Class:3rd") |>
   plot(show_root = FALSE)
 ```
 
@@ -182,7 +182,10 @@ More docs available [here](https://january3.github.io/vtree2/).
 
 ## TODO
 
-- write a manual in the main vignette
+- varspace and varsize should work with layouts other than regular
+- the arrows should be attached dynamically in grob.R rather than in
+  layout
+- write a manual in the main vignette \[—–\| \] 80% complete
 - root node should not show percentages on default labels
 - add prefix and suffix parameters to add_labels, to make the handling
   easier
@@ -213,3 +216,7 @@ More docs available [here](https://january3.github.io/vtree2/).
 - na.rm handling in prune() is not consistent, at least not with vtree’s
   behavior
 - ~~layout=“proportional” stopped working~~
+- with precomputed layout, plot doesn’t know that the direction is
+  vertical and the legends suck -\> should the legends be computed by
+  the layout function? naaaah. layout should store the attributes via an
+  exported function. Should we make an S3 class? vtree_layout?

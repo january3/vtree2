@@ -241,6 +241,82 @@ vtree(titanicNA, Class, Sex, Survived) |>
 
 ## Creating summaries
 
+## Creating layouts
+
+Layouts will be automatically created by `plot()` if they are missing. The
+parameters passed to the plot give some basic control over the layout:
+`dir` determines the direction of the tree, `show_root` determines whether the
+root node is shown, and `lwidth`/`lheight` determine the width and height
+of the nodes relative to the available space.
+
+
+```{r fig.width=10,fig.height=5}
+vt <- vtree_from_freqtable(Titanic, Class, Survived)
+p1 <- plot(vt)
+p2 <- plot(vt, dir = "tb", show_root = FALSE, lwidth = 0.8, lheight = 0.3)
+plot_grid(p1, p2, nrow = 1)
+```
+
+The `plot()` function simply calls `add_layout()` to add the layout to the
+vtree object with the specified parameters. Alternatively, you can call the
+function `add_layout()` directly on the vtree object. The resulting vtree
+contains the additional columns `x`, `y`, `width` and `height` for the
+nodes and `x1`, `y1`, `x2`, `y2` for the edges. You can then modify these
+columns directly.
+
+In the following example we will modify a layout with pruned nodes. We will
+move the nodes on the right (leafs) hand up a bit upwards.
+
+
+```{r}
+vt <- vtree_from_freqtable(Titanic, Class, Survived) |>
+  prune(Class %in% c("1st", "2nd"), follow_only = TRUE) |>
+  add_layout() |>
+  mutate(y = ifelse(leaf, y + height/2, y))
+
+# we need to modify the edges as well, but for that we need information
+# from the nodes
+nodes <- as_tibble(vt)
+
+vt <- mutate(vt, x1 = nodes$x[from], y1 = nodes$y[from],
+                 x2 = nodes$x[to] - nodes$width[to]/2, y2 = nodes$y[to],
+             .edges = TRUE)
+
+plot(vt)
+```
+
+Note how we mutate the edges with the `.edge = TRUE` argument. This is
+different from `tidygraph`, where the object (tree) can either be in
+activated "node" or "edge" mode. In `vtree2`, the object is always in
+"node" mode (because it is more practical), but on the rare occassion that
+you need to access the edges, you can.
+
+The `add_layout()` function has additional parameters: `varspace` and
+`varsize`. These can assign the amount of relative space available to the
+node depending on the variable it is associated with. For example, we might
+want to show a long summary which takes a lot of space for the leafs, but
+only short labels for the internal nodes. You can tune the relative node
+sizes with these two parameters.
+
+```{r fig.width=10,fig.height=4}
+cases <- cases_from_freqtable(Titanic)
+sm <- summary_vt(cases, vt, Age)
+
+vt <- vtree(cases, Class, Sex, Survived) |>
+  prune(Class == "Crew") |>
+  add_labels() |>
+  mutate(label = ifelse(leaf, paste0(label, "\n", sm), label)) |>
+  add_layout(dir="tb", lheight=.8,
+             varspace=c(root=1, Class=1,Sex=1,Survived=4))
+
+plot(vt, var_labels = FALSE)
+```
+
+
+
+
+
+
 ## Adding and modifying labels
 
 Labels to be plotted are taken from the `label` column of the vtree object.
@@ -514,54 +590,9 @@ description. This includes not only bitmap images, but also `ggplot2`
 plots, which can be easily converted to a grob with the function
 `ggplot2::ggplotGrob()`.
 
-Here is the Titanic tree with some idiotic images inserted into the leaf
-nodes.
-
-```{r}
-# first, a tree with simplified labels on the leaf nodes
-vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived) |>
-  retain(path == "Class:1st") # only retain the first class passengers
-mask <- find_nodes(vt, leaf) # leaf is a logical vector
-vt <- add_labels(vt, mask = !mask, template = "long") |>
-  add_labels(mask = mask, fmt = glue("{node_val}"))
-```
-
-```{r}
-
-library(ggplot2)
-
-# prepare a ggplot2 grob
-pl <- ggplot(iris,
-             aes(x = Sepal.Width, y = Sepal.Length, color=Species)) +
-  geom_point() +
-  theme_minimal() +
-  theme(legend.position = "none")
-pl <- ggplotGrob(pl)
-
-# add the grob column to the nodes data frame
-vt <- vt |>
-  mutate(grob = ifelse(path == "Class:1st/Sex:Female/Survived:No",
-                       list(pl), NA))
-
-# use a bitmap image
-iris_url <-
-  "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Irissetosa1.jpg/500px-Irissetosa1.jpg"
-tf <- tempfile(fileext = ".jpg")
-download.file(iris_url, tf, mode="wb")
-img <- jpeg::readJPEG(tf)
-img <- grid::rasterGrob(img)
-
-vt <- vt |>
-  mutate(grob = ifelse(path == "Class:1st/Sex:Female/Survived:Yes",
-                       list(img), grob)) |>
-  mutate(label = ifelse(path == "Class:1st/Sex:Female/Survived:Yes",
-                       "", label))
-
-
-plot(vt, var_labels = FALSE,
-     dir="tb", show_root = FALSE,
-     lwidth = 0.9, lheight = 0.5)
-```
+The important thing to remember is that the inset graphics (1) must be a
+grob and (2) must be stored in a list-column of the vtree object called
+"grob".
 
 In the following example, we will download three images from Wikipedia
 corresponding to the three species of iris flowers from the famous Fisher

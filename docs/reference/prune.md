@@ -1,7 +1,7 @@
 # Find nodes and prune a vtree graph
 
 `prune()` prunes the tree by condition, `mark()` marks nodes by
-condition, `keep()` prunes everything but the nodes that fullfil a
+condition, `retain()` prunes everything but the nodes that fullfil a
 condition and `find_nodes()` returns a logical vector for nodes by
 condition.
 
@@ -20,7 +20,7 @@ prune(
 
 find_nodes(vtree, condition, follow_only = FALSE)
 
-keep(
+retain(
   vtree,
   condition,
   keep_follow = TRUE,
@@ -45,8 +45,8 @@ mark(vtree, condition, follow_only = FALSE)
 
 - follow_only:
 
-  if TRUE, keep the nodes selected by condition, but prune all following
-  nodes.
+  if TRUE, retain the nodes selected by condition, but prune all
+  following nodes.
 
 - mark_only:
 
@@ -80,7 +80,7 @@ mark(vtree, condition, follow_only = FALSE)
 
 ## Value
 
-`keep()` and `prune()` return a pruned vtree object. `find_nodes()`
+`retain()` and `prune()` return a pruned vtree object. `find_nodes()`
 returns a logical vector corresponding to the tree nodes
 
 ## Details
@@ -90,7 +90,7 @@ condition. The condition is evaluated in the context of the node
 attributes, allowing for flexible pruning based on node values. If a
 node is pruned, all subsequent nodes in the path are also pruned.
 
-`keep()` is a convenience function that keeps only the nodes that
+`retain()` is a convenience function that retains only the nodes that
 satisfy the condition and prunes everything else, except for any node
 that precedes the selected nodes.
 
@@ -110,13 +110,13 @@ variables. For example, you can use `node_col` to find nodes which
 correspond to a certain variable, and then use the variable name to
 search for a specific value.
 
-## keep vs prune
+## retain vs prune
 
-Note that `keep()` is not a simple complement of `prune()`, because if
-you use keep to select a node, then if the parent node does not fullfill
-the condition it will still be kept. However, if you mark a node for
-pruning with `prune()`, then all subsequent nodes will be pruned, even
-if they fullfill the condition.
+Note that `retain()` is not a simple complement of `prune()`, because if
+you use retain to select a node, then if the parent node does not
+fullfill the condition it will still be kept. However, if you mark a
+node for pruning with `prune()`, then all subsequent nodes will be
+pruned, even if they fullfill the condition.
 
 In the Titanic example, if you prune all nodes where frequency is less
 than 15%, then the node for adult females from the crew will be pruned,
@@ -171,11 +171,11 @@ mark(vt, path == "Class:3rd", follow_only=TRUE) |>
 
 # how keep_na_sisters influences the plot
 vt <- vtree(titanicNA)
-vt |> keep(path == "Class:1st/Sex:Female") |>
+vt |> retain(path == "Class:1st/Sex:Female") |>
   plot()
 
 vt |>
-  keep(path == "Class:1st/Sex:Female",
+  retain(path == "Class:1st/Sex:Female",
        keep_na_sisters = FALSE) |>
   plot()
 

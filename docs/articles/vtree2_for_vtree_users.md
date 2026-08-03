@@ -254,17 +254,20 @@ vtree(FakeData, Severity, Sex) |>
 **Keeping.** The keep parameter in vtree is a bit peculiar, because it
 silently keeps also the nodes which are NA *if* the valid percentages
 are used. Also, both the *children* and the *parents* of the selected
-nodes are kept.
+nodes are kept. In vtree2, the function is called
+[`retain()`](https://january3.github.io/vtree2/reference/prune.md) to
+avoid clashes with
+[`purrr::keep()`](https://purrr.tidyverse.org/reference/keep.html).
 
 ``` r
 #vtree::vtree(FakeData, "Severity Sex",
 #             keep=list(Severity=c("Moderate")))
 
 p1 <- vtree(FakeData, Severity, Sex) |>
-  keep(Severity == "Moderate") |>
+  retain(Severity == "Moderate") |>
   plot(lheight=.2, lwidth=.4)
 p2 <- vtree(FakeData, Severity, Sex) |>
-  keep(Severity == "Moderate", keep_follow = FALSE) |>
+  retain(Severity == "Moderate", keep_follow = FALSE) |>
   plot(lheight=.2, lwidth=.4)
 plot_grid(p1, p2)
 ```
@@ -379,7 +382,7 @@ and then color them in red.
 ``` r
 data(titanicNA)
 vt <- vtree(titanicNA, Class, Sex, Survived)
-vt |> keep(path == "Class:1st/Sex:NA/Survived:Yes" |
+vt |> retain(path == "Class:1st/Sex:NA/Survived:Yes" |
            path == "Class:2nd/Sex:NA/Survived:Yes") |>
   # btw: lheight and lwidth as fractions of the available space
   plot(lheight=.3, lwidth=.4)
@@ -465,11 +468,6 @@ library(dplyr)
 #> 
 #>     intersect, setdiff, setequal, union
 library(purrr)
-#> 
-#> Attaching package: 'purrr'
-#> The following object is masked from 'package:vtree2':
-#> 
-#>     keep
 
 # this gives us, in the levels column, the counts
 smvt <- summary_vt_df(FakeData, vt, Category) |>

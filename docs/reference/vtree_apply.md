@@ -64,8 +64,7 @@ mask <- find_nodes(vt, leaf)
 # prepare labels with summary of Survived for each node
 sumfnc <- \(df, ...) summary(df$Survived)
 sm <- vtree_apply(titanicNA, vt, sumfnc, .mask = mask) |>
-      map_chr(\(x) paste0(names(x), ": ", x, collapse = "\n"))
-#> Error in map_chr(vtree_apply(titanicNA, vt, sumfnc, .mask = mask), function(x) paste0(names(x),     ": ", x, collapse = "\n")): could not find function "map_chr"
+      purrr::map_chr(\(x) paste0(names(x), ": ", x, collapse = "\n"))
 
 # plot with custom layout making more space for the labels in the last
 # node ("Sex")
@@ -74,8 +73,4 @@ vt |> add_labels() |>
   add_layout(varspace = c(root=1, Class=1, Sex=3),
              dir="tb", lheight=.8) |>
   plot(dir="tb")
-#> Error in mutate(d_tmp, ...): ℹ In argument: `label = ifelse(mask, paste0(label, "\n", sm[node_key]),
-#>   label)`.
-#> Caused by error:
-#> ! object 'sm' not found
 ```

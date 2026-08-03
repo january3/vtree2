@@ -128,9 +128,9 @@ In `vtree2`, the workflow is split into several steps:
 - Build the vtree object with
   [`vtree()`](https://january3.github.io/vtree2/reference/vtree.md) or
   [`vtree_from_freqtable()`](https://january3.github.io/vtree2/reference/vtree.md)
-- (Optional) Prune, keep or select nodes with
+- (Optional) Prune, retain or select nodes with
   [`prune()`](https://january3.github.io/vtree2/reference/prune.md),
-  [`keep()`](https://january3.github.io/vtree2/reference/prune.md) and
+  [`retain()`](https://january3.github.io/vtree2/reference/prune.md) and
   friends.
 - (Optional) Create summaries with
   [`summary_vt()`](https://january3.github.io/vtree2/reference/summary_vt.md).
@@ -151,8 +151,8 @@ but with some missing values randomly added for demonstration purposes.
 data(titanicNA)
 
 vtree(titanicNA, Class, Sex, Survived) |>
-  # only keep the third class passengers
-  keep(path == "Class:3rd") |>
+  # only retain the third class passengers
+  retain(path == "Class:3rd") |>
   # add default labels
   add_labels() |>
   # change the labels for the missing values
@@ -179,9 +179,92 @@ vtree(titanicNA, Class, Sex, Survived) |>
 
 #### Vtree objects
 
-### Pruning, keeping and selecting
+### Pruning, retain and selecting
 
 ### Creating summaries
+
+### Creating layouts
+
+Layouts will be automatically created by
+[`plot()`](https://rdrr.io/r/graphics/plot.default.html) if they are
+missing. The parameters passed to the plot give some basic control over
+the layout: `dir` determines the direction of the tree, `show_root`
+determines whether the root node is shown, and `lwidth`/`lheight`
+determine the width and height of the nodes relative to the available
+space.
+
+``` r
+vt <- vtree_from_freqtable(Titanic, Class, Survived)
+p1 <- plot(vt)
+p2 <- plot(vt, dir = "tb", show_root = FALSE, lwidth = 0.8, lheight = 0.3)
+plot_grid(p1, p2, nrow = 1)
+```
+
+![](vtree2_files/figure-html/unnamed-chunk-4-1.png)
+
+The [`plot()`](https://rdrr.io/r/graphics/plot.default.html) function
+simply calls
+[`add_layout()`](https://january3.github.io/vtree2/reference/add_layout.md)
+to add the layout to the vtree object with the specified parameters.
+Alternatively, you can call the function
+[`add_layout()`](https://january3.github.io/vtree2/reference/add_layout.md)
+directly on the vtree object. The resulting vtree contains the
+additional columns `x`, `y`, `width` and `height` for the nodes and
+`x1`, `y1`, `x2`, `y2` for the edges. You can then modify these columns
+directly.
+
+In the following example we will modify a layout with pruned nodes. We
+will move the nodes on the right (leafs) hand up a bit upwards.
+
+``` r
+vt <- vtree_from_freqtable(Titanic, Class, Survived) |>
+  prune(Class %in% c("1st", "2nd"), follow_only = TRUE) |>
+  add_layout() |>
+  mutate(y = ifelse(leaf, y + height/2, y))
+
+# we need to modify the edges as well, but for that we need information
+# from the nodes
+nodes <- as_tibble(vt)
+
+vt <- mutate(vt, x1 = nodes$x[from], y1 = nodes$y[from],
+                 x2 = nodes$x[to] - nodes$width[to]/2, y2 = nodes$y[to],
+             .edges = TRUE)
+
+plot(vt)
+```
+
+![](vtree2_files/figure-html/unnamed-chunk-5-1.png)
+
+Note how we mutate the edges with the `.edge = TRUE` argument. This is
+different from `tidygraph`, where the object (tree) can either be in
+activated “node” or “edge” mode. In `vtree2`, the object is always in
+“node” mode (because it is more practical), but on the rare occassion
+that you need to access the edges, you can.
+
+The
+[`add_layout()`](https://january3.github.io/vtree2/reference/add_layout.md)
+function has additional parameters: `varspace` and `varsize`. These can
+assign the amount of relative space available to the node depending on
+the variable it is associated with. For example, we might want to show a
+long summary which takes a lot of space for the leafs, but only short
+labels for the internal nodes. You can tune the relative node sizes with
+these two parameters.
+
+``` r
+cases <- cases_from_freqtable(Titanic)
+sm <- summary_vt(cases, vt, Age)
+
+vt <- vtree(cases, Class, Sex, Survived) |>
+  prune(Class == "Crew") |>
+  add_labels() |>
+  mutate(label = ifelse(leaf, paste0(label, "\n", sm), label)) |>
+  add_layout(dir="tb", lheight=.8,
+             varspace=c(root=1, Class=1,Sex=1,Survived=4))
+
+plot(vt, var_labels = FALSE)
+```
+
+![](vtree2_files/figure-html/unnamed-chunk-6-1.png)
 
 ### Adding and modifying labels
 
@@ -215,7 +298,7 @@ vtree(titanicNA, Class, Survived) |>
   plot(var_labels = FALSE)
 ```
 
-![](vtree2_files/figure-html/unnamed-chunk-4-1.png)
+![](vtree2_files/figure-html/unnamed-chunk-7-1.png)
 
 #### Using `add_labels()` to add default or custom labels
 
@@ -231,7 +314,7 @@ p2 <- add_labels(vt, template = "long") |> plot()
 plot_grid(p1, p2, nrow = 1)
 ```
 
-![](vtree2_files/figure-html/unnamed-chunk-5-1.png)
+![](vtree2_files/figure-html/unnamed-chunk-8-1.png)
 
 These labels are derived directly from columns of the vtree object:
 `node_name`, `node_val`, `freq` and `n`. When vtree object is created,
@@ -273,7 +356,7 @@ vt <- vtree(titanicNA, Class, Sex) |>
 plot(vt, var_labels = FALSE)
 ```
 
-![](vtree2_files/figure-html/unnamed-chunk-6-1.png)
+![](vtree2_files/figure-html/unnamed-chunk-9-1.png)
 
 Note that the root node also got a label, but since `node_name` and
 `node_val` are both “” for the root, the label is not very informative.
@@ -292,7 +375,7 @@ vt <- vtree(titanicNA, Class, Sex) |>
 plot(vt, var_labels = FALSE, dir="tb")
 ```
 
-![](vtree2_files/figure-html/unnamed-chunk-7-1.png)
+![](vtree2_files/figure-html/unnamed-chunk-10-1.png)
 
 #### Using a mask
 
@@ -304,7 +387,7 @@ may want a different information for the leaf nodes as for other nodes:
 
 ``` r
 vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived) |>
-  keep(path == "Class:1st") # only keep the first class passengers
+  retain(path == "Class:1st") # only keep the first class passengers
 mask <- find_nodes(vt, leaf) # leaf is a logical vector
 add_labels(vt, mask = mask, template = "long") |>
   add_labels(mask = !mask, fmt = glue("{node_val}")) |>
@@ -312,7 +395,7 @@ add_labels(vt, mask = mask, template = "long") |>
        lwidth = 0.5, lheight = 0.5)
 ```
 
-![](vtree2_files/figure-html/unnamed-chunk-8-1.png)
+![](vtree2_files/figure-html/unnamed-chunk-11-1.png)
 
 ### Adding and modifying colors
 
@@ -347,7 +430,7 @@ p3 <- plot(vt, layout = "proportional")
 plot_grid(p1, p2, p3, nrow = 1)
 ```
 
-![](vtree2_files/figure-html/unnamed-chunk-9-1.png)
+![](vtree2_files/figure-html/unnamed-chunk-12-1.png)
 
 Layouts are added with the
 [`add_layout()`](https://january3.github.io/vtree2/reference/add_layout.md)
@@ -393,7 +476,7 @@ p2 <- vt |>
 cowplot::plot_grid(p1, p2)
 ```
 
-![](vtree2_files/figure-html/unnamed-chunk-10-1.png)
+![](vtree2_files/figure-html/unnamed-chunk-13-1.png)
 
 Colors can be also assigned automatically based on names of RColorBrewer
 palettes. There is a default order of palettes for the variables, but
@@ -439,12 +522,12 @@ to the data and not the tree structure:
 ``` r
 mar <- c(0.05, 0.05, 0.33, 0.05)
 p1 <- plot(vt, legend = TRUE, lwidth=.8, margins = mar)
-p2 <- keep(vt, path == "Class:1st") |>
+p2 <- retain(vt, path == "Class:1st") |>
   plot(legend = TRUE, lwidth=.8, margins = mar)
 plot_grid(p1, p2, nrow = 1)
 ```
 
-![](vtree2_files/figure-html/unnamed-chunk-12-1.png)
+![](vtree2_files/figure-html/unnamed-chunk-15-1.png)
 
 #### Other `plot()` arguments
 
@@ -478,7 +561,7 @@ p2 <- plot(vt, var_labels = c(Class="Passenger\nClass", Sex="Gender",
 plot_grid(p1, p2)
 ```
 
-![](vtree2_files/figure-html/unnamed-chunk-13-1.png)
+![](vtree2_files/figure-html/unnamed-chunk-16-1.png)
 
 **`dir`** direction of the tree. One of “lr” (left to right), “rl”
 (right to left), “tb” (top to bottom), “bt” (bottom to top). Default is
@@ -492,7 +575,7 @@ p4 <- plot(vt, dir = "rl")
 plot_grid(p1, p2, p3, p4, nrow = 1)
 ```
 
-![](vtree2_files/figure-html/unnamed-chunk-14-1.png)
+![](vtree2_files/figure-html/unnamed-chunk-17-1.png)
 
 **`fontsizes`** Font sizes for the various labels are automatically fit
 to the available space, but sometimes you might manually adjust them.
@@ -522,56 +605,9 @@ nodes description. This includes not only bitmap images, but also
 function
 [`ggplot2::ggplotGrob()`](https://ggplot2.tidyverse.org/reference/ggplotGrob.html).
 
-Here is the Titanic tree with some idiotic images inserted into the leaf
-nodes.
-
-``` r
-# first, a tree with simplified labels on the leaf nodes
-vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived) |>
-  keep(path == "Class:1st") # only keep the first class passengers
-mask <- find_nodes(vt, leaf) # leaf is a logical vector
-vt <- add_labels(vt, mask = !mask, template = "long") |>
-  add_labels(mask = mask, fmt = glue("{node_val}"))
-```
-
-``` r
-
-library(ggplot2)
-
-# prepare a ggplot2 grob
-pl <- ggplot(iris,
-             aes(x = Sepal.Width, y = Sepal.Length, color=Species)) +
-  geom_point() +
-  theme_minimal() +
-  theme(legend.position = "none")
-pl <- ggplotGrob(pl)
-
-# add the grob column to the nodes data frame
-vt <- vt |>
-  mutate(grob = ifelse(path == "Class:1st/Sex:Female/Survived:No",
-                       list(pl), NA))
-
-# use a bitmap image
-iris_url <-
-  "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Irissetosa1.jpg/500px-Irissetosa1.jpg"
-tf <- tempfile(fileext = ".jpg")
-download.file(iris_url, tf, mode="wb")
-img <- jpeg::readJPEG(tf)
-img <- grid::rasterGrob(img)
-
-vt <- vt |>
-  mutate(grob = ifelse(path == "Class:1st/Sex:Female/Survived:Yes",
-                       list(img), grob)) |>
-  mutate(label = ifelse(path == "Class:1st/Sex:Female/Survived:Yes",
-                       "", label))
-
-
-plot(vt, var_labels = FALSE,
-     dir="tb", show_root = FALSE,
-     lwidth = 0.9, lheight = 0.5)
-```
-
-![](vtree2_files/figure-html/unnamed-chunk-16-1.png)
+The important thing to remember is that the inset graphics (1) must be a
+grob and (2) must be stored in a list-column of the vtree object called
+“grob”.
 
 In the following example, we will download three images from Wikipedia
 corresponding to the three species of iris flowers from the famous
@@ -582,11 +618,6 @@ the corresponding images.
 ``` r
 library(dplyr)
 library(purrr)
-#> 
-#> Attaching package: 'purrr'
-#> The following object is masked from 'package:vtree2':
-#> 
-#>     keep
 
 iris_urls <- list(
 versicolor="https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/Blue_Flag%2C_Ottawa.jpg/500px-Blue_Flag%2C_Ottawa.jpg",
@@ -616,10 +647,9 @@ layout <- vt |>
              varspace=c(Species=4,Long_Petals=1))
 layout |>
   plot(margins=c(.05, .05, .05, .2))
-#> ℹ vtree already has a layout; using it as is
 ```
 
-![](vtree2_files/figure-html/unnamed-chunk-17-1.png)
+![](vtree2_files/figure-html/unnamed-chunk-18-1.png)
 
 Here, we choose only the “Sex” and “Survived” nodes for the construction
 of the vtree. However, we make a ggplot object for each of the leaf
@@ -668,10 +698,9 @@ vt <- vt |>
   mutate(shape = ifelse(leaf, "rectangle", "roundrectangle")) |>
   mutate(grob = grobs)
 plot(vt)
-#> ℹ vtree already has a layout; using it as is
 ```
 
-![](vtree2_files/figure-html/unnamed-chunk-18-1.png)
+![](vtree2_files/figure-html/unnamed-chunk-19-1.png)
 
 [^1]: [`vtree()`](https://january3.github.io/vtree2/reference/vtree.md)
     works with cases data frames, where each row is a single

@@ -44,7 +44,7 @@
   : Print a vtree pattern
 - [`prune()`](https://january3.github.io/vtree2/reference/prune.md)
   [`find_nodes()`](https://january3.github.io/vtree2/reference/prune.md)
-  [`keep()`](https://january3.github.io/vtree2/reference/prune.md)
+  [`retain()`](https://january3.github.io/vtree2/reference/prune.md)
   [`mark()`](https://january3.github.io/vtree2/reference/prune.md) :
   Find nodes and prune a vtree graph
 - [`summary(`*`<vtree>`*`)`](https://january3.github.io/vtree2/reference/summary.vtree.md)
