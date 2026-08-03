@@ -383,10 +383,13 @@ plot_vtree <- function(x,
   dir <- match.arg(dir, c("lr", "rl", "bt", "tb"))
 
   layout_arg <- match.arg(layout)
+
   var_labels <- .normalize_var_labels(names(x), var_labels)
   margins    <- .normalize_margins(margins, dir, var_labels, legend)
   fontsizes  <- .normalize_fontsizes(fontsizes, layout_arg)
 
+  grobs <- extract_grobs(x)
+  x <- remove_grobs(x)
   x <- .normalize_vtree_for_plotting(x, palettes, na_fill)
 
   layout <- .normalize_layout(x, layout_arg, lwidth, lheight, show_root, dir)
@@ -409,5 +412,6 @@ plot_vtree <- function(x,
     legend = legend,
     layout_type = layout_arg)
 
+  layout <- insert_grobs(layout, grobs)
   .make_children(params = params, layout = layout)
 }

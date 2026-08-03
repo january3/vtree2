@@ -572,11 +572,8 @@ add_layout <- function(vtree,
     layout <- match.arg(layout)
   }
 
-  nodes <- as_tibble(vtree)
-  if("grob" %in% names(nodes)) {
-    vtree <- vtree |>
-      mutate(grob = NULL)
-  }
+  grobs <- extract_grobs(vtree)
+  vtree <- remove_grobs(vtree)
 
   varspace <- .normalize_varspace(varspace, vtree, show_root)
   varsize  <- .normalize_varsize(varsize, varspace, vtree)
@@ -618,10 +615,7 @@ add_layout <- function(vtree,
     layout <- .flip_vert(layout)
   }
 
-  if("grob" %in% names(nodes)) {
-    layout <- layout |>
-      mutate(grob = nodes$grob)
-  }
+  layout <- insert_grobs(layout, grobs)
 
   as_vtree_layout(layout, dir, show_root)
 }
