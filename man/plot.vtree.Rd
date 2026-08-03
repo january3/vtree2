@@ -9,8 +9,7 @@
 
 plot_vtree(
   x,
-  layout = c("regular", "proportional", "flushed", "precomputed"),
-  layout_func = NULL,
+  layout = c("regular", "proportional", "flushed"),
   palettes = c("Reds", "Blues", "Greens", "Oranges", "Purples"),
   na_fill = "white",
   show_root = TRUE,
@@ -34,9 +33,6 @@ plot_vtree(
 of observations in that node. See \code{\link[=add_layout]{add_layout()}} for details.
 If layout is NA, then it is assumed that the vtree already has a
 layout with all necessary columns and no layout is calculated.}
-
-\item{layout_func}{Custom function to calculate layout (see
-\code{\link[=add_layout]{add_layout()}} for details).}
 
 \item{palettes}{A character vector with names of RColorBrewer palettes
 to use for the variables. By default these are the

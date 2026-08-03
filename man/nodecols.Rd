@@ -16,6 +16,6 @@ A character vector of column names
 Returns the column names of the node data frame of a vtree object.
 }
 \examples{
-vt <- vtree(Titanic, Class, Sex, Survived)
+vt <- vtree(titanicNA, Class, Sex, Survived)
 nodecols(vt)
 }
