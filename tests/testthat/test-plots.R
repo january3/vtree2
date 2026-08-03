@@ -167,4 +167,12 @@ test_that("makeContent applies fixed font size to node labels", {
 })
 
 
-
+test_that("precomputed layouts work", {
+  vt <- vtree_from_freqtable(Titanic, Class, Sex)
+  vt <- add_layout(vt, layout = "regular")
+  expect_no_error(plot(vt))
+  vt <- add_layout(vt, layout = "proportional")
+  expect_no_error(plot(vt))
+  vt <- add_layout(vt, layout = "flushed")
+  expect_no_error(plot(vt))
+})
