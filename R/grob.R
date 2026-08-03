@@ -383,7 +383,7 @@ makeContent.vtree_plot <- function(x) {
   grobs
 }
 
-.make_grobs <- function(nodes, params) {
+.make_grobs <- function(nodes, grobs, params) {
 
   lwd       <- params$lwd
   fontsizes <- params$fontsizes
@@ -408,8 +408,8 @@ makeContent.vtree_plot <- function(x) {
     mutate(height = .data[["height"]] * (1 - .data[["frac_l"]]) - 1.5 * pad) |>
     mutate(y = .data[["y"]] + .data[["height"]] / 2)
 
-  grobs <- map(seq_along(nodes$grob), \(i) {
-                 g <- gnodes$grob[[i]]
+  grobs <- map(seq_along(gnodes$x), \(i) {
+                 g <- grobs[[i]]
                  g$vp <- grid::viewport(x = gnodes$x[i],
                                         y = gnodes$y[i],
                                         width = gnodes$width[i],
@@ -443,7 +443,7 @@ makeContent.vtree_plot <- function(x) {
 # actually creates the plot.
 #' @importFrom grid gTree gpar gList setChildren
 #' @importFrom purrr map_int map_lgl
-.make_children <- function(params, layout) {
+.make_children <- function(params, layout, grobs=NULL) {
   x <- gTree(params = params,
              layout = layout,
              name = "vtree",
@@ -458,10 +458,18 @@ makeContent.vtree_plot <- function(x) {
   spec <- list()
   spec_lwd <- list()
 
+  # we are now going to assume that grobs were removed already
+  # and are passed directly
+  #grobs <- extract_grobs(layout)
+  #layout <- remove_grobs(layout)
+
+  nodes <- as_tibble(layout)
+  sel <- !is.na(nodes$x) & !is.na(nodes$y) &
+    !is.na(nodes$width) & !is.na(nodes$height)
+  grobs <- grobs[sel]
+
   # basic grobs: nodes and edges, always shown
-  nodes <- as_tibble(layout) |>
-    filter(!is.na(.data[["x"]]) & !is.na(.data[["y"]])) |>
-    filter(!is.na(.data[["width"]]) & !is.na(.data[["height"]]))
+  nodes <- nodes |> filter(sel)
 
   edges <- activate(layout, "edges") |> as_tibble()
 
@@ -470,13 +478,13 @@ makeContent.vtree_plot <- function(x) {
   children <- list(arrows=arrows)
 
 
-  if("grob" %in% colnames(nodes)) {
-    grobnodes <- map_lgl(nodes[["grob"]],
+  if(!is.null(grobs)) {
+    grobnodes <- map_lgl(grobs,
                          \(g) {
                            !any(is.na(g)) & !is.null(g) & length(g) > 0
                          })
     if(sum(grobnodes) > 0) {
-      gn <- .make_grobs(nodes[grobnodes, ], params)
+      gn <- .make_grobs(nodes[grobnodes, ], grobs[grobnodes], params)
       children <- c(children, list(plots = gn$ret))
 
       nodes <- nodes |> filter(!grobnodes)

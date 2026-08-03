@@ -412,6 +412,6 @@ plot_vtree <- function(x,
     legend = legend,
     layout_type = layout_arg)
 
-  layout <- insert_grobs(layout, grobs)
-  .make_children(params = params, layout = layout)
+  #layout <- insert_grobs(layout, grobs)
+  .make_children(params = params, layout = layout, grobs = grobs)
 }
