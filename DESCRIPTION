@@ -20,6 +20,7 @@ Imports:
     dplyr,
     grDevices,
     grid,
+    igraph,
     purrr,
     RColorBrewer,
     rlang,

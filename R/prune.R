@@ -31,7 +31,7 @@
 #' Find nodes and prune a vtree graph
 #'
 #' `prune()` prunes the tree by condition, `mark()` marks nodes by
-#' condition, `keep()` prunes everything but the nodes that fullfil a
+#' condition, `retain()` prunes everything but the nodes that fullfil a
 #' condition and `find_nodes()` returns a logical vector for nodes by
 #' condition.
 #'
@@ -40,7 +40,7 @@
 #' allowing for flexible pruning based on node values.
 #' If a node is pruned, all subsequent nodes in the path are also pruned.
 #'
-#' `keep()` is a convenience function that keeps only the nodes that
+#' `retain()` is a convenience function that retains only the nodes that
 #' satisfy the condition and prunes everything else, except for any node
 #' that precedes the selected nodes.
 #'
@@ -60,10 +60,10 @@
 #' correspond to a certain variable, and then use the variable name to
 #' search for a specific value.
 #'
-#' @section keep vs prune:
+#' @section retain vs prune:
 #'
-#' Note that `keep()` is not a simple complement of `prune()`, because if you
-#' use keep to select a node, then if the parent node does not fullfill the
+#' Note that `retain()` is not a simple complement of `prune()`, because if you
+#' use retain to select a node, then if the parent node does not fullfill the
 #' condition it will still be kept. However, if you mark a node for pruning
 #' with `prune()`, then all subsequent nodes will be pruned, even if they
 #' fullfill the condition.
@@ -94,7 +94,7 @@
 #'              condition. If no condition is provided, no pruning is done,
 #'              except for the removal of nodes with NA values with
 #'              `na.rm`.
-#' @param follow_only if TRUE, keep the nodes selected by condition, but
+#' @param follow_only if TRUE, retain the nodes selected by condition, but
 #'              prune all following nodes.
 #' @param keep If TRUE, keeps the nodes that satisfy the condition and prunes
 #'              everything else.
@@ -114,7 +114,7 @@
 #'              condition. If it is a character vector, then it is treated
 #'              as a vector of column names for which all NA values should
 #'              be removed.
-#' @return `keep()` and `prune()` return a pruned vtree object.
+#' @return `retain()` and `prune()` return a pruned vtree object.
 #' `find_nodes()` returns a logical vector corresponding to the tree nodes
 #' @examples
 #' vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived)
@@ -142,10 +142,10 @@
 #'
 #' # how keep_na_sisters influences the plot
 #' vt <- vtree(titanicNA)
-#' vt |> keep(path == "Class:1st/Sex:Female") |>
+#' vt |> retain(path == "Class:1st/Sex:Female") |>
 #'   plot()
 #' vt |>
-#'   keep(path == "Class:1st/Sex:Female",
+#'   retain(path == "Class:1st/Sex:Female",
 #'        keep_na_sisters = FALSE) |>
 #'   plot()
 #'
@@ -406,7 +406,7 @@ find_parents <- function(vtree, mask) {
 
 #' @rdname prune
 #' @export
-keep <- function(vtree, condition,
+retain <- function(vtree, condition,
                  keep_follow = TRUE,
                  keep_na_sisters = is_vp(vtree),
                  mark_only = FALSE) {

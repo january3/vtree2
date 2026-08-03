@@ -3,7 +3,7 @@
 \name{prune}
 \alias{prune}
 \alias{find_nodes}
-\alias{keep}
+\alias{retain}
 \alias{mark}
 \title{Find nodes and prune a vtree graph}
 \usage{
@@ -19,7 +19,7 @@ prune(
 
 find_nodes(vtree, condition, follow_only = FALSE)
 
-keep(
+retain(
   vtree,
   condition,
   keep_follow = TRUE,
@@ -37,7 +37,7 @@ condition. If no condition is provided, no pruning is done,
 except for the removal of nodes with NA values with
 \code{na.rm}.}
 
-\item{follow_only}{if TRUE, keep the nodes selected by condition, but
+\item{follow_only}{if TRUE, retain the nodes selected by condition, but
 prune all following nodes.}
 
 \item{mark_only}{If TRUE, marks the nodes that satisfy the condition in
@@ -64,12 +64,12 @@ nodes following the selected node (i.e., its children) are also
 kept even if they do not fulfill the condition.}
 }
 \value{
-\code{keep()} and \code{prune()} return a pruned vtree object.
+\code{retain()} and \code{prune()} return a pruned vtree object.
 \code{find_nodes()} returns a logical vector corresponding to the tree nodes
 }
 \description{
 \code{prune()} prunes the tree by condition, \code{mark()} marks nodes by
-condition, \code{keep()} prunes everything but the nodes that fullfil a
+condition, \code{retain()} prunes everything but the nodes that fullfil a
 condition and \code{find_nodes()} returns a logical vector for nodes by
 condition.
 }
@@ -79,7 +79,7 @@ The condition is evaluated in the context of the node attributes,
 allowing for flexible pruning based on node values.
 If a node is pruned, all subsequent nodes in the path are also pruned.
 
-\code{keep()} is a convenience function that keeps only the nodes that
+\code{retain()} is a convenience function that retains only the nodes that
 satisfy the condition and prunes everything else, except for any node
 that precedes the selected nodes.
 
@@ -98,11 +98,11 @@ variables. For example, you can use \code{node_col} to find nodes which
 correspond to a certain variable, and then use the variable name to
 search for a specific value.
 }
-\section{keep vs prune}{
+\section{retain vs prune}{
 
 
-Note that \code{keep()} is not a simple complement of \code{prune()}, because if you
-use keep to select a node, then if the parent node does not fullfill the
+Note that \code{retain()} is not a simple complement of \code{prune()}, because if you
+use retain to select a node, then if the parent node does not fullfill the
 condition it will still be kept. However, if you mark a node for pruning
 with \code{prune()}, then all subsequent nodes will be pruned, even if they
 fullfill the condition.
@@ -157,10 +157,10 @@ mark(vt, path == "Class:3rd", follow_only=TRUE) |>
 
 # how keep_na_sisters influences the plot
 vt <- vtree(titanicNA)
-vt |> keep(path == "Class:1st/Sex:Female") |>
+vt |> retain(path == "Class:1st/Sex:Female") |>
   plot()
 vt |>
-  keep(path == "Class:1st/Sex:Female",
+  retain(path == "Class:1st/Sex:Female",
        keep_na_sisters = FALSE) |>
   plot()
 
