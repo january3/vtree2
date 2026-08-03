@@ -391,8 +391,6 @@ plot_vtree <- function(x,
 
   layout <- .normalize_layout(x, layout_arg, lwidth, lheight, show_root, dir)
 
-  dir <- attr(layout, "dir") %||% dir
-
   layout <- .fit_margins(layout, margins)
   layout <- normalize_layout(layout)
 
@@ -406,7 +404,6 @@ plot_vtree <- function(x,
 
   params <- list(
     mar = margins,
-    dir = dir,
     fontsizes = fontsizes,
     lwd = lwd,
     legend = legend,
