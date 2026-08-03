@@ -455,6 +455,12 @@ summary_at_var <- function(vtree, varname, as_char = FALSE,
 #' must contain the same variables as the vtree. It is split by the levels
 #' of the variables such that for each node in the vtree, the function is
 #' applied to the subset of data that matches the path to that node.
+#'
+#' The function `FUN` may take two arguments (if the option .twoarg is
+#' TRUE). The first is the subset of the data frame that matches the path
+#' to the node. The second is a one row data frame with the information of
+#' the node (the row of the vtree node data frame corresponding to the
+#' node).
 #' @param cases A data frame of cases, with one row per observation.
 #' @param vtree A vtree object.
 #' @param FUN A function to apply to the subset of cases that match the path
@@ -462,6 +468,7 @@ summary_at_var <- function(vtree, varname, as_char = FALSE,
 #' @param .mask An optional logical vector of the same length as the number of
 #'              nodes in the vtree. If provided,
 #'              only the nodes for which .mask is TRUE will be processed.
+#' @param .twoarg A logical value indicating whether FUN takes two arguments
 #' @param ... Additional arguments to pass to FUN.
 #' @return A list of the results of applying FUN to each subset of cases
 #'         named with the node_key of the corresponding node in the vtree.
@@ -472,8 +479,9 @@ summary_at_var <- function(vtree, varname, as_char = FALSE,
 #' mask <- find_nodes(vt, leaf)
 #'
 #' # prepare labels with summary of Survived for each node
-#' sm <- vtree_apply(titanicNA, vt, \(df) summary(df$Survived), .mask = mask) |>
-#'   map_chr(\(x) paste0(names(x), ": ", x, collapse = "\n"))
+#' sumfnc <- \(df, ...) summary(df$Survived)
+#' sm <- vtree_apply(titanicNA, vt, sumfnc, .mask = mask) |>
+#'       map_chr(\(x) paste0(names(x), ": ", x, collapse = "\n"))
 #'
 #' # plot with custom layout making more space for the labels in the last
 #' # node ("Sex")
@@ -483,7 +491,8 @@ summary_at_var <- function(vtree, varname, as_char = FALSE,
 #'              dir="tb", lheight=.8) |>
 #'   plot(dir="tb")
 #' @export
-vtree_apply <- function(cases, vtree, FUN, ..., .mask=NULL) {
+vtree_apply <- function(cases, vtree, FUN, ...,
+                        .mask=NULL, .twoarg=FALSE) {
 
   if(!inherits(vtree, "vtree")) {
     cli_abort(c(x = "vtree_apply() requires a vtree object"))
@@ -522,7 +531,16 @@ vtree_apply <- function(cases, vtree, FUN, ..., .mask=NULL) {
   # next create a match vector between the vtree and the cases data frame
   matches <- map(nodes$path_l[.mask], \(p) .find_match_recursively(cases, p))
 
-  ret <- map(matches, \(m) FUN(cases[m, , drop = FALSE], ...))
+  ret <- map(seq_along(matches), \(i) {
+               m <- matches[[i]]
+               if(.twoarg) {
+                 nr <- nodes[i, , drop = FALSE]
+                 FUN(cases[m, , drop = FALSE], nr, ...)
+               } else {
+                 FUN(cases[m, , drop = FALSE], ...)
+               }
+
+  })
   names(ret) <- nodes$node_key[.mask]
   ret
 }
