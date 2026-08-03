@@ -359,6 +359,30 @@ makeContent.vtree_plot <- function(x) {
   list(ret = legend, spec = spec, spec_lwd = spec_lwd)
 }
 
+# check whether grobs have unique names, and if not,
+# assign unique names to them.
+.make_unique_names <- function(grobs, names=NULL, prefix = "grob_") {
+  grob_names <- map_chr(grobs, \(g) g$name)
+
+  # no need to change names if they are already unique
+  if(!any(duplicated(grob_names))) {
+    return(grobs)
+  }
+
+  if(is.null(names)) {
+    names <- 1:length(grobs)
+  }
+
+  names <- paste0(prefix, names)
+  grobs <- map(seq_along(grobs), \(i) {
+    g <- grobs[[i]]
+    g$name <- names[i]
+    g
+  })
+
+  grobs
+}
+
 .make_grobs <- function(nodes, params) {
 
   lwd       <- params$lwd
@@ -391,6 +415,7 @@ makeContent.vtree_plot <- function(x) {
                                         width = gnodes$width[i],
                                         height = gnodes$height[i])
                  g})
+  grobs <- .make_unique_names(grobs, names = nodes$node_key, prefix = "grob_")
   grobs <- gTree(gp = gpar(),
                  children = do.call(gList, grobs),
                  name = "plot_obj")
