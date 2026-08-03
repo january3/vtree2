@@ -10,8 +10,7 @@ plot(x, ...)
 
 plot_vtree(
   x,
-  layout = c("regular", "proportional", "flushed", "precomputed"),
-  layout_func = NULL,
+  layout = c("regular", "proportional", "flushed"),
   palettes = c("Reds", "Blues", "Greens", "Oranges", "Purples"),
   na_fill = "white",
   show_root = TRUE,
@@ -45,12 +44,6 @@ plot_vtree(
   for details. If layout is NA, then it is assumed that the vtree
   already has a layout with all necessary columns and no layout is
   calculated.
-
-- layout_func:
-
-  Custom function to calculate layout (see
-  [`add_layout()`](https://january3.github.io/vtree2/reference/add_layout.md)
-  for details).
 
 - palettes:
 

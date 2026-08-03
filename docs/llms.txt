@@ -238,6 +238,7 @@ More docs available [here](https://january3.github.io/vtree2/).
 - [`add_labels()`](https://january3.github.io/vtree2/reference/add_labels.md)
   : Add labels to a plot
 - [`add_layout()`](https://january3.github.io/vtree2/reference/add_layout.md)
+  [`as_vtree_layout()`](https://january3.github.io/vtree2/reference/add_layout.md)
   : Prepare a layout for plotting a vtree
 - [`as_tbl_graph(`*`<vtree>`*`)`](https://january3.github.io/vtree2/reference/as_tbl_graph.vtree.md)
   : Convert a vtree_graph to a tbl_graph
@@ -291,6 +292,8 @@ More docs available [here](https://january3.github.io/vtree2/).
 - [`vtree_from_freqtable()`](https://january3.github.io/vtree2/reference/vtree.md)
   [`vtree()`](https://january3.github.io/vtree2/reference/vtree.md) :
   Create a vtree object from a data frame
+- [`vtree_apply()`](https://january3.github.io/vtree2/reference/vtree_apply.md)
+  : Apply a function to a data frame by nodes in the vtree
 - [`vtree_palette()`](https://january3.github.io/vtree2/reference/vtree_palette.md)
   [`add_palette()`](https://january3.github.io/vtree2/reference/vtree_palette.md)
   : Color palettes for a variable levels

@@ -21,9 +21,9 @@ A character vector of column names
 ## Examples
 
 ``` r
-vt <- vtree(Titanic, Class, Sex, Survived)
-#> Error in vtree(Titanic, Class, Sex, Survived): Columns specified for the vtree are not in the cases data frame
-#> ✖ Columns not found: Class, Sex, and Survived
+vt <- vtree(titanicNA, Class, Sex, Survived)
 nodecols(vt)
-#> Error: object 'vt' not found
+#>  [1] "path"      "node_id"   "node_key"  "parent"    "parent_id" "path_l"   
+#>  [7] "level"     "node_col"  "node_name" "node_val"  "node_cv"   "n"        
+#> [13] "tot_n"     "missing"   "freq"      "denom"     "vp"        "leaf"     
 ```

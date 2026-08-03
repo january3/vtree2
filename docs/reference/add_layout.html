@@ -57,13 +57,17 @@ edges in the plot.</p>
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">add_layout</span><span class="op">(</span></span>
 <span>  <span class="va">vtree</span>,</span>
-<span>  layout <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"regular"</span>, <span class="st">"proportional"</span>, <span class="st">"flushed"</span>, <span class="st">"precomputed"</span><span class="op">)</span>,</span>
+<span>  layout <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"regular"</span>, <span class="st">"proportional"</span>, <span class="st">"flushed"</span><span class="op">)</span>,</span>
 <span>  layout_func <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  dir <span class="op">=</span> <span class="st">"lr"</span>,</span>
 <span>  lwidth <span class="op">=</span> <span class="cn">NA</span>,</span>
 <span>  lheight <span class="op">=</span> <span class="cn">NA</span>,</span>
+<span>  varspace <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  varsize <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  show_root <span class="op">=</span> <span class="cn">TRUE</span></span>
-<span><span class="op">)</span></span></code></pre></div>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">as_vtree_layout</span><span class="op">(</span><span class="va">layout</span>, <span class="va">dir</span>, <span class="va">show_root</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -92,6 +96,21 @@ edges in the plot.</p>
 of the available space. If NA, a sensible preset is chosen.</p></dd>
 
 
+<dt id="arg-varspace">varspace<a class="anchor" aria-label="anchor" href="#arg-varspace"></a></dt>
+<dd><p>named numerical vector with relative spaces for each
+variable. The names must include all variables present in the
+tree plus "root". Space describes the total amount of horizontal
+or vertical (for vertical layouts) space allocated to a variable.</p></dd>
+
+
+<dt id="arg-varsize">varsize<a class="anchor" aria-label="anchor" href="#arg-varsize"></a></dt>
+<dd><p>named numerical vector with relative sizes for each
+variable. The names must include all variables present in the
+tree plus "root". Size describes the actual horizontal or
+vertical (for vertical layouts) size of the nodes. It is
+cumulative with lwidth.</p></dd>
+
+
 <dt id="arg-show-root">show_root<a class="anchor" aria-label="anchor" href="#arg-show-root"></a></dt>
 <dd><p>Whether to show the root node in the layout.</p></dd>
 
@@ -114,16 +133,17 @@ the y-axis according to their cumulative frequencies.</p></li>
 
 
 
-<p>You can also provide a custom layout function. The function should take a
-the following arguments: vtree, dir, lwidth, lheight, show_root. It
-must return a vtree object with following additional columns in the
-nodes data frame:</p><ul><li><p>x, y: the coordinates of the center of the node</p></li>
+<p>You can also provide a custom layout function. The function should take
+a the following arguments: vtree, dir, lwidth, lheight, varspace,
+varsize, show_root. It must return a vtree object with following
+additional columns in the nodes data frame:</p><ul><li><p>x, y: the coordinates of the center of the node</p></li>
 <li><p>width, height: the width and height of the node</p></li>
-<li><p>full_w, full_h: the width and height of the total space allocated to
-the node including the margins</p></li>
 </ul><p>In addition, it can have the "shape" column which specifies the shape of
 the node to use. It can be "rectangle" or "roundrectangle". If not
 specified, the default is "roundrectangle".</p>
+<p>The function should be called from add_layout(), such that the layout is
+transformed according to the dir argument and gets converted to the
+vtree_layout class.</p>
 <p>In the edge data frame, the following additional columns should be added:</p><ul><li><p>x1, y1: the coordinates of the start of the edge</p></li>
 <li><p>x2, y2: the coordinates of the end of the edge</p></li>
 </ul></div>

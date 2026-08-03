@@ -9,13 +9,17 @@ edges in the plot.
 ``` r
 add_layout(
   vtree,
-  layout = c("regular", "proportional", "flushed", "precomputed"),
+  layout = c("regular", "proportional", "flushed"),
   layout_func = NULL,
   dir = "lr",
   lwidth = NA,
   lheight = NA,
+  varspace = NULL,
+  varsize = NULL,
   show_root = TRUE
 )
+
+as_vtree_layout(layout, dir, show_root)
 ```
 
 ## Arguments
@@ -42,6 +46,20 @@ add_layout(
   The width and height of the nodes, as the fraction of the available
   space. If NA, a sensible preset is chosen.
 
+- varspace:
+
+  named numerical vector with relative spaces for each variable. The
+  names must include all variables present in the tree plus "root".
+  Space describes the total amount of horizontal or vertical (for
+  vertical layouts) space allocated to a variable.
+
+- varsize:
+
+  named numerical vector with relative sizes for each variable. The
+  names must include all variables present in the tree plus "root". Size
+  describes the actual horizontal or vertical (for vertical layouts)
+  size of the nodes. It is cumulative with lwidth.
+
 - show_root:
 
   Whether to show the root node in the layout.
@@ -65,20 +83,21 @@ The builtin layouts are as follows:
 ## Custom layouts
 
 You can also provide a custom layout function. The function should take
-a the following arguments: vtree, dir, lwidth, lheight, show_root. It
-must return a vtree object with following additional columns in the
-nodes data frame:
+a the following arguments: vtree, dir, lwidth, lheight, varspace,
+varsize, show_root. It must return a vtree object with following
+additional columns in the nodes data frame:
 
 - x, y: the coordinates of the center of the node
 
 - width, height: the width and height of the node
 
-- full_w, full_h: the width and height of the total space allocated to
-  the node including the margins
-
 In addition, it can have the "shape" column which specifies the shape of
 the node to use. It can be "rectangle" or "roundrectangle". If not
 specified, the default is "roundrectangle".
+
+The function should be called from add_layout(), such that the layout is
+transformed according to the dir argument and gets converted to the
+vtree_layout class.
 
 In the edge data frame, the following additional columns should be
 added:

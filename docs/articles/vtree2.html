@@ -615,6 +615,96 @@ leaf nodes.</p>
 <span>     dir<span class="op">=</span><span class="st">"tb"</span>, show_root <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>     lwidth <span class="op">=</span> <span class="fl">0.9</span>, lheight <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span></span></code></pre></div>
 <p><img src="vtree2_files/figure-html/unnamed-chunk-16-1.png" class="r-plt" alt="" width="700"></p>
+<p>In the following example, we will download three images from
+Wikipedia corresponding to the three species of iris flowers from the
+famous Fisher data set. We will show on the vtree how many of each of
+the species have long petals, and we will illustrate the Species nodes
+with the corresponding images.</p>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://purrr.tidyverse.org/" class="external-link">purrr</a></span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Attaching package: 'purrr'</span></span>
+<span><span class="co">#&gt; The following object is masked from 'package:vtree2':</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;     keep</span></span>
+<span></span>
+<span><span class="va">iris_urls</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>versicolor<span class="op">=</span><span class="st">"https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/Blue_Flag%2C_Ottawa.jpg/500px-Blue_Flag%2C_Ottawa.jpg"</span>,</span>
+<span>setosa<span class="op">=</span><span class="st">"https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Irissetosa1.jpg/500px-Irissetosa1.jpg"</span>,</span>
+<span>virginica<span class="op">=</span><span class="st">"https://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/Iris_virginica_2.jpg/500px-Iris_virginica_2.jpg"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">get_grob</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">url</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">tf</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".jpg"</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/utils/download.file.html" class="external-link">download.file</a></span><span class="op">(</span><span class="va">url</span>, <span class="va">tf</span>, mode<span class="op">=</span><span class="st">"wb"</span><span class="op">)</span></span>
+<span>  <span class="va">img</span> <span class="op">&lt;-</span> <span class="fu">jpeg</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/jpeg/man/readJPEG.html" class="external-link">readJPEG</a></span><span class="op">(</span><span class="va">tf</span><span class="op">)</span></span>
+<span>  <span class="fu">grid</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/grid/grid.raster.html" class="external-link">rasterGrob</a></span><span class="op">(</span><span class="va">img</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">iris_grobs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">iris_urls</span>, <span class="va">get_grob</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">vt</span> <span class="op">&lt;-</span> <span class="va">iris</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>Long_Petals <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">Petal.Length</span> <span class="op">&gt;</span> <span class="fl">4</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/vtree.html">vtree</a></span><span class="op">(</span><span class="va">Species</span>, <span class="va">Long_Petals</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/add_labels.html">add_labels</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>label <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">leaf</span>, <span class="va">label</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"Iris\n"</span>, <span class="va">node_val</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">vt</span> <span class="op">&lt;-</span> <span class="va">vt</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>grob <span class="op">=</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html" class="external-link">pull</a></span><span class="op">(</span><span class="va">vt</span>, <span class="st">"node_val"</span><span class="op">)</span>, <span class="op">~</span> <span class="va">iris_grobs</span><span class="op">[[</span><span class="va">.x</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">layout</span> <span class="op">&lt;-</span> <span class="va">vt</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/vtree_palette.html">add_palette</a></span><span class="op">(</span>palettes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Greens"</span>, <span class="st">"Blues"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/add_layout.html">add_layout</a></span><span class="op">(</span>dir<span class="op">=</span><span class="st">"tb"</span>, show_root<span class="op">=</span><span class="cn">FALSE</span>, lwidth<span class="op">=</span><span class="fl">.9</span>, lheight<span class="op">=</span><span class="fl">.8</span>,</span>
+<span>             varspace<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>Species<span class="op">=</span><span class="fl">4</span>,Long_Petals<span class="op">=</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">layout</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span>margins<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">.05</span>, <span class="fl">.05</span>, <span class="fl">.05</span>, <span class="fl">.2</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> vtree already has a layout; using it as is</span></span></code></pre></div>
+<p><img src="vtree2_files/figure-html/unnamed-chunk-17-1.png" class="r-plt" alt="" width="700"></p>
+<p>Here, we choose only the “Sex” and “Survived” nodes for the
+construction of the vtree. However, we make a ggplot object for each of
+the leaf nodes (“Survived:Yes” and “Survived:No”) and insert the
+resulting graphics object into the node.</p>
+<p>For this, we create the <code>grob</code> column and convert the
+ggplot2 to a grob with <code><a href="https://ggplot2.tidyverse.org/reference/ggplotGrob.html" class="external-link">ggplot2::ggplotGrob()</a></code>. The
+<code>grob</code> column is a list-column, so we need to manipulate it
+carefully. Also, we need to set an NA value for the non-leaf nodes.</p>
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># first, a tree with simplified labels on the leaf nodes</span></span>
+<span><span class="va">cases</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cases_from_freqtable.html">cases_from_freqtable</a></span><span class="op">(</span><span class="va">Titanic</span><span class="op">)</span></span>
+<span><span class="va">vt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/vtree.html">vtree</a></span><span class="op">(</span><span class="va">cases</span>, <span class="va">Sex</span>, <span class="va">Survived</span><span class="op">)</span></span>
+<span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># minimalistic ggplot showing how many passengers were in each class</span></span>
+<span><span class="co"># of the data frame df.</span></span>
+<span><span class="va">clasplot</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">df</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">df</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">Class</span>, fill <span class="op">=</span> <span class="va">Class</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_bar.html" class="external-link">geom_bar</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_colour_discrete.html" class="external-link">scale_fill_discrete</a></span><span class="op">(</span>drop<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_discrete.html" class="external-link">scale_x_discrete</a></span><span class="op">(</span>drop<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/lims.html" class="external-link">ylim</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">cases</span><span class="op">$</span><span class="va">Class</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="co"># remove labels, legend and axes</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"none"</span>,</span>
+<span>          axis.title <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_blank</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>          axis.ticks <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_blank</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="co"># use vtree_apply to produce plots</span></span>
+<span><span class="va">plots</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/vtree_apply.html">vtree_apply</a></span><span class="op">(</span><span class="va">cases</span>, <span class="va">vt</span>, FUN <span class="op">=</span> <span class="va">clasplot</span><span class="op">)</span></span>
+<span><span class="va">grobs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">plots</span>, <span class="fu">ggplot2</span><span class="fu">::</span><span class="va"><a href="https://ggplot2.tidyverse.org/reference/ggplotGrob.html" class="external-link">ggplotGrob</a></span><span class="op">)</span></span>
+<span><span class="va">grobs</span><span class="op">[</span><span class="op">!</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html" class="external-link">pull</a></span><span class="op">(</span><span class="va">vt</span>, <span class="va">leaf</span><span class="op">)</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">NA</span> <span class="co"># plots only for the leaf nodes</span></span>
+<span></span>
+<span><span class="co"># we add layout manually, so we can control it better</span></span>
+<span><span class="co"># this varspace arg means: reserve 4x as much space for the Survived nodes</span></span>
+<span><span class="co"># as for the Sex nodes</span></span>
+<span><span class="va">vt</span> <span class="op">&lt;-</span> <span class="va">vt</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="../reference/add_layout.html">add_layout</a></span><span class="op">(</span>dir<span class="op">=</span><span class="st">"tb"</span>, show_root<span class="op">=</span><span class="cn">FALSE</span>, lheight<span class="op">=</span><span class="fl">.8</span>,</span>
+<span>             varspace<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>Sex<span class="op">=</span><span class="fl">1</span>,Survived<span class="op">=</span><span class="fl">4</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>shape <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">leaf</span>, <span class="st">"rectangle"</span>, <span class="st">"roundrectangle"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>grob <span class="op">=</span> <span class="va">grobs</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">vt</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> vtree already has a layout; using it as is</span></span></code></pre></div>
+<p><img src="vtree2_files/figure-html/unnamed-chunk-18-1.png" class="r-plt" alt="" width="700"></p>
 </div>
 </div>
 

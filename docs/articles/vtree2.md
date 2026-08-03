@@ -573,6 +573,106 @@ plot(vt, var_labels = FALSE,
 
 ![](vtree2_files/figure-html/unnamed-chunk-16-1.png)
 
+In the following example, we will download three images from Wikipedia
+corresponding to the three species of iris flowers from the famous
+Fisher data set. We will show on the vtree how many of each of the
+species have long petals, and we will illustrate the Species nodes with
+the corresponding images.
+
+``` r
+library(dplyr)
+library(purrr)
+#> 
+#> Attaching package: 'purrr'
+#> The following object is masked from 'package:vtree2':
+#> 
+#>     keep
+
+iris_urls <- list(
+versicolor="https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/Blue_Flag%2C_Ottawa.jpg/500px-Blue_Flag%2C_Ottawa.jpg",
+setosa="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Irissetosa1.jpg/500px-Irissetosa1.jpg",
+virginica="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/Iris_virginica_2.jpg/500px-Iris_virginica_2.jpg")
+
+get_grob <- function(url) {
+  tf <- tempfile(fileext = ".jpg")
+  download.file(url, tf, mode="wb")
+  img <- jpeg::readJPEG(tf)
+  grid::rasterGrob(img)
+}
+
+iris_grobs <- lapply(iris_urls, get_grob)
+
+vt <- iris |>
+  mutate(Long_Petals = as.character(Petal.Length > 4)) |>
+  vtree(Species, Long_Petals) |>
+  add_labels() |>
+  mutate(label = ifelse(leaf, label, paste0("Iris\n", node_val)))
+vt <- vt |>
+  mutate(grob = map(pull(vt, "node_val"), ~ iris_grobs[[.x]]))
+
+layout <- vt |>
+  add_palette(palettes = c("Greens", "Blues")) |>
+  add_layout(dir="tb", show_root=FALSE, lwidth=.9, lheight=.8,
+             varspace=c(Species=4,Long_Petals=1))
+layout |>
+  plot(margins=c(.05, .05, .05, .2))
+#> ℹ vtree already has a layout; using it as is
+```
+
+![](vtree2_files/figure-html/unnamed-chunk-17-1.png)
+
+Here, we choose only the “Sex” and “Survived” nodes for the construction
+of the vtree. However, we make a ggplot object for each of the leaf
+nodes (“Survived:Yes” and “Survived:No”) and insert the resulting
+graphics object into the node.
+
+For this, we create the `grob` column and convert the ggplot2 to a grob
+with
+[`ggplot2::ggplotGrob()`](https://ggplot2.tidyverse.org/reference/ggplotGrob.html).
+The `grob` column is a list-column, so we need to manipulate it
+carefully. Also, we need to set an NA value for the non-leaf nodes.
+
+``` r
+# first, a tree with simplified labels on the leaf nodes
+cases <- cases_from_freqtable(Titanic)
+vt <- vtree(cases, Sex, Survived)
+
+library(ggplot2)
+
+# minimalistic ggplot showing how many passengers were in each class
+# of the data frame df.
+clasplot <- function(df) {
+  ggplot(df, aes(x = Class, fill = Class)) +
+    geom_bar() +
+    scale_fill_discrete(drop=FALSE) +
+    scale_x_discrete(drop=FALSE) +
+    ylim(0, max(table(cases$Class))) +
+    theme_minimal() +
+    # remove labels, legend and axes
+    theme(legend.position = "none",
+          axis.title = element_blank(),
+          axis.ticks = element_blank())
+}
+
+# use vtree_apply to produce plots
+plots <- vtree_apply(cases, vt, FUN = clasplot)
+grobs <- lapply(plots, ggplot2::ggplotGrob)
+grobs[!pull(vt, leaf)] <- NA # plots only for the leaf nodes
+
+# we add layout manually, so we can control it better
+# this varspace arg means: reserve 4x as much space for the Survived nodes
+# as for the Sex nodes
+vt <- vt |> 
+  add_layout(dir="tb", show_root=FALSE, lheight=.8,
+             varspace=c(Sex=1,Survived=4)) |>
+  mutate(shape = ifelse(leaf, "rectangle", "roundrectangle")) |>
+  mutate(grob = grobs)
+plot(vt)
+#> ℹ vtree already has a layout; using it as is
+```
+
+![](vtree2_files/figure-html/unnamed-chunk-18-1.png)
+
 [^1]: [`vtree()`](https://january3.github.io/vtree2/reference/vtree.md)
     works with cases data frames, where each row is a single
     observation. Here we have a frequency table, in which each row is a
