@@ -7,22 +7,13 @@ die <- function(message = "Unspecified error.",
 
 # extract required columns from a tidygraph object
 # this is b/c extracting all vertex attributes is costly
+#' @importFrom stats setNames
 node_attrs <- function(graph, cols) {
   tibble::as_tibble(
     setNames(
       lapply(cols, \(col) igraph::vertex_attr(graph, col)),
       cols
     ))
-}
-
-
-as_nibble <- function(vtree) {
-  cols <- c("node_id", "node_key",
-            "parent_id", "parent",
-            "node_col", "node_val",
-            "level", "freq")
-
-  node_attrs(vtree, cols)
 }
 
 # if grobs are in the vtree, extract them and return as a list
