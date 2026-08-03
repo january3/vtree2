@@ -508,7 +508,7 @@ makeContent.vtree_plot <- function(x) {
   if(!is.null(legend)) {
     ll <- .make_legend(legend, params)
     spec <- c(spec, ll$spec)
-    spec_lwd <- c(spec, ll$spec_lwd)
+    spec_lwd <- c(spec_lwd, ll$spec_lwd)
 
     children <- c(children, list(legend = ll$ret))
   }
