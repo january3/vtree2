@@ -469,7 +469,7 @@ makeContent.vtree_plot <- function(x) {
   if("grob" %in% colnames(nodes)) {
     grobnodes <- map_lgl(nodes[["grob"]],
                          \(g) {
-                           !any(is.na(g))
+                           !any(is.na(g)) & !is.null(g) & length(g) > 0
                          })
     if(sum(grobnodes) > 0) {
       gn <- .make_grobs(nodes[grobnodes, ], params)
