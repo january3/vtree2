@@ -304,9 +304,10 @@ layout_by_freq <- function(vtree, dir="lr",
   names(xpos) <- names(varspace)
 
   layout <- layout |>
-    mutate(full_w = varspace[node_col],
-           width = varspace[node_col] * varsize[node_col] * lwidth) |>
-    mutate(x = xpos[node_col])
+    mutate(full_w = varspace[.data[["node_col"]]],
+           width = varspace[.data[["node_col"]]] *
+                   varsize[.data[["node_col"]]] * lwidth) |>
+    mutate(x = xpos[.data[["node_col"]]])
 
   layout
 }
