@@ -48,7 +48,7 @@ mask <- find_nodes(vt, leaf)
 # prepare labels with summary of Survived for each node
 sumfnc <- \(df, ...) summary(df$Survived)
 sm <- vtree_apply(titanicNA, vt, sumfnc, .mask = mask) |>
-      map_chr(\(x) paste0(names(x), ": ", x, collapse = "\n"))
+      purrr::map_chr(\(x) paste0(names(x), ": ", x, collapse = "\n"))
 
 # plot with custom layout making more space for the labels in the last
 # node ("Sex")
