@@ -108,8 +108,8 @@ add_layout(vt, layout = "regular", dir = "lr") |> tibble::as_tibble()
 #> # ℹ 19 more rows
 #> # ℹ 19 more variables: node_val <chr>, node_cv <chr>, n <int>, tot_n <int>,
 #> #   missing <int>, freq <dbl>, denom <int>, vp <lgl>, leaf <lgl>, nleafs <int>,
-#> #   offset <int>, offset_tot <int>, width <dbl>, height <dbl>, full_w <dbl>,
-#> #   full_h <dbl>, x <dbl>, y <dbl>, shape <chr>
+#> #   offset <int>, offset_tot <int>, full_w <dbl>, width <dbl>, x <dbl>,
+#> #   height <dbl>, full_h <dbl>, y <dbl>, shape <chr>
 # the layout parameter from plot() is passed on to add_layout()
 plot(vt, layout="proportional")
 

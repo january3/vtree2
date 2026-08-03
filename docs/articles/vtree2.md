@@ -514,6 +514,65 @@ line width is not relative to the device size, but is fixed to an
 absolute value; therefore, for small devices the lines may appeary too
 thick.
 
+### Inset plots
+
+It is possible to add any kind of “grob” - graphical object - to the
+nodes description. This includes not only bitmap images, but also
+`ggplot2` plots, which can be easily converted to a grob with the
+function
+[`ggplot2::ggplotGrob()`](https://ggplot2.tidyverse.org/reference/ggplotGrob.html).
+
+Here is the Titanic tree with some idiotic images inserted into the leaf
+nodes.
+
+``` r
+# first, a tree with simplified labels on the leaf nodes
+vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived) |>
+  keep(path == "Class:1st") # only keep the first class passengers
+mask <- find_nodes(vt, leaf) # leaf is a logical vector
+vt <- add_labels(vt, mask = !mask, template = "long") |>
+  add_labels(mask = mask, fmt = glue("{node_val}"))
+```
+
+``` r
+
+library(ggplot2)
+
+# prepare a ggplot2 grob
+pl <- ggplot(iris,
+             aes(x = Sepal.Width, y = Sepal.Length, color=Species)) +
+  geom_point() +
+  theme_minimal() +
+  theme(legend.position = "none")
+pl <- ggplotGrob(pl)
+
+# add the grob column to the nodes data frame
+vt <- vt |>
+  mutate(grob = ifelse(path == "Class:1st/Sex:Female/Survived:No",
+                       list(pl), NA))
+
+# use a bitmap image
+iris_url <-
+  "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Irissetosa1.jpg/500px-Irissetosa1.jpg"
+tf <- tempfile(fileext = ".jpg")
+download.file(iris_url, tf, mode="wb")
+img <- jpeg::readJPEG(tf)
+img <- grid::rasterGrob(img)
+
+vt <- vt |>
+  mutate(grob = ifelse(path == "Class:1st/Sex:Female/Survived:Yes",
+                       list(img), grob)) |>
+  mutate(label = ifelse(path == "Class:1st/Sex:Female/Survived:Yes",
+                       "", label))
+
+
+plot(vt, var_labels = FALSE,
+     dir="tb", show_root = FALSE,
+     lwidth = 0.9, lheight = 0.5)
+```
+
+![](vtree2_files/figure-html/unnamed-chunk-16-1.png)
+
 [^1]: [`vtree()`](https://january3.github.io/vtree2/reference/vtree.md)
     works with cases data frames, where each row is a single
     observation. Here we have a frequency table, in which each row is a
