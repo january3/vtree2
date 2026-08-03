@@ -79,8 +79,10 @@ mutate.vtree <- function(.data, ..., .edges = FALSE, .check = TRUE) {
   immutable <- c("node_col", "node_id", "path", "freq", "count",
                  "denom", "node_key", "tot_n", "vp")
 
+  retnodes <- as_tibble(ret)
+  datanodes <- as_tibble(.data)
   all_good <- purrr::map_lgl(set_names(immutable), \(col) {
-                   all(as_tibble(ret)[[col]] == as_tibble(.data)[[col]])
+                   all(retnodes[[col]] == datanodes[[col]])
                  })
   if(!all(all_good)) {
     changed <- immutable[!all_good]
