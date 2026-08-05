@@ -1,3 +1,112 @@
+.normalize_val_alias <- function(val_alias, vtree) {
+  defaults <- levels(vtree)
+  defaults <- map(defaults, \(x) set_names(as.character(x)))
+
+  if(is.null(val_alias)) {
+    return(defaults)
+  }
+
+
+  val_alias[["NAs"]] <- val_alias[["NAs"]] %||% "NA"
+
+  for(col in names(vtree)) {
+    if(!col %in% names(val_alias)) {
+      val_alias[[col]] <- setNames(as.character(defaults[[col]]),
+                                   defaults[[col]])
+    } else {
+      # make sure all levels are included
+      missing <- setdiff(defaults[[col]], names(val_alias[[col]]))
+      if(length(missing) > 0) {
+        val_alias[[col]][missing] <- missing
+      }
+    }
+  }
+  val_alias
+}
+
+.normalize_col_alias <- function(col_alias, vtree) {
+  defaults <- map(names(vtree), ~ .x)
+  names(defaults) <- names(vtree)
+  defaults <- c(list(root = ""), defaults)
+
+  if(is.null(col_alias)) {
+    return(defaults)
+  }
+
+  for(col in c("root", names(vtree))) {
+    if(!col %in% names(col_alias)) {
+      col_alias[[col]] <- defaults[[col]]
+    }
+  }
+  col_alias
+}
+
+.def_formats <- function(template) {
+
+  # this only looks complicated because we have to use .data
+  if(template == "simple") {
+    fmt <- quo(ifelse(!is.na(.data[["val_alias"]]) & .data[["val_alias"]] == "",
+               sprintf("%d\n(%.0f%%)", .data[["n"]], .data[["freq"]] * 100),
+               sprintf("%s\n%d (%.0f%%)", .data[["val_alias"]],
+                                          .data[["n"]], .data[["freq"]] * 100)))
+    fmt_na = quo(ifelse(!is.na(.data[["val_alias"]]) & .data[["val_alias"]] == "",
+                        sprintf("%d", .data[["n"]]),
+                        sprintf("%s\n%d", .data[["val_alias"]], .data[["n"]]))
+                       )
+  } else if(template == "long") {
+    fmt <- quo(ifelse(!is.na(.data[["val_alias"]]) & .data[["val_alias"]] == "",
+               sprintf("All samples\nN = %d (100%%)", .data[["n"]]),
+               sprintf("%s: %s\nN = %d (%.0f%%)",
+                           .data[["col_alias"]],
+                           .data[["val_alias"]],
+                           .data[["n"]],
+                           .data[["freq"]] * 100)))
+    fmt_na = quo(sprintf("%s: %s\n%d", .data[["col_alias"]],
+                            .data[["val_alias"]], .data[["n"]]))
+  }
+
+  list(fmt=fmt, fmt_na=fmt_na)
+}
+
+# add alias columns to vtree
+add_aliases <- function(vtree, val_alias = NULL, col_alias = NULL) {
+
+  val_alias_n <- .normalize_val_alias(val_alias, vtree)
+  col_alias_n <- .normalize_col_alias(col_alias, vtree)
+
+  nodes <- as_tibble(vtree)
+
+  if("col_alias" %in% colnames(nodes) && !is.null(col_alias)) {
+    cli::cli_warn("Overwriting existing col_alias column in vtree")
+  }
+
+  if("val_alias" %in% colnames(nodes) && !is.null(val_alias)) {
+    cli::cli_warn("Overwriting existing val_alias column in vtree")
+  }
+
+  # add new values only if column is missing or if user provided a new alias
+  if(!"col_alias" %in% colnames(nodes) || !is.null(col_alias)) {
+    vtree <- mutate(vtree, col_alias = col_alias_n[.data[["node_col"]]])
+  }
+
+  if(!"val_alias" %in% colnames(nodes) || !is.null(val_alias)) {
+    aliases <- purrr::map2_chr(nodes[["node_col"]], nodes[["node_val"]],
+                    \(.x, .y) if(is.na(.y)) {
+                             val_alias_n[["NAs"]] %||% "NA"
+                    } else {
+                             val_alias_n[[.x]][.y] %||% .y
+                    })
+
+    vtree <- mutate(vtree, val_alias = aliases)
+
+  }
+
+  attr(vtree, "val_alias") <- val_alias_n
+  attr(vtree, "col_alias") <- col_alias_n
+
+  vtree
+}
+
 #' Add labels to a plot
 #'
 #' Adds or modifies a column called `label` to the node data frame of a vtree object.
@@ -14,14 +123,18 @@
 #'  * `freq`, the frequency for a node
 #'  * `n`, number of samples of a node
 #'  * `node_col`, name of the variable associated with a node
-#'  * `node_name`, display name of the variable associated with a node
 #'  * `node_val`, value of the variable associated with a node
 #'  * `node_cv`, same as `paste0(node_col, ':', node_val)`
+#'  * `col_alias`, the alias for the column/variable associated with a node
+#'    (default same as node_col, but can be modified with the `col_alias`
+#'    parameter or by providing a `var_alias` column in the vtree)
+#'  * `val_alias`, the alias for the value of the variable associated with a node
+#'    (default same as node_val, but can be modified with the `val_alias`
+#'    parameter or by providing a `val_alias` column in the vtree)
 #'  * plus whatever new columns you have added to the vtree with mutate().
 #'
 #' (the difference between node_col and node_name is that you can set
 #' node_name to whatever you like, while node_col must remain unchanged)
-#
 #'
 #' @param vtree an object of class vtree
 #' @param template One of the predefined formats; can be 'simple' or
@@ -33,6 +146,25 @@
 #' NULL, replaces the format from the template.
 #' @param fmt_na an R expression to format NA nodes. If not NULL,
 #' replaces the format from the template.
+#' @param col_alias A list specifying aliases for the columns (variables). Each name
+#'        of the list is a column/variable name (one of the values of
+#'        `names(vtree)`) and the value is the alias to be used for that
+#'        variable when constructing labels. If a name is missing from the
+#'        list, the original column name is used. The aliases are then used
+#'        to construct the labels and also stored in the column 'var_alias'
+#'        of the nodes data frame. If a `var_alias` column is present, it
+#'        will be overwritten.
+#' @param val_alias A list specifying aliases for the levels of the
+#'       variables. Each element of the list should be a named character
+#'       vector, where the names are the levels of the variable and the
+#'       values are the labels to be displayed for those levels. If NULL
+#'       (default), the original levels of the variables are used as
+#'       labels. The list needs not to be complete; if a variable is not
+#'       included in the list, its original levels are used. The aliases
+#'       are then used to construct the labels and also stored in the
+#'       column 'val_alias' of the nodes data frame. The list may include
+#'       aliases for NA values under then name `NAs`. If a `val_alias`
+#'       column is present, it will be overwritten.
 #' @param root_label Label to be used for the root node. If NA, do not
 #'                    modify the root label.
 #' @return an object of class vtree with added labels
@@ -62,52 +194,40 @@ add_labels <- function(vtree,
                        mask = NULL,
                        fmt = NULL,
                        fmt_na = NULL,
+                       val_alias = NULL,
+                       col_alias = NULL,
                        root_label = NA) {
 
   template <- match.arg(template, c("simple", "long"))
 
   userfmt <- enquo(fmt)
   userfmt_na <- enquo(fmt_na)
-
-  # this only looks complicated because we have to use .data
-  if(template == "simple") {
-    fmt <- quo(ifelse(!is.na(.data[["node_val"]]) & .data[["node_val"]] == "",
-               sprintf("%d\n(%.0f%%)", .data[["n"]], .data[["freq"]] * 100),
-               sprintf("%s\n%d (%.0f%%)", .data[["node_val"]],
-                                          .data[["n"]], .data[["freq"]] * 100)))
-    fmt_na = quo(ifelse(!is.na(.data[["node_val"]]) & .data[["node_val"]] == "",
-                        sprintf("%d", .data[["n"]]),
-                        sprintf("%s\n%d", .data[["node_val"]], .data[["n"]]))
-                       )
-  } else if(template == "long") {
-    fmt <- quo(ifelse(!is.na(.data[["node_val"]]) & .data[["node_val"]] == "",
-               sprintf("All samples\nN = %d (100%%)", .data[["n"]]),
-               sprintf("%s: %s\nN = %d (%.0f%%)",
-                           .data[["node_name"]],
-                           .data[["node_val"]],
-                           .data[["n"]],
-                           .data[["freq"]] * 100)))
-    fmt_na = quo(sprintf("%s: %s\n%d", .data[["node_name"]],
-                            .data[["node_val"]], .data[["n"]]))
-  }
+  default <- .def_formats(template)
 
   if(!quo_is_null(userfmt)) {
     fmt <- userfmt
+  } else {
+    fmt <- default$fmt
   }
 
   if(!quo_is_null(userfmt_na)) {
     fmt_na <- userfmt_na
   } else if(!quo_is_null(userfmt)) {
     fmt_na <- userfmt
+  } else {
+    fmt_na <- default$fmt_na
   }
 
   if(quo_is_null(fmt) || quo_is_null(fmt_na)) {
     stop("fmt/fmt_na not defined")
   }
 
-  nodes <- vtree |> activate("nodes") |> as_tibble()
+  vtree <- add_aliases(vtree, val_alias = val_alias, col_alias = col_alias)
+
+  nodes <- as_tibble(vtree)
   labels    <- eval_tidy(fmt, data = nodes)
   labels_na <- eval_tidy(fmt_na, data = nodes)
+
 
   if(is.null(mask)) {
     mask <- rep(TRUE, nrow(nodes))
