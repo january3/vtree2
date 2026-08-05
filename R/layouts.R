@@ -149,10 +149,12 @@
 # use the aliases associated with the layout to replace the labels in the
 # legend levels.
 .use_alias_val <- function(df, layout) {
-  alias <- attr(layout, "val_alias")
+  alias <- get_alias_attr(layout, "alias")
   if(is.null(alias)) {
     return(df)
   }
+
+  alias <- alias$val
 
   df <- df |>
     mutate(label = map2_chr(.data[["node_col"]],
@@ -164,10 +166,12 @@
 # use the aliases associated with the layout to replace the labels in the
 # legend titles.
 .use_alias_col <- function(df, layout) {
-  alias <- attr(layout, "col_alias")
+  alias <- get_alias_attr(layout)
   if(is.null(alias)) {
     return(df)
   }
+
+  alias <- alias$col
 
   df <- df |>
     mutate(label = map_chr(.data[["node_col"]],
@@ -182,7 +186,8 @@
   ret <- summary(layout)
   nodes <- as_tibble(layout)
 
-  c_alias <- attr(layout, "col_alias")
+  c_alias <- get_alias_attr(layout, "col")
+
   if(!is.null(c_alias)) {
     ret[["col_alias"]] <- map_chr(ret[["node_col"]],
                                  \(col) c_alias[[col]] %||% col)
@@ -190,7 +195,7 @@
     ret[["col_alias"]] <- ret[["node_col"]]
   }
 
-  v_alias <- attr(layout, "val_alias")
+  v_alias <- get_alias_attr(layout, "val")
   if(!is.null(v_alias)) {
     ret[["val_alias"]] <- map2_chr(ret[["node_col"]], ret[["node_val"]],
                                    \(col, val) if(is.na(val)) {

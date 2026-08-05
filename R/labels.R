@@ -6,7 +6,6 @@
     return(defaults)
   }
 
-
   val_alias[["NAs"]] <- val_alias[["NAs"]] %||% "NA"
 
   for(col in names(vtree)) {
@@ -68,43 +67,17 @@
   list(fmt=fmt, fmt_na=fmt_na)
 }
 
-# add alias columns to vtree
-add_aliases <- function(vtree, val_alias = NULL, col_alias = NULL) {
+.ensure_aliases <- function(df) {
 
-  val_alias_n <- .normalize_val_alias(val_alias, vtree)
-  col_alias_n <- .normalize_col_alias(col_alias, vtree)
-
-  nodes <- as_tibble(vtree)
-
-  if("col_alias" %in% colnames(nodes) && !is.null(col_alias)) {
-    cli::cli_warn("Overwriting existing col_alias column in vtree")
+  if(!"val_alias" %in% names(df)) {
+    df[["val_alias"]] <- df[["node_val"]]
   }
 
-  if("val_alias" %in% colnames(nodes) && !is.null(val_alias)) {
-    cli::cli_warn("Overwriting existing val_alias column in vtree")
+  if(!"col_alias" %in% names(df)) {
+    df[["col_alias"]] <- df[["node_col"]]
   }
 
-  # add new values only if column is missing or if user provided a new alias
-  if(!"col_alias" %in% colnames(nodes) || !is.null(col_alias)) {
-    vtree <- mutate(vtree, col_alias = col_alias_n[.data[["node_col"]]])
-  }
-
-  if(!"val_alias" %in% colnames(nodes) || !is.null(val_alias)) {
-    aliases <- purrr::map2_chr(nodes[["node_col"]], nodes[["node_val"]],
-                    \(.x, .y) if(is.na(.y)) {
-                             val_alias_n[["NAs"]] %||% "NA"
-                    } else {
-                             val_alias_n[[.x]][.y] %||% .y
-                    })
-
-    vtree <- mutate(vtree, val_alias = aliases)
-
-  }
-
-  attr(vtree, "val_alias") <- val_alias_n
-  attr(vtree, "col_alias") <- col_alias_n
-
-  vtree
+  df
 }
 
 #' Add labels to a plot
@@ -126,11 +99,11 @@ add_aliases <- function(vtree, val_alias = NULL, col_alias = NULL) {
 #'  * `node_val`, value of the variable associated with a node
 #'  * `node_cv`, same as `paste0(node_col, ':', node_val)`
 #'  * `col_alias`, the alias for the column/variable associated with a node
-#'    (default same as node_col, but can be modified with the `col_alias`
-#'    parameter or by providing a `var_alias` column in the vtree)
+#'    (default same as node_col, but can be modified
+#'    by providing a `var_alias` column in the vtree)
 #'  * `val_alias`, the alias for the value of the variable associated with a node
-#'    (default same as node_val, but can be modified with the `val_alias`
-#'    parameter or by providing a `val_alias` column in the vtree)
+#'    (default same as node_val, but can be modified 
+#'    by providing a `val_alias` column in the vtree)
 #'  * plus whatever new columns you have added to the vtree with mutate().
 #'
 #' (the difference between node_col and node_name is that you can set
@@ -146,29 +119,11 @@ add_aliases <- function(vtree, val_alias = NULL, col_alias = NULL) {
 #' NULL, replaces the format from the template.
 #' @param fmt_na an R expression to format NA nodes. If not NULL,
 #' replaces the format from the template.
-#' @param col_alias A list specifying aliases for the columns (variables). Each name
-#'        of the list is a column/variable name (one of the values of
-#'        `names(vtree)`) and the value is the alias to be used for that
-#'        variable when constructing labels. If a name is missing from the
-#'        list, the original column name is used. The aliases are then used
-#'        to construct the labels and also stored in the column 'var_alias'
-#'        of the nodes data frame. If a `var_alias` column is present, it
-#'        will be overwritten.
-#' @param val_alias A list specifying aliases for the levels of the
-#'       variables. Each element of the list should be a named character
-#'       vector, where the names are the levels of the variable and the
-#'       values are the labels to be displayed for those levels. If NULL
-#'       (default), the original levels of the variables are used as
-#'       labels. The list needs not to be complete; if a variable is not
-#'       included in the list, its original levels are used. The aliases
-#'       are then used to construct the labels and also stored in the
-#'       column 'val_alias' of the nodes data frame. The list may include
-#'       aliases for NA values under then name `NAs`. If a `val_alias`
-#'       column is present, it will be overwritten.
 #' @param root_label Label to be used for the root node. If NA, do not
 #'                    modify the root label.
 #' @return an object of class vtree with added labels
 #' @importFrom rlang quo quo_is_null
+#' @seealso [add_aliases()], [plot_vtree()]
 #' @examples
 #' vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived)
 #' # look at the labels
@@ -194,8 +149,6 @@ add_labels <- function(vtree,
                        mask = NULL,
                        fmt = NULL,
                        fmt_na = NULL,
-                       val_alias = NULL,
-                       col_alias = NULL,
                        root_label = NA) {
 
   template <- match.arg(template, c("simple", "long"))
@@ -222,12 +175,9 @@ add_labels <- function(vtree,
     stop("fmt/fmt_na not defined")
   }
 
-  vtree <- add_aliases(vtree, val_alias = val_alias, col_alias = col_alias)
-
-  nodes <- as_tibble(vtree)
+  nodes <- as_tibble(vtree) |> .ensure_aliases()
   labels    <- eval_tidy(fmt, data = nodes)
   labels_na <- eval_tidy(fmt_na, data = nodes)
-
 
   if(is.null(mask)) {
     mask <- rep(TRUE, nrow(nodes))
@@ -240,7 +190,6 @@ add_labels <- function(vtree,
     vtree <- mutate(vtree, label = "")
   }
 
-
   vtree <- vtree |> activate("nodes") |>
     mutate(label = ifelse(mask,
            ifelse(is.na(.data[["node_val"]]) & is_vp,
@@ -252,6 +201,72 @@ add_labels <- function(vtree,
                 root_label, .data[["label"]]))
 
   vtree <- as_vtree(vtree)
+  vtree
+}
+
+
+#' Add aliases columns to vtree
+#'
+#' Aliases are alternative labels / variable names which are shown on the
+#' plots. This function allows to define aliases for both, variable names
+#' and the variable values (levels).
+#' @param vtree an object of class vtree
+#' @param col_alias A list specifying aliases for the columns (variables). Each name
+#'        of the list is a column/variable name (one of the values of
+#'        `names(vtree)`) and the value is the alias to be used for that
+#'        variable when constructing labels. If a name is missing from the
+#'        list, the original column name is used. The aliases are then used
+#'        to construct the labels and also stored in the column 'var_alias'
+#'        of the nodes data frame. If a `var_alias` column is present, it
+#'        will be overwritten.
+#' @param val_alias A list specifying aliases for the levels of the
+#'       variables. Each element of the list should be a named character
+#'       vector, where the names are the levels of the variable and the
+#'       values are the labels to be displayed for those levels. If NULL
+#'       (default), the original levels of the variables are used as
+#'       labels. The list needs not to be complete; if a variable is not
+#'       included in the list, its original levels are used. The aliases
+#'       are then used to construct the labels and also stored in the
+#'       column 'val_alias' of the nodes data frame. The list may include
+#'       aliases for NA values under then name `NAs`. If a `val_alias`
+#'       column is present, it will be overwritten.
+#' @export
+add_aliases <- function(vtree, val_alias = NULL, col_alias = NULL) {
+
+  val_alias_n <- .normalize_val_alias(val_alias, vtree)
+  col_alias_n <- .normalize_col_alias(col_alias, vtree)
+
+  nodes <- as_tibble(vtree)
+
+  if("col_alias" %in% colnames(nodes) && !is.null(col_alias)) {
+    cli::cli_warn("Overwriting existing col_alias column in vtree")
+  }
+
+  if("val_alias" %in% colnames(nodes) && !is.null(val_alias)) {
+    cli::cli_warn("Overwriting existing val_alias column in vtree")
+  }
+
+  # add new values only if column is missing or if user provided a new alias
+  if(!"col_alias" %in% colnames(nodes) || !is.null(col_alias)) {
+    aliases <- purrr::map_chr(nodes[["node_col"]],
+                    \(x) col_alias_n[[x]] %||% x)
+    vtree <- mutate(vtree, col_alias = aliases)
+  }
+
+  if(!"val_alias" %in% colnames(nodes) || !is.null(val_alias)) {
+    aliases <- purrr::map2_chr(nodes[["node_col"]], nodes[["node_val"]],
+                    \(.x, .y) if(is.na(.y)) {
+                             val_alias_n[["NAs"]] %||% "NA"
+                    } else {
+                             val_alias_n[[.x]][.y] %||% .y
+                    })
+
+    vtree <- mutate(vtree, val_alias = aliases)
+
+  }
+
+  attr(vtree, "alias") <- list(val=val_alias_n,
+                               col=col_alias_n)
   vtree
 }
 

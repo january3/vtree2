@@ -40,6 +40,10 @@ normalize_layout <- function(layout) {
     x <- mutate(x, color = contrast_color(.data[["fill"]]))
   }
 
+  if(is.null(get_alias_attr(x))) {
+    x <- add_aliases(x)
+  }
+
   if(! "label" %in% colnames(nodes)) {
     x <- add_labels(x)
   }

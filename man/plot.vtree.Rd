@@ -13,8 +13,8 @@ plot_vtree(
   palettes = c("Reds", "Blues", "Greens", "Oranges", "Purples"),
   na_fill = "white",
   show_root = TRUE,
-  var_labels = TRUE,
   legend = FALSE,
+  legend_tiny = TRUE,
   margins = NULL,
   fontsizes = NULL,
   richtext = FALSE,
@@ -44,13 +44,10 @@ default arguments to the vtree_palette() function.}
 \item{show_root}{If TRUE (default), show the root node (total
 population).}
 
-\item{var_labels}{If TRUE (default), add names of the variables to the
-plot. Alternatively, it can be a named character vector where
-names are the variable names and values are the labels to be
-displayed for those variables. If FALSE or NULL,
-no variable labels are shown.}
-
 \item{legend}{If TRUE, a legend is added to the plot. Default is FALSE.}
+
+\item{legend_tiny}{If TRUE, just the var names are shown on the margin.
+Default: TRUE.}
 
 \item{margins}{numerical vector: top/right/bottom/left margins in
 fraction of available space (from 0 to 1).}

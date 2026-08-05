@@ -44,3 +44,32 @@ insert_grobs <- function(vtree, grobs) {
 
   vtree
 }
+
+
+get_alias_attr <- function(x, what=NULL) {
+  alias <- attr(x, "alias")
+
+  if(is.null(alias)) {
+    return(NULL)
+  }
+
+  if(is.null(alias$col)) {
+    cli::cli_warn(c("!" = "alias attribute appears corrupted, missing col element"))
+    return(NULL)
+  }
+
+  if(is.null(alias$val)) {
+    cli::cli_warn(c("!" = "alias attribute appears corrupted, missing val element"))
+    return(NULL)
+  }
+
+  if(!is.null(what)) {
+    if(!what %in% c("col", "val")) {
+      cli_abort(c("!" = "unknown alias element {.val {what}}"))
+    }
+
+    return(alias[[what]])
+  }
+
+  return(alias)
+}

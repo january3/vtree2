@@ -10,8 +10,6 @@ add_labels(
   mask = NULL,
   fmt = NULL,
   fmt_na = NULL,
-  val_alias = NULL,
-  col_alias = NULL,
   root_label = NA
 )
 }
@@ -30,27 +28,6 @@ NULL, replaces the format from the template.}
 
 \item{fmt_na}{an R expression to format NA nodes. If not NULL,
 replaces the format from the template.}
-
-\item{val_alias}{A list specifying aliases for the levels of the
-variables. Each element of the list should be a named character
-vector, where the names are the levels of the variable and the
-values are the labels to be displayed for those levels. If NULL
-(default), the original levels of the variables are used as
-labels. The list needs not to be complete; if a variable is not
-included in the list, its original levels are used. The aliases
-are then used to construct the labels and also stored in the
-column 'val_alias' of the nodes data frame. The list may include
-aliases for NA values under then name \code{NAs}. If a \code{val_alias}
-column is present, it will be overwritten.}
-
-\item{col_alias}{A list specifying aliases for the columns (variables). Each name
-of the list is a column/variable name (one of the values of
-\code{names(vtree)}) and the value is the alias to be used for that
-variable when constructing labels. If a name is missing from the
-list, the original column name is used. The aliases are then used
-to construct the labels and also stored in the column 'var_alias'
-of the nodes data frame. If a \code{var_alias} column is present, it
-will be overwritten.}
 
 \item{root_label}{Label to be used for the root node. If NA, do not
 modify the root label.}
@@ -77,11 +54,11 @@ expressions you like to construct a label from the following variables:
 \item \code{node_val}, value of the variable associated with a node
 \item \code{node_cv}, same as \code{paste0(node_col, ':', node_val)}
 \item \code{col_alias}, the alias for the column/variable associated with a node
-(default same as node_col, but can be modified with the \code{col_alias}
-parameter or by providing a \code{var_alias} column in the vtree)
+(default same as node_col, but can be modified
+by providing a \code{var_alias} column in the vtree)
 \item \code{val_alias}, the alias for the value of the variable associated with a node
-(default same as node_val, but can be modified with the \code{val_alias}
-parameter or by providing a \code{val_alias} column in the vtree)
+(default same as node_val, but can be modified
+by providing a \code{val_alias} column in the vtree)
 \item plus whatever new columns you have added to the vtree with mutate().
 }
 
@@ -107,4 +84,7 @@ vt |>
         n, round(n/freq)),
     fmt_na = "NA") |> plot()
 
+}
+\seealso{
+\code{\link[=add_aliases]{add_aliases()}}, \code{\link[=plot_vtree]{plot_vtree()}}
 }
