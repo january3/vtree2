@@ -242,6 +242,16 @@ add_labels <- function(vtree,
 #'       column 'val_alias' of the nodes data frame. The list may include
 #'       aliases for NA values under then name `NAs`. If a `val_alias`
 #'       column is present, it will be overwritten.
+#' @examples
+#' vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived) |>
+#'       add_aliases(val_alias = list(Class = c("1st" = "First",
+#'                                              "2nd" = "Second",
+#'                                              "3rd" = "Third")),
+#'                     col_alias = list(Sex = "Gender"))
+#' plot(vt)
+#' @return Returns an object of class vtree with added columns `col_alias`
+#' and `val_alias` in the node data frame. The aliases are also stored as
+#' an attribute of the vtree object.
 #' @export
 add_aliases <- function(vtree, val_alias = NULL, col_alias = NULL) {
 

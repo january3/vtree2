@@ -30,8 +30,21 @@ to construct the labels and also stored in the column 'var_alias'
 of the nodes data frame. If a \code{var_alias} column is present, it
 will be overwritten.}
 }
+\value{
+Returns an object of class vtree with added columns \code{col_alias}
+and \code{val_alias} in the node data frame. The aliases are also stored as
+an attribute of the vtree object.
+}
 \description{
 Aliases are alternative labels / variable names which are shown on the
 plots. This function allows to define aliases for both, variable names
 and the variable values (levels).
+}
+\examples{
+vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived) |>
+      add_aliases(val_alias = list(Class = c("1st" = "First",
+                                             "2nd" = "Second",
+                                             "3rd" = "Third")),
+                    col_alias = list(Sex = "Gender"))
+plot(vt)
 }
