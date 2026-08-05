@@ -227,6 +227,25 @@ normalize_layout <- function(layout) {
   layout
 }
 
+.normalize_dir <- function(dir, vtree) {
+  dir_tree <- attr(vtree, "dir")
+
+  if(!is.na(dir)) {
+    if(!is.null(dir_tree) && dir != dir_tree) {
+    cli_abort(
+      c(x = "vtree has a precomputed layout with direction '{dir_tree}', but you specified dir = '{dir}'"))
+    } else {
+      return(dir)
+    }
+  }
+
+  if(inherits(vtree, "vtree_layout") && !is.null(attr(vtree, "dir"))) {
+    return(dir_tree)
+  }
+
+  "lr"
+}
+
 
 #' Plot a vtree
 #'
@@ -376,9 +395,10 @@ plot_vtree <- function(x,
                       fontsizes = NULL,
                       lwidth = NA, lheight = NA,
                       lwd = 1,
-                      dir = "lr") {
+                      dir = NA) {
 
-  dir <- match.arg(dir, c("lr", "rl", "bt", "tb"))
+  dir <- .normalize_dir(dir, x)
+  #dir <- match.arg(dir, c("lr", "rl", "bt", "tb"))
 
   layout_arg <- match.arg(layout)
 
