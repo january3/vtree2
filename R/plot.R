@@ -318,6 +318,9 @@ normalize_layout <- function(layout) {
 #'        fraction of available space (from 0 to 1).
 #' @param show_root If TRUE (default), show the root node (total
 #'        population).
+#' @param richtext If TRUE, use [gridtext::richtext_grob()] for node
+#'        labels, which is much slower, but allows fine control over text
+#'        formatting. Default is FALSE.
 #' @param var_labels If TRUE (default), add names of the variables to the
 #'        plot. Alternatively, it can be a named character vector where
 #'        names are the variable names and values are the labels to be
@@ -393,6 +396,7 @@ plot_vtree <- function(x,
                       legend = FALSE,
                       margins = NULL,
                       fontsizes = NULL,
+                      richtext = FALSE,
                       lwidth = NA, lheight = NA,
                       lwd = 1,
                       dir = NA) {
@@ -426,6 +430,7 @@ plot_vtree <- function(x,
   params <- list(
     mar = margins,
     fontsizes = fontsizes,
+    richtext = richtext,
     lwd = lwd,
     legend = legend,
     layout_type = layout_arg)

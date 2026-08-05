@@ -7,6 +7,25 @@ lwd_npc <- function(frac) {
   )
 }
 
+.mk_text <- function(x, y, label, name,
+                     color, fs, richtext = FALSE) {
+  if(richtext) {
+    ret <- gridtext::richtext_grob(
+           label,
+           x = x, y = y,
+           name = paste0("label_", name %||% "NA"),
+           gp = gpar(col = color,
+           fontsize = fs))
+  } else {
+    ret <- textGrob(x = x, y = y,
+             label = label,
+             name = paste0("label_", name %||% "NA"),
+             gp = gpar(col = color,
+             fontsize = fs))
+  }
+  ret
+}
+
 # get widths from a list of grobs
 .get_widths <- function(grobs) {
     purrr::map_dbl(grobs, \(g)
@@ -20,20 +39,31 @@ lwd_npc <- function(frac) {
 }
 
 # for a list of grobs, set the fontsize to fs
-.set_fontsize <- function(grobs, fs) {
-    map(grobs, \(g) {
-      g$gp$fontsize <- fs
-      g })
+# by re-creating the grobs
+.set_fontsize_df <- function(df, fs) {
+
+  if(length(fs) == 1L) {
+    fs <- rep(fs, nrow(df))
+  }
+
+  map(1:nrow(df), \(i)
+    .mk_text(x=df$x[i], y=df$y[i], label=df$label[i],
+             name=df$node_key[i], color=df$color[i],
+             fs = fs[i])
+    )
 }
 
 # given a single grob, adapt the fontsize to fit a given w x h
-.adapt_fontsize_single <- function(grob, width, height, size_fct = 1) {
-
+.adapt_fontsize_single_full <- function(grob, width, height,
+                                        label, name, color,
+                                        richtext = FALSE,
+                                        size_fct = 1) {
   mins <- 5
   maxs <- 150
   while(maxs - mins > 1) {
     fs <- (maxs + mins)/2
-    grob <- .set_fontsize(list(grob), fs)[[1]]
+
+    grob <- .mk_text(.5, .5, label, name, color, fs, richtext = richtext)
     lw <- convertWidth(grobWidth(grob), "npc", valueOnly = TRUE)
     lh <-  convertHeight(grobHeight(grob), "npc", valueOnly = TRUE)
 
@@ -51,23 +81,21 @@ lwd_npc <- function(frac) {
 # adapt the font size of each grob separately
 #' @importFrom grid convertWidth grobWidth
 #' @importFrom grid convertHeight grobHeight
-adapt_fontsize <- function(grobs, widths, heights,
-                           padding = .2, ret_min = FALSE) {
+adapt_fontsize_df <- function(grobs, df,
+                           padding = .2,
+                           richtext = FALSE,
+                           ret_min = FALSE) {
   .size_fct <- 1 - padding
 
-  if(length(widths) == 1L) {
-    widths <- rep(widths, length(grobs))
-  }
-
-  if(length(heights) == 1L) {
-    heights <- rep(heights, length(grobs))
-  }
-
   ret <- map_dbl(seq_along(grobs), \(i)
-               .adapt_fontsize_single(grobs[[i]],
-                                      widths[[i]],
-                                      heights[[i]],
-                                      .size_fct))
+               .adapt_fontsize_single_full(grobs[[i]],
+                 width = df$width[[i]],
+                 height = df$height[[i]],
+                 label = df$label[[i]],
+                 name = grobs[[i]]$name,
+                 color = df$color[[i]],
+                 richtext = richtext,
+                 .size_fct))
   if(ret_min) {
     return(min(ret))
   } else {
@@ -75,24 +103,29 @@ adapt_fontsize <- function(grobs, widths, heights,
   }
 }
 
-fixed_fontsize <- function(grobs, widths, heights,
-                            padding = .2) {
-  adapt_fontsize(grobs, widths, heights, padding, ret_min = TRUE)
+fixed_fontsize_df <- function(grobs, df, padding = .2, richtext = FALSE) {
+  ret <- adapt_fontsize_df(grobs, df, padding,
+                           richtext = richtext, ret_min = TRUE)
+  ret
 }
 
 # sets a fontsize for a number of grobs
-set_fontsize <- function(grobs, fs) {
+set_fontsize_df <- function(df, fs, richtext=FALSE) {
+
   if(length(fs) == 1L) {
-    fs <- rep(fs, length(grobs))
+    fs <- rep(fs, nrow(df))
   }
-  if(length(grobs) != length(fs)) {
+
+  if(nrow(df) != length(fs)) {
     die("incorrect length of fontsize")
   }
-  ret <- map(seq_along(grobs), \(i) {
-                    l <- grobs[[i]]
-                    l$gp$fontsize <- fs[i]
-                    l
-        })
+
+  ret <- map(1:nrow(df), \(i)
+    .mk_text(x=df$x[i], y=df$y[i], label=df$label[i],
+             name=df$node_key[i], color=df$color[i],
+             fs = fs[i], richtext = richtext)
+  )
+
   ret
 }
 
@@ -118,10 +151,17 @@ adjust_linewidth <- function(x, path, lwd, nokids = FALSE) {
   x
 }
 
+#   x <- adjust_fontsize_df(x, s$path, font=s$fs,
+#                        padding = s$padding, df=s$df)
+
 #' @importFrom grid getGrob setGrob setChildren gPath gList
-adjust_fontsize <- function(x, path, font="fixed",
-                            padding = .1,
-                            widths, heights) {
+adjust_fontsize_df <- function(x, spec) {
+  path <- spec$path
+  font <- spec$fs
+  padding <- spec$padding %||% .1
+  df <- spec$df
+  richtext <- spec$richtext %||% FALSE
+
   padding <- padding %||% .1
   path <- gPath(path)
 
@@ -131,22 +171,24 @@ adjust_fontsize <- function(x, path, font="fixed",
   if(is.numeric(font)) {
     fs <- font
   } else if(font == "fixed") {
-    fs <- fixed_fontsize(kinder, widths, heights,
-                         padding = padding)
+    fs <- fixed_fontsize_df(kinder, df,
+                            richtext = richtext,
+                            padding = padding)
   } else if(font == "adaptive") {
-    fs <- adapt_fontsize(kinder, widths, heights, padding = padding)
+    fs <- adapt_fontsize_df(kinder, df,
+                            richtext = richtext,
+                            padding = padding)
   } else {
     cli_abort(c(x = "Unsupported fontsize mode: {font}"))
   }
 
-  kinder <- set_fontsize(kinder, fs)
+  kinder <- set_fontsize_df(df, fs, richtext = richtext)
 
   mutter <- setChildren(mutter, do.call(gList, kinder))
 
   x <- setGrob(x, gPath = path, mutter)
   x
 }
-
 
 #' Hook for vtree plots
 #'
@@ -160,20 +202,16 @@ adjust_fontsize <- function(x, path, font="fixed",
 #' @return A gTree object with the labels adjusted to fit into the allocated space.
 #' @export
 makeContent.vtree_plot <- function(x) {
-  spec <- x$params$spec_fontsize
+  spec <- x$params$spec
 
-  for(i in seq_along(spec)) {
-    s <- spec[[i]]
-    x <- adjust_fontsize(x, s$path, font=s$fs,
-                         padding = s$padding,
-                         widths = s$widths,
-                         heights = s$heights)
+  for(i in seq_along(spec$fs)) {
+    s <- spec$fs[[i]]
+    x <- adjust_fontsize_df(x, s)
   }
 
-  spec_lwd <- x$params$spec_lwd
   lwd <- lwd_npc(0.001 * x$params$lwd)
-  for(i in seq_along(spec_lwd)) {
-    s <- spec_lwd[[i]]
+  for(i in seq_along(spec$lwd)) {
+    s <- spec$lwd[[i]]
     x <- adjust_linewidth(x, s$path,
                           lwd = x$params$lwd, s$nokids %||% FALSE)
   }
@@ -184,8 +222,11 @@ makeContent.vtree_plot <- function(x) {
 # create grobs for labels from the nodes data frame
 # returns a gTree with the labels
 #' @importFrom grid textGrob
-.get_labels <- function(nodes, fs=9, color = "black") {
+.get_labels <- function(nodes, fs=9,
+                        color = "black", richtext = FALSE) {
+
   req_cols <- c("x", "y", "label")
+
   if(!all(req_cols %in% colnames(nodes))) {
     missing <- req_cols[!req_cols %in% colnames(nodes)]
     cli_abort(
@@ -194,11 +235,10 @@ makeContent.vtree_plot <- function(x) {
   }
 
   labels <- map(1:nrow(nodes), \(i) {
-             textGrob(x = nodes$x[i], y = nodes$y[i],
-                      label = nodes$label[i],
-                      name = paste0("label_", nodes$node_key[i] %||% "NA"),
-                      gp = gpar(col = nodes$color[i] %||% color,
-                      fontsize = fs))
+    .mk_text(nodes$x[i], nodes$y[i],
+             label=nodes$label[i], name=nodes$node_key[i],
+             color=nodes$color[i] %||% color, fs = fs,
+             richtext = richtext)
   })
 
   labels <- gTree(gp = gpar(),
@@ -306,7 +346,8 @@ makeContent.vtree_plot <- function(x) {
 
 # given a data frame with the node positions, grob column, and label
 # column, create a gTree with the node grobs and the labels.
-.get_nodes <- function(nodes, fs = 9, lwd = 1, name = "nodes") {
+.get_nodes <- function(nodes, fs = 9, lwd = 1,
+                       name = "nodes", richtext = FALSE) {
 
   req_cols <- c("x", "y", "width", "height", "shape", "fill", "label")
 
@@ -318,7 +359,7 @@ makeContent.vtree_plot <- function(x) {
 
   rects <- .get_node_rects(nodes, lwd = lwd)
 
-  labels <- .get_labels(nodes, fs = fs)
+  labels <- .get_labels(nodes, fs = fs, richtext = richtext)
 
   gTree(gp = gpar(),
         children = gList(rects=rects, labels=labels),
@@ -328,27 +369,42 @@ makeContent.vtree_plot <- function(x) {
 .make_legend <- function(legend, params) {
   lwd       <- params$lwd
   fontsizes <- params$fontsizes
+  richtext  <- params$richtext
 
   spec      <- list()
-  spec_lwd <- list()
+  spec$lwd <- list()
+  spec$fs  <- list()
   kinder <- list()
 
   # levels for layout_legend when legend=TRUE
   if(!is.null(legend$levels)) {
-    kinder <- list(.get_nodes(legend$levels, name="levels", lwd = lwd))
-    spec$legend_levels <- list(path = c("legend", "levels", "text"),
+    if(richtext) {
+      legend$levels[["label"]] <- gsub("\n", "<br>", legend$levels[["label"]])
+    }
+    kinder <- list(.get_nodes(legend$levels, name="levels",
+                              lwd = lwd, richtext = richtext))
+    spec$fs$legend_levels <- list(path = c("legend", "levels", "text"),
+                               df = legend$levels,
                                fs = fontsizes$legend_labels,
+                               richtext = richtext,
                                widths = legend$levels$width,
                                heights = legend$levels$height)
-    spec_lwd$legend_levels <- list(path = c("legend", "levels", "rect"))
+    spec$lwd$legend_levels <- list(path = c("legend", "levels", "rect"))
+  }
+
+  if(richtext) {
+    legend$titles[["label"]] <- gsub("\n", "<br>", legend$titles[["label"]])
   }
 
   # titles when legend=TRUE or var_labels != FALSE
   kinder <- c(kinder,
-              list(.get_nodes(legend$titles, name="titles", lwd = lwd)))
+              list(.get_nodes(legend$titles, name="titles",
+                              lwd = lwd, richtext = richtext)))
 
-  spec$legend_titles <- list(path = c("legend", "titles", "text"),
+  spec$fs$legend_titles <- list(path = c("legend", "titles", "text"),
+                             df = legend$titles,
                              fs = fontsizes$var_labels,
+                             richtext = richtext,
                              widths = legend$titles$width,
                              heights = legend$titles$height,
                              padding = .2)
@@ -356,7 +412,7 @@ makeContent.vtree_plot <- function(x) {
   legend <- gTree(gp=gpar(), children = do.call(gList, kinder),
                   name = "legend")
 
-  list(ret = legend, spec = spec, spec_lwd = spec_lwd)
+  list(ret = legend, spec = spec)
 }
 
 # check whether grobs have unique names, and if not,
@@ -387,9 +443,11 @@ makeContent.vtree_plot <- function(x) {
 
   lwd       <- params$lwd
   fontsizes <- params$fontsizes
+  richtext  <- params$richtext
 
   spec <- list()
-  spec_lwd <- list()
+  spec$fs  <- list()
+  spec$lwd <- list()
   kinder <- list()
 
   pad <- nodes$width * .05 # padding
@@ -425,18 +483,20 @@ makeContent.vtree_plot <- function(x) {
     mutate(height = .data[["frac_l"]] * .data[["height"]] - 1.5 * pad) |>
     mutate(y = .data[["y"]] - .data[["height"]] / 2)
 
-  labels <- .get_labels(nodes, fs = 9)
-  spec$plots <- list(path = c("plots", "text"),
-                             fs = "adaptive",
-                             widths = nodes$width,
-                             heights = nodes$height)
+  labels <- .get_labels(nodes, fs = 9, richtext = richtext)
+  spec$fs$plots <- list(path = c("plots", "text"),
+                        df = nodes,
+                        richtext = richtext,
+                        fs = "adaptive",
+                        widths = nodes$width,
+                        heights = nodes$height)
 
   ret <- gTree(gp = gpar(),
         children = gList(rects=rects, grobs = grobs, text=labels),
         name = "plots")
 
 
-  list(ret = ret, spec = spec, spec_lwd = spec_lwd)
+  list(ret = ret, spec = spec)
 }
 
 # create the grobs associated with the plot. This is the main function that
@@ -454,18 +514,18 @@ makeContent.vtree_plot <- function(x) {
   legend    <- params$legend
   lwd       <- params$lwd
   fontsizes <- params$fontsizes
+  params$richtext <- params$richtext %||% TRUE
+  richtext  <- params$richtext
 
   spec <- list()
-  spec_lwd <- list()
-
-  # we are now going to assume that grobs were removed already
-  # and are passed directly
-  #grobs <- extract_grobs(layout)
-  #layout <- remove_grobs(layout)
+  spec$lwd <- list()
+  spec$fs  <- list()
 
   nodes <- as_tibble(layout)
   sel <- !is.na(nodes$x) & !is.na(nodes$y) &
     !is.na(nodes$width) & !is.na(nodes$height)
+
+  # grobs are passed directly because they are so large
   grobs <- grobs[sel]
 
   # basic grobs: nodes and edges, always shown
@@ -474,9 +534,8 @@ makeContent.vtree_plot <- function(x) {
   edges <- activate(layout, "edges") |> as_tibble()
 
   arrows   <- .get_arrows(edges)
-  spec_lwd$edges <- list(path = c("edges"), nokids = TRUE)
+  spec$lwd$edges <- list(path = c("edges"), nokids = TRUE)
   children <- list(arrows=arrows)
-
 
   if(!is.null(grobs)) {
     grobnodes <- map_lgl(grobs,
@@ -488,40 +547,41 @@ makeContent.vtree_plot <- function(x) {
       children <- c(children, list(plots = gn$ret))
 
       nodes <- nodes |> filter(!grobnodes)
-      spec <- c(spec, gn$spec)
+      spec$fs <- c(spec$fs, gn$spec$fs)
     }
   }
 
-  nodes_gt <- .get_nodes(nodes, fs = 9, lwd = lwd)
+  if(richtext) {
+    nodes[["label"]] <- gsub("\n", "<br>", nodes[["label"]])
+  }
 
-  # spec contains information necessary to adjust the font sizes
-  spec$labels <- list(path = c("nodes", "text"),
+  nodes_gt <- .get_nodes(nodes, fs = 9, lwd = lwd, richtext = richtext)
+  children <- c(children, list(nodes=nodes_gt))
+
+  # spec contains infor4mation necessary to adjust the font sizes
+  spec$fs$labels <- list(path = c("nodes", "text"),
+                      df = nodes,
+                      richtext = richtext,
                       fs = fontsizes$nodes,
                       widths = nodes$width,
                       heights = nodes$height,
                       padding = .15)
-  spec_lwd$nodes <- list(path = c("nodes", "rect"))
+  spec$lwd$nodes <- list(path = c("nodes", "rect"))
 
-  # margin labels with the variable names
-  children <- c(children, list(nodes=nodes_gt))
 
   if(!is.null(legend)) {
     ll <- .make_legend(legend, params)
-    spec <- c(spec, ll$spec)
-    spec_lwd <- c(spec_lwd, ll$spec_lwd)
+    spec$fs  <- c(spec$fs,  ll$spec$fs)
+    spec$lwd <- c(spec$lwd, ll$spec$lwd)
 
     children <- c(children, list(legend = ll$ret))
   }
 
   children <- do.call(gList, children)
 
-  x$params$spec_fontsize <- spec
-  x$params$spec_lwd <- spec_lwd
+  x$params$spec <- spec
   setChildren(x, children)
 }
-
-
-
 
 #' @importFrom grid grid.newpage grid.draw
 #' @export
