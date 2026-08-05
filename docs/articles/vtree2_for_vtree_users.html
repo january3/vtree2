@@ -237,7 +237,6 @@ correspond to “Class” or “Survived” - and that value is NA. Therefore,
 you have to use a more complex expression which involves checking
 whether a node corresponds to the variable “Sex”:
 <code>node_col == "Sex" &amp; is.na(Sex)</code>. That works.</p>
-<p>I am still thinking how to solve it in a better way.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">FakeData</span>, package<span class="op">=</span><span class="st">"vtree"</span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://wilkelab.org/cowplot/" class="external-link">cowplot</a></span><span class="op">)</span></span>
@@ -262,15 +261,19 @@ whether a node corresponds to the variable “Sex”:
 <span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p><img src="vtree2_for_vtree_users_files/figure-html/unnamed-chunk-8-1.png" class="r-plt" alt="" width="576"></p>
 <p><strong><code>follow</code></strong></p>
+<p>The <code>follow</code> argument in the original <code>vtree</code>
+means: prune all the nodes which <em>follow</em> nodes that match a
+certain condition.</p>
 <p>The way that prune() in vtree2 works, this requires a bit of
-thinking. We want to prune all branches below the severity levels
+explanation. We want to prune all branches below the severity levels
 <em>except</em> for the Mild and Moderate nodes. One could think that
 this is the way to do it:
 <code>!Severity %in% c("Mild", "Moderate")</code>. Unfortunately,
 prune() matches the condition against a vector which contains the
-“Severity” values for other nodes - this doesn’t make sense, so the
-value is NA. Which is not Mild or Moderate, and thus the condition
-prunes absolutely all nodes and we get an error.</p>
+“Severity” values for other nodes - but Severity value for, e.g., Sex
+doesn’t make sense, so the value is NA. Which is not Mild or Moderate,
+and thus the condition prunes absolutely all nodes and we get an
+error.</p>
 <p>What one needs to do is to specify that we are looking only at nodes
 at the Severity variable:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
@@ -352,9 +355,9 @@ newline character with a space:</p>
 <code>sameline = TRUE</code> to the vtree() call, but it is also way
 more flexible.</p>
 <p><strong><code>labelnode</code></strong>. This is used in vtree to
-replace a variable level with a custom label. In vtree2, you can simply
-replace the variable levels <em>in the data</em> before constructing the
-vtree.</p>
+replace a variable level with a custom label. In vtree2, the simplest
+solution is to replace the variable levels <em>in the data</em> before
+constructing the vtree.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">## vtree::vtree(FakeData,"Group Sex",horiz=FALSE,</span></span>
 <span><span class="co">##        labelnode=list(Sex=c(Male="M",Female="F")))</span></span>
@@ -625,11 +628,23 @@ needs:</p>
 <p><img src="vtree2_for_vtree_users_files/figure-html/unnamed-chunk-27-1.png" class="r-plt" alt="" width="960"></p>
 </div>
 <div class="section level4">
+<h4 id="new-functionality-killer-features">New functionality <del>Killer features</del><a class="anchor" aria-label="anchor" href="#new-functionality-killer-features"></a>
+</h4>
+<ul>
+<li>frequency plots: where nodes are scaled by the number of
+observations</li>
+<li>inserting other graphical objects into nodes: images or
+ggplot2’s</li>
+</ul>
+</div>
+<div class="section level4">
 <h4 id="missing-functionality">Missing functionality<a class="anchor" aria-label="anchor" href="#missing-functionality"></a>
 </h4>
 <p>The following are not yet implemented in vtree2:</p>
 <ul>
-<li>font styling</li>
+<li>
+<del>font styling</del> &lt;- done! the richtext=TRUE parameter to
+plot()</li>
 <li>the various variable processing options, like turning a numeric
 variable into a factor with a specified number of levels - I think they
 are better left to whatever the user is most comfortable with.</li>

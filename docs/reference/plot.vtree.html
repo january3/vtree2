@@ -58,8 +58,8 @@
 <span>  palettes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Reds"</span>, <span class="st">"Blues"</span>, <span class="st">"Greens"</span>, <span class="st">"Oranges"</span>, <span class="st">"Purples"</span><span class="op">)</span>,</span>
 <span>  na_fill <span class="op">=</span> <span class="st">"white"</span>,</span>
 <span>  show_root <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  var_labels <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  legend <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  legend_tiny <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  margins <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  fontsizes <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  richtext <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -105,16 +105,13 @@ default arguments to the vtree_palette() function.</p></dd>
 population).</p></dd>
 
 
-<dt id="arg-var-labels">var_labels<a class="anchor" aria-label="anchor" href="#arg-var-labels"></a></dt>
-<dd><p>If TRUE (default), add names of the variables to the
-plot. Alternatively, it can be a named character vector where
-names are the variable names and values are the labels to be
-displayed for those variables. If FALSE or NULL,
-no variable labels are shown.</p></dd>
-
-
 <dt id="arg-legend">legend<a class="anchor" aria-label="anchor" href="#arg-legend"></a></dt>
 <dd><p>If TRUE, a legend is added to the plot. Default is FALSE.</p></dd>
+
+
+<dt id="arg-legend-tiny">legend_tiny<a class="anchor" aria-label="anchor" href="#arg-legend-tiny"></a></dt>
+<dd><p>If TRUE, just the var names are shown on the margin.
+Default: TRUE.</p></dd>
 
 
 <dt id="arg-margins">margins<a class="anchor" aria-label="anchor" href="#arg-margins"></a></dt>

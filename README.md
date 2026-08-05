@@ -184,11 +184,11 @@ More docs available [here](https://january3.github.io/vtree2/).
 
 - varspace and varsize should work with layouts other than regular
 - the arrows should be attached dynamically in grob.R rather than in
-  layout
+  layout?
 - write a manual in the main vignette \[—–\| \] 80% complete
 - root node should not show percentages on default labels
 - add prefix and suffix parameters to add_labels, to make the handling
-  easier
+  easier - nah, you can just paste() it.
 - ~~plotting function for patterns~~
 - make sure that node_name is used for displaying variable names
 - how is vtree actually handling the palettes?
@@ -200,7 +200,7 @@ More docs available [here](https://january3.github.io/vtree2/).
 - ~~should the vtree() function take cases or samples? Maybe instead of
   vtree_from_freqtable, we can just use vtree(…, .freq_col=“Freq”) or
   something like this.~~ nah, better make it explicit.
-- maybe gridtext for the labels so we can use some basic formatting
+- ~~maybe gridtext for the labels so we can use some basic formatting~~
 - faster processing of cases into trees
 - questions to N:
   - which NA nodes are kept when vp=TRUE, only the sisters or all on the

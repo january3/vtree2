@@ -180,8 +180,6 @@ you have to use a more complex expression which involves checking
 whether a node corresponds to the variable “Sex”:
 `node_col == "Sex" & is.na(Sex)`. That works.
 
-I am still thinking how to solve it in a better way.
-
 ``` r
 data(FakeData, package="vtree")
 library(cowplot)
@@ -214,14 +212,17 @@ vtree(FakeData, Severity, Sex) |>
 
 **`follow`**
 
-The way that prune() in vtree2 works, this requires a bit of thinking.
-We want to prune all branches below the severity levels *except* for the
-Mild and Moderate nodes. One could think that this is the way to do it:
-`!Severity %in% c("Mild", "Moderate")`. Unfortunately, prune() matches
-the condition against a vector which contains the “Severity” values for
-other nodes - this doesn’t make sense, so the value is NA. Which is not
-Mild or Moderate, and thus the condition prunes absolutely all nodes and
-we get an error.
+The `follow` argument in the original `vtree` means: prune all the nodes
+which *follow* nodes that match a certain condition.
+
+The way that prune() in vtree2 works, this requires a bit of
+explanation. We want to prune all branches below the severity levels
+*except* for the Mild and Moderate nodes. One could think that this is
+the way to do it: `!Severity %in% c("Mild", "Moderate")`. Unfortunately,
+prune() matches the condition against a vector which contains the
+“Severity” values for other nodes - but Severity value for, e.g., Sex
+doesn’t make sense, so the value is NA. Which is not Mild or Moderate,
+and thus the condition prunes absolutely all nodes and we get an error.
 
 What one needs to do is to specify that we are looking only at nodes at
 the Severity variable:
@@ -327,8 +328,8 @@ Arguably, that is way more code than just adding `sameline = TRUE` to
 the vtree() call, but it is also way more flexible.
 
 **`labelnode`**. This is used in vtree to replace a variable level with
-a custom label. In vtree2, you can simply replace the variable levels
-*in the data* before constructing the vtree.
+a custom label. In vtree2, the simplest solution is to replace the
+variable levels *in the data* before constructing the vtree.
 
 ``` r
 ## vtree::vtree(FakeData,"Group Sex",horiz=FALSE,
@@ -650,11 +651,16 @@ pattern(vt) |> arrange(Sex_n) |>
 
 ![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-27-1.png)
 
+#### New functionality ~~Killer features~~
+
+- frequency plots: where nodes are scaled by the number of observations
+- inserting other graphical objects into nodes: images or ggplot2’s
+
 #### Missing functionality
 
 The following are not yet implemented in vtree2:
 
-- font styling
+- ~~font styling~~ \<- done! the richtext=TRUE parameter to plot()
 - the various variable processing options, like turning a numeric
   variable into a factor with a specified number of levels - I think
   they are better left to whatever the user is most comfortable with.

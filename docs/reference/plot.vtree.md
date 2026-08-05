@@ -14,8 +14,8 @@ plot_vtree(
   palettes = c("Reds", "Blues", "Greens", "Oranges", "Purples"),
   na_fill = "white",
   show_root = TRUE,
-  var_labels = TRUE,
   legend = FALSE,
+  legend_tiny = TRUE,
   margins = NULL,
   fontsizes = NULL,
   richtext = FALSE,
@@ -60,16 +60,13 @@ plot_vtree(
 
   If TRUE (default), show the root node (total population).
 
-- var_labels:
-
-  If TRUE (default), add names of the variables to the plot.
-  Alternatively, it can be a named character vector where names are the
-  variable names and values are the labels to be displayed for those
-  variables. If FALSE or NULL, no variable labels are shown.
-
 - legend:
 
   If TRUE, a legend is added to the plot. Default is FALSE.
+
+- legend_tiny:
+
+  If TRUE, just the var names are shown on the margin. Default: TRUE.
 
 - margins:
 

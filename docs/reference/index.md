@@ -2,6 +2,8 @@
 
 ## All functions
 
+- [`add_aliases()`](https://january3.github.io/vtree2/reference/add_aliases.md)
+  : Add aliases columns to vtree
 - [`add_labels()`](https://january3.github.io/vtree2/reference/add_labels.md)
   : Add labels to a plot
 - [`add_layout()`](https://january3.github.io/vtree2/reference/add_layout.md)
