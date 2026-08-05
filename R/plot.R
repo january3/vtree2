@@ -82,7 +82,7 @@ normalize_layout <- function(layout) {
                     left = .01)
     } else {
       margins <- margins %||% list(top = .01, right = .01,
-                    bottom = .01, left = .01 + .08 * legend_tiny)
+                    bottom = .01, left = .01 + .15 * (legend_tiny || legend))
 
     }
     return(margins)
