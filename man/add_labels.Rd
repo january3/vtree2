@@ -26,8 +26,12 @@ the nodes for which the labels will be modified.}
 \item{fmt}{an R expression to format the valid value nodes. If not
 NULL, replaces the format from the template.}
 
-\item{fmt_na}{an R expression to format NA nodes. If not NULL,
-replaces the format from the template.}
+\item{fmt_na}{an R expression to format NA nodes in trees with valid
+percentages. If not NULL, replaces the format from the template.
+This is mostly to omit frequency data from NA nodes if the
+missing data was not used as a denominator to calculate
+percentages. If NULL and fmt is not NULL, fmt will be used for NA
+nodes as well.}
 
 \item{root_label}{Label to be used for the root node. If NA, do not
 modify the root label.}

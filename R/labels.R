@@ -1,3 +1,6 @@
+# code around add_labels() and add_aliases() functions
+
+# make sure that all levels are included in the val_alias list
 .normalize_val_alias <- function(val_alias, vtree) {
   defaults <- levels(vtree)
   defaults <- map(defaults, \(x) set_names(as.character(x)))
@@ -23,6 +26,8 @@
   val_alias
 }
 
+# ensure all columns (variables) are included in the col_alias list, and
+# add a root alias if missing
 .normalize_col_alias <- function(col_alias, vtree) {
   defaults <- map(names(vtree), ~ .x)
   names(defaults) <- names(vtree)
@@ -44,10 +49,12 @@
 
   # this only looks complicated because we have to use .data
   if(template == "simple") {
-    fmt <- quo(ifelse(!is.na(.data[["val_alias"]]) & .data[["val_alias"]] == "",
+    fmt <- quo(ifelse(.data[["node_col"]] == "root",
+               sprintf("%d", .data[["n"]]),
+               ifelse(!is.na(.data[["val_alias"]]) & .data[["val_alias"]] == "",
                sprintf("%d\n(%.0f%%)", .data[["n"]], .data[["freq"]] * 100),
                sprintf("%s\n%d (%.0f%%)", .data[["val_alias"]],
-                                          .data[["n"]], .data[["freq"]] * 100)))
+                                          .data[["n"]], .data[["freq"]] * 100))))
     fmt_na = quo(ifelse(!is.na(.data[["val_alias"]]) & .data[["val_alias"]] == "",
                         sprintf("%d", .data[["n"]]),
                         sprintf("%s\n%d", .data[["val_alias"]], .data[["n"]]))
@@ -116,9 +123,13 @@
 #' @param mask If not NULL, then a logical vector is expected indicating
 #' the nodes for which the labels will be modified.
 #' @param fmt an R expression to format the valid value nodes. If not
-#' NULL, replaces the format from the template.
-#' @param fmt_na an R expression to format NA nodes. If not NULL,
-#' replaces the format from the template.
+#'        NULL, replaces the format from the template.
+#' @param fmt_na an R expression to format NA nodes in trees with valid
+#'        percentages. If not NULL, replaces the format from the template.
+#'        This is mostly to omit frequency data from NA nodes if the
+#'        missing data was not used as a denominator to calculate
+#'        percentages. If NULL and fmt is not NULL, fmt will be used for NA
+#'        nodes as well.
 #' @param root_label Label to be used for the root node. If NA, do not
 #'                    modify the root label.
 #' @return an object of class vtree with added labels
@@ -183,6 +194,7 @@ add_labels <- function(vtree,
     mask <- rep(TRUE, nrow(nodes))
   }
 
+  # does the tree have valid percentages?
   is_vp <- attr(vtree, "vp") %||% TRUE
 
   # add label column if one is missing
@@ -190,7 +202,7 @@ add_labels <- function(vtree,
     vtree <- mutate(vtree, label = "")
   }
 
-  vtree <- vtree |> activate("nodes") |>
+  vtree <- vtree |>
     mutate(label = ifelse(mask,
            ifelse(is.na(.data[["node_val"]]) & is_vp,
                           labels_na,
