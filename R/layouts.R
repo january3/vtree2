@@ -146,6 +146,70 @@
   list(levels=legend, titles=titles)
 }
 
+# use the aliases associated with the layout to replace the labels in the
+# legend levels.
+.use_alias_val <- function(df, layout) {
+  alias <- attr(layout, "val_alias")
+  if(is.null(alias)) {
+    return(df)
+  }
+
+  df <- df |>
+    mutate(label = map2_chr(.data[["node_col"]],
+                            .data[["node_val"]],
+                            \(col, val) alias[[col]][val] %||% val))
+  df
+}
+
+# use the aliases associated with the layout to replace the labels in the
+# legend titles.
+.use_alias_col <- function(df, layout) {
+  alias <- attr(layout, "col_alias")
+  if(is.null(alias)) {
+    return(df)
+  }
+
+  df <- df |>
+    mutate(label = map_chr(.data[["node_col"]],
+                           \(col) alias[[col]] %||% col))
+  df
+}
+
+# prepare a summary using the aliases
+#' @importFrom purrr map_chr map2_chr
+.layout_summary <- function(layout) {
+
+  ret <- summary(layout)
+  nodes <- as_tibble(layout)
+
+  c_alias <- attr(layout, "col_alias")
+  if(!is.null(c_alias)) {
+    ret[["col_alias"]] <- map_chr(ret[["node_col"]],
+                                 \(col) c_alias[[col]] %||% col)
+  } else {
+    ret[["col_alias"]] <- ret[["node_col"]]
+  }
+
+  v_alias <- attr(layout, "val_alias")
+  if(!is.null(v_alias)) {
+    ret[["val_alias"]] <- map2_chr(ret[["node_col"]], ret[["node_val"]],
+                                   \(col, val) if(is.na(val)) {
+                                     v_alias[["NAs"]] %||% "NA"
+                                   } else {
+                                     v_alias[[col]][val] %||% val
+                                   })
+  } else {
+    ret[["val_alias"]] <- ret[["node_val"]]
+  }
+
+  ret[["label"]] <- sprintf("%s: %d (%.0f%%)",
+                            ret[["val_alias"]],
+                            ret[["count"]],
+                            ret[["freq"]] * 100)
+
+  ret
+}
+
 # create a layout for the legend.
 layout_legend <- function(layout, margins, var_labels) {
 
@@ -164,7 +228,7 @@ layout_legend <- function(layout, margins, var_labels) {
   pals <- attr(layout, "palette") %||% die()
   pals_v <- attr(layout, "palette_vars") %||% die()
 
-  summaries <- summary(layout) |>
+  summaries <- .layout_summary(layout) |>
     group_by(.data[["node_col"]]) |>
     mutate(pos = 1:n()) |>
     ungroup() |>
@@ -185,15 +249,10 @@ layout_legend <- function(layout, margins, var_labels) {
     dplyr::slice(1) |>
     ungroup() |>
     mutate(node_key = paste0("legend_title_", 1:n())) |>
-    mutate(label = .data[["node_col"]]) |>
+    mutate(label = .data[["col_alias"]]) |>
     mutate(color = pals_v[ .data[["node_col"]] ]) |>
     mutate(label_type = "var_name_label") |>
     mutate(shape = NA)
-
-  if(!is.null(var_labels)) {
-    titles <- titles |>
-      mutate(label = var_labels[ .data[["node_col"]] ])
-  }
 
   if(dir %in% c("tb", "bt")) {
     legend <- .legend_vertical(legend, titles, maxpos, margins)
@@ -241,6 +300,7 @@ layout_legend_minimal <- function(layout, margins, var_labels = NULL) {
     nodes$y <- margins$bottom / 2
   }
 
+  nodes <- .use_alias_col(nodes, layout)
   list(titles = nodes)
 }
 
