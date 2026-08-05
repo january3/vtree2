@@ -146,7 +146,10 @@ test_that("makeContent applies fixed font size to node labels", {
   vt <- vtree_from_freqtable(Titanic, Class, Sex)
   p <- plot(vt, fontsizes = list(nodes = 8), legend_tiny = FALSE)
 
+  tmpfile <- tempfile(fileext = ".pdf")
+  dev.new <- grDevices::pdf(tmpfile)
   p2 <- grid::makeContent(p)
+  dev.off()
 
   labels <- grid::getGrob(p2, grid::gPath("nodes", "text"))$children
   sizes <- sapply(labels, \(g) g$gp$fontsize)
