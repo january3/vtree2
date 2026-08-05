@@ -17,10 +17,11 @@ plot_vtree(
   legend = FALSE,
   margins = NULL,
   fontsizes = NULL,
+  richtext = FALSE,
   lwidth = NA,
   lheight = NA,
   lwd = 1,
-  dir = "lr"
+  dir = NA
 )
 }
 \arguments{
@@ -60,6 +61,10 @@ element can be either a number (font size), or either "fixed" or
 "adaptive"; "fixed" means that all objects within the group will
 have the same automatically adjusted font, and "adaptive" that
 each label will be fit separately.}
+
+\item{richtext}{If TRUE, use \code{\link[gridtext:richtext_grob]{gridtext::richtext_grob()}} for node
+labels, which is much slower, but allows fine control over text
+formatting. Default is FALSE.}
 
 \item{lwidth}{Label width relative to available space}
 
