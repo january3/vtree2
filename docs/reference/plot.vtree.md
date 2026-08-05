@@ -18,10 +18,11 @@ plot_vtree(
   legend = FALSE,
   margins = NULL,
   fontsizes = NULL,
+  richtext = FALSE,
   lwidth = NA,
   lheight = NA,
   lwd = 1,
-  dir = "lr"
+  dir = NA
 )
 ```
 
@@ -83,6 +84,13 @@ plot_vtree(
   means that all objects within the group will have the same
   automatically adjusted font, and "adaptive" that each label will be
   fit separately.
+
+- richtext:
+
+  If TRUE, use
+  [`gridtext::richtext_grob()`](https://wilkelab.org/gridtext/reference/richtext_grob.html)
+  for node labels, which is much slower, but allows fine control over
+  text formatting. Default is FALSE.
 
 - lwidth:
 

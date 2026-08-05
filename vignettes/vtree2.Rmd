@@ -359,6 +359,43 @@ changed because it is important for operations such as pruning. However,
 you can freely modify `node_name`, for example specifying a more
 user-friendly variable name to be used by `add_labels()`.
 
+### Using column and value aliases
+
+If you prefer to see a different name for the variable or its values on the
+plot, you can specify an alias for either using the `col_alias` and
+`val_alias` arguments of `add_labels()`. Not all variables or all levels
+(values) need to be specified, only those you want to change:
+
+```{r fig.width=10,fig.height=5}
+col_alias <- list(Class = "Passenger\nClass",
+                  Sex = "Gender",
+                  Age = "Age\nGroup",
+                  Survived = "Survival\nStatus")
+
+val_alias <- list(NAs = "Missing",
+                  Class = c("1st" = "First",
+                             "2nd" = "Second",
+                             "3rd" = "Third"))
+
+vtree(titanicNA, Class, Survived) |>
+  add_labels(col_alias = col_alias,
+             val_alias = val_alias) |>
+  plot(legend = TRUE, dir="tb", show_root = FALSE,
+       margins = c(0.05, 0.05, 0.05, 0.10))
+```
+
+The special `NAs` name is used for all missing values, regardless of the variable.
+
+Unnecessary gory details:
+
+ * `add_labels()` always creates new columns `col_alias` and `val_alias` in
+   the vtree object.
+ * If no custom format is specified, these two columns will be identical to
+   the `node_name` and `node_val` columns, respectively.
+ * In addition, the alias information is stored in the `col_alias` and
+   `val_alias` attributes of the vtree object, which are subsequently used
+   by `plot()` to create the legend.
+
 ### Using custom formatting
 
 Formatting can also be done with the `fmt`/`fmt_na` parameters, which are
@@ -580,6 +617,38 @@ object is fit separately, and the font sizes can be different for each object.
 **`lwd`** line width for use with plotting. Unfortunately, the default line
 width is not relative to the device size, but is fixed to an absolute
 value; therefore, for small devices the lines may appeary too thick.
+
+## Rich text labels
+
+It is possible to use simple HTML or markdown formatting in the labels and
+then use `richtext=TRUE` in the `plot()` function to render the labels with
+the formatting. The plot rendering is noticably slower, but it allows for
+more flexibility in the label formatting.
+
+```{r}
+cases <- as.data.frame(Titanic) |>
+  mutate(Class=gsub("(st|nd|rd)", "<sup>\\1</sup>", Class)) |>
+  mutate(Sex = gsub("Male", "**<span style='color:blue'>Male</span>**", Sex)) |>
+  cases_from_freqtable()
+
+vt <- vtree(cases, Class, Sex, Survived)
+plot(vt, richtext = TRUE, legend = TRUE)
+vt <- vtree_from_freqtable(Titanic)
+
+# we can use aliases through add_labels() to change the formatting of the
+# variable names and values
+cols <- list(Class = "**Class**", Sex = "**Sex**",
+             Age = "**Age**", Survived = "**Lived**")
+vals <- list(Class = c("1st" = "1<sup>st</sup>", "2nd" = "2<sup>nd</sup>",
+                  "3rd" = "3<sup>rd</sup>"),
+            Sex = c("Male" = "**<span style='color:blue'>Male</span>**",
+                    "Female" = "**<span style='color:lightblue'>Female</span>**"))
+vt <- add_labels(vt, col_alias = cols, val_alias = vals)
+
+plot(vt, richtext = TRUE, legend = TRUE)
+```
+
+
 
 
 

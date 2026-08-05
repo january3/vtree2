@@ -386,6 +386,48 @@ more user-friendly variable name to be used by
 <code><a href="../reference/add_labels.html">add_labels()</a></code>.</p>
 </div>
 <div class="section level4">
+<h4 id="using-column-and-value-aliases">Using column and value aliases<a class="anchor" aria-label="anchor" href="#using-column-and-value-aliases"></a>
+</h4>
+<p>If you prefer to see a different name for the variable or its values
+on the plot, you can specify an alias for either using the
+<code>col_alias</code> and <code>val_alias</code> arguments of
+<code><a href="../reference/add_labels.html">add_labels()</a></code>. Not all variables or all levels (values) need
+to be specified, only those you want to change:</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">col_alias</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>Class <span class="op">=</span> <span class="st">"Passenger\nClass"</span>,</span>
+<span>                  Sex <span class="op">=</span> <span class="st">"Gender"</span>,</span>
+<span>                  Age <span class="op">=</span> <span class="st">"Age\nGroup"</span>,</span>
+<span>                  Survived <span class="op">=</span> <span class="st">"Survival\nStatus"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">val_alias</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>NAs <span class="op">=</span> <span class="st">"Missing"</span>,</span>
+<span>                  Class <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"1st"</span> <span class="op">=</span> <span class="st">"First"</span>,</span>
+<span>                             <span class="st">"2nd"</span> <span class="op">=</span> <span class="st">"Second"</span>,</span>
+<span>                             <span class="st">"3rd"</span> <span class="op">=</span> <span class="st">"Third"</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/vtree.html">vtree</a></span><span class="op">(</span><span class="va">titanicNA</span>, <span class="va">Class</span>, <span class="va">Survived</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/add_labels.html">add_labels</a></span><span class="op">(</span>col_alias <span class="op">=</span> <span class="va">col_alias</span>,</span>
+<span>             val_alias <span class="op">=</span> <span class="va">val_alias</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span>legend <span class="op">=</span> <span class="cn">TRUE</span>, dir<span class="op">=</span><span class="st">"tb"</span>, show_root <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>       margins <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.05</span>, <span class="fl">0.05</span>, <span class="fl">0.05</span>, <span class="fl">0.10</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><img src="vtree2_files/figure-html/unnamed-chunk-9-1.png" class="r-plt" alt="" width="960"></p>
+<p>The special <code>NAs</code> name is used for all missing values,
+regardless of the variable.</p>
+<p>Unnecessary gory details:</p>
+<ul>
+<li>
+<code><a href="../reference/add_labels.html">add_labels()</a></code> always creates new columns
+<code>col_alias</code> and <code>val_alias</code> in the vtree
+object.</li>
+<li>If no custom format is specified, these two columns will be
+identical to the <code>node_name</code> and <code>node_val</code>
+columns, respectively.</li>
+<li>In addition, the alias information is stored in the
+<code>col_alias</code> and <code>val_alias</code> attributes of the
+vtree object, which are subsequently used by <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> to
+create the legend.</li>
+</ul>
+</div>
+<div class="section level4">
 <h4 id="using-custom-formatting">Using custom formatting<a class="anchor" aria-label="anchor" href="#using-custom-formatting"></a>
 </h4>
 <p>Formatting can also be done with the
@@ -418,7 +460,7 @@ with <code>nodecols(vt)</code> (or simply
 <code>colnames(as_tibble(vt))</code>).</p>
 <p>If provided, <code>fmt_na</code> is used to format the NA nodes.</p>
 <p>Here is simple example using <code><a href="https://glue.tidyverse.org/reference/glue.html" class="external-link">glue()</a></code>:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://glue.tidyverse.org/" class="external-link">glue</a></span><span class="op">)</span></span>
 <span><span class="va">vt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/vtree.html">vtree</a></span><span class="op">(</span><span class="va">titanicNA</span>, <span class="va">Class</span>, <span class="va">Sex</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/add_labels.html">add_labels</a></span><span class="op">(</span>fmt <span class="op">=</span></span>
@@ -426,11 +468,11 @@ with <code>nodecols(vt)</code> (or simply
 <span>             fmt_na <span class="op">=</span></span>
 <span>    <span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html" class="external-link">glue</a></span><span class="op">(</span><span class="st">"{node_name}: Missing\nfreq={format(freq, digits=2)}"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">vt</span>, var_labels <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
-<p><img src="vtree2_files/figure-html/unnamed-chunk-9-1.png" class="r-plt" alt="" width="700"></p>
+<p><img src="vtree2_files/figure-html/unnamed-chunk-10-1.png" class="r-plt" alt="" width="700"></p>
 <p>Note that the root node also got a label, but since
 <code>node_name</code> and <code>node_val</code> are both “” for the
 root, the label is not very informative. We can change it:</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://glue.tidyverse.org/" class="external-link">glue</a></span><span class="op">)</span></span>
 <span><span class="va">vt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/vtree.html">vtree</a></span><span class="op">(</span><span class="va">titanicNA</span>, <span class="va">Class</span>, <span class="va">Sex</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/add_labels.html">add_labels</a></span><span class="op">(</span>fmt <span class="op">=</span></span>
@@ -441,7 +483,7 @@ root, the label is not very informative. We can change it:</p>
 <span>                        <span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html" class="external-link">glue</a></span><span class="op">(</span><span class="st">"All passengers\nn={n}"</span><span class="op">)</span>,</span>
 <span>                        <span class="va">label</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">vt</span>, var_labels <span class="op">=</span> <span class="cn">FALSE</span>, dir<span class="op">=</span><span class="st">"tb"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="vtree2_files/figure-html/unnamed-chunk-10-1.png" class="r-plt" alt="" width="960"></p>
+<p><img src="vtree2_files/figure-html/unnamed-chunk-11-1.png" class="r-plt" alt="" width="960"></p>
 </div>
 <div class="section level4">
 <h4 id="using-a-mask">Using a mask<a class="anchor" aria-label="anchor" href="#using-a-mask"></a>
@@ -450,7 +492,7 @@ root, the label is not very informative. We can change it:</p>
 vector with the same length as the number of nodes - to indicate which
 nodes should have their labels modified. For example, you may want a
 different information for the leaf nodes as for other nodes:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">vt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/vtree.html">vtree_from_freqtable</a></span><span class="op">(</span><span class="va">Titanic</span>, <span class="va">Class</span>, <span class="va">Sex</span>, <span class="va">Survived</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/prune.html">retain</a></span><span class="op">(</span><span class="va">path</span> <span class="op">==</span> <span class="st">"Class:1st"</span><span class="op">)</span> <span class="co"># only keep the first class passengers</span></span>
 <span><span class="va">mask</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prune.html">find_nodes</a></span><span class="op">(</span><span class="va">vt</span>, <span class="va">leaf</span><span class="op">)</span> <span class="co"># leaf is a logical vector</span></span>
@@ -458,7 +500,7 @@ different information for the leaf nodes as for other nodes:</p>
 <span>  <span class="fu"><a href="../reference/add_labels.html">add_labels</a></span><span class="op">(</span>mask <span class="op">=</span> <span class="op">!</span><span class="va">mask</span>, fmt <span class="op">=</span> <span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html" class="external-link">glue</a></span><span class="op">(</span><span class="st">"{node_val}"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span>var_labels <span class="op">=</span> <span class="cn">FALSE</span>, dir<span class="op">=</span><span class="st">"tb"</span>, show_root <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>       lwidth <span class="op">=</span> <span class="fl">0.5</span>, lheight <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span></span></code></pre></div>
-<p><img src="vtree2_files/figure-html/unnamed-chunk-11-1.png" class="r-plt" alt="" width="700"></p>
+<p><img src="vtree2_files/figure-html/unnamed-chunk-12-1.png" class="r-plt" alt="" width="700"></p>
 </div>
 </div>
 <div class="section level3">
@@ -484,7 +526,7 @@ layout is similar, but the nodes are always flushed to one side of the
 plot.</p>
 <p>The proportional layout shows the nodes with sizes proportional to
 the number of observations in that node.</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># the default column name for .freq_col is "Freq", same as in Titanic,</span></span>
 <span><span class="co"># so no need to specify it here</span></span>
 <span><span class="va">vt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/vtree.html">vtree_from_freqtable</a></span><span class="op">(</span><span class="va">Titanic</span>, <span class="va">Class</span>, <span class="va">Sex</span>, <span class="va">Survived</span><span class="op">)</span></span>
@@ -492,7 +534,7 @@ the number of observations in that node.</p>
 <span><span class="va">p2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">vt</span>, layout <span class="op">=</span> <span class="st">"flushed"</span><span class="op">)</span></span>
 <span><span class="va">p3</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">vt</span>, layout <span class="op">=</span> <span class="st">"proportional"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/plot_grid.html" class="external-link">plot_grid</a></span><span class="op">(</span><span class="va">p1</span>, <span class="va">p2</span>, <span class="va">p3</span>, nrow <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
-<p><img src="vtree2_files/figure-html/unnamed-chunk-12-1.png" class="r-plt" alt="" width="2016"></p>
+<p><img src="vtree2_files/figure-html/unnamed-chunk-13-1.png" class="r-plt" alt="" width="2016"></p>
 <p>Layouts are added with the <code><a href="../reference/add_layout.html">add_layout()</a></code> function, which
 you can call directly on the vtree object, resulting in a new vtree
 object with additional columns for the layout.</p>
@@ -515,7 +557,7 @@ and the text color of the node label.</p>
 colors automatically. If <code>color</code> is missing, but
 <code>fill</code> is present, then white or black will be chosen
 automatically depending on the contrast with the fill color.</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pal</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/grDevices/colorRamp.html" class="external-link">colorRampPalette</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"white"</span>, <span class="st">"steelblue"</span><span class="op">)</span><span class="op">)</span><span class="op">(</span><span class="fl">101</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="va">vt</span> <span class="op">|&gt;</span></span>
@@ -528,7 +570,7 @@ automatically depending on the contrast with the fill color.</p>
 <span> <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">cowplot</span><span class="fu">::</span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/plot_grid.html" class="external-link">plot_grid</a></span><span class="op">(</span><span class="va">p1</span>, <span class="va">p2</span><span class="op">)</span></span></code></pre></div>
-<p><img src="vtree2_files/figure-html/unnamed-chunk-13-1.png" class="r-plt" alt="" width="700"></p>
+<p><img src="vtree2_files/figure-html/unnamed-chunk-14-1.png" class="r-plt" alt="" width="700"></p>
 <p>Colors can be also assigned automatically based on names of
 RColorBrewer palettes. There is a default order of palettes for the
 variables, but you can override it with the <code>palettes</code>
@@ -545,7 +587,7 @@ the part of the tree which corresponds to this variable. Variable
 summaries are calculated when vtree is constructed and stored in the
 <code>summary</code> attribute of the vtree object. You can print them
 with <code>summary(vtree_object)</code>:</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">vt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/vtree.html">vtree_from_freqtable</a></span><span class="op">(</span><span class="va">Titanic</span>, <span class="va">Class</span>, <span class="va">Sex</span>, <span class="va">Survived</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">vt</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 11 × 6</span></span></span>
@@ -564,13 +606,13 @@ with <code>summary(vtree_object)</code>:</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">11</span> Survived <span style="color: #BB0000;">NA</span>           0 0      <span style="text-decoration: underline;">2</span>201 Missing: 0</span></span></code></pre></div>
 <p>The summaries will not change if you prune the tree, since they are
 tied to the data and not the tree structure:</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mar</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.05</span>, <span class="fl">0.05</span>, <span class="fl">0.33</span>, <span class="fl">0.05</span><span class="op">)</span></span>
 <span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">vt</span>, legend <span class="op">=</span> <span class="cn">TRUE</span>, lwidth<span class="op">=</span><span class="fl">.8</span>, margins <span class="op">=</span> <span class="va">mar</span><span class="op">)</span></span>
 <span><span class="va">p2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prune.html">retain</a></span><span class="op">(</span><span class="va">vt</span>, <span class="va">path</span> <span class="op">==</span> <span class="st">"Class:1st"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span>legend <span class="op">=</span> <span class="cn">TRUE</span>, lwidth<span class="op">=</span><span class="fl">.8</span>, margins <span class="op">=</span> <span class="va">mar</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/plot_grid.html" class="external-link">plot_grid</a></span><span class="op">(</span><span class="va">p1</span>, <span class="va">p2</span>, nrow <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
-<p><img src="vtree2_files/figure-html/unnamed-chunk-15-1.png" class="r-plt" alt="" width="700"></p>
+<p><img src="vtree2_files/figure-html/unnamed-chunk-16-1.png" class="r-plt" alt="" width="700"></p>
 </div>
 <div class="section level4">
 <h4 id="other-plot-arguments">Other <code>plot()</code> arguments<a class="anchor" aria-label="anchor" href="#other-plot-arguments"></a>
@@ -594,23 +636,23 @@ names are shown. Alternatively, it can be used to specify custom
 variable labels. In this case, it should be a named character vector,
 where the names are the variable names and the values are the labels to
 be displayed for those variables.</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">vt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/vtree.html">vtree_from_freqtable</a></span><span class="op">(</span><span class="va">Titanic</span>, <span class="va">Class</span>, <span class="va">Sex</span>, <span class="va">Survived</span><span class="op">)</span></span>
 <span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">vt</span>, var_labels <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="va">p2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">vt</span>, var_labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>Class<span class="op">=</span><span class="st">"Passenger\nClass"</span>, Sex<span class="op">=</span><span class="st">"Gender"</span>,</span>
 <span>                              Survived<span class="op">=</span><span class="st">"Survival\nStatus"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/plot_grid.html" class="external-link">plot_grid</a></span><span class="op">(</span><span class="va">p1</span>, <span class="va">p2</span><span class="op">)</span></span></code></pre></div>
-<p><img src="vtree2_files/figure-html/unnamed-chunk-16-1.png" class="r-plt" alt="" width="960"></p>
+<p><img src="vtree2_files/figure-html/unnamed-chunk-17-1.png" class="r-plt" alt="" width="960"></p>
 <p><strong><code>dir</code></strong> direction of the tree. One of “lr”
 (left to right), “rl” (right to left), “tb” (top to bottom), “bt”
 (bottom to top). Default is “lr”.</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">vt</span><span class="op">)</span> <span class="co"># same as dir = "lr"</span></span>
 <span><span class="va">p2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">vt</span>, dir <span class="op">=</span> <span class="st">"tb"</span><span class="op">)</span></span>
 <span><span class="va">p3</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">vt</span>, dir <span class="op">=</span> <span class="st">"bt"</span><span class="op">)</span></span>
 <span><span class="va">p4</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">vt</span>, dir <span class="op">=</span> <span class="st">"rl"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/plot_grid.html" class="external-link">plot_grid</a></span><span class="op">(</span><span class="va">p1</span>, <span class="va">p2</span>, <span class="va">p3</span>, <span class="va">p4</span>, nrow <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
-<p><img src="vtree2_files/figure-html/unnamed-chunk-17-1.png" class="r-plt" alt="" width="1920"></p>
+<p><img src="vtree2_files/figure-html/unnamed-chunk-18-1.png" class="r-plt" alt="" width="1920"></p>
 <p><strong><code>fontsizes</code></strong> Font sizes for the various
 labels are automatically fit to the available space, but sometimes you
 might manually adjust them. The <code>fontsizes</code> is a named list
@@ -632,6 +674,39 @@ the lines may appeary too thick.</p>
 </div>
 </div>
 <div class="section level3">
+<h3 id="rich-text-labels">Rich text labels<a class="anchor" aria-label="anchor" href="#rich-text-labels"></a>
+</h3>
+<p>It is possible to use simple HTML or markdown formatting in the
+labels and then use <code>richtext=TRUE</code> in the
+<code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> function to render the labels with the formatting.
+The plot rendering is noticably slower, but it allows for more
+flexibility in the label formatting.</p>
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">cases</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">Titanic</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>Class<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">gsub</a></span><span class="op">(</span><span class="st">"(st|nd|rd)"</span>, <span class="st">"&lt;sup&gt;\\1&lt;/sup&gt;"</span>, <span class="va">Class</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>Sex <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">gsub</a></span><span class="op">(</span><span class="st">"Male"</span>, <span class="st">"**&lt;span style='color:blue'&gt;Male&lt;/span&gt;**"</span>, <span class="va">Sex</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/cases_from_freqtable.html">cases_from_freqtable</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">vt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/vtree.html">vtree</a></span><span class="op">(</span><span class="va">cases</span>, <span class="va">Class</span>, <span class="va">Sex</span>, <span class="va">Survived</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">vt</span>, richtext <span class="op">=</span> <span class="cn">TRUE</span>, legend <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<p><img src="vtree2_files/figure-html/unnamed-chunk-19-1.png" class="r-plt" alt="" width="700"></p>
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">vt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/vtree.html">vtree_from_freqtable</a></span><span class="op">(</span><span class="va">Titanic</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># we can use aliases through add_labels() to change the formatting of the</span></span>
+<span><span class="co"># variable names and values</span></span>
+<span><span class="va">cols</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>Class <span class="op">=</span> <span class="st">"**Class**"</span>, Sex <span class="op">=</span> <span class="st">"**Sex**"</span>,</span>
+<span>             Age <span class="op">=</span> <span class="st">"**Age**"</span>, Survived <span class="op">=</span> <span class="st">"**Lived**"</span><span class="op">)</span></span>
+<span><span class="va">vals</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>Class <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"1st"</span> <span class="op">=</span> <span class="st">"1&lt;sup&gt;st&lt;/sup&gt;"</span>, <span class="st">"2nd"</span> <span class="op">=</span> <span class="st">"2&lt;sup&gt;nd&lt;/sup&gt;"</span>,</span>
+<span>                  <span class="st">"3rd"</span> <span class="op">=</span> <span class="st">"3&lt;sup&gt;rd&lt;/sup&gt;"</span><span class="op">)</span>,</span>
+<span>            Sex <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Male"</span> <span class="op">=</span> <span class="st">"**&lt;span style='color:blue'&gt;Male&lt;/span&gt;**"</span>,</span>
+<span>                    <span class="st">"Female"</span> <span class="op">=</span> <span class="st">"**&lt;span style='color:lightblue'&gt;Female&lt;/span&gt;**"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">vt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/add_labels.html">add_labels</a></span><span class="op">(</span><span class="va">vt</span>, col_alias <span class="op">=</span> <span class="va">cols</span>, val_alias <span class="op">=</span> <span class="va">vals</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">vt</span>, richtext <span class="op">=</span> <span class="cn">TRUE</span>, legend <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<p><img src="vtree2_files/figure-html/unnamed-chunk-19-2.png" class="r-plt" alt="" width="700"></p>
+</div>
+<div class="section level3">
 <h3 id="inset-plots">Inset plots<a class="anchor" aria-label="anchor" href="#inset-plots"></a>
 </h3>
 <p>It is possible to add any kind of “grob” - graphical object - to the
@@ -646,7 +721,7 @@ Wikipedia corresponding to the three species of iris flowers from the
 famous Fisher data set. We will show on the vtree how many of each of
 the species have long petals, and we will illustrate the Species nodes
 with the corresponding images.</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://purrr.tidyverse.org/" class="external-link">purrr</a></span><span class="op">)</span></span>
 <span></span>
@@ -678,7 +753,7 @@ with the corresponding images.</p>
 <span>             varspace<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>Species<span class="op">=</span><span class="fl">4</span>,Long_Petals<span class="op">=</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">layout</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span>margins<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">.05</span>, <span class="fl">.05</span>, <span class="fl">.05</span>, <span class="fl">.2</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><img src="vtree2_files/figure-html/unnamed-chunk-18-1.png" class="r-plt" alt="" width="700"></p>
+<p><img src="vtree2_files/figure-html/unnamed-chunk-20-1.png" class="r-plt" alt="" width="700"></p>
 <p>Here, we choose only the “Sex” and “Survived” nodes for the
 construction of the vtree. However, we make a ggplot object for each of
 the leaf nodes (“Survived:Yes” and “Survived:No”) and insert the
@@ -687,7 +762,7 @@ resulting graphics object into the node.</p>
 ggplot2 to a grob with <code><a href="https://ggplot2.tidyverse.org/reference/ggplotGrob.html" class="external-link">ggplot2::ggplotGrob()</a></code>. The
 <code>grob</code> column is a list-column, so we need to manipulate it
 carefully. Also, we need to set an NA value for the non-leaf nodes.</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># first, a tree with simplified labels on the leaf nodes</span></span>
 <span><span class="va">cases</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cases_from_freqtable.html">cases_from_freqtable</a></span><span class="op">(</span><span class="va">Titanic</span><span class="op">)</span></span>
 <span><span class="va">vt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/vtree.html">vtree</a></span><span class="op">(</span><span class="va">cases</span>, <span class="va">Sex</span>, <span class="va">Survived</span><span class="op">)</span></span>
@@ -723,7 +798,7 @@ carefully. Also, we need to set an NA value for the non-leaf nodes.</p>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>shape <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">leaf</span>, <span class="st">"rectangle"</span>, <span class="st">"roundrectangle"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>grob <span class="op">=</span> <span class="va">grobs</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">vt</span><span class="op">)</span></span></code></pre></div>
-<p><img src="vtree2_files/figure-html/unnamed-chunk-19-1.png" class="r-plt" alt="" width="700"></p>
+<p><img src="vtree2_files/figure-html/unnamed-chunk-21-1.png" class="r-plt" alt="" width="700"></p>
 </div>
 </div>
 

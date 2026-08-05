@@ -14,6 +14,8 @@ add_labels(
   mask = NULL,
   fmt = NULL,
   fmt_na = NULL,
+  val_alias = NULL,
+  col_alias = NULL,
   root_label = NA
 )
 ```
@@ -44,6 +46,30 @@ add_labels(
   an R expression to format NA nodes. If not NULL, replaces the format
   from the template.
 
+- val_alias:
+
+  A list specifying aliases for the levels of the variables. Each
+  element of the list should be a named character vector, where the
+  names are the levels of the variable and the values are the labels to
+  be displayed for those levels. If NULL (default), the original levels
+  of the variables are used as labels. The list needs not to be
+  complete; if a variable is not included in the list, its original
+  levels are used. The aliases are then used to construct the labels and
+  also stored in the column 'val_alias' of the nodes data frame. The
+  list may include aliases for NA values under then name `NAs`. If a
+  `val_alias` column is present, it will be overwritten.
+
+- col_alias:
+
+  A list specifying aliases for the columns (variables). Each name of
+  the list is a column/variable name (one of the values of
+  `names(vtree)`) and the value is the alias to be used for that
+  variable when constructing labels. If a name is missing from the list,
+  the original column name is used. The aliases are then used to
+  construct the labels and also stored in the column 'var_alias' of the
+  nodes data frame. If a `var_alias` column is present, it will be
+  overwritten.
+
 - root_label:
 
   Label to be used for the root node. If NA, do not modify the root
@@ -69,11 +95,18 @@ you like to construct a label from the following variables:
 
 - `node_col`, name of the variable associated with a node
 
-- `node_name`, display name of the variable associated with a node
-
 - `node_val`, value of the variable associated with a node
 
 - `node_cv`, same as `paste0(node_col, ':', node_val)`
+
+- `col_alias`, the alias for the column/variable associated with a node
+  (default same as node_col, but can be modified with the `col_alias`
+  parameter or by providing a `var_alias` column in the vtree)
+
+- `val_alias`, the alias for the value of the variable associated with a
+  node (default same as node_val, but can be modified with the
+  `val_alias` parameter or by providing a `val_alias` column in the
+  vtree)
 
 - plus whatever new columns you have added to the vtree with mutate().
 

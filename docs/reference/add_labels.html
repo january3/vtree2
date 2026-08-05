@@ -58,6 +58,8 @@ Labels are used by the <code><a href="plot.vtree.html">plot.vtree()</a></code> f
 <span>  mask <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  fmt <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  fmt_na <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  val_alias <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  col_alias <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  root_label <span class="op">=</span> <span class="cn">NA</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -91,6 +93,31 @@ NULL, replaces the format from the template.</p></dd>
 replaces the format from the template.</p></dd>
 
 
+<dt id="arg-val-alias">val_alias<a class="anchor" aria-label="anchor" href="#arg-val-alias"></a></dt>
+<dd><p>A list specifying aliases for the levels of the
+variables. Each element of the list should be a named character
+vector, where the names are the levels of the variable and the
+values are the labels to be displayed for those levels. If NULL
+(default), the original levels of the variables are used as
+labels. The list needs not to be complete; if a variable is not
+included in the list, its original levels are used. The aliases
+are then used to construct the labels and also stored in the
+column 'val_alias' of the nodes data frame. The list may include
+aliases for NA values under then name <code>NAs</code>. If a <code>val_alias</code>
+column is present, it will be overwritten.</p></dd>
+
+
+<dt id="arg-col-alias">col_alias<a class="anchor" aria-label="anchor" href="#arg-col-alias"></a></dt>
+<dd><p>A list specifying aliases for the columns (variables). Each name
+of the list is a column/variable name (one of the values of
+<code>names(vtree)</code>) and the value is the alias to be used for that
+variable when constructing labels. If a name is missing from the
+list, the original column name is used. The aliases are then used
+to construct the labels and also stored in the column 'var_alias'
+of the nodes data frame. If a <code>var_alias</code> column is present, it
+will be overwritten.</p></dd>
+
+
 <dt id="arg-root-label">root_label<a class="anchor" aria-label="anchor" href="#arg-root-label"></a></dt>
 <dd><p>Label to be used for the root node. If NA, do not
 modify the root label.</p></dd>
@@ -110,9 +137,14 @@ an R expression. You can use sprintf, glue, paste or whichever
 expressions you like to construct a label from the following variables:</p><ul><li><p><code>freq</code>, the frequency for a node</p></li>
 <li><p><code>n</code>, number of samples of a node</p></li>
 <li><p><code>node_col</code>, name of the variable associated with a node</p></li>
-<li><p><code>node_name</code>, display name of the variable associated with a node</p></li>
 <li><p><code>node_val</code>, value of the variable associated with a node</p></li>
 <li><p><code>node_cv</code>, same as <code>paste0(node_col, ':', node_val)</code></p></li>
+<li><p><code>col_alias</code>, the alias for the column/variable associated with a node
+(default same as node_col, but can be modified with the <code>col_alias</code>
+parameter or by providing a <code>var_alias</code> column in the vtree)</p></li>
+<li><p><code>val_alias</code>, the alias for the value of the variable associated with a node
+(default same as node_val, but can be modified with the <code>val_alias</code>
+parameter or by providing a <code>val_alias</code> column in the vtree)</p></li>
 <li><p>plus whatever new columns you have added to the vtree with mutate().</p></li>
 </ul><p>(the difference between node_col and node_name is that you can set
 node_name to whatever you like, while node_col must remain unchanged)</p>

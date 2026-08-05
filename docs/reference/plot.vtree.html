@@ -62,10 +62,11 @@
 <span>  legend <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  margins <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  fontsizes <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  richtext <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  lwidth <span class="op">=</span> <span class="cn">NA</span>,</span>
 <span>  lheight <span class="op">=</span> <span class="cn">NA</span>,</span>
 <span>  lwd <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>  dir <span class="op">=</span> <span class="st">"lr"</span></span>
+<span>  dir <span class="op">=</span> <span class="cn">NA</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -128,6 +129,12 @@ element can be either a number (font size), or either "fixed" or
 "adaptive"; "fixed" means that all objects within the group will
 have the same automatically adjusted font, and "adaptive" that
 each label will be fit separately.</p></dd>
+
+
+<dt id="arg-richtext">richtext<a class="anchor" aria-label="anchor" href="#arg-richtext"></a></dt>
+<dd><p>If TRUE, use <code><a href="https://wilkelab.org/gridtext/reference/richtext_grob.html" class="external-link">gridtext::richtext_grob()</a></code> for node
+labels, which is much slower, but allows fine control over text
+formatting. Default is FALSE.</p></dd>
 
 
 <dt id="arg-lwidth">lwidth<a class="anchor" aria-label="anchor" href="#arg-lwidth"></a></dt>
