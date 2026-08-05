@@ -211,7 +211,7 @@
 }
 
 # create a layout for the legend.
-layout_legend <- function(layout, margins, var_labels) {
+layout_legend <- function(layout, margins) {
 
   dir <- attr(layout, "dir")
 
@@ -264,7 +264,7 @@ layout_legend <- function(layout, margins, var_labels) {
 }
 
 # just the variable titles
-layout_legend_minimal <- function(layout, margins, var_labels = NULL) {
+layout_legend_minimal <- function(layout, margins) {
 
   dir <- attr(layout, "dir")
 
@@ -282,12 +282,6 @@ layout_legend_minimal <- function(layout, margins, var_labels = NULL) {
     nodes$color <- pals_v[ nodes[["node_col"]] ]
   } else {
     nodes$color <- "black"
-  }
-
-  if(!is.null(var_labels)) {
-    var_labels <- var_labels[ names(var_labels) %in% nodes$node_col ]
-    nodes[ match(names(var_labels), nodes$node_col),
-          "label" ] <- var_labels
   }
 
   if(dir %in% c("bt", "tb")) {

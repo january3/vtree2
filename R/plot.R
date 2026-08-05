@@ -65,54 +65,20 @@ normalize_layout <- function(layout) {
   x
 }
 
-# checks and normalizes the var_labels parameter
-.normalize_var_labels <- function(cnms, var_labels) {
-  if(is.null(var_labels)) {
-    return(NULL)
-  }
 
-  default <- set_names(cnms)
 
-  if(is.logical(var_labels)) {
-    if(var_labels) {
-      var_labels <- default
-    } else {
-      var_labels <- NULL
-    }
-    return(var_labels)
-  }
-
-  if(!is.character(var_labels) || is.null(names(var_labels))) {
-    cli_abort(c(x = "var_labels must be a logical or a named character vector"))
-  }
-
-  if(any(!names(var_labels) %in% default)) {
-    incorrect <- names(var_labels)[!names(var_labels) %in% default]
-    cli_abort(c(x = "incorrect var_labels - no such variable(s): {incorrect}"))
-  }
-
-  for(n in names(default)) {
-    if(!n %in% names(var_labels)) {
-      var_labels[n] <- default[n]
-    }
-  }
-
-  var_labels
-}
-
-.normalize_margins <- function(margins, dir, var_labels, legend) {
-  show_vl <- !is.null(var_labels)
+.normalize_margins <- function(margins, dir, legend_tiny, legend) {
 
   # default margins
   if(is.null(margins)) {
     if(dir %in% c("lr", "rl")) {
       margins <- margins %||% list(top = .01, right = .01,
-                    bottom = .01 + .05 * show_vl +
+                    bottom = .01 + .05 * legend_tiny +
                       .15 * legend,
                     left = .01)
     } else {
       margins <- margins %||% list(top = .01, right = .01,
-                    bottom = .01, left = .01 + .08 * show_vl)
+                    bottom = .01, left = .01 + .08 * legend_tiny)
 
     }
     return(margins)
@@ -321,11 +287,6 @@ normalize_layout <- function(layout) {
 #' @param richtext If TRUE, use [gridtext::richtext_grob()] for node
 #'        labels, which is much slower, but allows fine control over text
 #'        formatting. Default is FALSE.
-#' @param var_labels If TRUE (default), add names of the variables to the
-#'        plot. Alternatively, it can be a named character vector where
-#'        names are the variable names and values are the labels to be
-#'        displayed for those variables. If FALSE or NULL,
-#'        no variable labels are shown.
 #' @param dir direction of the tree. One of "lr" (left to right), "rl"
 #'        (right to left), "tb" (top to bottom), "bt" (bottom to top).
 #'        Default is "lr".
@@ -341,6 +302,8 @@ normalize_layout <- function(layout) {
 #' @param lwd line width for use with plotting
 #' @param na_fill The color to use for NA values. Default is "white".
 #' @param legend If TRUE, a legend is added to the plot. Default is FALSE.
+#' @param legend_tiny If TRUE, just the var names are shown on the margin.
+#'        Default: TRUE.
 #' @seealso [vtree2::mutate.vtree()] for modifying the node data frame, and
 #' [vtree2::add_labels()] for adding labels to the nodes. For layout
 #' details, see [vtree2::add_layout()].
@@ -392,8 +355,8 @@ plot_vtree <- function(x,
                                    "Oranges", "Purples"),
                       na_fill = "white",
                       show_root = TRUE,
-                      var_labels = TRUE,
                       legend = FALSE,
+                      legend_tiny = TRUE,
                       margins = NULL,
                       fontsizes = NULL,
                       richtext = FALSE,
@@ -406,8 +369,7 @@ plot_vtree <- function(x,
 
   layout_arg <- match.arg(layout)
 
-  var_labels <- .normalize_var_labels(names(x), var_labels)
-  margins    <- .normalize_margins(margins, dir, var_labels, legend)
+  margins    <- .normalize_margins(margins, dir, legend_tiny, legend)
   fontsizes  <- .normalize_fontsizes(fontsizes, layout_arg)
 
   grobs <- extract_grobs(x)
@@ -420,9 +382,9 @@ plot_vtree <- function(x,
   layout <- normalize_layout(layout)
 
   if(legend) {
-    legend <- layout_legend(layout, margins, var_labels)
-  } else if(!is.null(var_labels)) {
-    legend <- layout_legend_minimal(layout, margins, var_labels)
+    legend <- layout_legend(layout, margins)
+  } else if(legend_tiny) {
+    legend <- layout_legend_minimal(layout, margins)
   } else {
     legend <- NULL
   }

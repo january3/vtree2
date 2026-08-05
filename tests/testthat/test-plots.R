@@ -69,7 +69,7 @@ test_that("plot returns a gTree object", {
   expect_setequal(c("edges", "nodes", "legend"), names(p2$children))
   expect_setequal(names(p2$children$legend$children), c("titles", "levels"))
 
-  p3 <- plot(vt, var_labels = FALSE)
+  p3 <- plot(vt, legend_tiny = FALSE)
   expect_setequal(c("edges", "nodes"), names(p3$children))
 })
     
@@ -112,27 +112,13 @@ test_that("plotting works (smoke tests)", {
   expect_no_error(plot(vt, lwidth = .1, layout = "proportional"))
   expect_no_error(plot(vt, lwidth = .1, layout = "flushed"))
   expect_no_error(plot(vt, show_root = FALSE))
-  expect_no_error(plot(vt, var_labels = FALSE))
+  expect_no_error(plot(vt, legend_tiny = FALSE))
   expect_no_error(plot(vt, fontsizes = list(nodes=9, var_labels=10,
                                             legend_labels=11)))
   expect_no_error(plot(vt, fontsizes = list(nodes="adaptive", var_labels=10,
                                             legend_labels="adaptive")))
 })
 
-test_that("var_labels argument works", {
-
-  expect_no_error(plot(vt, var_labels=FALSE))
-  expect_no_error(plot(vt, var_labels=NULL))
-  expect_no_error(plot(vt, var_labels=
-                       c(Class="C",
-                         Sex="G",
-                         Survived="S")))
-
-  expect_no_error(plot(vt, var_labels=c(Sex="S")))
-  expect_error(plot(vt, var_labels=c(foo="bar")),
-    "incorrect var_labels - no such variable\\(s\\): foo")
-
-})
 
 test_that("plot preserves user-provided labels and colors", {
   vt <- vtree_from_freqtable(Titanic, Class, Sex) |>
@@ -158,7 +144,7 @@ test_that("plot preserves user-provided labels and colors", {
 
 test_that("makeContent applies fixed font size to node labels", {
   vt <- vtree_from_freqtable(Titanic, Class, Sex)
-  p <- plot(vt, fontsizes = list(nodes = 8), var_labels = FALSE)
+  p <- plot(vt, fontsizes = list(nodes = 8), legend_tiny = FALSE)
 
   p2 <- grid::makeContent(p)
 
