@@ -109,7 +109,7 @@ From this, assuming we performed screening tests on `r N` persons in a
 population, we get the following table:
 
 
-```{r echo=FALSE}
+```{r npv_table,echo=FALSE}
 data |> knitr::kable()
 ```
 
@@ -204,7 +204,7 @@ data set. This data set is the same as the Titanic data set, but with some
 missing values randomly added for demonstration purposes.
 
 
-```{r example1,fig.width=10,fig.height=5}
+```{r workflow_example1,fig.width=10,fig.height=5}
 data(titanicNA)
 
 vtree(titanicNA, Class, Sex, Survived) |>
@@ -254,7 +254,7 @@ root node is shown, and `lwidth`/`lheight` determine the width and height
 of the nodes relative to the available space.
 
 
-```{r fig.width=10,fig.height=5}
+```{r layouts1,fig.width=10,fig.height=5}
 vt <- vtree_from_freqtable(Titanic, Class, Survived)
 p1 <- plot(vt)
 p2 <- plot(vt, dir = "tb", show_root = FALSE, lwidth = 0.8, lheight = 0.3)
@@ -272,7 +272,7 @@ In the following example we will modify a layout with pruned nodes. We will
 move the nodes on the right (leafs) hand up a bit upwards.
 
 
-```{r}
+```{r layouts3,fig.width=5,fig.height=5}
 vt <- vtree_from_freqtable(Titanic, Class, Survived) |>
   prune(Class %in% c("1st", "2nd"), follow_only = TRUE) |>
   add_layout() |>
@@ -302,7 +302,7 @@ want to show a long summary which takes a lot of space for the leafs, but
 only short labels for the internal nodes. You can tune the relative node
 sizes with these two parameters.
 
-```{r fig.width=10,fig.height=4}
+```{r layouts4,fig.width=8,fig.height=2}
 cases <- cases_from_freqtable(Titanic)
 sm <- summary_vt(cases, vt, Age)
 
@@ -331,7 +331,7 @@ you see on the plot are the same as in the original data. For example, you
 can do the following:
 
 
-```{r}
+```{r aliases1,fig.width=4,fig.height=4}
 cases <- as_tibble(Titanic) |>
   mutate(Class = recode(Class, "1st" = "First", "2nd" = "Second",
                         "3rd" = "Third")) |>
@@ -348,7 +348,7 @@ either using the `col_alias` and `val_alias` arguments of `add_aliases()`.
 Not all variables or all levels (values) need to be specified, only those
 you want to change:
 
-```{r fig.width=10,fig.height=5}
+```{r aliases2,fig.width=8,fig.height=4}
 col_alias <- list(Class = "Passenger\nClass",
                   Sex = "Gender",
                   Age = "Age\nGroup",
@@ -395,7 +395,7 @@ data frame, you can use any of the columns of the vtree object directly.
 For example, you can show the `node_key` column, a unique identifier for
 each node.
 
-```{r fig.width=10,fig.height=5}
+```{r labels1,fig.width=8,fig.height=4}
 vtree(titanicNA, Class, Survived) |>
   mutate(label = paste0("node_key:\n", node_key)) |>
   plot(legend_tiny = FALSE)
@@ -406,7 +406,7 @@ vtree(titanicNA, Class, Survived) |>
 The `add_labels()` function can produce two types of default labels:
 "simple" and "long", chosen through the `template` argument:
 
-```{r fig.width=10,fig.height=5}
+```{r labels2,fig.width=8,fig.height=4}
 vt <- vtree(titanicNA, Class)
 p1 <- add_labels(vt) |> plot() # template = "simple"
 p2 <- add_labels(vt, template = "long") |> plot()
@@ -432,6 +432,9 @@ expressions you like to construct a label from the following variables:
  * `node_name`, display name of the variable associated with a node
  * `node_val`, value of the variable associated with a node
  * `node_cv`, same as `paste0(node_col, ':', node_val)`
+ * `col_alias`,`val_alias`: if you have defined aliases with
+   `add_aliases()`, you will find them here. Otherwise the columns are
+   same as `node_col` and `node_val`.
  * plus whatever new columns you have added to the vtree with mutate().
 
 You can list the columns in the node data frame of a vtree object with
@@ -441,7 +444,7 @@ If provided, `fmt_na` is used to format the NA nodes.
 
 Here is simple example using `glue()`:
 
-```{r}
+```{r labels3,fig.width=4,fig.height=4}
 library(glue)
 vt <- vtree(titanicNA, Class, Sex) |>
   add_labels(fmt =
@@ -453,7 +456,7 @@ plot(vt, legend_tiny = FALSE)
 
 Note that the root node also got a label, but since `node_name` and `node_val` are both "" for the root, the label is not very informative. We can change it:
 
-```{r fig.width=10,fig.height=5}
+```{r labels4,fig.width=8,fig.height=4}
 library(glue)
 vt <- vtree(titanicNA, Class, Sex) |>
   add_labels(fmt =
@@ -473,7 +476,7 @@ length as the number of nodes - to indicate which nodes should have their
 labels modified. For example, you may want a different information for the
 leaf nodes as for other nodes:
 
-```{r}
+```{r labels_mask,fig.width=4,fig.height=4}
 vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived) |>
   retain(path == "Class:1st") # only keep the first class passengers
 mask <- find_nodes(vt, leaf) # leaf is a logical vector
@@ -504,7 +507,7 @@ The proportional layout shows the nodes with sizes proportional to the
 number of observations in that node.
 
 
-```{r fig.width=21,fig.height=7}
+```{r layouts2,fig.width=12,fig.height=4}
 # the default column name for .freq_col is "Freq", same as in Titanic,
 # so no need to specify it here
 vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived)
@@ -535,7 +538,7 @@ If `fill` is missing from the vtree object, `plot()` will call
 `fill` is present, then white or black will be chosen automatically
 depending on the contrast with the fill color.
 
-```{r}
+```{r colors1,fig.width=8,fig.height=4}
 pal <- colorRampPalette(c("white", "steelblue"))(101)
 
 p1 <- vt |>
@@ -565,7 +568,7 @@ part of the tree which corresponds to this variable. Variable summaries are
 calculated when vtree is constructed and stored in the `summary` attribute
 of the vtree object. You can print them with `summary(vtree_object)`:
 
-```{r}
+```{r summaries1}
 vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived)
 summary(vt)
 ```
@@ -574,7 +577,7 @@ The summaries will not change if you prune the tree, since they are tied to
 the data and not the tree structure:
 
 
-```{r}
+```{r summaries2,fig.width=8,fig.height=4}
 mar <- c(0.05, 0.05, 0.33, 0.05)
 p1 <- plot(vt, legend = TRUE, lwidth=.8, margins = mar)
 p2 <- retain(vt, path == "Class:1st") |>
@@ -643,7 +646,7 @@ then use `richtext=TRUE` in the `plot()` function to render the labels with
 the formatting. The plot rendering is noticably slower, but it allows for
 more flexibility in the label formatting.
 
-```{r}
+```{r richtext1,fig.width=4,fig.height=4}
 vt <- vtree_from_freqtable(Titanic, Class, Survived) |>
   add_labels() |>
   mark(path == "Class:1st/Survived:No") |>
@@ -660,7 +663,7 @@ You can also include the rich text formatting in the aliases for the
 variable names and values, which will then be used both in the labels and
 in the legend.
 
-```{r}
+```{r richtext2,fig.width=6,fig.height=4}
 vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived)
 
 # we can use aliases through add_labels() to change the formatting of the
@@ -697,7 +700,7 @@ data set. We will show on the vtree how many of each of the species have
 long petals, and we will illustrate the Species nodes with the
 corresponding images.
 
-```{r}
+```{r inset1,fig.width=7,fig.height=4}
 library(dplyr)
 library(purrr)
 
@@ -741,7 +744,7 @@ with `ggplot2::ggplotGrob()`. The `grob` column is a list-column, so we need to
 manipulate it carefully. Also, we need to set an NA value for the non-leaf
 nodes.
 
-```{r fig.width=10,fig.height=5}
+```{r insets2,fig.width=9,fig.height=4}
 # first, a tree with simplified labels on the leaf nodes
 cases <- cases_from_freqtable(Titanic)
 vt <- vtree(cases, Sex, Survived)

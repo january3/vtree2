@@ -39,3 +39,27 @@ add_aliases(vtree, val_alias = NULL, col_alias = NULL)
   construct the labels and also stored in the column 'var_alias' of the
   nodes data frame. If a `var_alias` column is present, it will be
   overwritten.
+
+## Value
+
+Returns an object of class vtree with added columns `col_alias` and
+`val_alias` in the node data frame. The aliases are also stored as an
+attribute of the vtree object.
+
+## Examples
+
+``` r
+vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived) |>
+      add_aliases(val_alias = list(Class = c("1st" = "First",
+                                             "2nd" = "Second",
+                                             "3rd" = "Third")),
+                    col_alias = list(Sex = "Gender"))
+plot(vt)
+#> Warning: There was 1 warning in `mutate()`.
+#> ℹ In argument: `nleafs = map_bfs_back_int(...)`.
+#> Caused by warning:
+#> ! The `father` argument of `bfs()` is deprecated as of igraph 2.2.0.
+#> ℹ Please use the `parent` argument instead.
+#> ℹ The deprecated feature was likely used in the tidygraph package.
+#>   Please report the issue at <https://github.com/thomasp85/tidygraph/issues>.
+```

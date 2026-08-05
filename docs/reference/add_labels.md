@@ -41,8 +41,11 @@ add_labels(
 
 - fmt_na:
 
-  an R expression to format NA nodes. If not NULL, replaces the format
-  from the template.
+  an R expression to format NA nodes in trees with valid percentages. If
+  not NULL, replaces the format from the template. This is mostly to
+  omit frequency data from NA nodes if the missing data was not used as
+  a denominator to calculate percentages. If NULL and fmt is not NULL,
+  fmt will be used for NA nodes as well.
 
 - root_label:
 
@@ -108,13 +111,6 @@ add_labels(vt) |> pull(label)
 #> [25] "Yes\n90 (46%)"     "No\n670 (78%)"     "Yes\n192 (22%)"   
 #> [28] "No\n3 (13%)"       "Yes\n20 (87%)"    
 add_labels(vt) |> plot()
-#> Warning: There was 1 warning in `mutate()`.
-#> ℹ In argument: `nleafs = map_bfs_back_int(...)`.
-#> Caused by warning:
-#> ! The `father` argument of `bfs()` is deprecated as of igraph 2.2.0.
-#> ℹ Please use the `parent` argument instead.
-#> ℹ The deprecated feature was likely used in the tidygraph package.
-#>   Please report the issue at <https://github.com/thomasp85/tidygraph/issues>.
 
 
 vt |> add_labels(template = "long") |> plot()
