@@ -64,7 +64,7 @@
 .calc_nleafs <- function(vtree) {
   rt <- which(as_tibble(vtree)$node_id == 1)
 
-  vtree |>
+  vtree <- vtree |>
     mutate(nleafs = map_bfs_back_int(
       root = rt,
       mode = "out",
@@ -80,27 +80,34 @@
     })) |>
     group_by(.data[["parent_id"]]) |>
     mutate(offset = lag(cumsum(.data[["nleafs"]]), default = 0)) |>
-    ungroup() |>
+    ungroup()
+
+  nodes <- as_tibble(vtree)
+  vtree |>
     mutate(offset_tot = map_bfs_int(
       root = rt,
       mode = "out",
       .f = \(node, path, ...) {
-        .N()$offset[node] + sum(.N()$offset[path$node])
+        nodes$offset[node] + sum(nodes$offset[path$node])
     }))
 }
 
 .calc_offsets <- function(vtree) {
   rt <- which(as_tibble(vtree)$node_id == 1)
 
-  vtree |>
+  vtree <- vtree |>
     group_by(.data[["parent"]]) |>
     mutate(offset = lag(cumsum(.data[["n"]]), default = 0)) |>
-    ungroup() |>
+    ungroup()
+
+  nodes <- as_tibble(vtree)
+
+  vtree |>
     mutate(offset_tot = map_bfs_int(
       root = rt,
       mode = "out",
       .f = \(node, path, ...) {
-        .N()$offset[node] + sum(.N()$offset[path$node])
+        nodes$offset[node] + sum(nodes$offset[path$node])
     }))
 }
 
