@@ -62,6 +62,27 @@
       [36] "Survived\nNo: 0\nYes: 18"              
       [37] "Survived\nNo: 0\nYes: 0\nNAs: 2"       
 
+# numeric summaries work
+
+    Code
+      s1
+    Output
+      # A tibble: 29 x 14
+         path   col   type      n    mean    sd   min   max  median     q1    q3   iqr
+         <chr>  <chr> <chr> <int>   <dbl> <dbl> <dbl> <dbl>   <dbl>  <dbl> <dbl> <dbl>
+       1 root   foo   nume~  2201  0.0340 0.993 -3.05  3.39  0.0330 -0.625 0.709  1.33
+       2 Class~ foo   nume~   325  0.0184 0.994 -2.60  3.24  0.0219 -0.644 0.683  1.33
+       3 Class~ foo   nume~   285  0.0249 0.951 -2.32  2.48 -0.0429 -0.593 0.716  1.31
+       4 Class~ foo   nume~   706  0.0134 0.970 -2.81  3.29  0.0345 -0.589 0.713  1.30
+       5 Class~ foo   nume~   885  0.0586 1.02  -3.05  3.39  0.0549 -0.643 0.714  1.36
+       6 Class~ foo   nume~   180 -0.0440 0.962 -2.31  3.24 -0.0431 -0.696 0.545  1.24
+       7 Class~ foo   nume~   145  0.0955 1.03  -2.60  2.82  0.120  -0.600 0.798  1.40
+       8 Class~ foo   nume~   179  0.101  0.992 -2.01  2.48  0.0425 -0.579 0.894  1.47
+       9 Class~ foo   nume~   106 -0.106  0.866 -2.32  1.99 -0.0704 -0.658 0.454  1.11
+      10 Class~ foo   nume~   510  0.0287 0.988 -2.81  3.29  0.0678 -0.606 0.758  1.36
+      # i 19 more rows
+      # i 2 more variables: valid <int>, missing <int>
+
 # summary_at_var works
 
     Code

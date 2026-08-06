@@ -15,6 +15,25 @@ test_that("plotting works without a palette assigned", {
   expect_no_error(plot(vt2))
 })
 
+test_that("margins work", {
+
+  p <- plot(vt, margins = c(0.4, 0.4, 0.4, 0.4))
+  expect_all_true(abs(unlist(p$params$mar) - 
+                      c(0.4, 0.4, 0.4, 0.4)) < 1e-12)
+  p <- plot(vt, margins = c(0.1, 0.2, 0.3, 0.4))
+  expect_all_true(
+        abs(unlist(p$params$mar[c("top", "right", "bottom", "left")]) - 
+        c(0.1, 0.2, 0.3, 0.4)) < 1e-12)
+
+  expect_error(plot(vt, margins = c(0.1, 0.2, 0.3)),
+               "numeric vector with four elements")
+  expect_error(plot(vt, margins = rep("foo", 4)),
+               "numeric vector with four elements")
+  expect_error(plot(vt, margins = 1:4),
+               "all margins must be values in the range \\[0,1\\]")
+
+})
+
     
 test_that("plot returns a gTree object", {
   p1 <- plot(vt)
@@ -94,6 +113,8 @@ test_that("plotting works (smoke tests)", {
 test_that("plotting with richtext=TRUE works (smoke tests)", {
   vt <- vtree_from_freqtable(Titanic, "Class", "Sex", "Survived")
 
+  tempfile <- tempfile(fileext = ".pdf")
+  dev.new <- grDevices::pdf(tempfile, width=5, height=5)
   expect_no_error(plot(vt, richtext=TRUE))
   p <- plot(vt, richtext=TRUE)
   cl <- unlist(map(p$children$nodes$children$text$children, \(x) class(x)[1]))
@@ -104,6 +125,7 @@ test_that("plotting with richtext=TRUE works (smoke tests)", {
   expect_no_error(plot(vt2, richtext=TRUE))
   expect_no_error(plot(vt2, richtext=TRUE, legend = TRUE))
   expect_no_error(plot(vt2, layout="proportional", richtext=TRUE))
+  dev.off()
 })
 
 test_that("plot preserves user-provided labels and colors", {
@@ -185,18 +207,17 @@ test_that("makeContent applies fixed font size to node labels", {
   expect_length(unique(fs2), 1)
   dev.off()
 
+  dev.new <- grDevices::pdf(tmpfile, width=5, height=5)
   # fontsizes set directly should not change
   p <- plot(vt, fontsizes = list(nodes = 8), legend_tiny = FALSE)
 
-  tmpfile <- tempfile(fileext = ".pdf")
-  dev.new <- grDevices::pdf(tmpfile)
   p2 <- grid::makeContent(p)
-  dev.off()
 
   labels <- grid::getGrob(p2, grid::gPath("nodes", "text"))$children
   sizes <- sapply(labels, \(g) g$gp$fontsize)
 
   expect_all_equal(sizes, 8)
+  dev.off()
 })
 
 

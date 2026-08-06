@@ -19,8 +19,14 @@ test_that("layout functions work", {
 
   expect_error(add_layout(vt, varspace=NA),
                "varspace lacks required names:")
+  expect_error(add_layout(vt, varspace=c(root="10", Class = "10", Sex = "5")),
+               "varspace argument must be numeric")
   expect_error(add_layout(vt, varsize=NA),
                "varsize lacks required names:")
+  expect_error(add_layout(vt, varsize=c(root=10, Class = 10, Sex = 5)),
+               "varsize must be less than or equal to 1")
+
+
 })
 
 test_that("precomputed layouts work with plots", {
