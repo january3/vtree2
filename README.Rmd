@@ -22,6 +22,122 @@ Tree diagrams for categorical data, based on the
 [original vtree package](https://github.com/nbarrowman/vtree) by
 Nick Barrowman.
 
+## Gallery
+
+
+```{r echo=FALSE,message=FALSE,warning=FALSE,fig.width=12,fig.height=16}
+library(cowplot)
+library(vtree2)
+
+vt <- vtree_from_freqtable(Titanic, Class, Survived)
+
+p1 <- plot(vt, legend = TRUE)
+p2 <- vt |>
+  add_aliases(val_alias = list(Class = c("1st" = "1<sup>st</sup>",
+                                    "2nd" = "2<sup>nd</sup>",
+                                    "3rd" = "3<sup>rd</sup>"))) |>
+  plot(layout = "proportional", richtext = TRUE)
+
+data(titanicNA)
+p3 <- vtree(titanicNA, Class, Sex, Survived) |>
+  # only retain the third class passengers
+  retain(path == "Class:3rd") |>
+  # change how variables are displayed
+  add_aliases(val_alias = list(Class = c("1st" = "First",
+                                    "2nd" = "Second",
+                                    "3rd" = "Third"))) |>
+  # add default labels, built from aliases
+  add_labels() |>
+  # change the labels for the missing values
+  mutate(label = gsub("NA", "Missing", label)) |>
+  # add colors
+  add_palette(palettes = c("Greys", "Blues", "Purples"),
+              na_fill = "grey90") |>
+  # change the color for Females who survived
+  # mark() is a helper function that returns TRUE for the nodes that
+  # match the given condition
+  mark(path == "Class:3rd/Sex:Female/Survived:Yes") |>
+  mutate(fill = ifelse(mark, "red", fill)) |>
+  mutate(color = ifelse(mark, "white", color)) |>
+  # plotting with legend and custom margins
+  plot(legend = TRUE,
+       margins = c(0.05, 0.05, 0.25, 0.05))
+
+library(dplyr)
+library(purrr)
+
+iris_urls <- list(
+versicolor="https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/Blue_Flag%2C_Ottawa.jpg/500px-Blue_Flag%2C_Ottawa.jpg",
+setosa="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Irissetosa1.jpg/500px-Irissetosa1.jpg",
+virginica="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/Iris_virginica_2.jpg/500px-Iris_virginica_2.jpg")
+
+get_grob <- function(url) {
+  tf <- tempfile(fileext = ".jpg")
+  download.file(url, tf, mode="wb")
+  img <- jpeg::readJPEG(tf)
+  grid::rasterGrob(img)
+}
+
+iris_grobs <- lapply(iris_urls, get_grob)
+
+vt <- iris |>
+  mutate(Long_Petals = as.character(Petal.Length > 4)) |>
+  vtree(Species, Long_Petals) |>
+  add_labels() |>
+  mutate(label = ifelse(leaf, label, paste0("Iris\n", node_val)))
+vt <- vt |>
+  mutate(grob = map(pull(vt, "node_val"), ~ iris_grobs[[.x]]))
+
+layout <- vt |>
+  add_palette(palettes = c("Greens", "Blues")) |>
+  add_layout(dir="tb", show_root=FALSE, lwidth=.9, lheight=.7,
+             varspace=c(Species=2,Long_Petals=1))
+p4 <- layout |>
+  plot(margins=c(.05, .05, .05, .2))
+
+p1234 <- cowplot::plot_grid(p1, p2, p3, p4, ncol=2)
+
+# first, a tree with simplified labels on the leaf nodes
+cases <- cases_from_freqtable(Titanic)
+vt <- vtree(cases, Sex, Survived)
+
+library(ggplot2)
+
+# minimalistic ggplot showing how many passengers were in each class
+# of the data frame df.
+clasplot <- function(df) {
+  ggplot(df, aes(x = Class, fill = Class)) +
+    geom_bar() +
+    scale_fill_discrete(drop=FALSE) +
+    scale_x_discrete(drop=FALSE) +
+    ylim(0, max(table(cases$Class))) +
+    theme_minimal() +
+    # remove labels, legend and axes
+    theme(legend.position = "none",
+          axis.title = element_blank(),
+          axis.ticks = element_blank())
+}
+
+# use vtree_apply to produce plots
+plots <- vtree_apply(cases, vt, FUN = clasplot)
+grobs <- lapply(plots, ggplot2::ggplotGrob)
+grobs[!pull(vt, leaf)] <- NA # plots only for the leaf nodes
+
+# we add layout manually, so we can control it better
+# this varspace arg means: reserve 4x as much space for the Survived nodes
+# as for the Sex nodes
+vt <- vt |> 
+  add_layout(dir="tb", show_root=FALSE, lheight=.8,
+             varspace=c(Sex=1,Survived=3)) |>
+  mutate(shape = ifelse(leaf, "rectangle", "roundrectangle")) |>
+  mutate(grob = grobs)
+p5 <- plot(vt)
+
+plot_grid(p1234, p5, ncol=1, rel_heights = c(2, 1))
+```
+
+
+
 ## Installation
 
 You can install the development version of vtree2 like so:
@@ -30,17 +146,13 @@ You can install the development version of vtree2 like so:
 pak::pak("january3/vtree2")
 ```
 
-## Quick start
-
-### What is a vtree?
-
-
 ### vtree2 workflow
 
  1. Prepare the data with `vtree()` or `vtree_from_freqtable()`. After this
     step, the data is immutable, frequencies and counts calculated will not
     change any more.
  2. Prune the tree for visualization with `prune()` or `retain()`.
+ 3. Add variable and variable level aliases with `add_aliases()`.
  3. Add labels and colors with `add_labels()` and `add_palette()` or by
     directly manipulating the `label`, `color` and `fill` columns of the
     vtree object. `find_nodes()` and `prune(..., mark_only = TRUE)` can be
@@ -172,6 +284,10 @@ code review / bug finding.
 ## Documentation
 
 More docs available [here](https://january3.github.io/vtree2/).
+
+ * [What are vtrees?](https://january3.github.io/vtree2/articles/what_are_vtrees.html)
+ * [User manual](https://january3.github.io/vtree2/articles/vtree2.html)
+ * [Vtree2 for vtree users](https://january3.github.io/vtree2/articles/vtree2_for_vtree_users.html)
 
 ## TODO
 

@@ -10,6 +10,10 @@
 Tree diagrams for categorical data, based on the [original vtree
 package](https://github.com/nbarrowman/vtree) by Nick Barrowman.
 
+## Gallery
+
+<img src="man/figures/README-unnamed-chunk-2-1.png" alt="" width="100%" />
+
 ## Installation
 
 You can install the development version of vtree2 like so:
@@ -18,23 +22,20 @@ You can install the development version of vtree2 like so:
 pak::pak("january3/vtree2")
 ```
 
-## Quick start
-
-### What is a vtree?
-
 ### vtree2 workflow
 
 1.  Prepare the data with `vtree()` or `vtree_from_freqtable()`. After
     this step, the data is immutable, frequencies and counts calculated
     will not change any more.
 2.  Prune the tree for visualization with `prune()` or `retain()`.
-3.  Add labels and colors with `add_labels()` and `add_palette()` or by
+3.  Add variable and variable level aliases with `add_aliases()`.
+4.  Add labels and colors with `add_labels()` and `add_palette()` or by
     directly manipulating the `label`, `color` and `fill` columns of the
     vtree object. `find_nodes()` and `prune(..., mark_only = TRUE)` can
     be used to select nodes for coloring or labeling. The `summary_vt()`
     function can be used to produce additional per-node summaries which
     can be used for labeling or coloring.
-4.  plot the tree with `plot()`.
+5.  plot the tree with `plot()`.
 
 ### Basic plots
 
@@ -179,6 +180,12 @@ Also, for code review / bug finding.
 ## Documentation
 
 More docs available [here](https://january3.github.io/vtree2/).
+
+- [What are
+  vtrees?](https://january3.github.io/vtree2/articles/what_are_vtrees.html)
+- [User manual](https://january3.github.io/vtree2/articles/vtree2.html)
+- [Vtree2 for vtree
+  users](https://january3.github.io/vtree2/articles/vtree2_for_vtree_users.html)
 
 ## TODO
 
