@@ -221,4 +221,37 @@ test_that("makeContent applies fixed font size to node labels", {
 })
 
 
+test_that("grob injection works", {
 
+  box <- grid::gTree(name = "test_box",
+                     children = gList(
+    grid::rectGrob(name = "test_rect",
+                   x = .5, y = .5, width = 1, height = 1,
+                   gp = grid::gpar(fill = "steelblue", col = NA)),
+    grid::textGrob("Hello", name = "test_text", x = .5, y = .5,
+                   gp = grid::gpar(col = "white", fontsize = 32))
+  ))
+
+  #grid.draw(box)
+
+  vt <- vtree_from_freqtable(Titanic, Class, Sex) |>
+    mutate(grob = NA) |>
+    mark(path == "Class:1st/Sex:Female") |>
+    mutate(grob = ifelse(mark, list(box), grob))
+
+  p <- plot(vt)
+
+  tempfile <- tempfile(fileext = ".pdf")
+  dev.new <- grDevices::pdf(tempfile, width=5, height=5)
+  expect_no_error(grid.draw(p))
+  expect_no_error(print(p))
+  dev.off()
+
+  expect_in("plots", names(p$children))
+  plots <- p$children$plots
+  expect_in("plot_obj", names(plots$children))
+  expect_in("test_box", names(plots$children$plot_obj$children))
+  tb <- plots$children$plot_obj$children$test_box
+  expect_in(c("test_rect", "test_text"), names(tb$children))
+  expect_equal(tb$children$test_text$label, "Hello")
+})

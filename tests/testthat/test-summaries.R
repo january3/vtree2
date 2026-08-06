@@ -143,11 +143,18 @@ test_that("vtree_apply works", {
   vt <- vtree(cases, Class, Sex, Survived)
   nd <- as_tibble(vt)
 
-  vtf <- vtree_apply(cases, vt, \(x) mean(x$foo))  
+  vtf <- vtree_apply(cases, vt, \(x) mean(x$foo))
 
   expect_type(vtf, "list")
   expect_length(vtf, nrow(nd))
   expect_all_true(names(vtf) == nd$node_key)
   expect_all_true(purrr::map_lgl(vtf, is.numeric) == TRUE)
 
+  vtf <- vtree_apply(cases, vt, \(x, y) y, .twoarg = TRUE) 
+  expect_type(vtf, "list")
+  expect_length(vtf, nrow(nd))
+  expect_all_true(names(vtf) == nd$node_key)
+
+  vtf_df <- Reduce(rbind, vtf)
+  expect_identical(nd, vtf_df)
 })

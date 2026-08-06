@@ -1,6 +1,27 @@
 
 
+test_that("vtree works", {
+  cases <- cases_from_freqtable(Titanic)  
+  vt <- vtree(cases, Class, Survived)
+  expect_s3_class(vt, "vtree")
+  expect_s3_class(vt, "tbl_graph")
 
+  nodes <- as_tibble(vt)
+  expect_equal(nrow(nodes), 13)
+  expect_in(c("path", "node_col", "node_val", "parent",
+              "path_l", "level", "n", "freq", "vp"), colnames(nodes))
+
+  expect_setequal(c("root", "Class", "Survived"), unique(nodes$node_col))
+
+
+  attr(cases, "levels") <- NULL
+  vt <- vtree(cases, Class, Survived)
+  lvs <- levels(vt)
+  expect_type(lvs, "list")
+  expect_setequal(names(lvs), c("Class", "Survived"))
+  expect_setequal(lvs$Class, c("1st", "2nd", "3rd", "Crew"))
+
+})
 
 test_that("cases_from_freqtable works", {
   cases <- cases_from_freqtable(Titanic)  
@@ -25,7 +46,7 @@ test_that("vtree_from_freqtable works", {
   expect_s3_class(vt, "vtree")
   expect_s3_class(vt, "tbl_graph")
 
-  nodes <- vt |> activate(nodes) |> as_tibble()
+  nodes <- as_tibble(vt)
 
   expect_equal(nrow(nodes), 51)
   expect_in(c("path", "node_col", "node_val", "parent",
@@ -128,4 +149,62 @@ test_that("summary works", {
   expect_equal(nrow(sm), 11)
   expect_all_true(sm$count == c(325, 285, 706, 885, 0, 1731, 470,
                                 0, 1490, 711, 0))
+})
+
+
+test_that("methods work", {
+
+  vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived)
+  expect_setequal(names(vt), c("Class", "Sex", "Survived"))
+
+  otp <- capture_output(print(vt))
+  expect_match(otp, "vtree object with 3 variables and 2201 observations")
+
+  lv <- levels(vt)
+
+  expect_type(lv, "list")
+  expect_setequal(names(lv), c("Class", "Sex", "Survived"))
+  expect_setequal(lv$Class, c("1st", "2nd", "3rd", "Crew"))
+
+})
+
+test_that("errors are raised", {
+
+  vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived)
+
+  cases <- cases_from_freqtable(Titanic)
+  expect_error(as_vtree(cases), "x must be a tbl_graph object")
+
+  tbl <- as_tbl_graph(vt) |> select(-node_id)
+  expect_error(as_vtree(tbl), "Columns node_id not in colnames")
+
+  tbl <- as_tbl_graph(vt) |> dplyr::slice(1)
+  expect_error(as_vtree(tbl),
+               "vtree must have at least one node other than the root")
+
+  tbl <- as_tbl_graph(vt) |> mutate(level = 0)
+  expect_error(as_vtree(tbl),
+               "vtree must have at least one node other than the root")
+
+  tbl <- as_tbl_graph(vt) |> mutate(level = level - 1)
+  expect_error(as_vtree(tbl), "vtree must have exactly one root node")
+
+  tbl <- as_tbl_graph(vt)
+  attr(tbl, "levels") <- NULL
+
+  expect_error(as_vtree(tbl),
+               "vtree must have an attribute 'levels'")
+
+  cases <- cases_from_freqtable(Titanic)
+  expect_error(vtree(cases, Foo, Bar), "Columns not found: Foo and Bar")
+  xx <- data.frame()
+  expect_error(vtree(xx), "No columns in the data frame cases")
+
+  attr(cases, "levels") <- list(Class = "1st")
+  expect_error(vtree(cases, Sex), "not all column names in provided levels")
+
+  expect_error(mutate(vt, tot_n = 99),
+               "tried to modify following immutable column")
+  expect_no_error(mutate(vt, tot_n = 99, .check = FALSE))
+
 })

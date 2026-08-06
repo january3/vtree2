@@ -365,6 +365,11 @@ as_vtree <- function(x) {
 #' @importFrom tidygraph .N .E
 #' @export
 vtree <- function(cases, ..., .vp = TRUE, .cols = NULL) {
+
+  if(length(colnames(cases)) < 1L) {
+    cli_abort(c(x = "No columns in the data frame cases"))
+  }
+
   if (!is.null(.cols)) {
     cnms <- .cols
   } else {
@@ -376,10 +381,6 @@ vtree <- function(cases, ..., .vp = TRUE, .cols = NULL) {
 
   if(length(cnms) < 1L) {
     cnms <- colnames(cases)
-  }
-
-  if(length(cnms) < 1L) {
-    cli_abort(c(x = "No columns specified for the vtree"))
   }
 
   if(!all(cnms %in% colnames(cases))) {

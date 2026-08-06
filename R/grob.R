@@ -26,33 +26,6 @@ lwd_npc <- function(frac) {
   ret
 }
 
-# get widths from a list of grobs
-.get_widths <- function(grobs) {
-    purrr::map_dbl(grobs, \(g)
-      convertWidth(grobWidth(g), "npc", valueOnly = TRUE))
-}
-
-# get heights from a list of grobs
-.get_heights <- function(grobs) {
-    lhghs <- purrr::map_dbl(grobs, \(g)
-      convertHeight(grobHeight(g), "npc", valueOnly = TRUE))
-}
-
-# for a list of grobs, set the fontsize to fs
-# by re-creating the grobs
-.set_fontsize_df <- function(df, fs) {
-
-  if(length(fs) == 1L) {
-    fs <- rep(fs, nrow(df))
-  }
-
-  map(1:nrow(df), \(i)
-    .mk_text(x=df$x[i], y=df$y[i], label=df$label[i],
-             name=df$node_key[i], color=df$color[i],
-             fs = fs[i])
-    )
-}
-
 # given a single grob, adapt the fontsize to fit a given w x h
 .adapt_fontsize_single_full <- function(grob, width, height,
                                         label, name, color,

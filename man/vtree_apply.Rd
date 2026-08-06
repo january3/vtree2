@@ -20,7 +20,10 @@ to each node in the vtree.}
 nodes in the vtree. If provided,
 only the nodes for which .mask is TRUE will be processed.}
 
-\item{.twoarg}{A logical value indicating whether FUN takes two arguments}
+\item{.twoarg}{A logical value indicating whether FUN takes two
+arguments. If TRUE, the first argument will be the fragment of
+cases corresponding to the node, and the second will be the row
+from the nodes data frame of vtree corresponding to that node.}
 }
 \value{
 A list of the results of applying FUN to each subset of cases
