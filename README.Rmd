@@ -175,6 +175,12 @@ More docs available [here](https://january3.github.io/vtree2/).
 
 ## TODO
 
+ * print.vtree should show the status of added layouts / colors / etc etc
+ * pruning:
+    * streamline and clean up pruning / selecting nodes
+    * remove mark_only parameter, enough to have "mark()"
+    * unexport find_parents / find_children
+    * remove the na.rm tag
  * add_layout should not modify shape if present
  * the arrows should be attached dynamically in grob.R rather than in
    layout?
