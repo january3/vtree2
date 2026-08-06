@@ -61,3 +61,39 @@ test_that("Aliases work", {
                           nd4$n,
                           nd4$freq * 100)[-1])
 })
+
+
+test_that("add_labels works", {
+  vt1 <- add_labels(vt)
+  expect_s3_class(vt1, "vtree")
+  expect_true("label" %in% colnames(as_tibble(vt1)))
+  expect_equal(sum(is.na(as_tibble(vt1)$label)), 0)
+  expect_snapshot(as_tibble(vt1)$label)
+
+  vt2 <- add_labels(vt, template = "long")
+  expect_s3_class(vt2, "vtree")
+  expect_true("label" %in% colnames(as_tibble(vt2)))
+  expect_equal(sum(is.na(as_tibble(vt2)$label)), 0)
+  expect_snapshot(as_tibble(vt2)$label)
+
+  vt3 <- add_labels(vt, fmt = "foo", fmt_na = "bar")
+  expect_s3_class(vt3, "vtree")
+  expect_true("label" %in% colnames(as_tibble(vt3)))
+  expect_equal(sum(is.na(as_tibble(vt3)$label)), 0)
+  expect_equal(unique(as_tibble(vt3)$label), "foo")
+
+  vt4 <- add_labels(vtNA)
+  expect_s3_class(vt4, "vtree")
+  expect_true("label" %in% colnames(as_tibble(vt3)))
+  expect_equal(sum(is.na(as_tibble(vt4)$label)), 0)
+  expect_snapshot(as_tibble(vt4)$label)
+
+  vt5 <- add_labels(vtNA, fmt = "foo", fmt_na = "bar")
+  expect_s3_class(vt5, "vtree")
+  expect_true("label" %in% colnames(as_tibble(vt5)))
+  expect_equal(sum(is.na(as_tibble(vt5)$label)), 0)
+  expect_setequal(as_tibble(vt5)$label, c("foo", "bar"))
+
+})
+
+

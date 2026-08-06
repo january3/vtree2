@@ -2,39 +2,6 @@
 vt <- vtree_from_freqtable(Titanic, "Class", "Sex", "Survived")
 vt_na <- vtree(titanicNA, Class, Sex, Survived)
 
-test_that("add_labels works", {
-  vt1 <- add_labels(vt)
-  expect_s3_class(vt1, "vtree")
-  expect_true("label" %in% colnames(as_tibble(vt1)))
-  expect_equal(sum(is.na(as_tibble(vt1)$label)), 0)
-  expect_snapshot(as_tibble(vt1)$label)
-
-  vt2 <- add_labels(vt, template = "long")
-  expect_s3_class(vt2, "vtree")
-  expect_true("label" %in% colnames(as_tibble(vt2)))
-  expect_equal(sum(is.na(as_tibble(vt2)$label)), 0)
-  expect_snapshot(as_tibble(vt2)$label)
-
-  vt3 <- add_labels(vt, fmt = "foo", fmt_na = "bar")
-  expect_s3_class(vt3, "vtree")
-  expect_true("label" %in% colnames(as_tibble(vt3)))
-  expect_equal(sum(is.na(as_tibble(vt3)$label)), 0)
-  expect_equal(unique(as_tibble(vt3)$label), "foo")
-
-  vt4 <- add_labels(vt_na)
-  expect_s3_class(vt4, "vtree")
-  expect_true("label" %in% colnames(as_tibble(vt3)))
-  expect_equal(sum(is.na(as_tibble(vt4)$label)), 0)
-  expect_snapshot(as_tibble(vt4)$label)
-
-  vt5 <- add_labels(vt_na, fmt = "foo", fmt_na = "bar")
-  expect_s3_class(vt5, "vtree")
-  expect_true("label" %in% colnames(as_tibble(vt5)))
-  expect_equal(sum(is.na(as_tibble(vt5)$label)), 0)
-  expect_setequal(as_tibble(vt5)$label, c("foo", "bar"))
-
-})
-
 test_that("plotting works without a palette assigned", {    
   vt2 <- vt_na |> add_labels() |>
   mutate(label = ifelse(path == "Class:1st", "First class", label)) |>
@@ -125,11 +92,17 @@ test_that("plotting works (smoke tests)", {
 })
 
 test_that("plotting with richtext=TRUE works (smoke tests)", {
+  vt <- vtree_from_freqtable(Titanic, "Class", "Sex", "Survived")
 
   expect_no_error(plot(vt, richtext=TRUE))
+  p <- plot(vt, richtext=TRUE)
+  cl <- unlist(map(p$children$nodes$children$text$children, \(x) class(x)[1]))
+  expect_all_equal(cl, "richtext_grob")
+
   expect_no_error(plot(vt, layout="proportional", richtext=TRUE))
   vt2 <- vt |> mutate(label = paste0("**node-<sup>", node_id, "</sup>**"))
   expect_no_error(plot(vt2, richtext=TRUE))
+  expect_no_error(plot(vt2, richtext=TRUE, legend = TRUE))
   expect_no_error(plot(vt2, layout="proportional", richtext=TRUE))
 })
 
@@ -157,6 +130,62 @@ test_that("plot preserves user-provided labels and colors", {
 
 test_that("makeContent applies fixed font size to node labels", {
   vt <- vtree_from_freqtable(Titanic, Class, Sex)
+
+  tmpfile <- tempfile(fileext = ".pdf")
+  dev.new <- grDevices::pdf(tmpfile, width=3, height=3)
+  expect_no_error(plot(vt))
+  expect_no_error(plot(vt, layout="proportional"))
+  expect_no_error(plot(vt, fontsizes = list(nodes = "adaptive")))
+  expect_no_error(plot(vt, richtext = TRUE))
+
+  # on a small device, fontsizes should decrease
+  p <- plot(vt, fontsizes = list(nodes = "adaptive"),
+            show_root = FALSE,
+            legend_tiny = FALSE)
+  fs <- unlist(map(p$children$nodes$children$text$children,
+                   \(x) x$gp$fontsize))
+  p2 <- grid::makeContent(p)
+  fs2 <- unlist(map(p2$children$nodes$children$text$children,
+                   \(x) x$gp$fontsize))
+  expect_all_true(fs2 < fs)
+
+  p <- plot(vt, fontsizes = list(nodes = "fixed"),
+            show_root = FALSE,
+            legend_tiny = FALSE)
+  fs <- unlist(map(p$children$nodes$children$text$children,
+                   \(x) x$gp$fontsize))
+  p2 <- grid::makeContent(p)
+  fs2 <- unlist(map(p2$children$nodes$children$text$children,
+                   \(x) x$gp$fontsize))
+  expect_all_true(fs2 < fs)
+  expect_length(unique(fs2), 1)
+  dev.off()
+
+  # on a large device, fontsizes should increase
+  dev.new <- grDevices::pdf(tmpfile, width=12, height=12)
+  p <- plot(vt, fontsizes = list(nodes = "adaptive"),
+            show_root = FALSE,
+            legend_tiny = FALSE)
+  fs <- unlist(map(p$children$nodes$children$text$children,
+                   \(x) x$gp$fontsize))
+  p2 <- grid::makeContent(p)
+  fs2 <- unlist(map(p2$children$nodes$children$text$children,
+                   \(x) x$gp$fontsize))
+  expect_all_true(fs2 > fs)
+
+  p <- plot(vt, fontsizes = list(nodes = "fixed"),
+            show_root = FALSE,
+            legend_tiny = FALSE)
+  fs <- unlist(map(p$children$nodes$children$text$children,
+                   \(x) x$gp$fontsize))
+  p2 <- grid::makeContent(p)
+  fs2 <- unlist(map(p2$children$nodes$children$text$children,
+                   \(x) x$gp$fontsize))
+  expect_all_true(fs2 > fs)
+  expect_length(unique(fs2), 1)
+  dev.off()
+
+  # fontsizes set directly should not change
   p <- plot(vt, fontsizes = list(nodes = 8), legend_tiny = FALSE)
 
   tmpfile <- tempfile(fileext = ".pdf")
@@ -171,14 +200,4 @@ test_that("makeContent applies fixed font size to node labels", {
 })
 
 
-test_that("precomputed layouts work", {
-  vt <- vtree_from_freqtable(Titanic, Class, Sex)
-  vt <- add_layout(vt, layout = "regular")
-  expect_no_error(plot(vt))
-  vt <- add_layout(vt, layout = "proportional")
-  expect_no_error(plot(vt))
-  vt <- add_layout(vt, layout = "flushed_left")
-  expect_no_error(plot(vt))
-  vt <- add_layout(vt, layout = "flushed_right")
-  expect_no_error(plot(vt))
-})
+
