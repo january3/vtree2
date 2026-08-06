@@ -203,6 +203,8 @@ find_nodes <- function(vtree, condition, follow_only = FALSE) {
 
 #' Find all nodes that follow or precede the nodes for which the mask is TRUE
 #'
+#' Find all nodes that follow or precede the nodes for which the mask is TRUE
+#'
 #' `find_children` identifies all nodes in a vtree graph that follow the
 #' nodes for which the provided mask is TRUE.
 #'
