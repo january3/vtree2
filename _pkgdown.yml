@@ -4,6 +4,12 @@ template:
   light-switch: true
   bootswatch: sandstone
 
+navbar:
+  components:
+    intro:
+      text: User guide
+      href: articles/vtree2.html
+
 reference:
   - title: Creating vtree objects
     contents:
