@@ -9,7 +9,7 @@ edges in the plot.
 ``` r
 add_layout(
   vtree,
-  layout = c("regular", "proportional", "flushed"),
+  layout = c("regular", "proportional", "flushed_left", "flushed_right"),
   layout_func = NULL,
   dir = "lr",
   lwidth = NA,
@@ -18,8 +18,6 @@ add_layout(
   varsize = NULL,
   show_root = TRUE
 )
-
-as_vtree_layout(layout, dir, show_root)
 ```
 
 ## Arguments
@@ -74,7 +72,11 @@ data frames
 The builtin layouts are as follows:
 
 - "regular" - a regular layout in which all nodes have the same width
-  and height, and the nodes are evenly spaced along the y-axis.
+  and height, and the nodes are evenly spaced along the y-axis;
+
+- "flushed_left" and "flushed_right" are the same as "regular", but
+  flushed to one side (left or right in horizontal plots, and top /
+  bottom in the vertical plots);
 
 - "proportional" - a layout in which the height of each node is
   proportional to the number of observations in that node, and the nodes
@@ -132,5 +134,5 @@ add_layout(vt, layout = "regular", dir = "lr") |> tibble::as_tibble()
 # the layout parameter from plot() is passed on to add_layout()
 plot(vt, layout="proportional")
 
-plot(vt, layout="flushed", dir="tb")
+plot(vt, layout="flushed_right", dir="tb")
 ```

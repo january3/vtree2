@@ -42,7 +42,176 @@
     </div>
 
     <div class="section level2">
-      <h2 id="all-functions">All functions<a class="anchor" aria-label="anchor" href="#all-functions"></a></h2>
+      <h2 id="creating-vtree-objects">Creating vtree objects<a class="anchor" aria-label="anchor" href="#creating-vtree-objects"></a></h2>
+
+
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="vtree.html">vtree_from_freqtable()</a></code> <code><a href="vtree.html">vtree()</a></code>
+
+        </dt>
+        <dd>Create a vtree object from a data frame</dd>
+
+        <dt>
+
+          <code><a href="cases_from_freqtable.html">cases_from_freqtable()</a></code>
+
+        </dt>
+        <dd>Convert a frequency table to a data frame of cases</dd>
+
+        <dt>
+
+          <code><a href="as_tbl_graph.vtree.html">as_tbl_graph(<i>&lt;vtree&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Convert a vtree_graph to a tbl_graph</dd>
+
+        <dt>
+
+          <code><a href="as_vtree.html">as_vtree()</a></code>
+
+        </dt>
+        <dd>Convert a tbl_graph to a vtree</dd>
+
+        <dt>
+
+          <code><a href="mutate.vtree.html">mutate(<i>&lt;vtree&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Create, modify, and delete node columns</dd>
+
+        <dt>
+
+          <code><a href="is_vp.html">is_vp()</a></code>
+
+        </dt>
+        <dd>Is the vtree based on valid percentages?</dd>
+
+        <dt>
+
+          <code><a href="levels.vtree.html">levels(<i>&lt;vtree&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Get the levels of a vtree object</dd>
+
+        <dt>
+
+          <code><a href="names.vtree.html">names(<i>&lt;vtree&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Get the variable names of a vtree object</dd>
+
+        <dt>
+
+          <code><a href="nodecols.html">nodecols()</a></code>
+
+        </dt>
+        <dd>Get the column names of a vtree object</dd>
+
+        <dt>
+
+          <code><a href="print.vtree.html">print(<i>&lt;vtree&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Print a vtree object</dd>
+
+        <dt>
+
+          <code><a href="summary.vtree.html">summary(<i>&lt;vtree&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Show per-variable summaries of a vtree object data</dd>
+      </dl></div><div class="section level2">
+      <h2 id="patterns">Patterns<a class="anchor" aria-label="anchor" href="#patterns"></a></h2>
+
+
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="pattern.html">pattern()</a></code>
+
+        </dt>
+        <dd>Convert a vtree to a pattern</dd>
+
+        <dt>
+
+          <code><a href="print.vtree_pattern.html">print(<i>&lt;vtree_pattern&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Print a vtree pattern</dd>
+
+        <dt>
+
+          <code><a href="plot.vtree_pattern.html">plot(<i>&lt;vtree_pattern&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Plot a pattern object</dd>
+      </dl></div><div class="section level2">
+      <h2 id="pruning-keeping-marking-searching">Pruning, keeping, marking, searching<a class="anchor" aria-label="anchor" href="#pruning-keeping-marking-searching"></a></h2>
+
+
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="prune.html">prune()</a></code> <code><a href="prune.html">find_nodes()</a></code> <code><a href="prune.html">retain()</a></code> <code><a href="prune.html">mark()</a></code>
+
+        </dt>
+        <dd>Find nodes and prune a vtree graph</dd>
+
+        <dt>
+
+          <code><a href="find_children.html">find_children()</a></code> <code><a href="find_children.html">find_parents()</a></code>
+
+        </dt>
+        <dd>Find all nodes that follow or precede the nodes for which the mask is TRUE</dd>
+      </dl></div><div class="section level2">
+      <h2 id="summaries">Summaries<a class="anchor" aria-label="anchor" href="#summaries"></a></h2>
+
+
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="summary_vt.html">summary_vt()</a></code> <code><a href="summary_vt.html">summary_vt_df()</a></code>
+
+        </dt>
+        <dd>Summarize a case variable for each node of a vtree</dd>
+
+        <dt>
+
+          <code><a href="summary_at_var.html">summary_at_var()</a></code>
+
+        </dt>
+        <dd>Summarize a variable at a given node of a vtree</dd>
+
+        <dt>
+
+          <code><a href="vtree_apply.html">vtree_apply()</a></code>
+
+        </dt>
+        <dd>Apply a function to a data frame by nodes in the vtree</dd>
+      </dl></div><div class="section level2">
+      <h2 id="labels-and-aliases">Labels and aliases<a class="anchor" aria-label="anchor" href="#labels-and-aliases"></a></h2>
 
 
 
@@ -64,34 +233,36 @@
 
         </dt>
         <dd>Add labels to a plot</dd>
+      </dl></div><div class="section level2">
+      <h2 id="layouts-colors-plotting">Layouts, colors, plotting<a class="anchor" aria-label="anchor" href="#layouts-colors-plotting"></a></h2>
+
+
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="plot.vtree.html">plot(<i>&lt;vtree&gt;</i>)</a></code> <code><a href="plot.vtree.html">plot_vtree()</a></code>
+
+        </dt>
+        <dd>Plot a vtree</dd>
 
         <dt>
 
-          <code><a href="add_layout.html">add_layout()</a></code> <code><a href="add_layout.html">as_vtree_layout()</a></code>
+          <code><a href="add_layout.html">add_layout()</a></code>
 
         </dt>
         <dd>Prepare a layout for plotting a vtree</dd>
 
         <dt>
 
-          <code><a href="as_tbl_graph.vtree.html">as_tbl_graph(<i>&lt;vtree&gt;</i>)</a></code>
+          <code><a href="vtree_palette.html">vtree_palette()</a></code> <code><a href="vtree_palette.html">add_palette()</a></code>
 
         </dt>
-        <dd>Convert a vtree_graph to a tbl_graph</dd>
-
-        <dt>
-
-          <code><a href="as_vtree.html">as_vtree()</a></code>
-
-        </dt>
-        <dd>Convert a tbl_graph to a vtree</dd>
-
-        <dt>
-
-          <code><a href="cases_from_freqtable.html">cases_from_freqtable()</a></code>
-
-        </dt>
-        <dd>Convert a frequency table to a data frame of cases</dd>
+        <dd>Color palettes for a variable levels</dd>
 
         <dt>
 
@@ -102,145 +273,29 @@
 
         <dt>
 
-          <code><a href="find_children.html">find_children()</a></code> <code><a href="find_children.html">find_parents()</a></code>
-
-        </dt>
-        <dd>Find all nodes that follow or precede the nodes for which the mask is TRUE</dd>
-
-        <dt>
-
-          <code><a href="is_vp.html">is_vp()</a></code>
-
-        </dt>
-        <dd>Is the vtree based on valid percentages?</dd>
-
-        <dt>
-
-          <code><a href="levels.vtree.html">levels(<i>&lt;vtree&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Get the levels of a vtree object</dd>
-
-        <dt>
-
           <code><a href="makeContent.vtree_plot.html">makeContent(<i>&lt;vtree_plot&gt;</i>)</a></code>
 
         </dt>
         <dd>Hook for vtree plots</dd>
+      </dl></div><div class="section level2">
+      <h2 id="datasets">Datasets<a class="anchor" aria-label="anchor" href="#datasets"></a></h2>
 
-        <dt>
 
-          <code><a href="mutate.vtree.html">mutate(<i>&lt;vtree&gt;</i>)</a></code>
 
-        </dt>
-        <dd>Create, modify, and delete node columns</dd>
+      <dl></dl></div><div class="section level2">
 
-        <dt>
 
-          <code><a href="names.vtree.html">names(<i>&lt;vtree&gt;</i>)</a></code>
 
-        </dt>
-        <dd>Get the variable names of a vtree object</dd>
 
-        <dt>
-
-          <code><a href="nodecols.html">nodecols()</a></code>
-
-        </dt>
-        <dd>Get the column names of a vtree object</dd>
-
-        <dt>
-
-          <code><a href="pattern.html">pattern()</a></code>
-
-        </dt>
-        <dd>Convert a vtree to a pattern</dd>
-
-        <dt>
-
-          <code><a href="plot.vtree.html">plot(<i>&lt;vtree&gt;</i>)</a></code> <code><a href="plot.vtree.html">plot_vtree()</a></code>
-
-        </dt>
-        <dd>Plot a vtree</dd>
-
-        <dt>
-
-          <code><a href="plot.vtree_pattern.html">plot(<i>&lt;vtree_pattern&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Plot a pattern object</dd>
-
-        <dt>
-
-          <code><a href="print.vtree.html">print(<i>&lt;vtree&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Print a vtree object</dd>
-
-        <dt>
-
-          <code><a href="print.vtree_pattern.html">print(<i>&lt;vtree_pattern&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Print a vtree pattern</dd>
-
-        <dt>
-
-          <code><a href="prune.html">prune()</a></code> <code><a href="prune.html">find_nodes()</a></code> <code><a href="prune.html">retain()</a></code> <code><a href="prune.html">mark()</a></code>
-
-        </dt>
-        <dd>Find nodes and prune a vtree graph</dd>
-
-        <dt>
-
-          <code><a href="summary.vtree.html">summary(<i>&lt;vtree&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Show per-variable summaries of a vtree object data</dd>
-
-        <dt>
-
-          <code><a href="summary_at_var.html">summary_at_var()</a></code>
-
-        </dt>
-        <dd>Summarize a variable at a given node of a vtree</dd>
-
-        <dt>
-
-          <code><a href="summary_vt.html">summary_vt()</a></code> <code><a href="summary_vt.html">summary_vt_df()</a></code>
-
-        </dt>
-        <dd>Summarize a case variable for each node of a vtree</dd>
-
-        <dt>
+      <dl><dt>
 
           <code><a href="titanicNA.html">titanicNA</a></code>
 
         </dt>
         <dd>titanicNA dataset</dd>
-
-        <dt>
-
-          <code><a href="vtree.html">vtree_from_freqtable()</a></code> <code><a href="vtree.html">vtree()</a></code>
-
-        </dt>
-        <dd>Create a vtree object from a data frame</dd>
-
-        <dt>
-
-          <code><a href="vtree_apply.html">vtree_apply()</a></code>
-
-        </dt>
-        <dd>Apply a function to a data frame by nodes in the vtree</dd>
-
-        <dt>
-
-          <code><a href="vtree_palette.html">vtree_palette()</a></code> <code><a href="vtree_palette.html">add_palette()</a></code>
-
-        </dt>
-        <dd>Color palettes for a variable levels</dd>
       </dl></div>
-  </main></div>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
+    </nav></aside></div>
 
 
     <footer><div class="pkgdown-footer-left">

@@ -199,16 +199,17 @@ More docs available [here](https://january3.github.io/vtree2/).
 
 ## TODO
 
-- varspace and varsize should work with layouts other than regular
+- add_layout should not modify shape if present
 - the arrows should be attached dynamically in grob.R rather than in
   layout?
 - write a manual in the main vignette \[—–\| \] 80% complete
-- root node should not show percentages on default labels
 - add prefix and suffix parameters to add_labels, to make the handling
   easier - nah, you can just paste() it.
-- ~~plotting function for patterns~~
-- make sure that node_name is used for displaying variable names
 - how is vtree actually handling the palettes?
+- ~~root node should not show percentages on default labels~~
+- ~~make sure that node_name is used for displaying variable names~~
+- ~~plotting function for patterns~~
+- ~~varspace and varsize should work with layouts other than regular~~
 - ~~add the keep_children parameter to the keep() function~~, ~~and also
   keep_na. - this is harder; because not all the NA nodes are kept, but
   only these which are on the same level as a node that is kept.

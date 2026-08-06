@@ -237,9 +237,181 @@ vtree(titanicNA, Class, Sex, Survived) |>
 
 # Manual
 
-## Building vtrees
+## Building vtree objects
+
+### Case data
+
+Vtrees are primarly built from *case data*: matrices or data frames in
+which each row corresponds to a single sample. Each column is a data
+variable and can be selected to be used and displayed on a vtree. For
+example, consider the built-in data set `titanicNA`. This is the same data
+set as `Titanic` from the `datasets` package, except that it is a cases
+data frame and some of the values were replaced by NAs to simulate missing
+data:
+
+
+```{r vtree1}
+data(titanicNA)
+head(titanicNA)
+```
+
+As you can see, we have four variables: `Class`, `Sex`, `Age` and
+`Survived`. Each of the `r nrow(titanicNA)` rows corresponds to a single
+passenger.
+
+The `vtree()` function then collects the levels of each selected variable
+and counts the number of samples for each combination of levels:
+
+
+```{r vtree2}
+vt <- vtree(titanicNA, Class, Survived)
+vt
+```
+
+Note that you select the variables that you want to consider in your vtree
+- in the above example, we do not care about Sex or Age. Also note that the
+variables follow the tidyverse logic - they are *data vars*, and do not
+need to be quoted. If you need to use a variable name that is stored in
+another variable, or if the variable names are not valid R identifiers, you
+can use the `.cols` argument:
+
+
+```{r vtree3}
+vars <- c("Class", "Survived")
+vt <- vtree(titanicNA, .cols = vars)
+```
+
+That is one way to construct vtrees. The other is to use frequency tables.
+
+### Frequency data
+
+Often the data is already summarized in a frequency table, where each row
+corresponds to a combination of levels of the selected variables, and there
+is a column with the number of samples in which this combination occurs.
+
+There are two functions to construct vtrees from frequency tables:
+`vtree_from_freqtable()` and `cases_from_freqtable()`. The first one
+constructs the vtree directly from the frequency table, while the second
+one first expands the frequency table into a cases data frame which you can
+use to construct the vtree with `vtree()`.
+
+The original Titanic data set is a cross-tabulation of the four variables.
+When converted to a data frame, it becomes a frequency table, with the
+column `Freq` containing the number of passengers for each combination of
+levels of the four variables:
+
+
+```{r vtree4}
+head(as.data.frame(Titanic))
+cases <- cases_from_freqtable(Titanic)
+vt <- vtree(cases, Class, Survived)
+
+# or do it directly:
+vt <- vtree_from_freqtable(Titanic, Class, Survived)
+```
+
+### Valid percentages
+
+One of the important concepts to know about are the *valid percentages*. In
+short, a valid percentage is the number of samples with a given value of a
+variable divided by the total number of samples *for which this variable is
+not missing*.
+
+If you have 50 males, 50 females and 100 samples for which
+the sex is unknown, then the number of males divided by the total number of
+samples may be misleading (25%); valid percentages are calculated only from
+the 100 samples for which the sex is known and the proportion of males and
+females is 50% each.
+
+The `vtree()` and `vtree_from_freqtable()` functions by default calculate
+valid percentages; if you want to calculate the absoluet frequencies, use
+the `.vp=FALSE`argument to these functions.
+
+Once the vtree has been constructed, this cannot change.
+Any operations downstream (like selecting and pruning nodes and modifying
+their labels) will not change the calculated percentages.
 
 ### Vtree objects
+
+You can inspect the vtree object with a number of methods.
+
+```{r vtree5}
+# names of the column variables associated with the nodes
+names(vt)
+
+# available levels of the different column variables:
+levels(vt)
+
+# summary frequency data for each node variable
+summary(vt)
+
+# check whether the vtree is calculated using valid
+# percentages or absolute frequencies
+is_vp(vt)
+```
+
+The vtree objects contain a data frame of nodes with a number of associated
+columns, which include:
+
+ * `node_key` - a unique identifier for each node
+ * `node_id` - a unique integer identifier for each node
+ * `node_col` - the name of the column variable associated with the node
+ * `node_val` - the value of the variable associated with the node
+ * `freq` - the percentage of samples within the node that have the given
+   `node_val`
+ * `n` - the number of samples in the current node
+ * `missing` - the number of missing samples in the current node
+ * `tot_n` - the number of samples in the parent node
+ * `denom` - the number of samples within the node that have a non-missing value for the
+   variable associated with the node. This is equal to `tot_n` only if the tree
+   was not constructed with valid percentages. Otherwise, it is equal to
+   the number of samples in the parent node that have a non-missing value
+   for variable `node_col`.
+
+Some other columns may be added later with `mutate()` or with the various `add_*()` functions, for example:
+
+ * `label` - the label to be displayed on the node
+ * `fill` - the fill color of the node
+ * `color` - the text color of the label
+ * `x`, `y`, `width`, `height` - layout information for the node
+
+You can inspect the columns of the vtree object with `nodecols()`, which is
+just a wrapper around `colnames(as_tibble(vt))`:
+
+
+```{r vtree6}
+nodecols(vt)
+```
+
+You can convert the vtree object to a data frame with `as_tibble`:
+
+```{r vtree7}
+as_tibble(vt)
+```
+
+### Vtree objects as graphs
+
+The `vtree` class is a wrapper around the `tbl_graph` class from package
+`tidygraph`. It is a directed graph, where each node corresponds to a
+combination of levels of the selected variables. The `tbl_graph` class
+itself inherits from `igraph`, which means that you can use all of the
+`igraph` functions on `vtree` objects:
+
+
+```{r vtree8}
+igraph::degree(vt)
+```
+
+Since the default plotting function for `igraph` objects is replaced by
+`vtree2`'s own `plot.vtree()`, if you want to use `igraph`'s plotting
+function, you need to convert the vtree object to a `tbl_graph` object first:
+
+
+```{r vtree9,fig.width=4,fig.height=4}
+vt_tbl <- as_tbl_graph(vt)
+plot(vt_tbl)
+```
+
 
 ## Pruning, retain and selecting
 
@@ -317,7 +489,9 @@ vt <- vtree(cases, Class, Sex, Survived) |>
 plot(vt, legend_tiny = FALSE)
 ```
 
-
+Note that both `varspace` and `varsize` describe the node sizes along the
+axis of the plot. That is, for horizontal layouts, they control the width
+of the nodes; for vertical layouts, they control the height of the nodes.
 
 
 ## Adding column and value aliases
@@ -498,23 +672,25 @@ directly to the `plot()` function.
 
 ### Layouts
 
-Currently, there are three layouts implemented: "regular", "flushed" and
-"proportional". The default layout is "regular", which simply shows the
-tree structure with all nodes having the same sizes. The "flushed" layout
-is similar, but the nodes are always flushed to one side of the plot.
+Currently, there are three layouts implemented: "regular", "flushed_left",
+"flushed_right" and "proportional". The default layout is "regular", which
+simply shows the tree structure with all nodes having the same sizes. The
+"flushed_*" layouts are similar, but the nodes are always flushed to one side
+of the plot.
 
 The proportional layout shows the nodes with sizes proportional to the
 number of observations in that node.
 
 
-```{r layouts2,fig.width=12,fig.height=4}
+```{r layouts2,fig.width=8,fig.height=8}
 # the default column name for .freq_col is "Freq", same as in Titanic,
 # so no need to specify it here
 vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived)
 p1 <- plot(vt) # layout regular
-p2 <- plot(vt, layout = "flushed")
-p3 <- plot(vt, layout = "proportional")
-plot_grid(p1, p2, p3, nrow = 1)
+p2 <- plot(vt, layout = "proportional")
+p3 <- plot(vt, layout = "flushed_left", dir="tb")
+p4 <- plot(vt, layout = "flushed_right", dir="tb")
+plot_grid(p1, p2, p3, p4, nrow = 2)
 ```
 
 Layouts are added with the `add_layout()` function, which you can call
@@ -744,7 +920,7 @@ with `ggplot2::ggplotGrob()`. The `grob` column is a list-column, so we need to
 manipulate it carefully. Also, we need to set an NA value for the non-leaf
 nodes.
 
-```{r insets2,fig.width=9,fig.height=4}
+```{r insets2,fig.width=10,fig.height=4}
 # first, a tree with simplified labels on the leaf nodes
 cases <- cases_from_freqtable(Titanic)
 vt <- vtree(cases, Sex, Survived)
@@ -776,7 +952,7 @@ grobs[!pull(vt, leaf)] <- NA # plots only for the leaf nodes
 # as for the Sex nodes
 vt <- vt |> 
   add_layout(dir="tb", show_root=FALSE, lheight=.8,
-             varspace=c(Sex=1,Survived=4)) |>
+             varspace=c(Sex=1,Survived=3)) |>
   mutate(shape = ifelse(leaf, "rectangle", "roundrectangle")) |>
   mutate(grob = grobs)
 plot(vt)

@@ -2,7 +2,7 @@
 title: "vtree2 for vtree users"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{vtree vs vtree2}
+  %\VignetteIndexEntry{vtree2 for vtree users}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

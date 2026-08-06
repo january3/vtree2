@@ -57,7 +57,7 @@ edges in the plot.</p>
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">add_layout</span><span class="op">(</span></span>
 <span>  <span class="va">vtree</span>,</span>
-<span>  layout <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"regular"</span>, <span class="st">"proportional"</span>, <span class="st">"flushed"</span><span class="op">)</span>,</span>
+<span>  layout <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"regular"</span>, <span class="st">"proportional"</span>, <span class="st">"flushed_left"</span>, <span class="st">"flushed_right"</span><span class="op">)</span>,</span>
 <span>  layout_func <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  dir <span class="op">=</span> <span class="st">"lr"</span>,</span>
 <span>  lwidth <span class="op">=</span> <span class="cn">NA</span>,</span>
@@ -65,9 +65,7 @@ edges in the plot.</p>
 <span>  varspace <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  varsize <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  show_root <span class="op">=</span> <span class="cn">TRUE</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu">as_vtree_layout</span><span class="op">(</span><span class="va">layout</span>, <span class="va">dir</span>, <span class="va">show_root</span><span class="op">)</span></span></code></pre></div>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -123,7 +121,10 @@ and edges data frames</p>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>The builtin layouts are as follows:</p><ul><li><p>"regular" - a regular layout in which all nodes have the same width and
-height, and the nodes are evenly spaced along the y-axis.</p></li>
+height, and the nodes are evenly spaced along the y-axis;</p></li>
+<li><p>"flushed_left" and "flushed_right" are the same as "regular", but
+flushed to one side (left or right in horizontal plots, and top / bottom
+in the vertical plots);</p></li>
 <li><p>"proportional" - a layout in which the height of each node is proportional
 to the number of observations in that node, and the nodes are spaced along
 the y-axis according to their cumulative frequencies.</p></li>
@@ -173,7 +174,7 @@ vtree_layout class.</p>
 <span class="r-in"><span><span class="co"># the layout parameter from plot() is passed on to add_layout()</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">vt</span>, layout<span class="op">=</span><span class="st">"proportional"</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="add_layout-1.png" alt="" width="700" height="433"></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">vt</span>, layout<span class="op">=</span><span class="st">"flushed"</span>, dir<span class="op">=</span><span class="st">"tb"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">vt</span>, layout<span class="op">=</span><span class="st">"flushed_right"</span>, dir<span class="op">=</span><span class="st">"tb"</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="add_layout-2.png" alt="" width="700" height="433"></span>
 </code></pre></div>
     </div>
