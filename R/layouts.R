@@ -156,23 +156,6 @@
 }
 
 # use the aliases associated with the layout to replace the labels in the
-# legend levels.
-.use_alias_val <- function(df, layout) {
-  alias <- get_alias_attr(layout, "alias")
-  if(is.null(alias)) {
-    return(df)
-  }
-
-  alias <- alias$val
-
-  df <- df |>
-    mutate(label = map2_chr(.data[["node_col"]],
-                            .data[["node_val"]],
-                            \(col, val) alias[[col]][val] %||% val))
-  df
-}
-
-# use the aliases associated with the layout to replace the labels in the
 # legend titles.
 .use_alias_col <- function(df, layout) {
   alias <- get_alias_attr(layout)
