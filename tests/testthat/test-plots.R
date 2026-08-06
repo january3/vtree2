@@ -103,14 +103,19 @@ test_that("plotting works (smoke tests)", {
   expect_no_error(plot(vt, layout = "proportional", dir = "bt"))
   expect_no_error(plot(vt, layout = "proportional", dir = "tb"))
   expect_no_error(plot(vt, layout = "proportional", dir = "rl"))
-  expect_no_error(plot(vt, layout = "flushed"))
-  expect_no_error(plot(vt, layout = "flushed", dir = "bt"))
-  expect_no_error(plot(vt, layout = "flushed", dir = "tb"))
-  expect_no_error(plot(vt, layout = "flushed", dir = "rl"))
+  expect_no_error(plot(vt, layout = "flushed_right"))
+  expect_no_error(plot(vt, layout = "flushed_right", dir = "bt"))
+  expect_no_error(plot(vt, layout = "flushed_right", dir = "tb"))
+  expect_no_error(plot(vt, layout = "flushed_right", dir = "rl"))
+  expect_no_error(plot(vt, layout = "flushed_left"))
+  expect_no_error(plot(vt, layout = "flushed_left", dir = "bt"))
+  expect_no_error(plot(vt, layout = "flushed_left", dir = "tb"))
+  expect_no_error(plot(vt, layout = "flushed_left", dir = "rl"))
   expect_no_error(plot(vt, lheight = .1))
   expect_no_error(plot(vt, lwidth = .1))
   expect_no_error(plot(vt, lwidth = .1, layout = "proportional"))
-  expect_no_error(plot(vt, lwidth = .1, layout = "flushed"))
+  expect_no_error(plot(vt, lwidth = .1, layout = "flushed_left"))
+  expect_no_error(plot(vt, lwidth = .1, layout = "flushed_right"))
   expect_no_error(plot(vt, show_root = FALSE))
   expect_no_error(plot(vt, legend_tiny = FALSE))
   expect_no_error(plot(vt, fontsizes = list(nodes=9, var_labels=10,
@@ -119,6 +124,14 @@ test_that("plotting works (smoke tests)", {
                                             legend_labels="adaptive")))
 })
 
+test_that("plotting with richtext=TRUE works (smoke tests)", {
+
+  expect_no_error(plot(vt, richtext=TRUE))
+  expect_no_error(plot(vt, layout="proportional", richtext=TRUE))
+  vt2 <- vt |> mutate(label = paste0("**node-<sup>", node_id, "</sup>**"))
+  expect_no_error(plot(vt2, richtext=TRUE))
+  expect_no_error(plot(vt2, layout="proportional", richtext=TRUE))
+})
 
 test_that("plot preserves user-provided labels and colors", {
   vt <- vtree_from_freqtable(Titanic, Class, Sex) |>
@@ -164,6 +177,8 @@ test_that("precomputed layouts work", {
   expect_no_error(plot(vt))
   vt <- add_layout(vt, layout = "proportional")
   expect_no_error(plot(vt))
-  vt <- add_layout(vt, layout = "flushed")
+  vt <- add_layout(vt, layout = "flushed_left")
+  expect_no_error(plot(vt))
+  vt <- add_layout(vt, layout = "flushed_right")
   expect_no_error(plot(vt))
 })

@@ -4,3 +4,53 @@ template:
   light-switch: true
   bootswatch: sandstone
 
+reference:
+  - title: Creating vtree objects
+    contents:
+      - vtree
+      - vtree_from_freqtable
+      - cases_from_freqtable
+      - as_tbl_graph.vtree
+      - as_vtree
+      - mutate.vtree
+      - is_vp
+      - levels.vtree
+      - names.vtree
+      - nodecols
+      - print.vtree
+      - summary.vtree
+  - title: Patterns
+    contents:
+      - pattern
+      - print.vtree_pattern
+      - plot.vtree_pattern
+  - title: Pruning, keeping, marking, searching
+    contents:
+      - prune
+      - retain
+      - mark
+      - find_nodes
+      - find_children
+      - find_parents
+  - title: Summaries
+    contents:
+      - summary_vt
+      - summary_vt_df
+      - summary_at_var
+      - vtree_apply
+  - title: Labels and aliases
+    contents:
+      - add_aliases
+      - add_labels
+  - title: Layouts, colors, plotting
+    contents:
+      - has_concept("plotting")
+      - add_layout
+      - add_palette
+      - vtree_palette
+      - contrast_color
+      - makeContent.vtree_plot
+  - title: Datasets
+    contents:
+      - titanicNA
+

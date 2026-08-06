@@ -92,6 +92,7 @@
     }))
 }
 
+# calculate the offsets for proportional layout
 .calc_offsets <- function(vtree) {
   rt <- which(as_tibble(vtree)$node_id == 1)
 
@@ -135,6 +136,7 @@
   list(levels=legend, titles=titles)
 }
 
+# horizontal legend arrangements
 .legend_horizontal <- function(legend, titles, maxpos, margins) {
   legend <- legend |>
     mutate(x = .data[["x"]],
@@ -310,7 +312,7 @@ layout_legend_minimal <- function(layout, margins) {
   list(titles = nodes)
 }
 
-
+# the proportional layout
 layout_by_freq <- function(vtree, dir="lr",
                            lwidth=NA, lheight=NA,
                            varspace=NULL,
@@ -322,24 +324,21 @@ layout_by_freq <- function(vtree, dir="lr",
   layout <- .calc_offsets(vtree)
   nodes <- as_tibble(layout)
 
-  nlevel <- max(nodes$level) + sr
   totn <- attr(vtree, "N") #
+
   if(!show_root) {
     totn <- sum(nodes$n[nodes$level == 1])
   }
 
   if(is.na(lwidth)) {
-    lwidth <- .65 / nlevel
-    full_w <- 1 / nlevel
-  } else {
-    lwidth <- lwidth / nlevel
-    full_w <- 1 / nlevel
+    lwidth <- .65
   }
 
+  layout <- .apply_varspace(layout, varspace, varsize, lwidth)
+
   layout <- layout |>
-    mutate(width = lwidth, height = .data[["n"]] / totn) |>
-    mutate(full_w = full_w, full_h = .data[["height"]]) |>
-    mutate(x = (.data[["level"]] + .5 - 1 + sr)/ nlevel) |>
+    mutate(height = .data[["n"]] / totn) |>
+    mutate(full_h = .data[["height"]]) |>
     mutate(y = 1 - .data[["offset_tot"]] / totn -
            .data[["height"]] / 2) |>
     mutate(shape = "rectangle")
@@ -349,7 +348,6 @@ layout_by_freq <- function(vtree, dir="lr",
       mutate(x = ifelse(.data[["level"]] == 0, NA, .data[["x"]]),
              y = ifelse(.data[["level"]] == 0, NA, .data[["y"]]))
   }
-
 
   nodes <- as_tibble(layout)
 
@@ -381,11 +379,12 @@ layout_by_freq <- function(vtree, dir="lr",
   layout
 }
 
-
+# the regular layout
 layout_regular <- function(vtree, dir="lr",
                            lwidth=NA, lheight=NA,
                            varspace=NULL,
                            varsize=NULL,
+                           flushed=NA,
                            show_root=TRUE) {
 
   sr <- as.integer(show_root)
@@ -421,9 +420,19 @@ layout_regular <- function(vtree, dir="lr",
   layout <- layout |>
     mutate(height = lheight) |>
     mutate(full_h = 1 / totleafs) |>
-    mutate(y = 1 - .data[["offset_tot"]] / totleafs -
-               .data[["nleafs"]] / 2 / totleafs) |>
+    mutate(y = 1 - .data[["offset_tot"]] / totleafs) |>
     mutate(shape = "roundrectangle")
+
+  if(!is.na(flushed))  {
+    if(flushed == "left") {
+      layout <- mutate(layout, y = .data[["y"]] - lheight/2)
+    } else if(flushed == "right") {
+      layout <- mutate(layout, y = .data[["y"]] -
+                       .data[["nleafs"]] / totleafs + lheight/2)
+    }
+  } else {
+    layout <- mutate(layout, y = .data[["y"]] - .data[["nleafs"]] / 2 / totleafs)
+  }
 
   if(!show_root) {
     layout <- layout |>
@@ -444,62 +453,35 @@ layout_regular <- function(vtree, dir="lr",
    layout
 }
 
-layout_flushed <- function(vtree, dir="lr",
+layout_flushed_left <- function(vtree, dir="lr",
                            lwidth=NA, lheight=NA,
                            varspace=NULL,
                            varsize=NULL,
                            show_root=TRUE) {
 
-  sr <- as.integer(show_root)
+  layout_regular(vtree, dir, lwidth, lheight,
+                           varspace,
+                           varsize,
+                           flushed = "left",
+                           show_root)
 
-  layout <- .calc_nleafs(vtree)
-  nodes  <- as_tibble(layout)
-
-  nlevel <- max(nodes$level) + sr
-  #totleafs <- sum(nodes$nleafs[nodes$level == 1])
-  totleafs <- nodes$nleafs[nodes$node_id == 1]
-  if(is.na(lheight)) {
-    lheight <- .8 / totleafs
-    full_h <- 1 / totleafs
-  } else {
-    lheight <- lheight / totleafs
-    full_h <- 1 / totleafs
-  }
-
-  if(is.na(lwidth)) {
-    lwidth <- .35 / nlevel
-    full_w <- 1 / nlevel
-  } else {
-    lwidth <- lwidth / nlevel
-    full_w <- 1 / nlevel
-  }
-
-  layout <- layout |>
-    mutate(width = lwidth, height = lheight) |>
-    mutate(full_w = full_w, full_h = .data[["height"]]) |>
-    mutate(x = (.data[["level"]] + .5 - 1 + sr)/ nlevel) |>
-    mutate(y = 1 - .data[["offset_tot"]] / totleafs - lheight / 2) |>
-    mutate(shape = "roundrectangle")
-
-  nodes <- as_tibble(layout)
-
-  if(dir %in% c("tb", "bt")) {
-    dx <- lheight
-  } else {
-    dx <- lwidth
-  }
-  dx <- lwidth
-
-  layout <- layout |>
-    mutate(x1 = nodes$x[.data[["from"]]] + dx/2,
-           x2 = nodes$x[.data[["to"]]] - dx/2,
-           y1 = nodes$y[.data[["from"]]],
-           y2 = nodes$y[.data[["to"]]],
-           .edges = TRUE)
-
-
-   layout
 }
+
+
+layout_flushed_right <- function(vtree, dir="lr",
+                           lwidth=NA, lheight=NA,
+                           varspace=NULL,
+                           varsize=NULL,
+                           show_root=TRUE) {
+
+  layout_regular(vtree, dir, lwidth, lheight,
+                           varspace,
+                           varsize,
+                           flushed = "right",
+                           show_root)
+
+}
+
 
 # calculate the actual sizes for the variables
 .normalize_varsize <- function(varsize, varspace, layout) {
@@ -569,7 +551,10 @@ layout_flushed <- function(vtree, dir="lr",
 #'
 #' The builtin layouts are as follows:
 #' - "regular" - a regular layout in which all nodes have the same width and
-#'  height, and the nodes are evenly spaced along the y-axis.
+#'  height, and the nodes are evenly spaced along the y-axis;
+#' - "flushed_left" and "flushed_right" are the same as "regular", but
+#' flushed to one side (left or right in horizontal plots, and top / bottom
+#' in the vertical plots);
 #' - "proportional" - a layout in which the height of each node is proportional
 #' to the number of observations in that node, and the nodes are spaced along
 #' the y-axis according to their cumulative frequencies.
@@ -618,13 +603,13 @@ layout_flushed <- function(vtree, dir="lr",
 #' add_layout(vt, layout = "regular", dir = "lr") |> tibble::as_tibble()
 #' # the layout parameter from plot() is passed on to add_layout()
 #' plot(vt, layout="proportional")
-#' plot(vt, layout="flushed", dir="tb")
+#' plot(vt, layout="flushed_right", dir="tb")
 #' @return an object of class vtree with additional columns in the nodes
 #'         and edges data frames
 #' @export
 add_layout <- function(vtree,
                    layout = c("regular", "proportional",
-                              "flushed"),
+                              "flushed_left", "flushed_right"),
                    layout_func = NULL,
                    dir="lr",
                    lwidth=NA, lheight=NA,
@@ -654,8 +639,10 @@ add_layout <- function(vtree,
     layout_func <- layout_regular
   } else if(layout == "proportional") {
     layout_func <- layout_by_freq
-  } else if(layout == "flushed") {
-    layout_func <- layout_flushed
+  } else if(layout == "flushed_left") {
+    layout_func <- layout_flushed_left
+  } else if(layout == "flushed_right") {
+    layout_func <- layout_flushed_right
   }
 
   if(is.null(layout_func)) {
@@ -686,8 +673,9 @@ add_layout <- function(vtree,
   as_vtree_layout(layout, dir, show_root)
 }
 
-#' @rdname add_layout
-#' @export
+## not exported right now
+## @rdname add_layout
+## @export
 as_vtree_layout <- function(layout, dir, show_root) {
   attr(layout, "dir") <- dir
   attr(layout, "show_root") <- show_root

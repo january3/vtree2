@@ -584,6 +584,7 @@ makeContent.vtree_plot <- function(x) {
 }
 
 #' @importFrom grid grid.newpage grid.draw
+#' @family plotting
 #' @export
 print.vtree_plot <- function(x, ...) {
   grid.newpage()

@@ -70,7 +70,8 @@ normalize_layout <- function(layout) {
 }
 
 
-
+# set some default margins depending on the presence of legends
+# and plot direction
 .normalize_margins <- function(margins, dir, legend_tiny, legend) {
 
   # default margins
@@ -346,6 +347,7 @@ normalize_layout <- function(layout) {
 #'
 #' @return A grid::gTree object of class vtree_plot.
 #' @importFrom grid gTree gpar gList
+#' @family plotting
 #' @export
 plot.vtree <- function(x, ...) {
   plot_vtree(x, ...)
@@ -354,7 +356,8 @@ plot.vtree <- function(x, ...) {
 #' @rdname plot.vtree
 #' @export
 plot_vtree <- function(x,
-                      layout = c("regular", "proportional", "flushed"),
+                      layout = c("regular", "proportional",
+                                 "flushed_left", "flushed_right"),
                       palettes = c("Reds", "Blues", "Greens",
                                    "Oranges", "Purples"),
                       na_fill = "white",

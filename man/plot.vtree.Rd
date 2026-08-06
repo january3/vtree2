@@ -9,7 +9,7 @@
 
 plot_vtree(
   x,
-  layout = c("regular", "proportional", "flushed"),
+  layout = c("regular", "proportional", "flushed_left", "flushed_right"),
   palettes = c("Reds", "Blues", "Greens", "Oranges", "Purples"),
   na_fill = "white",
   show_root = TRUE,
@@ -178,3 +178,4 @@ vt |>
 \code{\link[=add_labels]{add_labels()}} for adding labels to the nodes. For layout
 details, see \code{\link[=add_layout]{add_layout()}}.
 }
+\concept{plotting}
