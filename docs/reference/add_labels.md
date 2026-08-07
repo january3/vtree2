@@ -26,8 +26,9 @@ add_labels(
 
 - template:
 
-  One of the predefined formats; can be 'simple' or 'long'. If 'custom',
-  you must provide the `fmt` and `fmt_NA` parameters.
+  One of the predefined formats; can be 'simple', 'sameline' or 'long'.
+  If `fmt` or `fmt_na` is defined, it will be overridden by the
+  respective formatting expression.
 
 - mask:
 

@@ -312,8 +312,9 @@ By default,
 construct the labels implicitly when you call plot() on a vtree object.
 However, you can add the labels yourself either with
 [`add_labels()`](https://january3.github.io/vtree2/reference/add_labels.md)
-(which is quite flexible) or by directly modifying the `label` column in
-the vtree.
+(which is quite flexible), modify them (also with
+[`add_labels()`](https://january3.github.io/vtree2/reference/add_labels.md))
+or by directly modifying the `label` column in the vtree.
 [`plot.vtree()`](https://january3.github.io/vtree2/reference/plot.vtree.md)
 will not overwrite labels if they already exist.
 
@@ -324,15 +325,27 @@ character with a space:
 ``` r
 ## vtree::vtree(FakeData, "Severity Sex", sameline = TRUE)
 vtree(FakeData, Severity, Sex) |>
+  # add default labels
   add_labels() |>
-  mutate(label = gsub("\n", " ", label)) |>
+  # apply the fmt expression to the labels
+  add_labels(fmt = gsub("\n", " ", label)) |>
   plot(lwidth = .9)
 ```
 
-![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-14-1.png)
+![](vtree2_for_vtree_users_files/figure-html/sameline1-1.png)
 
 Arguably, that is way more code than just adding `sameline = TRUE` to
 the vtree() call, but it is also way more flexible.
+
+However, in this particular case there is an easier way:
+[`add_labels()`](https://january3.github.io/vtree2/reference/add_labels.md)
+has a template called “sameline”:
+
+``` r
+vtree(FakeData, Severity, Sex) |>
+  add_labels(template="sameline") |>
+  plot(lwidth = .9)
+```
 
 **`labelnode`**. This is used in vtree to replace a variable level with
 a custom label. In vtree2, the simplest solution is to replace the
@@ -362,7 +375,7 @@ vtree(FakeData, Group, Sex) |>
   plot(dir = "tb")
 ```
 
-![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-16-1.png)
+![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-15-1.png)
 
 The argument `col_alias` does the same for variable names, so you can
 change `Sex` to `Gender` or `Severity` to `Initial severity` and so on.
@@ -389,7 +402,7 @@ vtree(FakeData, Group, Sex) |>
   plot()
 ```
 
-![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-17-1.png)
+![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-16-1.png)
 
 This is of course much more code, but is not only more flexible, but
 also less exotic. Once you get your head around the fact that you are
@@ -413,7 +426,7 @@ vtree(FakeData, Group, Severity) |>
        legend_tiny = FALSE)
 ```
 
-![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-18-1.png)
+![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-17-1.png)
 
 **ttext**: same as above, except you use the
 `mark(path == "Group:B/Severity:Mild")` to target the node of your
@@ -483,7 +496,7 @@ vt |> add_labels() |>
   plot(dir = "tb", lwidth=.8)
 ```
 
-![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-19-1.png)
+![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-18-1.png)
 
 There is also a
 [`summary_at_var()`](https://january3.github.io/vtree2/reference/summary_at_var.md)
@@ -533,7 +546,7 @@ vt |> add_labels() |>
   plot(dir = "tb")
 ```
 
-![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-21-1.png)
+![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-20-1.png)
 
 I agree, this is way more complicated, but then also way more verbose.
 In a way the code above, with some modifications, replaces all the other
@@ -563,7 +576,7 @@ vt |> add_labels() |>
   plot(dir = "tb")
 ```
 
-![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-22-1.png)
+![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-21-1.png)
 
 To get the missing value information as well but only if missing values
 are present, we need a more complex approach. In the example below, I
@@ -582,7 +595,7 @@ vt |> add_labels() |>
   plot(dir = "tb")
 ```
 
-![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-23-1.png)
+![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-22-1.png)
 
 **R expressions.** In the vtree mini-language it is possible to include
 some R code to make ad hoc calcuations. In `vtree2`, this stage is
@@ -611,7 +624,7 @@ vt |>
   plot(dir = "tb")
 ```
 
-![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-24-1.png)
+![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-23-1.png)
 
 #### Plotting
 
@@ -631,7 +644,7 @@ p4 <- plot(vt, dir="bt")
 plot_grid(p1, p2, p3, p4, ncol=2)
 ```
 
-![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-25-1.png)
+![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-24-1.png)
 
 **Changing variable labels**. In vtree, you can specify alternative
 variable labels with the `labelvar` parameter. In vtree2 you can use the
@@ -648,7 +661,7 @@ FakeData |>
   plot(dir = "tb", margins=c(0, 0, 0, .2))
 ```
 
-![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-26-1.png)
+![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-25-1.png)
 
 This has the advantage that if you use variable names in the node
 labels, they will show correctly.
@@ -674,7 +687,7 @@ p2 <- plot(vt, legend=TRUE, layout = "proportional")
 plot_grid(p1, p2)
 ```
 
-![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-28-1.png)
+![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-27-1.png)
 
 #### Patterns
 
@@ -700,7 +713,7 @@ pattern(vt) |> arrange(Sex_n) |>
   plot(palettes = c("Blues", "Greens"))
 ```
 
-![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-30-1.png)
+![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-29-1.png)
 
 #### REDCap integration
 
@@ -749,7 +762,7 @@ rewrite_redcap(dessert, "IceCream___") |>
   plot()
 ```
 
-![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-32-1.png)
+![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-31-1.png)
 
 The various vtree prefixes (`rnone:`, `ri:` etc.) can be handled in a
 similar way.
@@ -818,7 +831,7 @@ vt |>
   plot(dir = "tb", legend_tiny = FALSE, lwidth=.8, lheight=.7)
 ```
 
-![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-34-1.png)
+![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-33-1.png)
 
 ``` r
 # vtree(FakeRCT,"eligible randomized group followup analyzed",plain=TRUE,
@@ -836,7 +849,7 @@ vt |>
   plot(dir = "tb", legend_tiny = FALSE, lwidth=.8, lheight=.7)
 ```
 
-![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-35-1.png)
+![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-34-1.png)
 
 ``` r
 # vtree(FakeRCT,"eligible randomized group followup analyzed",plain=TRUE,
@@ -871,7 +884,7 @@ vt |>
   plot(dir = "tb", legend_tiny = FALSE, lwidth=.8, lheight=.7)
 ```
 
-![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-36-1.png)
+![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-35-1.png)
 
 #### New functionality ~~Killer features~~
 

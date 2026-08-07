@@ -325,25 +325,35 @@ your own labels.
 
 By default, `add_labels()` construct the labels implicitly when you call
 plot() on a vtree object. However, you can add the labels yourself either
-with `add_labels()` (which is quite flexible) or by directly modifying the
-`label` column in the vtree. `plot.vtree()` will not overwrite labels if
-they already exist.
+with `add_labels()` (which is quite flexible), modify them (also with
+`add_labels()`) or by directly modifying the `label` column in the vtree.
+`plot.vtree()` will not overwrite labels if they already exist.
 
 For example, to mimick the `sameline` option in vtree, you can first
 generate the standard automatic labels and then replace the newline
 character with a space:
 
-
-```{r fig.width=6,fig.height=6,eval=TRUE}
+```{r sameline1,fig.width=6,fig.height=6,eval=TRUE}
 ## vtree::vtree(FakeData, "Severity Sex", sameline = TRUE)
 vtree(FakeData, Severity, Sex) |>
+  # add default labels
   add_labels() |>
-  mutate(label = gsub("\n", " ", label)) |>
+  # apply the fmt expression to the labels
+  add_labels(fmt = gsub("\n", " ", label)) |>
   plot(lwidth = .9)
 ```
 
 Arguably, that is way more code than just adding `sameline = TRUE` to the
 vtree() call, but it is also way more flexible.
+
+However, in this particular case there is an easier way: `add_labels()` has
+a template called "sameline":
+
+```{r sameline2,fig.width=6,fig.height=6,eval=FALSE}
+vtree(FakeData, Severity, Sex) |>
+  add_labels(template="sameline") |>
+  plot(lwidth = .9)
+```
 
 **`labelnode`**. This is used in vtree to replace a variable level with a
 custom label. In vtree2, the simplest solution is to replace the variable

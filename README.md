@@ -200,6 +200,9 @@ More docs available [here](https://january3.github.io/vtree2/).
   This behavior is reproduced by the keep_na_sisters parameter, which
   adds NA nodes to the retained nodes. However, if we target an NA node
   with is.na(), then the behavior results in the NA node being kept.~~
+- ~~sameline template for add_labels()~~
+- vtree constructors should check for presence of ‘/’ and ‘:’ in
+  variable names
 - vtree constructors should test for the presence of structural columns
   in the data. e.g. if the data has already a column called “n” or
   “freq”, we will have a clash when pruning and virtual columns are
