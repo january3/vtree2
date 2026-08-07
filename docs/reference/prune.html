@@ -64,22 +64,20 @@ condition.</p>
 <span>  <span class="va">condition</span>,</span>
 <span>  follow_only <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  mark_only <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  keep_na_sisters <span class="op">=</span> <span class="fu"><a href="is_vp.html">is_vp</a></span><span class="op">(</span><span class="va">vtree</span><span class="op">)</span>,</span>
-<span>  keep <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  na.rm <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  keep_na_sisters <span class="op">=</span> <span class="fu"><a href="is_vp.html">is_vp</a></span><span class="op">(</span><span class="va">vtree</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu">find_nodes</span><span class="op">(</span><span class="va">vtree</span>, <span class="va">condition</span>, follow_only <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">retain</span><span class="op">(</span></span>
 <span>  <span class="va">vtree</span>,</span>
 <span>  <span class="va">condition</span>,</span>
-<span>  keep_follow <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  keep_na_sisters <span class="op">=</span> <span class="fu"><a href="is_vp.html">is_vp</a></span><span class="op">(</span><span class="va">vtree</span><span class="op">)</span>,</span>
+<span>  keep_follow <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  mark_only <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">mark</span><span class="op">(</span><span class="va">vtree</span>, <span class="va">condition</span>, follow_only <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">mark</span><span class="op">(</span><span class="va">vtree</span>, <span class="va">condition</span>, follow_only <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">find_nodes</span><span class="op">(</span><span class="va">vtree</span>, <span class="va">condition</span>, follow_only <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -92,9 +90,7 @@ condition.</p>
 
 <dt id="arg-condition">condition<a class="anchor" aria-label="anchor" href="#arg-condition"></a></dt>
 <dd><p>A logical expression that defines the pruning
-condition. If no condition is provided, no pruning is done,
-except for the removal of nodes with NA values with
-<code>na.rm</code>.</p></dd>
+condition.</p></dd>
 
 
 <dt id="arg-follow-only">follow_only<a class="anchor" aria-label="anchor" href="#arg-follow-only"></a></dt>
@@ -115,18 +111,6 @@ nodes that would be pruned.</p></dd>
 <dd><p>If TRUE, then when pruning/keeping nodes, NA
 nodes which are sisters with a kept node (share the same parent)
 are also kept.</p></dd>
-
-
-<dt id="arg-keep">keep<a class="anchor" aria-label="anchor" href="#arg-keep"></a></dt>
-<dd><p>If TRUE, keeps the nodes that satisfy the condition and prunes
-everything else.</p></dd>
-
-
-<dt id="arg-na-rm">na.rm<a class="anchor" aria-label="anchor" href="#arg-na-rm"></a></dt>
-<dd><p>If TRUE, removes nodes with NA values in the evaluated
-condition. If it is a character vector, then it is treated
-as a vector of column names for which all NA values should
-be removed.</p></dd>
 
 
 <dt id="arg-keep-follow">keep_follow<a class="anchor" aria-label="anchor" href="#arg-keep-follow"></a></dt>

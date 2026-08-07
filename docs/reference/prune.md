@@ -13,22 +13,20 @@ prune(
   condition,
   follow_only = FALSE,
   mark_only = FALSE,
-  keep_na_sisters = is_vp(vtree),
-  keep = FALSE,
-  na.rm = FALSE
+  keep_na_sisters = is_vp(vtree)
 )
-
-find_nodes(vtree, condition, follow_only = FALSE)
 
 retain(
   vtree,
   condition,
-  keep_follow = TRUE,
   keep_na_sisters = is_vp(vtree),
+  keep_follow = TRUE,
   mark_only = FALSE
 )
 
 mark(vtree, condition, follow_only = FALSE)
+
+find_nodes(vtree, condition, follow_only = FALSE)
 ```
 
 ## Arguments
@@ -39,9 +37,7 @@ mark(vtree, condition, follow_only = FALSE)
 
 - condition:
 
-  A logical expression that defines the pruning condition. If no
-  condition is provided, no pruning is done, except for the removal of
-  nodes with NA values with `na.rm`.
+  A logical expression that defines the pruning condition.
 
 - follow_only:
 
@@ -60,17 +56,6 @@ mark(vtree, condition, follow_only = FALSE)
 
   If TRUE, then when pruning/keeping nodes, NA nodes which are sisters
   with a kept node (share the same parent) are also kept.
-
-- keep:
-
-  If TRUE, keeps the nodes that satisfy the condition and prunes
-  everything else.
-
-- na.rm:
-
-  If TRUE, removes nodes with NA values in the evaluated condition. If
-  it is a character vector, then it is treated as a vector of column
-  names for which all NA values should be removed.
 
 - keep_follow:
 

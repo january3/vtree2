@@ -172,14 +172,6 @@ data frame with added virtual columns for each of the variables in the
 vtree. Each row of the context data frame corresponds to a node in the
 vtree, so you can select all nodes which fullfill a certain condition.
 
-However, that also sometimes causes problems: if you specify that you
-want to prune all nodes where “Sex” is NA, you will have a problem. The
-virtual column “Sex” has a value for each node, also for nodes that
-correspond to “Class” or “Survived” - and that value is NA. Therefore,
-you have to use a more complex expression which involves checking
-whether a node corresponds to the variable “Sex”:
-`node_col == "Sex" & is.na(Sex)`. That works.
-
 ``` r
 data(FakeData, package="vtree")
 library(cowplot)
@@ -213,27 +205,20 @@ vtree(FakeData, Severity, Sex) |>
 **`follow`**
 
 The `follow` argument in the original `vtree` means: prune all the nodes
-which *follow* nodes that match a certain condition.
+which *follow* nodes that *do not match* a certain condition. So
+`follow=list(Severity=c("Mild","Moderate"))` means: prune all nodes
+below the nodes where Severity is not Mild or Moderate.
 
-The way that prune() in vtree2 works, this requires a bit of
-explanation. We want to prune all branches below the severity levels
-*except* for the Mild and Moderate nodes. One could think that this is
-the way to do it: `!Severity %in% c("Mild", "Moderate")`. Unfortunately,
-prune() matches the condition against a vector which contains the
-“Severity” values for other nodes - but Severity value for, e.g., Sex
-doesn’t make sense, so the value is NA. Which is not Mild or Moderate,
-and thus the condition prunes absolutely all nodes and we get an error.
-
-What one needs to do is to specify that we are looking only at nodes at
-the Severity variable:
+This is also done with the `follow_only=TRUE` argument in
+[`prune()`](https://january3.github.io/vtree2/reference/prune.md),
+except that we inverse the condition.
 
 ``` r
 #vtree::vtree(FakeData, "Severity Sex",
 #        follow=list(Severity=c("Mild","Moderate")))
 
 vtree(FakeData, Severity, Sex) |>
-  prune(node_col == "Severity" & !Severity %in% c("Mild", "Moderate"),
-        follow_only = TRUE) |>
+  prune(!Severity %in% c("Mild", "Moderate"), follow_only = TRUE) |>
   plot()
 ```
 
@@ -254,8 +239,12 @@ vtree(FakeData, Severity, Sex) |>
 
 **Keeping.** The keep parameter in vtree is a bit peculiar, because it
 silently keeps also the nodes which are NA *if* the valid percentages
-are used. Also, both the *children* and the *parents* of the selected
-nodes are kept. In vtree2, the function is called
+are used. The rationale is this: without the NA node visible, you cannot
+know how many total samples were there, since frequencies are calculated
+from a denominator that excludes NA values.
+
+Also, both the *children* and the *parents* of the selected nodes are
+kept. In vtree2, the function is called
 [`retain()`](https://january3.github.io/vtree2/reference/prune.md) to
 avoid clashes with
 [`purrr::keep()`](https://purrr.tidyverse.org/reference/keep.html).
@@ -275,6 +264,24 @@ plot_grid(p1, p2)
 
 ![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-11-1.png)
 
+The behavior to keep the NA nodes is by default the same, i.e. keep them
+if the vtree was constructed with valid percentages. You can directly
+control this with the `keep_na_sisters` argument to
+[`retain()`](https://january3.github.io/vtree2/reference/prune.md) or
+[`prune()`](https://january3.github.io/vtree2/reference/prune.md).
+
+``` r
+p1 <- vtree(FakeData, Severity, Sex) |>
+  retain(Severity == "Moderate") |>
+  plot(lheight=.2, lwidth=.4)
+p2 <- vtree(FakeData, Severity, Sex) |>
+  retain(Severity == "Moderate", keep_na_sisters = FALSE) |>
+  plot(lheight=.2, lwidth=.4)
+plot_grid(p1, p2)
+```
+
+![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-12-1.png)
+
 **`prunesmaller`** This is for selecting nodes based on the number of
 observations. In vtree2, you can use any column from the node data
 frame - including `n`, the number of observations in the node, `freq`,
@@ -292,7 +299,7 @@ p2 <- FakeData |> mutate(Age = as.character(Age)) |>
 plot_grid(p1, p2)
 ```
 
-![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-12-1.png)
+![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-13-1.png)
 
 #### Formatting labels
 
@@ -322,7 +329,7 @@ vtree(FakeData, Severity, Sex) |>
   plot(lwidth = .9)
 ```
 
-![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-13-1.png)
+![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-14-1.png)
 
 Arguably, that is way more code than just adding `sameline = TRUE` to
 the vtree() call, but it is also way more flexible.
@@ -334,39 +341,83 @@ variable levels *in the data* before constructing the vtree.
 ``` r
 ## vtree::vtree(FakeData,"Group Sex",horiz=FALSE,
 ##        labelnode=list(Sex=c(Male="M",Female="F")))
-FakeData |>
+vt <- FakeData |>
   mutate(Sex = dplyr::recode(Sex, M = "Male", F = "Female")) |>
-  vtree(Group, Sex) |>
+  vtree(Group, Sex)
+```
+
+This has the advantage that your variable names are what you see on the
+plot. Sometimes, however, we want to display something that is
+cumbersome to work with code, e.g. a label containing Unicode
+characters, formatting for `richtext=TRUE` or special characters. For
+this, there is a function,
+[`add_aliases()`](https://january3.github.io/vtree2/reference/add_aliases.md),
+which adds both variable name and variable value aliases.
+
+``` r
+## vtree::vtree(FakeData,"Group Sex",horiz=FALSE,
+##        labelnode=list(Sex=c(Male="M",Female="F")))
+vtree(FakeData, Group, Sex) |>
+  add_aliases(val_alias = list(Sex = c(M = "Male", F = "Female"))) |>
   plot(dir = "tb")
 ```
 
-![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-14-1.png)
+![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-16-1.png)
+
+The argument `col_alias` does the same for variable names, so you can
+change `Sex` to `Gender` or `Severity` to `Initial severity` and so on.
 
 How about changing M to Male and F to Female but only for the nodes in
 group A? In vtree2, you need to manipulate the node labels. You can
 construct the nodes from scratch, or use substitution to clean up nodes.
 One of several ways of doing that is this: you find the nodes that are
 below the node “Group:A”, and then substitute M with Male and F with
-Female for these nodes only:
+Female for these nodes only. You can use
+[`add_labels()`](https://january3.github.io/vtree2/reference/add_labels.md)
+with the `fmt` argument:
 
 ``` r
 vtree(FakeData, Group, Sex) |>
   add_labels() |>
   mark(path == "Group:A", follow_only = TRUE) |>
-  mutate(label = ifelse(mark,
+  add_labels(fmt = ifelse(mark,
                         gsub("^F", "Female", label),
                         label)) |>
-  mutate(label = ifelse(mark,
+  add_labels(fmt = ifelse(mark,
                         gsub("^M", "Male", label),
                         label)) |>
   plot()
 ```
 
-![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-15-1.png)
+![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-17-1.png)
 
 This is of course much more code, but is not only more flexible, but
 also less exotic. Once you get your head around the fact that you are
 using just R expressions to define conditions, it becomes quite easy.
+
+**text**: the text argument in vtree allows to selectively add a text to
+the node. In vtree2, you manipulate the labels with an expression.
+
+``` r
+# vtree(FakeData,"Group Severity",horiz=FALSE,showvarnames=FALSE,
+#   text=list(Severity=c(Mild="\n*Excluding\nnew diagnoses*")))
+
+vtree(FakeData, Group, Severity) |>
+  add_labels() |>
+  mark(Severity == "Mild") |>
+  add_labels(fmt = ifelse(mark,
+                        paste0(label, "\n*Excluding\nnew diagnoses*"),
+                        label)) |>
+  plot(dir = "tb",
+       richtext = TRUE,
+       legend_tiny = FALSE)
+```
+
+![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-18-1.png)
+
+**ttext**: same as above, except you use the
+`mark(path == "Group:B/Severity:Mild")` to target the node of your
+choice. See next section, “Targetting nodes”.
 
 #### Targetting nodes
 
@@ -432,7 +483,7 @@ vt |> add_labels() |>
   plot(dir = "tb", lwidth=.8)
 ```
 
-![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-16-1.png)
+![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-19-1.png)
 
 There is also a
 [`summary_at_var()`](https://january3.github.io/vtree2/reference/summary_at_var.md)
@@ -482,7 +533,7 @@ vt |> add_labels() |>
   plot(dir = "tb")
 ```
 
-![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-18-1.png)
+![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-21-1.png)
 
 I agree, this is way more complicated, but then also way more verbose.
 In a way the code above, with some modifications, replaces all the other
@@ -512,7 +563,7 @@ vt |> add_labels() |>
   plot(dir = "tb")
 ```
 
-![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-19-1.png)
+![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-22-1.png)
 
 To get the missing value information as well but only if missing values
 are present, we need a more complex approach. In the example below, I
@@ -531,7 +582,7 @@ vt |> add_labels() |>
   plot(dir = "tb")
 ```
 
-![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-20-1.png)
+![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-23-1.png)
 
 **R expressions.** In the vtree mini-language it is possible to include
 some R code to make ad hoc calcuations. In `vtree2`, this stage is
@@ -560,7 +611,7 @@ vt |>
   plot(dir = "tb")
 ```
 
-![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-21-1.png)
+![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-24-1.png)
 
 #### Plotting
 
@@ -580,7 +631,7 @@ p4 <- plot(vt, dir="bt")
 plot_grid(p1, p2, p3, p4, ncol=2)
 ```
 
-![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-22-1.png)
+![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-25-1.png)
 
 **Changing variable labels**. In vtree, you can specify alternative
 variable labels with the `labelvar` parameter. In vtree2 you can use the
@@ -597,19 +648,19 @@ FakeData |>
   plot(dir = "tb", margins=c(0, 0, 0, .2))
 ```
 
-![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-23-1.png)
+![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-26-1.png)
 
 This has the advantage that if you use variable names in the node
 labels, they will show correctly.
 
-There is also another possibility, if you only want to change the margin
-labels:
+There is also another possibility: as mentioned above, with the
+[`add_aliases()`](https://january3.github.io/vtree2/reference/add_aliases.md)
+function you can add also alternative names for the variables:
 
 ``` r
-FakeData |>
-  vtree(Severity, Sex) |>
-  plot(dir = "tb", margins=c(0, 0, 0, .2),
-     var_labels = c(Severity = "Initial\nSeverity"))
+vtree(FakeData, Severity, Sex) |>
+  add_aliases(col_alias = list(Severity = "Initial\nSeverity")) |>
+  plot(dir = "tb", margins=c(0, 0, 0, .2))
 ```
 
 **Legends.** The `showlegend=TRUE` argument from `vtree` is
@@ -623,7 +674,7 @@ p2 <- plot(vt, legend=TRUE, layout = "proportional")
 plot_grid(p1, p2)
 ```
 
-![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-25-1.png)
+![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-28-1.png)
 
 #### Patterns
 
@@ -649,12 +700,184 @@ pattern(vt) |> arrange(Sex_n) |>
   plot(palettes = c("Blues", "Greens"))
 ```
 
-![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-27-1.png)
+![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-30-1.png)
+
+#### REDCap integration
+
+In vtree, there is built-in functionality to read REDCap-encoded
+checkboxes. The problem is that REDCap checkboxes result in a flurry of
+variables with special attributes encoding levels.
+
+``` r
+dessert <- vtree::build.data.frame(
+  c(   "group","IceCream___1","IceCream___2","IceCream___3"),
+  list("A",     1,             0,             0,              7),
+  list("A",     1,             0,             1,              2),
+  list("A",     0,             0,             0,              1),
+  list("A",     1,             1,             1,              1),
+  list("B",     1,             0,             1,              1),
+  list("B",     1,             0,             0,              2), 
+  list("B",     0,             1,             1,              1),
+  list("B",     0,             0,             0,              1))
+attr(dessert$IceCream___1,"label") <- "Ice cream (choice=Chocolate)"
+attr(dessert$IceCream___2,"label") <- "Ice cream (choice=Vanilla)"
+attr(dessert$IceCream___3,"label") <- "Ice cream (choice=Strawberry)"
+```
+
+What vtree essentially does is to rename the variables from
+`IceCream___1` to `Chocolate` etc. There is no vtree2 function to do
+that, but it is easy enough to write one which renames the variables
+based on the REDCap attributes:
+
+``` r
+rewrite_redcap <- function(df, ident) {
+  cols <- startsWith(colnames(df), ident)
+  fnc <- \(x) {
+    nn <- attr(df[[x]], "label")
+    pat <- ".* \\(choice=(.*)\\)"
+    nn <- gsub(pat, "\\1", nn)
+    nn
+  }
+  newnames <- vapply(colnames(df)[cols], fnc, character(1))
+  colnames(df)[cols] <- newnames
+  df
+}
+
+rewrite_redcap(dessert, "IceCream___") |>
+  mutate(across(everything(), as.character)) |>
+  vtree(Chocolate, Vanilla, Strawberry) |>
+  plot()
+```
+
+![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-32-1.png)
+
+The various vtree prefixes (`rnone:`, `ri:` etc.) can be handled in a
+similar way.
+
+### Generating cases data frames with `build.data.frame()`
+
+In general, in `vtree2` you use the
+[`cases_from_freqtable()`](https://january3.github.io/vtree2/reference/cases_from_freqtable.md)
+function to convert a frequency table to a cases table. The frequency
+table can be built with anything that constructs a data frame. For
+example, to follow the code from the dogs example in the vtree vignette,
+you can do this:
+
+``` r
+# build.data.frame(
+#   c("pet","breed","size"),
+#   list("dog","golden retriever","large",5),
+#   list("cat","tabby","small",2),
+#   list("dog","Dalmation","various",101),
+#   list("cat","Abyssinian","small",5),
+#   list("cat","Abyssinian","large",22),
+tibble::tribble( 
+  ~pet, ~breed, ~size, ~Freq,
+  "dog","golden retriever","large",5,
+  "cat","tabby","small",2,
+  "dog","Dalmation","various",101,
+  "cat","Abyssinian","small",5,
+  "cat","Abyssinian","large",22,
+  "cat","tabby","large",86) |>
+  cases_from_freqtable()
+#> # A tibble: 221 × 3
+#>    pet   breed            size   
+#>    <chr> <chr>            <chr>  
+#>  1 dog   golden retriever large  
+#>  2 dog   golden retriever large  
+#>  3 dog   golden retriever large  
+#>  4 dog   golden retriever large  
+#>  5 dog   golden retriever large  
+#>  6 cat   tabby            small  
+#>  7 cat   tabby            small  
+#>  8 dog   Dalmation        various
+#>  9 dog   Dalmation        various
+#> 10 dog   Dalmation        various
+#> # ℹ 211 more rows
+```
+
+#### The FakeRCT examples
+
+``` r
+# vtree(FakeRCT,"eligible randomized group followup analyzed",plain=TRUE,
+#   keep=list(eligible="Eligible",randomized="Randomized",followup="Followed up"),
+#   horiz=FALSE,showvarnames=FALSE,title="Assessed for eligibility")
+
+data(FakeRCT, package="vtree")
+pal <- colorRampPalette(c("white", "steelblue"))(7)
+
+vt <- vtree(FakeRCT, eligible, randomized, group, followup, analyzed) 
+
+vt |>
+  retain(followup == "Followed up") |>
+  add_labels() |>
+  add_labels(fmt = ifelse(path == "root",
+                        paste0("Assessed for\neligibility\n", label),
+                        label)) |>
+  mutate(fill = pal[level + 2]) |>
+  plot(dir = "tb", legend_tiny = FALSE, lwidth=.8, lheight=.7)
+```
+
+![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-34-1.png)
+
+``` r
+# vtree(FakeRCT,"eligible randomized group followup analyzed",plain=TRUE,
+#   follow=list(eligible="Eligible",randomized="Randomized",followup="Followed up"),
+#   horiz=FALSE,showvarnames=FALSE,title="Assessed for eligibility")
+vt |>
+  prune(followup != "Followed up" |
+        randomized != "Randomized" |
+        eligible != "Eligible", follow_only = TRUE) |>
+  add_labels() |>
+  add_labels(fmt = ifelse(path == "root",
+                        paste0("Assessed for\neligibility\n", label),
+                        label)) |>
+  mutate(fill = pal[level + 2]) |>
+  plot(dir = "tb", legend_tiny = FALSE, lwidth=.8, lheight=.7)
+```
+
+![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-35-1.png)
+
+``` r
+# vtree(FakeRCT,"eligible randomized group followup analyzed",plain=TRUE,
+#   follow=list(eligible="Eligible",randomized="Randomized",followup="Followed up"),
+#   horiz=FALSE,showvarnames=FALSE,title="Assessed for eligibility",
+#   summary="id \nid: %list% %noroot%")
+
+# vtree:vtree() minilanguage allows to insert lists of identifiers
+# we can do that manually
+sumfnc <- function(df) {
+  ret <- paste("id:", paste(df$id, collapse = ", "))
+
+  # vtree::vtree() wraps text automatically, we do it explicitly
+  ret <- strwrap(ret, 20)
+
+  ret <- paste(ret, collapse = "\n")
+  ret
+}
+
+ids_summary <- vtree_apply(FakeRCT, vt, sumfnc) |>
+               unlist()
+
+vt |>
+  prune(followup != "Followed up" |
+        randomized != "Randomized" |
+        eligible != "Eligible", follow_only = TRUE) |>
+  add_labels() |>
+  add_labels(fmt = ifelse(path == "root",
+                        paste0("Assessed for\neligibility\n", label),
+                   paste0(label, "\n", ids_summary[node_key]))) |>
+  mutate(fill = pal[level + 2]) |>
+  plot(dir = "tb", legend_tiny = FALSE, lwidth=.8, lheight=.7)
+```
+
+![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-36-1.png)
 
 #### New functionality ~~Killer features~~
 
 - frequency plots: where nodes are scaled by the number of observations
 - inserting other graphical objects into nodes: images or ggplot2’s
+- pruning or keeping nodes takes any logical expression
 
 #### Missing functionality
 

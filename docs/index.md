@@ -3,6 +3,10 @@
 Tree diagrams for categorical data, based on the [original vtree
 package](https://github.com/nbarrowman/vtree) by Nick Barrowman.
 
+## Gallery
+
+![](reference/figures/README-unnamed-chunk-2-1.png)
+
 ## Installation
 
 You can install the development version of vtree2 like so:
@@ -10,10 +14,6 @@ You can install the development version of vtree2 like so:
 ``` r
 pak::pak("january3/vtree2")
 ```
-
-## Quick start
-
-### What is a vtree?
 
 ### vtree2 workflow
 
@@ -25,7 +25,9 @@ pak::pak("january3/vtree2")
 2.  Prune the tree for visualization with
     [`prune()`](https://january3.github.io/vtree2/reference/prune.md) or
     [`retain()`](https://january3.github.io/vtree2/reference/prune.md).
-3.  Add labels and colors with
+3.  Add variable and variable level aliases with
+    [`add_aliases()`](https://january3.github.io/vtree2/reference/add_aliases.md).
+4.  Add labels and colors with
     [`add_labels()`](https://january3.github.io/vtree2/reference/add_labels.md)
     and
     [`add_palette()`](https://january3.github.io/vtree2/reference/vtree_palette.md)
@@ -37,7 +39,7 @@ pak::pak("january3/vtree2")
     [`summary_vt()`](https://january3.github.io/vtree2/reference/summary_vt.md)
     function can be used to produce additional per-node summaries which
     can be used for labeling or coloring.
-4.  plot the tree with
+5.  plot the tree with
     [`plot()`](https://rdrr.io/r/graphics/plot.default.html).
 
 ### Basic plots
@@ -197,8 +199,20 @@ Also, for code review / bug finding.
 
 More docs available [here](https://january3.github.io/vtree2/).
 
+- [What are
+  vtrees?](https://january3.github.io/vtree2/articles/what_are_vtrees.html)
+- [User manual](https://january3.github.io/vtree2/articles/vtree2.html)
+- [Vtree2 for vtree
+  users](https://january3.github.io/vtree2/articles/vtree2_for_vtree_users.html)
+
 ## TODO
 
+- print.vtree should show the status of added layouts / colors / etc etc
+- pruning:
+  - streamline and clean up pruning / selecting nodes
+  - remove mark_only parameter, enough to have “mark()”
+  - unexport find_parents / find_children
+  - remove the na.rm tag
 - add_layout should not modify shape if present
 - the arrows should be attached dynamically in grob.R rather than in
   layout?

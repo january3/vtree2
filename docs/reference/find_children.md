@@ -1,7 +1,7 @@
 # Find all nodes that follow or precede the nodes for which the mask is TRUE
 
-`find_children` identifies all nodes in a vtree graph that follow the
-nodes for which the provided mask is TRUE.
+Find all nodes that follow or precede the nodes for which the mask is
+TRUE
 
 ## Usage
 
@@ -27,6 +27,9 @@ find_parents(vtree, mask)
 A logical vector indicating which nodes follow or precede the nodes
 
 ## Details
+
+`find_children` identifies all nodes in a vtree graph that follow the
+nodes for which the provided mask is TRUE.
 
 `find_parents` identifies all nodes in a vtree graph that precede the
 nodes for which the provided mask is TRUE.

@@ -38,10 +38,10 @@
 ## Pruning, keeping, marking, searching
 
 - [`prune()`](https://january3.github.io/vtree2/reference/prune.md)
-  [`find_nodes()`](https://january3.github.io/vtree2/reference/prune.md)
   [`retain()`](https://january3.github.io/vtree2/reference/prune.md)
-  [`mark()`](https://january3.github.io/vtree2/reference/prune.md) :
-  Find nodes and prune a vtree graph
+  [`mark()`](https://january3.github.io/vtree2/reference/prune.md)
+  [`find_nodes()`](https://january3.github.io/vtree2/reference/prune.md)
+  : Find nodes and prune a vtree graph
 - [`find_children()`](https://january3.github.io/vtree2/reference/find_children.md)
   [`find_parents()`](https://january3.github.io/vtree2/reference/find_children.md)
   : Find all nodes that follow or precede the nodes for which the mask

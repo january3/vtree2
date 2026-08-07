@@ -67,25 +67,23 @@
 <!-- badges: end -->
 <p>Tree diagrams for categorical data, based on the <a href="https://github.com/nbarrowman/vtree" class="external-link">original vtree package</a> by Nick Barrowman.</p>
 <div class="section level2">
+<h2 id="gallery">Gallery<a class="anchor" aria-label="anchor" href="#gallery"></a>
+</h2>
+<p><img src="reference/figures/README-unnamed-chunk-2-1.png" alt="" width="100%"></p>
+</div>
+<div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
 <p>You can install the development version of vtree2 like so:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html" class="external-link">pak</a></span><span class="op">(</span><span class="st">"january3/vtree2"</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level2">
-<h2 id="quick-start">Quick start<a class="anchor" aria-label="anchor" href="#quick-start"></a>
-</h2>
-<div class="section level3">
-<h3 id="what-is-a-vtree">What is a vtree?<a class="anchor" aria-label="anchor" href="#what-is-a-vtree"></a>
-</h3>
-</div>
 <div class="section level3">
 <h3 id="vtree2-workflow">vtree2 workflow<a class="anchor" aria-label="anchor" href="#vtree2-workflow"></a>
 </h3>
 <ol style="list-style-type: decimal">
 <li>Prepare the data with <code><a href="reference/vtree.html">vtree()</a></code> or <code><a href="reference/vtree.html">vtree_from_freqtable()</a></code>. After this step, the data is immutable, frequencies and counts calculated will not change any more.</li>
 <li>Prune the tree for visualization with <code><a href="reference/prune.html">prune()</a></code> or <code><a href="reference/prune.html">retain()</a></code>.</li>
+<li>Add variable and variable level aliases with <code><a href="reference/add_aliases.html">add_aliases()</a></code>.</li>
 <li>Add labels and colors with <code><a href="reference/add_labels.html">add_labels()</a></code> and <code><a href="reference/vtree_palette.html">add_palette()</a></code> or by directly manipulating the <code>label</code>, <code>color</code> and <code>fill</code> columns of the vtree object. <code><a href="reference/prune.html">find_nodes()</a></code> and <code>prune(..., mark_only = TRUE)</code> can be used to select nodes for coloring or labeling. The <code><a href="reference/summary_vt.html">summary_vt()</a></code> function can be used to produce additional per-node summaries which can be used for labeling or coloring.</li>
 <li>plot the tree with <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code>.</li>
 </ol>
@@ -195,11 +193,25 @@
 <h2 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a>
 </h2>
 <p>More docs available <a href="https://january3.github.io/vtree2/">here</a>.</p>
+<ul>
+<li><a href="https://january3.github.io/vtree2/articles/what_are_vtrees.html">What are vtrees?</a></li>
+<li><a href="https://january3.github.io/vtree2/articles/vtree2.html">User manual</a></li>
+<li><a href="https://january3.github.io/vtree2/articles/vtree2_for_vtree_users.html">Vtree2 for vtree users</a></li>
+</ul>
 </div>
 <div class="section level2">
 <h2 id="todo">TODO<a class="anchor" aria-label="anchor" href="#todo"></a>
 </h2>
 <ul>
+<li>print.vtree should show the status of added layouts / colors / etc etc</li>
+<li>pruning:
+<ul>
+<li>streamline and clean up pruning / selecting nodes</li>
+<li>remove mark_only parameter, enough to have “mark()”</li>
+<li>unexport find_parents / find_children</li>
+<li>remove the na.rm tag</li>
+</ul>
+</li>
 <li>add_layout should not modify shape if present</li>
 <li>the arrows should be attached dynamically in grob.R rather than in layout?</li>
 <li>write a manual in the main vignette [—–| ] 80% complete</li>

@@ -38,7 +38,10 @@ vtree_apply(cases, vtree, FUN, ..., .mask = NULL, .twoarg = FALSE)
 
 - .twoarg:
 
-  A logical value indicating whether FUN takes two arguments
+  A logical value indicating whether FUN takes two arguments. If TRUE,
+  the first argument will be the fragment of cases corresponding to the
+  node, and the second will be the row from the nodes data frame of
+  vtree corresponding to that node.
 
 ## Value
 

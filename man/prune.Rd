@@ -50,9 +50,6 @@ are also kept.}
 \item{keep_follow}{If keep is specified, and keep_follow is true, then
 nodes following the selected node (i.e., its children) are also
 kept even if they do not fulfill the condition.}
-
-\item{keep}{If TRUE, keeps the nodes that satisfy the condition and prunes
-everything else.}
 }
 \value{
 \code{retain()} and \code{prune()} return a pruned vtree object.
