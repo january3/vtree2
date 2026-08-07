@@ -232,6 +232,7 @@ test_that("grob injection works", {
                    gp = grid::gpar(col = "white", fontsize = 32))
   ))
 
+
   #grid.draw(box)
 
   vt <- vtree_from_freqtable(Titanic, Class, Sex) |>
@@ -252,6 +253,28 @@ test_that("grob injection works", {
   expect_in("plot_obj", names(plots$children))
   expect_in("test_box", names(plots$children$plot_obj$children))
   tb <- plots$children$plot_obj$children$test_box
+  expect_in(c("test_rect", "test_text"), names(tb$children))
+  expect_equal(tb$children$test_text$label, "Hello")
+
+  vt <- vtree_from_freqtable(Titanic, Class, Sex) |>
+    mutate(grob = NA) |>
+    mark(leaf) |>
+    mutate(grob = ifelse(mark, list(box), grob))
+
+  p <- plot(vt)
+
+  tempfile <- tempfile(fileext = ".pdf")
+  dev.new <- grDevices::pdf(tempfile, width=5, height=5)
+  expect_no_error(grid.draw(p))
+  expect_no_error(print(p))
+  dev.off()
+
+  expect_in("plots", names(p$children))
+  plots <- p$children$plots
+  expect_in("plot_obj", names(plots$children))
+  expect_setequal(paste0("grob_node_", 6:13),
+                  names(plots$children$plot_obj$children))
+  tb <- plots$children$plot_obj$children$grob_node_6
   expect_in(c("test_rect", "test_text"), names(tb$children))
   expect_equal(tb$children$test_text$label, "Hello")
 })
