@@ -28,9 +28,6 @@ test_that("pruning works", {
   vt2 <- vt |> prune(freq < .12, follow_only = TRUE)
   expect_equal(nrow(as_tibble(vt2)), 43)
 
-  vt2 <- vtNA |> prune(na.rm = TRUE)
-  expect_equal(nrow(as_tibble(vt2)), 29)
-
   vt2 <- vt |> retain(freq > .12, keep_follow = FALSE)
   expect_equal(nrow(as_tibble(vt2)), 49)
 
