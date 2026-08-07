@@ -9,26 +9,21 @@ of samples that correspond to a combination of variable levels, see
 ## Usage
 
 ``` r
-vtree_from_freqtable(x, ..., .freq_col = "Freq", .vp = TRUE, .cols = NULL)
-
 vtree(cases, ..., .vp = TRUE, .cols = NULL)
+
+vtree_from_freqtable(x, ..., .freq_col = "Freq", .vp = TRUE, .cols = NULL)
 ```
 
 ## Arguments
 
-- x:
+- cases:
 
-  A frequency table (matrix, table or data frame)
+  A data frame, one row per observation, one column per variable
 
 - ...:
 
   Columns to use for the tree. If no columns are specified, all columns
   (except the frequency column for the frequency tables) will be used
-
-- .freq_col:
-
-  The name of the column in a frequency table that contains the
-  frequency counts. Default is "Freq".
 
 - .vp:
 
@@ -41,9 +36,14 @@ vtree(cases, ..., .vp = TRUE, .cols = NULL)
   argument. This is useful when the column names are stored in a
   variable.
 
-- cases:
+- x:
 
-  A data frame, one row per observation, one column per variable
+  A frequency table (matrix, table or data frame)
+
+- .freq_col:
+
+  The name of the column in a frequency table that contains the
+  frequency counts. Default is "Freq".
 
 ## Value
 

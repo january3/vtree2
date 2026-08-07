@@ -230,32 +230,32 @@ which is just a wrapper around `colnames(as_tibble(vt))`:
 ``` r
 nodecols(vt)
 #>  [1] "path"      "node_id"   "node_key"  "parent"    "parent_id" "path_l"   
-#>  [7] "level"     "node_col"  "node_name" "node_val"  "node_cv"   "n"        
-#> [13] "tot_n"     "missing"   "freq"      "denom"     "vp"        "leaf"
+#>  [7] "level"     "node_col"  "node_val"  "n"         "tot_n"     "missing"  
+#> [13] "freq"      "denom"     "vp"        "leaf"
 ```
 
 You can convert the vtree object to a data frame with `as_tibble`:
 
 ``` r
 as_tibble(vt)
-#> # A tibble: 13 × 18
-#>    path  node_id node_key parent parent_id path_l       level node_col node_name
-#>    <chr>   <int> <chr>    <chr>      <int> <list>       <dbl> <chr>    <chr>    
-#>  1 root        1 node_1   NA            NA <lgl [1]>        0 root     ""       
-#>  2 Clas…       2 node_2   root           1 <named list>     1 Class    "Class"  
-#>  3 Clas…       3 node_3   root           1 <named list>     1 Class    "Class"  
-#>  4 Clas…       4 node_4   root           1 <named list>     1 Class    "Class"  
-#>  5 Clas…       5 node_5   root           1 <named list>     1 Class    "Class"  
-#>  6 Clas…       6 node_6   Class…         2 <named list>     2 Survived "Survive…
-#>  7 Clas…       7 node_7   Class…         2 <named list>     2 Survived "Survive…
-#>  8 Clas…       8 node_8   Class…         3 <named list>     2 Survived "Survive…
-#>  9 Clas…       9 node_9   Class…         3 <named list>     2 Survived "Survive…
-#> 10 Clas…      10 node_10  Class…         4 <named list>     2 Survived "Survive…
-#> 11 Clas…      11 node_11  Class…         4 <named list>     2 Survived "Survive…
-#> 12 Clas…      12 node_12  Class…         5 <named list>     2 Survived "Survive…
-#> 13 Clas…      13 node_13  Class…         5 <named list>     2 Survived "Survive…
-#> # ℹ 9 more variables: node_val <chr>, node_cv <chr>, n <int>, tot_n <int>,
-#> #   missing <int>, freq <dbl>, denom <int>, vp <lgl>, leaf <lgl>
+#> # A tibble: 13 × 16
+#>    path   node_id node_key parent parent_id path_l       level node_col node_val
+#>    <chr>    <int> <chr>    <chr>      <int> <list>       <dbl> <chr>    <chr>   
+#>  1 root         1 node_1   NA            NA <lgl [1]>        0 root     ""      
+#>  2 Class…       2 node_2   root           1 <named list>     1 Class    "1st"   
+#>  3 Class…       3 node_3   root           1 <named list>     1 Class    "2nd"   
+#>  4 Class…       4 node_4   root           1 <named list>     1 Class    "3rd"   
+#>  5 Class…       5 node_5   root           1 <named list>     1 Class    "Crew"  
+#>  6 Class…       6 node_6   Class…         2 <named list>     2 Survived "No"    
+#>  7 Class…       7 node_7   Class…         2 <named list>     2 Survived "Yes"   
+#>  8 Class…       8 node_8   Class…         3 <named list>     2 Survived "No"    
+#>  9 Class…       9 node_9   Class…         3 <named list>     2 Survived "Yes"   
+#> 10 Class…      10 node_10  Class…         4 <named list>     2 Survived "No"    
+#> 11 Class…      11 node_11  Class…         4 <named list>     2 Survived "Yes"   
+#> 12 Class…      12 node_12  Class…         5 <named list>     2 Survived "No"    
+#> 13 Class…      13 node_13  Class…         5 <named list>     2 Survived "Yes"   
+#> # ℹ 7 more variables: n <int>, tot_n <int>, missing <int>, freq <dbl>,
+#> #   denom <int>, vp <lgl>, leaf <lgl>
 ```
 
 #### Vtree objects as graphs
@@ -438,7 +438,7 @@ Unnecessary gory details:
   always ensure that columns `col_alias` and `val_alias` are present in
   the vtree object.
 - If no custom format is specified, these two columns will be identical
-  to the `node_name` and `node_val` columns, respectively.
+  to the `node_col` and `node_val` columns, respectively.
 - In addition, the alias information is stored in the `alias` attribute
   of the vtree object, which is subsequently used by
   [`plot()`](https://rdrr.io/r/graphics/plot.default.html) to create the
@@ -495,12 +495,7 @@ plot_grid(p1, p2, nrow = 1)
 ![](vtree2_files/figure-html/labels2-1.png)
 
 These labels are derived directly from columns of the vtree object:
-`node_name`, `node_val`, `freq` and `n`. When vtree object is created,
-the `node_name` and `node_col` are identical. However, the latter may
-not be changed because it is important for operations such as pruning.
-However, you can freely modify `node_name`, for example specifying a
-more user-friendly variable name to be used by
-[`add_labels()`](https://january3.github.io/vtree2/reference/add_labels.md).
+`node_col`, `node_val`, `freq` and `n`.
 
 #### Using custom formatting
 
@@ -511,9 +506,7 @@ expressions you like to construct a label from the following variables:
 - `freq`, the frequency for a node
 - `n`, number of samples of a node
 - `node_col`, name of the variable associated with a node
-- `node_name`, display name of the variable associated with a node
 - `node_val`, value of the variable associated with a node
-- `node_cv`, same as `paste0(node_col, ':', node_val)`
 - `col_alias`,`val_alias`: if you have defined aliases with
   [`add_aliases()`](https://january3.github.io/vtree2/reference/add_aliases.md),
   you will find them here. Otherwise the columns are same as `node_col`
@@ -532,15 +525,15 @@ Here is simple example using
 library(glue)
 vt <- vtree(titanicNA, Class, Sex) |>
   add_labels(fmt =
-    glue("{node_name}: {node_val}\nfreq={format(freq, digits=2)}"),
+    glue("{node_col}: {node_val}\nfreq={format(freq, digits=2)}"),
              fmt_na =
-    glue("{node_name}: Missing\nfreq={format(freq, digits=2)}"))
+    glue("{node_col}: Missing\nfreq={format(freq, digits=2)}"))
 plot(vt, legend_tiny = FALSE)
 ```
 
 ![](vtree2_files/figure-html/labels3-1.png)
 
-Note that the root node also got a label, but since `node_name` and
+Note that the root node also got a label, but since `node_col` and
 `node_val` are both “” for the root, the label is not very informative.
 We can change it:
 
@@ -548,9 +541,9 @@ We can change it:
 library(glue)
 vt <- vtree(titanicNA, Class, Sex) |>
   add_labels(fmt =
-    glue("{node_name}: {node_val}\nfreq={format(freq, digits=2)}\nn={n}"),
+    glue("{node_col}: {node_val}\nfreq={format(freq, digits=2)}\nn={n}"),
              fmt_na =
-    glue("{node_name}: Missing\nfreq={format(freq, digits=2)}\nn={n}")) |>
+    glue("{node_col}: Missing\nfreq={format(freq, digits=2)}\nn={n}")) |>
   mutate(label = ifelse(path == "root",
                         glue("All passengers\nn={n}"),
                         label))

@@ -113,24 +113,24 @@ added:
 ``` r
 vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived)
 add_layout(vt, layout = "regular", dir = "lr") |> tibble::as_tibble()
-#> # A tibble: 29 × 28
-#>    path  node_id node_key parent parent_id path_l       level node_col node_name
-#>    <chr>   <int> <chr>    <chr>      <int> <list>       <dbl> <chr>    <chr>    
-#>  1 root        1 node_1   NA            NA <lgl [1]>        0 root     ""       
-#>  2 Clas…       2 node_2   root           1 <named list>     1 Class    "Class"  
-#>  3 Clas…       3 node_3   root           1 <named list>     1 Class    "Class"  
-#>  4 Clas…       4 node_4   root           1 <named list>     1 Class    "Class"  
-#>  5 Clas…       5 node_5   root           1 <named list>     1 Class    "Class"  
-#>  6 Clas…       6 node_6   Class…         2 <named list>     2 Sex      "Sex"    
-#>  7 Clas…       7 node_7   Class…         2 <named list>     2 Sex      "Sex"    
-#>  8 Clas…       8 node_8   Class…         3 <named list>     2 Sex      "Sex"    
-#>  9 Clas…       9 node_9   Class…         3 <named list>     2 Sex      "Sex"    
-#> 10 Clas…      10 node_10  Class…         4 <named list>     2 Sex      "Sex"    
+#> # A tibble: 29 × 26
+#>    path   node_id node_key parent parent_id path_l       level node_col node_val
+#>    <chr>    <int> <chr>    <chr>      <int> <list>       <dbl> <chr>    <chr>   
+#>  1 root         1 node_1   NA            NA <lgl [1]>        0 root     ""      
+#>  2 Class…       2 node_2   root           1 <named list>     1 Class    "1st"   
+#>  3 Class…       3 node_3   root           1 <named list>     1 Class    "2nd"   
+#>  4 Class…       4 node_4   root           1 <named list>     1 Class    "3rd"   
+#>  5 Class…       5 node_5   root           1 <named list>     1 Class    "Crew"  
+#>  6 Class…       6 node_6   Class…         2 <named list>     2 Sex      "Male"  
+#>  7 Class…       7 node_7   Class…         2 <named list>     2 Sex      "Female"
+#>  8 Class…       8 node_8   Class…         3 <named list>     2 Sex      "Male"  
+#>  9 Class…       9 node_9   Class…         3 <named list>     2 Sex      "Female"
+#> 10 Class…      10 node_10  Class…         4 <named list>     2 Sex      "Male"  
 #> # ℹ 19 more rows
-#> # ℹ 19 more variables: node_val <chr>, node_cv <chr>, n <int>, tot_n <int>,
-#> #   missing <int>, freq <dbl>, denom <int>, vp <lgl>, leaf <lgl>, nleafs <int>,
-#> #   offset <int>, offset_tot <int>, full_w <dbl>, width <dbl>, x <dbl>,
-#> #   height <dbl>, full_h <dbl>, y <dbl>, shape <chr>
+#> # ℹ 17 more variables: n <int>, tot_n <int>, missing <int>, freq <dbl>,
+#> #   denom <int>, vp <lgl>, leaf <lgl>, nleafs <int>, offset <int>,
+#> #   offset_tot <int>, full_w <dbl>, width <dbl>, x <dbl>, height <dbl>,
+#> #   full_h <dbl>, y <dbl>, shape <chr>
 # the layout parameter from plot() is passed on to add_layout()
 plot(vt, layout="proportional")
 

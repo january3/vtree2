@@ -2,9 +2,9 @@
 
 ## Creating vtree objects
 
-- [`vtree_from_freqtable()`](https://january3.github.io/vtree2/reference/vtree.md)
-  [`vtree()`](https://january3.github.io/vtree2/reference/vtree.md) :
-  Create a vtree object from a data frame
+- [`vtree()`](https://january3.github.io/vtree2/reference/vtree.md)
+  [`vtree_from_freqtable()`](https://january3.github.io/vtree2/reference/vtree.md)
+  : Create a vtree object from a data frame
 - [`cases_from_freqtable()`](https://january3.github.io/vtree2/reference/cases_from_freqtable.md)
   : Convert a frequency table to a data frame of cases
 - [`as_tbl_graph(`*`<vtree>`*`)`](https://january3.github.io/vtree2/reference/as_tbl_graph.vtree.md)

@@ -369,7 +369,7 @@ Unnecessary gory details:
  * `add_aliases()` and `add_labels()` always ensure that columns
    `col_alias` and `val_alias` are present in the vtree object.
  * If no custom format is specified, these two columns will be identical to
-   the `node_name` and `node_val` columns, respectively.
+   the `node_col` and `node_val` columns, respectively.
  * In addition, the alias information is stored in the `alias`
    attribute of the vtree object, which is subsequently used
    by `plot()` to create the legend.
@@ -410,11 +410,7 @@ plot_grid(p1, p2, nrow = 1)
 ```
 
 These labels are derived directly from columns of the vtree object:
-`node_name`, `node_val`, `freq` and `n`. When vtree object is created, the
-`node_name` and `node_col` are identical. However, the latter may not be
-changed because it is important for operations such as pruning. However,
-you can freely modify `node_name`, for example specifying a more
-user-friendly variable name to be used by `add_labels()`.
+`node_col`, `node_val`, `freq` and `n`.
 
 ### Using custom formatting
 
@@ -425,9 +421,7 @@ expressions you like to construct a label from the following variables:
  * `freq`, the frequency for a node
  * `n`, number of samples of a node
  * `node_col`, name of the variable associated with a node
- * `node_name`, display name of the variable associated with a node
  * `node_val`, value of the variable associated with a node
- * `node_cv`, same as `paste0(node_col, ':', node_val)`
  * `col_alias`,`val_alias`: if you have defined aliases with
    `add_aliases()`, you will find them here. Otherwise the columns are
    same as `node_col` and `node_val`.
@@ -444,21 +438,21 @@ Here is simple example using `glue()`:
 library(glue)
 vt <- vtree(titanicNA, Class, Sex) |>
   add_labels(fmt =
-    glue("{node_name}: {node_val}\nfreq={format(freq, digits=2)}"),
+    glue("{node_col}: {node_val}\nfreq={format(freq, digits=2)}"),
              fmt_na =
-    glue("{node_name}: Missing\nfreq={format(freq, digits=2)}"))
+    glue("{node_col}: Missing\nfreq={format(freq, digits=2)}"))
 plot(vt, legend_tiny = FALSE)
 ```
 
-Note that the root node also got a label, but since `node_name` and `node_val` are both "" for the root, the label is not very informative. We can change it:
+Note that the root node also got a label, but since `node_col` and `node_val` are both "" for the root, the label is not very informative. We can change it:
 
 ```{r labels4,fig.width=8,fig.height=4}
 library(glue)
 vt <- vtree(titanicNA, Class, Sex) |>
   add_labels(fmt =
-    glue("{node_name}: {node_val}\nfreq={format(freq, digits=2)}\nn={n}"),
+    glue("{node_col}: {node_val}\nfreq={format(freq, digits=2)}\nn={n}"),
              fmt_na =
-    glue("{node_name}: Missing\nfreq={format(freq, digits=2)}\nn={n}")) |>
+    glue("{node_col}: Missing\nfreq={format(freq, digits=2)}\nn={n}")) |>
   mutate(label = ifelse(path == "root",
                         glue("All passengers\nn={n}"),
                         label))
