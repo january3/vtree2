@@ -744,7 +744,6 @@ rewrite_redcap(dessert, "IceCream___") |>
   mutate(across(everything(), as.character)) |>
   vtree(Chocolate, Vanilla, Strawberry) |>
   plot()
-
 ```
 
 The various vtree prefixes (`rnone:`, `ri:` etc.) can be handled in a similar way.

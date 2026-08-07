@@ -159,16 +159,15 @@ as_vtree <- function(x) {
 #' plot(vt, layout = "proportional")
 #'
 #' data(titanicNA)
+#' vt <- vtree(titanicNA, -Age)
+#' # same as:
 #' vt <- vtree(titanicNA, Class, Sex, Survived)
 #' plot(vt)
 #' @param cases A data frame, one row per observation, one column per variable
 #' @param x A frequency table (matrix, table or data frame)
 #' @param ... Columns to use for the tree. If no columns are specified, all
 #'            columns (except the frequency column for the frequency
-#'            tables) will be used
-#' @param .cols Provide column names as a character vector instead of using
-#'         the ... argument. This is useful when the column names are
-#'         stored in a variable.
+#'            tables) will be used. Use tidyselect syntax to access columns.
 #' @param .vp valid percentage; when calculating frequencies / percentages,
 #'           omit NA values from the denominator
 #' @param .freq_col The name of the column in a frequency table that
@@ -185,32 +184,17 @@ as_vtree <- function(x) {
 #' @importFrom tidygraph tbl_graph map_bfs_back_int
 #' @importFrom tidygraph .N .E
 #' @export
-vtree <- function(cases, ..., .vp = TRUE, .cols = NULL) {
+vtree <- function(cases, ..., .vp = TRUE) {
 
   if(length(colnames(cases)) < 1L) {
     cli_abort(c(x = "No columns in the data frame cases"))
   }
 
-  if (!is.null(.cols)) {
-    cnms <- .cols
-  } else {
-    # enquos the columns so we can play with them
-    cols <- rlang::enquos(...)
-    # get the column names as strings
-    cnms <- map_chr(cols, rlang::as_name)
-  }
+  cols <- tidyselect::eval_select(
+    rlang::expr(c(...)),
+    data = cases)
 
-  if(length(cnms) < 1L) {
-    cnms <- colnames(cases)
-  }
-
-  if(!all(cnms %in% colnames(cases))) {
-    cnms <- cnms[ !cnms %in% colnames(cases) ]
-    cli_abort(
-    c("Columns specified for the vtree are not in the cases data frame",
-      "x" = "Columns not found: {cnms}")
-    )
-  }
+  cnms <- names(cols)
 
   if(!is.null(attr(cases, "levels"))) {
     levels <- attr(cases, "levels")
@@ -220,6 +204,10 @@ vtree <- function(cases, ..., .vp = TRUE, .cols = NULL) {
     levels <- levels[cnms]
   } else {
     levels <- .get_levels(cases, cnms)
+  }
+
+  if(length(cnms) < 1L) {
+    cnms <- colnames(cases)
   }
 
   cases <- select(cases, all_of(cnms))
@@ -265,19 +253,22 @@ vtree <- function(cases, ..., .vp = TRUE, .cols = NULL) {
 #' the original vtree package.
 #' @param x A frequency table, as a data frame or a table object.
 #' @param ... The columns to use for the cases. If not specified, all columns
-#'       except the frequency column are used.
+#'       except the frequency column are used. Use tidyselect syntax to
+#'       access columns.
 #' @param .freq_col The name of the column containing the frequency counts.
 #' @examples
 #' cases <- cases_from_freqtable(Titanic)
 #' cases <- cases_from_freqtable(Titanic, Class, Sex, Survived)
-#' cases <- cases_from_freqtable(Titanic,
-#'               .freq_col = "Freq",
-#'               .cols = c("Class", "Sex", "Survived"))
+#' # same as:
+#' cases <- cases_from_freqtable(Titanic, -Age)
+#' cols <- c("Class", "Sex", "Survived")
+#' cases <- cases_from_freqtable(Titanic, all_of(cols),
+#'               .freq_col = "Freq")
 #' @inheritParams vtree
 #' @importFrom rlang as_name
 #' @return A tibble of cases, one row per observation, one column per variable
 #' @export
-cases_from_freqtable <- function(x, ..., .freq_col = "Freq", .cols = NULL) {
+cases_from_freqtable <- function(x, ..., .freq_col = "Freq") {
 
   if(!is.data.frame(x)) {
     x <- as.data.frame(x)
@@ -287,14 +278,12 @@ cases_from_freqtable <- function(x, ..., .freq_col = "Freq", .cols = NULL) {
 
   x <- as_tibble(x)
 
-  if (!is.null(.cols)) {
-    cnms <- .cols
-  } else {
-    # enquos the columns so we can play with them
-    cols <- enquos(...)
-    # get the column names as strings
-    cnms <- map_chr(cols, rlang::as_name)
-  }
+  cols <- tidyselect::eval_select(
+    rlang::expr(c(...)),
+    data = x)
+
+  cnms <- names(cols)
+  cnms <- setdiff(cnms, .freq_col)
 
   if(!.freq_col %in% colnames(x)) {
       fcol <- .freq_col
@@ -313,11 +302,11 @@ cases_from_freqtable <- function(x, ..., .freq_col = "Freq", .cols = NULL) {
     ))
   }
 
-  if(length(cnms) < 1) {
+  if(length(cnms) < 1L) {
     cnms <- setdiff(colnames(x), .freq_col)
   }
 
-  if(!length(cnms) > 0) {
+  if(!length(cnms) > 0L) {
     cli_abort(c(
       x = "No usable columns found in the data frame",
       i = "Available columns: {paste(colnames(x), collapse = ', ')}"
@@ -335,18 +324,9 @@ cases_from_freqtable <- function(x, ..., .freq_col = "Freq", .cols = NULL) {
 #' @rdname vtree
 #' @export
 vtree_from_freqtable <- function(x, ..., .freq_col = "Freq", 
-                                 .vp = TRUE, .cols = NULL) {
+                                 .vp = TRUE) {
 
-  if (!is.null(.cols)) {
-    cnms <- .cols
-  } else {
-    # enquos the columns so we can play with them
-    cols <- rlang::enquos(...)
-    # get the column names as strings
-    cnms <- map_chr(cols, rlang::as_name)
-  }
-
-  x <- cases_from_freqtable(x, .freq_col = .freq_col, .cols = cnms)
-
-  vtree(cases = x, .vp = .vp, .cols = cnms)
+  x <- cases_from_freqtable(x, ..., .freq_col = .freq_col)
+  cnms <- colnames(x)
+  vtree(cases = x, all_of(cnms), .vp = .vp)
 }

@@ -31,10 +31,11 @@ test_that("cases_from_freqtable works", {
   cases <- cases_from_freqtable(Titanic, Class, Survived)
   expect_equal(ncol(cases), 2)
 
-  cases <- cases_from_freqtable(Titanic, .cols = c("Class", "Survived"))
+  cases <- cases_from_freqtable(Titanic, all_of(c("Class", "Survived")))
   expect_equal(ncol(cases), 2)
 
-  expect_error(cases_from_freqtable(Titanic, .cols = c("Class", "Foo")))
+  expect_error(cases_from_freqtable(Titanic, all_of(c("Class", "Foo"))),
+               "Can't subset elements that don't exist.")
 
   expect_error(cases_from_freqtable(Titanic, .freq_col = "foo"))
 
@@ -196,7 +197,7 @@ test_that("errors are raised", {
                "vtree must have an attribute 'levels'")
 
   cases <- cases_from_freqtable(Titanic)
-  expect_error(vtree(cases, Foo, Bar), "Columns not found: Foo and Bar")
+  expect_error(vtree(cases, Foo, Bar), "Can't select columns that don't exist.")
   xx <- data.frame()
   expect_error(vtree(xx), "No columns in the data frame cases")
 
