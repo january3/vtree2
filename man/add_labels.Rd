@@ -56,7 +56,6 @@ expressions you like to construct a label from the following variables:
 \item \code{n}, number of samples of a node
 \item \code{node_col}, name of the variable associated with a node
 \item \code{node_val}, value of the variable associated with a node
-\item \code{node_cv}, same as \code{paste0(node_col, ':', node_val)}
 \item \code{col_alias}, the alias for the column/variable associated with a node
 (default same as node_col, but can be modified
 by providing a \code{var_alias} column in the vtree)
@@ -65,9 +64,6 @@ by providing a \code{var_alias} column in the vtree)
 by providing a \code{val_alias} column in the vtree)
 \item plus whatever new columns you have added to the vtree with mutate().
 }
-
-(the difference between node_col and node_name is that you can set
-node_name to whatever you like, while node_col must remain unchanged)
 }
 \examples{
 vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived)

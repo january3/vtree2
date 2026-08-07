@@ -217,13 +217,9 @@ pat2nodes <- function(pattern, columns) {
     mutate(node_id = dplyr::row_number()) |>
     mutate(parent_id = purrr::map_int(.data[["path_l"]],
                        \(x) find_parent(x, .data[["path_l"]]))) |>
-    mutate(node_cv = paste0(.data[["node_col"]], ":",
-                            .data[["node_val"]])) |>
-    mutate(node_name = ifelse(.data[["path"]] == "root",
-                              "", .data[["node_col"]])) |>
     mutate(node_key = paste0("node_", .data[["node_id"]])) |>
     select(all_of(c("path", "node_id", "node_key", "parent", "parent_id",
-                    "path_l", "level", "node_col", "node_name", "node_val",
-                    "node_cv", "n", "tot_n", "missing", "freq", "denom")))
+                    "path_l", "level", "node_col", "node_val",
+                    "n", "tot_n", "missing", "freq", "denom")))
   ret
 }

@@ -121,13 +121,8 @@ used to create a label:
 \item \code{freq}, the frequency for a node
 \item \code{n}, number of samples of a node
 \item \code{node_col}, name of the variable associated with a node
-\item \code{node_name}, display name of the variable associated with a node
 \item \code{node_val}, value of the variable associated with a node
-\item \code{node_cv}, same as \code{paste0(node_col, ':', node_val)}
 }
-
-(the difference between node_col and node_name is that you can set
-node_name to whatever you like, while node_col must remain unchanged)
 
 See \code{\link[=vtree]{vtree()}} for a list of all columns in the node data frame.
 

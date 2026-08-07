@@ -17,7 +17,6 @@ as_vtree <- function(x) {
                 "parent_id", "node_col", "node_val",
                 "parent", "path_l", "level", "n", "freq")
   # this columns are usually created but not critical:
-  # node_cv, node_name
 
   if(!all(req_cols %in% colnames(nodes))) {
     stop(sprintf("Columns %s not in colnames(nodes)",
@@ -119,9 +118,7 @@ as_vtree <- function(x) {
 #' * `node_key`: unique character string ID of the node.
 #' * `node_col`: the column of the original cases data frame to which the
 #'    node corresponds to (`Sex`)
-#' * `node_name`: node name used for labelling (`Sex`).
 #' * `node_val`: the value of the node variable at this node (`Female`).
-#' * `node_cv`: combination of node column and node value (`Sex:Female`).
 #' * `parent`: path of the parent node (`Class:1st`).
 #' * `path_l`: is a list node; i.e., each element is a list. The path describes
 #'    all nodes from the root to the current node, excluding the root and
@@ -247,8 +244,6 @@ vtree <- function(cases, ..., .vp = TRUE, .cols = NULL) {
   attr(vtree, "source_summary") <- summaries
   attr(vtree, "pruned") <- FALSE
   vtree
-
-
 }
 
 #' Convert a frequency table to a data frame of cases

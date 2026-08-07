@@ -115,7 +115,6 @@
 #'  * `n`, number of samples of a node
 #'  * `node_col`, name of the variable associated with a node
 #'  * `node_val`, value of the variable associated with a node
-#'  * `node_cv`, same as `paste0(node_col, ':', node_val)`
 #'  * `col_alias`, the alias for the column/variable associated with a node
 #'    (default same as node_col, but can be modified
 #'    by providing a `var_alias` column in the vtree)
@@ -123,9 +122,6 @@
 #'    (default same as node_val, but can be modified 
 #'    by providing a `val_alias` column in the vtree)
 #'  * plus whatever new columns you have added to the vtree with mutate().
-#'
-#' (the difference between node_col and node_name is that you can set
-#' node_name to whatever you like, while node_col must remain unchanged)
 #'
 #' @param vtree an object of class vtree
 #' @param template One of the predefined formats; can be 'simple',

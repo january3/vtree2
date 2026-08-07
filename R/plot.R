@@ -260,12 +260,7 @@ normalize_layout <- function(layout) {
 #'  * `freq`, the frequency for a node
 #'  * `n`, number of samples of a node
 #'  * `node_col`, name of the variable associated with a node
-#'  * `node_name`, display name of the variable associated with a node
 #'  * `node_val`, value of the variable associated with a node
-#'  * `node_cv`, same as `paste0(node_col, ':', node_val)`
-#'
-#' (the difference between node_col and node_name is that you can set
-#' node_name to whatever you like, while node_col must remain unchanged)
 #'
 #' See [vtree2::vtree()] for a list of all columns in the node data frame.
 #'
