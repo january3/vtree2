@@ -329,13 +329,10 @@ cases_from_freqtable <- function(x, ..., .freq_col = "Freq", .cols = NULL) {
     ))
   }
 
-  levels <- .get_levels(x, cnms)
-
   x <- x[ rep.int(seq_len(nrow(x)), x[[.freq_col]]), ]
   x <- x[ , cnms, drop = FALSE ]
 
   rownames(x) <- NULL
-  attr(x, "levels") <- levels
   x
 }
 
