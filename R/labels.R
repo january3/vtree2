@@ -59,6 +59,17 @@
                         sprintf("%d", .data[["n"]]),
                         sprintf("%s\n%d", .data[["val_alias"]], .data[["n"]]))
                        )
+  } else if(template == "sameline") {
+    fmt <- quo(ifelse(.data[["node_col"]] == "root",
+               sprintf("%d", .data[["n"]]),
+               ifelse(!is.na(.data[["val_alias"]]) & .data[["val_alias"]] == "",
+               sprintf("%d (%.0f%%)", .data[["n"]], .data[["freq"]] * 100),
+               sprintf("%s %d (%.0f%%)", .data[["val_alias"]],
+                                          .data[["n"]], .data[["freq"]] * 100))))
+    fmt_na = quo(ifelse(!is.na(.data[["val_alias"]]) & .data[["val_alias"]] == "",
+                        sprintf("%d", .data[["n"]]),
+                        sprintf("%s %d", .data[["val_alias"]], .data[["n"]]))
+                       )
   } else if(template == "long") {
     fmt <- quo(ifelse(!is.na(.data[["val_alias"]]) & .data[["val_alias"]] == "",
                sprintf("All samples\nN = %d (100%%)", .data[["n"]]),
@@ -117,11 +128,11 @@
 #' node_name to whatever you like, while node_col must remain unchanged)
 #'
 #' @param vtree an object of class vtree
-#' @param template One of the predefined formats; can be 'simple' or
-#' 'long'. If 'custom', you must provide the `fmt` and `fmt_NA`
-#' parameters.
+#' @param template One of the predefined formats; can be 'simple',
+#'        'sameline' or 'long'.  If `fmt` or `fmt_na` is defined, it will
+#'        be overridden by the respective formatting expression.
 #' @param mask If not NULL, then a logical vector is expected indicating
-#' the nodes for which the labels will be modified.
+#'        the nodes for which the labels will be modified.
 #' @param fmt an R expression to format the valid value nodes. If not
 #'        NULL, replaces the format from the template.
 #' @param fmt_na an R expression to format NA nodes in trees with valid
@@ -131,7 +142,7 @@
 #'        percentages. If NULL and fmt is not NULL, fmt will be used for NA
 #'        nodes as well.
 #' @param root_label Label to be used for the root node. If NA, do not
-#'                    modify the root label.
+#'        modify the root label.
 #' @return an object of class vtree with added labels
 #' @importFrom rlang quo quo_is_null
 #' @seealso [add_aliases()], [plot_vtree()]
@@ -162,7 +173,7 @@ add_labels <- function(vtree,
                        fmt_na = NULL,
                        root_label = NA) {
 
-  template <- match.arg(template, c("simple", "long"))
+  template <- match.arg(template, c("simple", "sameline", "long"))
 
   userfmt <- enquo(fmt)
   userfmt_na <- enquo(fmt_na)

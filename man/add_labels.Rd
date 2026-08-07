@@ -16,9 +16,9 @@ add_labels(
 \arguments{
 \item{vtree}{an object of class vtree}
 
-\item{template}{One of the predefined formats; can be 'simple' or
-'long'. If 'custom', you must provide the \code{fmt} and \code{fmt_NA}
-parameters.}
+\item{template}{One of the predefined formats; can be 'simple',
+'sameline' or 'long'.  If \code{fmt} or \code{fmt_na} is defined, it will
+be overridden by the respective formatting expression.}
 
 \item{mask}{If not NULL, then a logical vector is expected indicating
 the nodes for which the labels will be modified.}
