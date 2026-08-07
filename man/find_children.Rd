@@ -19,10 +19,12 @@ their following or preceding nodes.}
 A logical vector indicating which nodes follow or precede the nodes
 }
 \description{
-\code{find_children} identifies all nodes in a vtree graph that follow the
-nodes for which the provided mask is TRUE.
+Find all nodes that follow or precede the nodes for which the mask is TRUE
 }
 \details{
+\code{find_children} identifies all nodes in a vtree graph that follow the
+nodes for which the provided mask is TRUE.
+
 \code{find_parents} identifies all nodes in a vtree graph that precede the
 nodes for which the provided mask is TRUE.
 }

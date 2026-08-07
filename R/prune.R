@@ -1,19 +1,231 @@
+# we set up an internal vtree_vcol (virtual column) class in order to be
+# able to distinguish between three situations: 1) var is not NA 2) var is
+# NA 3) not applicable - the node does not correspond to var
+new_vtree_vcol <- function(x, applicable) {
+  stopifnot(length(x) == length(applicable))
+
+  structure(
+    x,
+    class = c("vtree_vcol", class(x)),
+    applicable = applicable
+  )
+}
+
+# Internal override for is.na used when evaluating conditions in functions
+# such as [prune()] and [retain()]. For nodes where the virtual variable is
+# not applicable, the result is `NA` rather than `TRUE`.
+#
+# @param x A virtual vtree column.
+#
+# @return A logical vector.
+is_na_vtree_vcol <- function(x) {
+  ret <- is.na(x)
+  applicable <- attr(x, "applicable")
+
+  if(!is.null(applicable)) {
+    ret[!applicable] <- NA
+  }
+
+  ret
+}
+
+# Internal override for %in% used when evaluating conditions in functions
+# such as [prune()] and [retain()]. For nodes where the virtual variable is
+# not applicable, the result is `NA` rather than TRUE/FALSE
+in_vtree_vcol <- function(x, table) {
+  ret <- base::`%in%`(x, table)
+
+  if(inherits(x, "vtree_vcol")) {
+    applicable <- attr(x, "applicable")
+    ret[!applicable] <- NA
+  }
+
+  ret
+}
+
+
 # rig a data frame which contains columns with names taken from node_col
 # and values taken from node_val.
 .add_virt_cols <- function(nodes) {
 
   colnames <- unique(na.omit(nodes$node_col))
   mask_df <- map_dfc(colnames, \(nm) {
-    tibble(!!nm := ifelse(nodes$node_col == nm, nodes$node_val, NA))
-
+    vcol <- new_vtree_vcol(
+      ifelse(nodes$node_col == nm, nodes$node_val, NA), nodes$node_col == nm)
+    tibble(!!nm := vcol)
   })
 
-  bind_cols(nodes, mask_df)
+  ret <- bind_cols(nodes, mask_df)
+  ret
+}
+
+.get_mask <- function(vtree, condition) {
+
+  # we need these cols to be able to naturally evaluate the condition using
+  # data vars
+  nodes <- as_tibble(vtree)
+  vcols <- .add_virt_cols(nodes)
+  #print(vcols[["Class"]] != "1st")
+
+  data_mask <- rlang::as_data_mask(vcols)
+  rlang::env_poke(data_mask, "is.na", is_na_vtree_vcol)
+  rlang::env_poke(data_mask, "%in%", in_vtree_vcol)
+
+  # here we create the pruning mask
+  mask <- eval_tidy(condition, data = data_mask)
+
+  if(length(mask) == 1L) {
+    mask = rep(mask, nrow(nodes))
+  }
+
+  if(length(mask) != nrow(nodes)) {
+    cli_abort(c(x = 
+      "The evaluated condition returned a vector with unexpected length",
+      i = "Expected: n={nrow(nodes)} Found: n={length(mask)}",
+      "This is likely an error"))
+  }
+
+  # now, some comparisons may return NA.
+  # we ignore them - assume that it's not a match.
+
+  #paths <- pull(vtree, "path")
+  #message(".get_mask: not-NA mask:")
+  #print(set_names(mask, paths)[!is.na(mask)])
+
+  mask[ is.na(mask) ] <- FALSE
+  mask[1] <- FALSE # root node cannot be targetted
+  mask
+}
+
+# given a node_id, find out whether there is a sister node (sharing the
+# same parent) with an NA value and return its node_id
+.find_sister_na <- function(nodes, node_key) {
+  sel <- node_key == nodes$node_key
+  node_id <- nodes$node_id[sel]
+  parent_id <- nodes$parent_id[sel]
+
+  if(is.na(parent_id)) {
+    return(character(0))
+  }
+
+  nasel <- nodes$node_key[ nodes$parent_id == parent_id &
+                          is.na(nodes$node_val) ]
+  return(nasel)
+}
+
+# return a logical vector where each element corresponds to a node; nodes
+# are marked TRUE if 1) they are NA and 2) they are sister nodes of a node
+# which is shown on the figure.
+.find_sister_na_nodes <- function(vtree, mask) {
+  nodes <- as_tibble(vtree)
+
+  node_keys <- nodes$node_key[ mask ]
+
+  nasiss <- map(node_keys, \(nk) .find_sister_na(nodes, nk)) |>
+    unlist()
+
+  mask <- nodes$node_key %in% nasiss
+  mask
 }
 
 
+# here we actually do the pruning
+# follow only: prune only the following nodes, not the nodes that are
+# selected by the condition
+# mark only: only insert the mask in the mark column
+# keep_na_sisters: keep NA nodes even if they are targetted for pruning if
+# they are needed to correctly evaluate the frequencies
+.prune <- function(vtree, condition,
+                   follow_only = FALSE,
+                   mark_only = FALSE,
+                   keep_na_sisters = TRUE) {
 
+  condition_mask <- .get_mask(vtree, condition)
+  #message(".prune: condition mask:")
+  #print(condition_mask)
 
+  # find all nodes that follow a node
+  follow_mask <- find_children(vtree, condition_mask)
+
+  # pruning only follow nodes
+  if(follow_only) {
+    #message("follow_only")
+    mask <- follow_mask
+  } else {
+    #message("adding follow nodes, result:")
+    mask <- condition_mask | follow_mask
+    #print(mask)
+  }
+
+  if(keep_na_sisters) {
+    #message("keeping NA sisters:")
+    sisters <- !.find_sister_na_nodes(vtree, !mask)
+    #message("sisters:")
+    #print(sisters)
+    # note: if condition_mask found the node, then we prune it
+    # even if it is a sister, bc that means it was directly targetted e.g.
+    # with is.na()
+    #message("resulting mask:")
+    #mask <- mask & (sisters | condition_mask)
+    mask <- mask & sisters
+    #print(mask)
+  }
+
+  #message(".prune: efective mask, TRUE for keep:")
+  #print(!mask)
+
+  if(mark_only) {
+    ret <- mutate(vtree, mark = mask)
+  } else {
+    if(sum(!mask) < 2L) {
+      die("No non-root nodes remain after pruning")
+    }
+
+    ret <- filter(vtree, !mask)
+    attr(ret, "pruned") <- TRUE
+  }
+
+  as_vtree(ret)
+}
+
+.retain <- function(vtree, condition,
+                   keep_follow = TRUE,
+                   mark_only = FALSE,
+                   keep_na_sisters = TRUE,
+                   keep = FALSE) {
+
+  mask_cond <- .get_mask(vtree, condition)
+
+  # first, which nodes precede our selected nodes?
+  # we must keep them!
+  precede <- find_parents(vtree, mask_cond)
+  mask <- mask_cond | precede
+
+  # by default, we also keep the children
+  if(keep_follow) {
+    follow <- find_children(vtree, mask_cond)
+    mask <- mask | follow
+  }
+
+  if(keep_na_sisters) {
+    sisters <- .find_sister_na_nodes(vtree, mask)
+    mask <- mask | sisters
+  }
+
+  if(mark_only) {
+    ret <- vtree |>
+    mutate(mark = mask)
+  } else {
+    if(sum(mask) < 2L) {
+      die("No non-root nodes remain after pruning")
+    }
+      
+    ret <- filter(vtree, mask)
+    attr(ret, "pruned") <- TRUE
+  }
+
+  as_vtree(ret)
+}
 
 # here we need to a) create a mask vector which tells which nodes to keep
 # and which to prune, b) create a new graph not only with the nodes pruned
@@ -94,8 +306,6 @@
 #'              condition.
 #' @param follow_only if TRUE, retain the nodes selected by condition, but
 #'              prune all following nodes.
-#' @param keep If TRUE, keeps the nodes that satisfy the condition and prunes
-#'              everything else.
 #' @param keep_follow If keep is specified, and keep_follow is true, then
 #'          nodes following the selected node (i.e., its children) are also
 #'          kept even if they do not fulfill the condition.
@@ -164,9 +374,32 @@ prune <- function(vtree, condition, follow_only = FALSE,
 
 }
 
+#' @rdname prune
+#' @export
+retain <- function(vtree, condition,
+                 keep_na_sisters = is_vp(vtree),
+                 keep_follow = TRUE,
+                 mark_only = FALSE) {
+  condition <- enquo(condition)
+  #prune(vtree, condition, keep = TRUE, mark_only = mark_only)
+  .retain(vtree, condition,
+         mark_only = mark_only,
+         keep = TRUE, keep_follow = keep_follow,
+         keep_na_sisters = keep_na_sisters)
+}
 
+#' @rdname prune
+#' @export
+mark <- function(vtree, condition, follow_only=FALSE) {
 
+  condition <- enquo(condition)
+  mask <- .get_mask(vtree, condition)
 
+  if(follow_only) {
+    mask <- find_children(vtree, mask)
+  }
+  mutate(vtree, mark = mask)
+}
 
 #' @rdname prune
 #' @export
@@ -237,165 +470,4 @@ find_parents <- function(vtree, mask) {
   })) |> pull(".precede")
 
   precede
-}
-
-.get_mask <- function(vtree, condition) {
-
-  # we need these cols to be able to naturally evaluate the condition using
-  # data vars
-  vcols <- .add_virt_cols(as_tibble(vtree))
-
-  # here we create the pruning mask
-  mask <- eval_tidy(condition, data = vcols)
-
-  # now, some comparisons may return NA.
-  # we ignore them - assume that it's not a match.
-  mask[ is.na(mask) ] <- FALSE
-
-  mask
-}
-
-# given a node_id, find out whether there is a sister node (sharing the
-# same parent) with an NA value and return its node_id
-.find_sister_na <- function(nodes, node_key) {
-  sel <- node_key == nodes$node_key
-  node_id <- nodes$node_id[sel]
-  parent_id <- nodes$parent_id[sel]
-
-  if(is.na(parent_id)) {
-    return(character(0))
-  }
-
-  nasel <- nodes$node_key[ nodes$parent_id == parent_id &
-                          is.na(nodes$node_val) ]
-  return(nasel)
-}
-
-# return a logical vector where each element corresponds to a node; nodes
-# are marked TRUE if 1) they are NA and 2) they are sister nodes of a node
-# which is shown on the figure.
-.find_sister_na_nodes <- function(vtree, mask) {
-  nodes <- as_tibble(vtree)
-
-  if(!length(mask) == nrow(nodes)) {
-    die("Incorrect mask length: mask={length(mask)} vs vtree={nrow(nodes)}")
-  }
-
-  node_keys <- nodes$node_key[ mask ]
-
-  nasiss <- map(node_keys, \(nk) .find_sister_na(nodes, nk)) |>
-    unlist()
-
-  mask <- nodes$node_key %in% nasiss
-  mask
-}
-
-
-# here we actually do the pruning
-# follow only: prune only the following nodes, not the nodes that are
-# selected by the condition
-.prune <- function(vtree, condition,
-                   follow_only = FALSE,
-                   keep_follow = TRUE,
-                   mark_only = FALSE,
-                   find_only = FALSE,
-                   keep_na_sisters = TRUE,
-                   keep = FALSE) {
-
-  mask_cond <- .get_mask(vtree, condition)
-
-  if(find_only) {
-    return(vtree |> mutate(mark = mask_cond))
-  }
-
-  # inverse mask if we want to keep the nodes
-  # that satisfy the condition
-  if(keep) {
-    # first, which nodes precede our selected nodes?
-    # we need to keep them!
-    precede <- find_parents(vtree, mask_cond)
-    mask <- mask_cond | precede
-
-    if(keep_follow) {
-      follow <- find_children(vtree, mask_cond)
-      mask <- mask | follow
-    }
-
-    # now inverse the mask, so anything FALSE ("do not keep")
-    # becomes TRUE ("prune")
-    mask <- !mask
-
-    # nodes <- as_tibble(vtree) |>
-    #   select(path, freq) |>
-    #   mutate(cond = mask_cond,
-    #          precede = precede,
-    #          follow = follow,
-    #          mask = mask) |>
-    # colorDF::print_colorDF()
-
-  } else {
-    mask <- mask_cond
-  }
-
-  # find all nodes that follow a node
-  follow_mask <- find_children(vtree, mask)
-
-  # pruning only follow nodes
-  if(follow_only) {
-    mask <- follow_mask
-  } else {
-    mask <- mask | follow_mask
-  }
-
-  if(keep_na_sisters) {
-    sisters <- !.find_sister_na_nodes(vtree, !mask)
-    mask <- mask & sisters
-  }
-
-  if(mark_only) {
-    ret <- vtree |>
-     mutate(mark = mask)
-     #mutate(mark = ifelse(mask,
-     #                     "prune", "keep")) |>
-     #mutate(mark = ifelse(mask_cond, "hit", .data[["mark"]]))
-  } else {
-    ret <- vtree |>
-      filter(!mask)
-  }
-
-
-  nodes <- as_tibble(ret)
-  if(nrow(nodes) < 1) {
-    die("No nodes remain after pruning")
-  }
-
-  attr(ret, "pruned") <- TRUE
-  as_vtree(ret)
-}
-
-#' @rdname prune
-#' @export
-retain <- function(vtree, condition,
-                 keep_follow = TRUE,
-                 keep_na_sisters = is_vp(vtree),
-                 mark_only = FALSE) {
-  condition <- enquo(condition)
-  #prune(vtree, condition, keep = TRUE, mark_only = mark_only)
-  .prune(vtree, condition, follow_only = FALSE,
-         mark_only = mark_only,
-         keep = TRUE, keep_follow = keep_follow,
-         keep_na_sisters = keep_na_sisters)
-}
-
-#' @rdname prune
-#' @export
-mark <- function(vtree, condition, follow_only=FALSE) {
-
-  condition <- enquo(condition)
-  mask <- .get_mask(vtree, condition)
-
-  if(follow_only) {
-    mask <- find_children(vtree, mask)
-  }
-  mutate(vtree, mark = mask)
 }

@@ -2,9 +2,9 @@
 % Please edit documentation in R/prune.R
 \name{prune}
 \alias{prune}
-\alias{find_nodes}
 \alias{retain}
 \alias{mark}
+\alias{find_nodes}
 \title{Find nodes and prune a vtree graph}
 \usage{
 prune(
@@ -12,30 +12,26 @@ prune(
   condition,
   follow_only = FALSE,
   mark_only = FALSE,
-  keep_na_sisters = is_vp(vtree),
-  keep = FALSE,
-  na.rm = FALSE
+  keep_na_sisters = is_vp(vtree)
 )
-
-find_nodes(vtree, condition, follow_only = FALSE)
 
 retain(
   vtree,
   condition,
-  keep_follow = TRUE,
   keep_na_sisters = is_vp(vtree),
+  keep_follow = TRUE,
   mark_only = FALSE
 )
 
 mark(vtree, condition, follow_only = FALSE)
+
+find_nodes(vtree, condition, follow_only = FALSE)
 }
 \arguments{
 \item{vtree}{A vtree graph object.}
 
 \item{condition}{A logical expression that defines the pruning
-condition. If no condition is provided, no pruning is done,
-except for the removal of nodes with NA values with
-\code{na.rm}.}
+condition.}
 
 \item{follow_only}{if TRUE, retain the nodes selected by condition, but
 prune all following nodes.}
@@ -51,17 +47,12 @@ nodes that would be pruned.}
 nodes which are sisters with a kept node (share the same parent)
 are also kept.}
 
-\item{keep}{If TRUE, keeps the nodes that satisfy the condition and prunes
-everything else.}
-
-\item{na.rm}{If TRUE, removes nodes with NA values in the evaluated
-condition. If it is a character vector, then it is treated
-as a vector of column names for which all NA values should
-be removed.}
-
 \item{keep_follow}{If keep is specified, and keep_follow is true, then
 nodes following the selected node (i.e., its children) are also
 kept even if they do not fulfill the condition.}
+
+\item{keep}{If TRUE, keeps the nodes that satisfy the condition and prunes
+everything else.}
 }
 \value{
 \code{retain()} and \code{prune()} return a pruned vtree object.
