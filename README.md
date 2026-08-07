@@ -187,8 +187,23 @@ More docs available [here](https://january3.github.io/vtree2/).
 - [Vtree2 for vtree
   users](https://january3.github.io/vtree2/articles/vtree2_for_vtree_users.html)
 
-## TODO
+## TODO/PROBLEMS
 
+- the nodes of the diagrammer are adjusted to the size of the labels. We
+  could do that, actually. I think it doesn’t look so good, but OK.
+- better support in add_palette for 1/ variable driven palettes
+  (i.e. one color for one tree level / variable of the tree,
+  deterministic such that colors don’t change if we prune a tree) 2/
+  fully customized palettes
+- vtree constructors take only character or factor variables
+- ~~original vtree tries to keep sister NA nodes of the retained nodes.
+  This behavior is reproduced by the keep_na_sisters parameter, which
+  adds NA nodes to the retained nodes. However, if we target an NA node
+  with is.na(), then the behavior results in the NA node being kept.~~
+- vtree constructors should test for the presence of structural columns
+  in the data. e.g. if the data has already a column called “n” or
+  “freq”, we will have a clash when pruning and virtual columns are
+  created.
 - print.vtree should show the status of added layouts / colors / etc etc
 - pruning:
   - streamline and clean up pruning / selecting nodes
@@ -219,6 +234,10 @@ More docs available [here](https://january3.github.io/vtree2/).
 - questions to N:
   - which NA nodes are kept when vp=TRUE, only the sisters or all on the
     same level?
+  - what does
+    `keep=list(eligible="Eligible",randomized="Randomized",followup="Followed up")`
+    *precisely* mean? How does it differ from
+    keep=list(followup=“Followed up”)?
 
 ## BUGS
 
