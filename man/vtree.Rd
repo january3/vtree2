@@ -5,23 +5,19 @@
 \alias{vtree_from_freqtable}
 \title{Create a vtree object from a data frame}
 \usage{
-vtree(cases, ..., .vp = TRUE, .cols = NULL)
+vtree(cases, ..., .vp = TRUE)
 
-vtree_from_freqtable(x, ..., .freq_col = "Freq", .vp = TRUE, .cols = NULL)
+vtree_from_freqtable(x, ..., .freq_col = "Freq", .vp = TRUE)
 }
 \arguments{
 \item{cases}{A data frame, one row per observation, one column per variable}
 
 \item{...}{Columns to use for the tree. If no columns are specified, all
 columns (except the frequency column for the frequency
-tables) will be used}
+tables) will be used. Use tidyselect syntax to access columns.}
 
 \item{.vp}{valid percentage; when calculating frequencies / percentages,
 omit NA values from the denominator}
-
-\item{.cols}{Provide column names as a character vector instead of using
-the ... argument. This is useful when the column names are
-stored in a variable.}
 
 \item{x}{A frequency table (matrix, table or data frame)}
 
@@ -124,6 +120,8 @@ plot(vt)
 plot(vt, layout = "proportional")
 
 data(titanicNA)
+vt <- vtree(titanicNA, -Age)
+# same as:
 vt <- vtree(titanicNA, Class, Sex, Survived)
 plot(vt)
 }

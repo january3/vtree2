@@ -196,18 +196,19 @@ vtree <- function(cases, ..., .vp = TRUE) {
 
   cnms <- names(cols)
 
+  if(length(cnms) < 1L) {
+    cnms <- colnames(cases)
+  }
+
   if(!is.null(attr(cases, "levels"))) {
     levels <- attr(cases, "levels")
-    if(!all(cnms %in% names(levels))) {
-      cli_abort("not all column names in provided levels")
-    }
     levels <- levels[cnms]
   } else {
     levels <- .get_levels(cases, cnms)
   }
 
-  if(length(cnms) < 1L) {
-    cnms <- colnames(cases)
+  if(!all(cnms %in% names(levels))) {
+    cli_abort(c(x="not all column names in levels"))
   }
 
   cases <- select(cases, all_of(cnms))
@@ -252,9 +253,6 @@ vtree <- function(cases, ..., .vp = TRUE) {
 #' This function is close to the `crosstabToCases()` function from
 #' the original vtree package.
 #' @param x A frequency table, as a data frame or a table object.
-#' @param ... The columns to use for the cases. If not specified, all columns
-#'       except the frequency column are used. Use tidyselect syntax to
-#'       access columns.
 #' @param .freq_col The name of the column containing the frequency counts.
 #' @examples
 #' cases <- cases_from_freqtable(Titanic)
