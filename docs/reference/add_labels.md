@@ -75,8 +75,6 @@ you like to construct a label from the following variables:
 
 - `node_val`, value of the variable associated with a node
 
-- `node_cv`, same as `paste0(node_col, ':', node_val)`
-
 - `col_alias`, the alias for the column/variable associated with a node
   (default same as node_col, but can be modified by providing a
   `var_alias` column in the vtree)
@@ -86,9 +84,6 @@ you like to construct a label from the following variables:
   `val_alias` column in the vtree)
 
 - plus whatever new columns you have added to the vtree with mutate().
-
-(the difference between node_col and node_name is that you can set
-node_name to whatever you like, while node_col must remain unchanged)
 
 ## See also
 

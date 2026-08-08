@@ -116,7 +116,6 @@ expressions you like to construct a label from the following variables:</p><ul><
 <li><p><code>n</code>, number of samples of a node</p></li>
 <li><p><code>node_col</code>, name of the variable associated with a node</p></li>
 <li><p><code>node_val</code>, value of the variable associated with a node</p></li>
-<li><p><code>node_cv</code>, same as <code>paste0(node_col, ':', node_val)</code></p></li>
 <li><p><code>col_alias</code>, the alias for the column/variable associated with a node
 (default same as node_col, but can be modified
 by providing a <code>var_alias</code> column in the vtree)</p></li>
@@ -124,9 +123,7 @@ by providing a <code>var_alias</code> column in the vtree)</p></li>
 (default same as node_val, but can be modified
 by providing a <code>val_alias</code> column in the vtree)</p></li>
 <li><p>plus whatever new columns you have added to the vtree with mutate().</p></li>
-</ul><p>(the difference between node_col and node_name is that you can set
-node_name to whatever you like, while node_col must remain unchanged)</p>
-    </div>
+</ul></div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
     <div class="dont-index"><p><code><a href="add_aliases.html">add_aliases()</a></code>, <code><a href="plot.vtree.html">plot_vtree()</a></code></p></div>

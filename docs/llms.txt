@@ -227,10 +227,10 @@ More docs available [here](https://january3.github.io/vtree2/).
   created.
 - print.vtree should show the status of added layouts / colors / etc etc
 - pruning:
-  - streamline and clean up pruning / selecting nodes
+  - ~~streamline and clean up pruning / selecting nodes~~
   - remove mark_only parameter, enough to have “mark()”
   - unexport find_parents / find_children
-  - remove the na.rm tag
+  - ~~remove the na.rm tag~~
 - add_layout should not modify shape if present
 - the arrows should be attached dynamically in grob.R rather than in
   layout?
@@ -267,8 +267,8 @@ More docs available [here](https://january3.github.io/vtree2/).
   error~~
 - ~~prune(!Severity %in% c(“Mild”, “Moderate”), follow_only = TRUE) does
   not work~~
-- na.rm handling in prune() is not consistent, at least not with vtree’s
-  behavior
+- ~~na.rm handling in prune() is not consistent, at least not with
+  vtree’s behavior~~
 - ~~layout=“proportional” stopped working~~
 - with precomputed layout, plot doesn’t know that the direction is
   vertical and the legends suck -\> should the legends be computed by

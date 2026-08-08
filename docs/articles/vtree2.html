@@ -155,11 +155,11 @@ vtree - in the above example, we do not care about Sex or Age. Also note
 that the variables follow the tidyverse logic - they are <em>data
 vars</em>, and do not need to be quoted. If you need to use a variable
 name that is stored in another variable, or if the variable names are
-not valid R identifiers, you can use the <code>.cols</code>
-argument:</p>
+not valid R identifiers, you can use <code><a href="https://tidyselect.r-lib.org/reference/all_of.html" class="external-link">tidyselect::all_of()</a></code>
+to select the variables.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">vars</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Class"</span>, <span class="st">"Survived"</span><span class="op">)</span></span>
-<span><span class="va">vt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/vtree.html">vtree</a></span><span class="op">(</span><span class="va">titanicNA</span>, .cols <span class="op">=</span> <span class="va">vars</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">vt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/vtree.html">vtree</a></span><span class="op">(</span><span class="va">titanicNA</span>, <span class="fu"><a href="https://tidyselect.r-lib.org/reference/all_of.html" class="external-link">all_of</a></span><span class="op">(</span><span class="va">vars</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p>That is one way to construct vtrees. The other is to use frequency
 tables.</p>
 </div>

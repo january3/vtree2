@@ -9,9 +9,9 @@ of samples that correspond to a combination of variable levels, see
 ## Usage
 
 ``` r
-vtree(cases, ..., .vp = TRUE, .cols = NULL)
+vtree(cases, ..., .vp = TRUE)
 
-vtree_from_freqtable(x, ..., .freq_col = "Freq", .vp = TRUE, .cols = NULL)
+vtree_from_freqtable(x, ..., .freq_col = "Freq", .vp = TRUE)
 ```
 
 ## Arguments
@@ -23,18 +23,13 @@ vtree_from_freqtable(x, ..., .freq_col = "Freq", .vp = TRUE, .cols = NULL)
 - ...:
 
   Columns to use for the tree. If no columns are specified, all columns
-  (except the frequency column for the frequency tables) will be used
+  (except the frequency column for the frequency tables) will be used.
+  Use tidyselect syntax to access columns.
 
 - .vp:
 
   valid percentage; when calculating frequencies / percentages, omit NA
   values from the denominator
-
-- .cols:
-
-  Provide column names as a character vector instead of using the ...
-  argument. This is useful when the column names are stored in a
-  variable.
 
 - x:
 
@@ -101,11 +96,7 @@ node from the `Titanic` example.
 - `node_col`: the column of the original cases data frame to which the
   node corresponds to (`Sex`)
 
-- `node_name`: node name used for labelling (`Sex`).
-
 - `node_val`: the value of the node variable at this node (`Female`).
-
-- `node_cv`: combination of node column and node value (`Sex:Female`).
 
 - `parent`: path of the parent node (`Class:1st`).
 
@@ -161,6 +152,8 @@ plot(vt, layout = "proportional")
 
 
 data(titanicNA)
+vt <- vtree(titanicNA, -Age)
+# same as:
 vt <- vtree(titanicNA, Class, Sex, Survived)
 plot(vt)
 ```

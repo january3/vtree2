@@ -95,12 +95,12 @@ Note that you select the variables that you want to consider in your vtree
 variables follow the tidyverse logic - they are *data vars*, and do not
 need to be quoted. If you need to use a variable name that is stored in
 another variable, or if the variable names are not valid R identifiers, you
-can use the `.cols` argument:
+can use `tidyselect::all_of()` to select the variables.
 
 
 ```{r vtree3}
 vars <- c("Class", "Survived")
-vt <- vtree(titanicNA, .cols = vars)
+vt <- vtree(titanicNA, all_of(vars))
 ```
 
 That is one way to construct vtrees. The other is to use frequency tables.

@@ -213,10 +213,10 @@
 <li>print.vtree should show the status of added layouts / colors / etc etc</li>
 <li>pruning:
 <ul>
-<li>streamline and clean up pruning / selecting nodes</li>
+<li><del>streamline and clean up pruning / selecting nodes</del></li>
 <li>remove mark_only parameter, enough to have “mark()”</li>
 <li>unexport find_parents / find_children</li>
-<li>remove the na.rm tag</li>
+<li><del>remove the na.rm tag</del></li>
 </ul>
 </li>
 <li>add_layout should not modify shape if present</li>
@@ -251,7 +251,7 @@
 <li>legend titles sometimes overlap with the legend</li>
 <li><del>if some variables disappear from the plot, the legend throws an error</del></li>
 <li><del>prune(!Severity %in% c(“Mild”, “Moderate”), follow_only = TRUE) does not work</del></li>
-<li>na.rm handling in prune() is not consistent, at least not with vtree’s behavior</li>
+<li><del>na.rm handling in prune() is not consistent, at least not with vtree’s behavior</del></li>
 <li><del>layout=“proportional” stopped working</del></li>
 <li>with precomputed layout, plot doesn’t know that the direction is vertical and the legends suck -&gt; should the legends be computed by the layout function? naaaah. layout should store the attributes via an exported function. Should we make an S3 class? vtree_layout?</li>
 </ul>
