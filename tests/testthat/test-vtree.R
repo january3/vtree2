@@ -202,7 +202,7 @@ test_that("errors are raised", {
   expect_error(vtree(xx), "No columns in the data frame cases")
 
   attr(cases, "levels") <- list(Class = "1st")
-  expect_error(vtree(cases, Sex), "not all column names in provided levels")
+  expect_error(vtree(cases, Sex), "not all column names in levels")
 
   expect_error(mutate(vt, tot_n = 99),
                "tried to modify following immutable column")
