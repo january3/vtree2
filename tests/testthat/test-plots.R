@@ -108,6 +108,9 @@ test_that("plotting works (smoke tests)", {
                                             legend_labels=11)))
   expect_no_error(plot(vt, fontsizes = list(nodes="adaptive", var_labels=10,
                                             legend_labels="adaptive")))
+  vt2 <- vtree(titanicNA)
+  expect_no_error(plot(vt2))
+  expect_no_error(plot(vt2, legend=TRUE))
 })
 
 test_that("plotting with richtext=TRUE works (smoke tests)", {
