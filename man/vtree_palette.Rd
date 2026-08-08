@@ -2,18 +2,26 @@
 % Please edit documentation in R/colors.R
 \name{vtree_palette}
 \alias{vtree_palette}
+\alias{var_palette}
 \alias{add_palette}
 \title{Color palettes for a variable levels}
 \usage{
 vtree_palette(
   vtree,
-  palettes = c("Reds", "Blues", "Greens", "Oranges", "Purples")
+  palettes = c("Reds", "Blues", "Greens", "Oranges", "Purples"),
+  var_palette = NULL,
+  default_color = "white"
 )
+
+var_palette(var_levels, pal)
 
 add_palette(
   vtree,
   palettes = c("Reds", "Blues", "Greens", "Oranges", "Purples"),
-  na_fill = "white"
+  na_fill = "white",
+  var_palette = NULL,
+  what = "fill",
+  default_color = "white"
 )
 }
 \arguments{
@@ -22,7 +30,24 @@ add_palette(
 \item{palettes}{The names of RColorBrewer palettes corresponding to the
 subsequent columns in the vtree}
 
+\item{var_palette}{a named list of named vectors. The var_palette names
+correspond to the variables; the names of the vectors are
+the levels of the given variable; the values are colors.}
+
+\item{default_color}{default color to use if variable levels from var_palette are
+missing}
+
+\item{var_levels}{a character vector of values to which colors are
+assigned from a palette}
+
+\item{pal}{name of a palette (e.g. "Greens")}
+
 \item{na_fill}{fill color used for nodes associated with NA values}
+
+\item{what}{By default, add_palette() adds a fill color for the nodes
+and automatically chooses a contrast color for the text. If
+'what' is 'color', it adds a text color for the node and
+automatically chooses a contrast color for the fill.}
 }
 \value{
 \code{vtree_palette()} returns a character vector of colors for the
@@ -31,17 +56,24 @@ the columns \code{fill} and \code{color}, and with additional attributes \code{p
 and \code{palette_vars}.
 }
 \description{
-Color palettes for a variable levels
+Generate and add color palettes to vtree objects.
 }
 \details{
-\code{vtree_palette()} returns a color palette for a variable level in a vtree.
-The colors are chosen from the RColorBrewer package.
-
 \code{add_palette()} assigns fill colors to the nodes of a vtree based on the
 variable levels. The fill colors are stored in a new column in the nodes
 data frame called "fill". If a \code{color} column is missing, it will be
 added with automatic contrast colors as well, but it will not be
 overwritten if present.
+
+If the parameter \code{what} is \code{color}, then instead of generating a fill
+color from the palettes, the function generates a text color and chooses
+a contrast fill automatically.
+
+\code{vtree_palette()} returns a color palette for a variable level in a vtree.
+The colors are chosen from the RColorBrewer package.
+
+\code{var_palette()} generates a series of colors from a palette and assigns
+them to the provided character vector.
 }
 \examples{
 vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived)
@@ -63,4 +95,17 @@ vt |> add_palette(palettes = "Blues") |>
 # color the NA nodes with red
 vt |> add_palette(palettes = "Blues", na_fill = "red") |>
    plot()
+
+# males blue, females red; rest automatic
+vt |>
+  add_palette(var_palette =
+      list(Sex = c(Male = "blue", Female = "Red"))) |>
+      plot()
+
+# same, but now the text color is generated from the palette
+vt |>
+  add_palette(what = "color",
+      var_palette = list(Sex = c(Male = "blue", Female = "Red"))) |>
+      plot()
+
 }

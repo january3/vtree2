@@ -25,19 +25,39 @@ contrast_color <- function(color) {
 
 #' Color palettes for a variable levels
 #'
-#' Color palettes for a variable levels
-#'
-#' `vtree_palette()` returns a color palette for a variable level in a vtree.
-#' The colors are chosen from the RColorBrewer package.
+#' Generate and add color palettes to vtree objects.
 #'
 #' `add_palette()` assigns fill colors to the nodes of a vtree based on the
 #' variable levels. The fill colors are stored in a new column in the nodes
 #' data frame called "fill". If a `color` column is missing, it will be
 #' added with automatic contrast colors as well, but it will not be
 #' overwritten if present.
+#'
+#' If the parameter `what` is `color`, then instead of generating a fill
+#' color from the palettes, the function generates a text color and chooses
+#' a contrast fill automatically.
+#'
+#' `vtree_palette()` returns a color palette for a variable level in a vtree.
+#' The colors are chosen from the RColorBrewer package.
+#'
+#' `var_palette()` generates a series of colors from a palette and assigns
+#' them to the provided character vector.
+#'
 #' @param vtree A vtree object
 #' @param palettes The names of RColorBrewer palettes corresponding to the
 #'                 subsequent columns in the vtree
+#' @param what By default, add_palette() adds a fill color for the nodes
+#'             and automatically chooses a contrast color for the text. If
+#'             'what' is 'color', it adds a text color for the node and
+#'             automatically chooses a contrast color for the fill.
+#' @param var_levels a character vector of values to which colors are
+#'        assigned from a palette
+#' @param var_palette a named list of named vectors. The var_palette names
+#'        correspond to the variables; the names of the vectors are
+#'        the levels of the given variable; the values are colors.
+#' @param default_color default color to use if variable levels from var_palette are
+#'        missing
+#' @param pal name of a palette (e.g. "Greens")
 #' @param na_fill fill color used for nodes associated with NA values
 #' @examples
 #' vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived)
@@ -59,6 +79,19 @@ contrast_color <- function(color) {
 #' # color the NA nodes with red
 #' vt |> add_palette(palettes = "Blues", na_fill = "red") |>
 #'    plot()
+#' 
+#' # males blue, females red; rest automatic
+#' vt |>
+#'   add_palette(var_palette =
+#'       list(Sex = c(Male = "blue", Female = "Red"))) |>
+#'       plot()
+#'
+#' # same, but now the text color is generated from the palette
+#' vt |>
+#'   add_palette(what = "color",
+#'       var_palette = list(Sex = c(Male = "blue", Female = "Red"))) |>
+#'       plot()
+#'
 #' @return `vtree_palette()` returns a character vector of colors for the
 #' levels of the variable. `add_palette()` returns the vtree object with
 #' the columns `fill` and `color`, and with additional attributes `palette`
@@ -69,7 +102,9 @@ contrast_color <- function(color) {
 #' @export
 vtree_palette <- function(vtree,
                           palettes = c("Reds", "Blues", "Greens",
-                                       "Oranges", "Purples")) {
+                                       "Oranges", "Purples"),
+                          var_palette = NULL,
+                          default_color = "white") {
   #family <- families[(level - 1L) %% length(families) + 1L]
 
   if(!inherits(vtree, "vtree")) {
@@ -83,13 +118,43 @@ vtree_palette <- function(vtree,
   names(palettes) <- names(levs)
 
   ret <- imap(palettes, \(pal, var) {
-    n <- length(levs[[var]])
-    pal <- .vtree_pal(n, pal_name = pal)
-    names(pal) <- levs[[var]]
-    pal
+    var_palette(levs[[var]], pal)
   })
 
+  if(is.null(var_palette)) {
+    return(ret)
+  }
+
+  nm <- names(var_palette)
+  if(any(!nm %in% names(levs))) {
+    nm <- nm[ !nm %in% names(levs) ]
+    cli_abort(c(
+      x = "Incorrect variables in var_palette:",
+      i = "{nm}"))
+  }
+
+  for(n in nm) {
+    ret[[n]] <- map_chr(set_names(names(ret[[n]])), \(.n) {
+       if(is.na(var_palette[[n]][.n])) {
+         default_color
+       } else {
+         var_palette[[n]][.n]
+       }
+    })
+  }
+
   ret
+}
+
+#' @rdname vtree_palette
+#' @export
+var_palette <- function(var_levels, pal) {
+
+ n <- length(var_levels)
+ pal <- .vtree_pal(n, pal_name = pal)
+ names(pal) <- var_levels
+ pal
+
 }
 
 .node_fill <- function(node_col, node_val, na_fill, pal) {
@@ -108,28 +173,40 @@ vtree_palette <- function(vtree,
 add_palette <- function(vtree,
                              palettes = c("Reds", "Blues", "Greens",
                                        "Oranges", "Purples"),
-                             na_fill = "white") {
+                             na_fill = "white",
+                             var_palette = NULL,
+                             what = "fill",
+                             default_color = "white") {
+
+  what <- match.arg(what, c("fill", "color"))
+  print(what)
+
+  if(what == "fill") {
+    other <- "color"
+  } else {
+    other <- "fill"
+  }
 
   if(!inherits(vtree, "vtree")) {
     cli_abort(c(x = "add_palette() requires a vtree object"))
   }
 
-  pal <- vtree_palette(vtree, palettes = palettes)
+  pal <- vtree_palette(vtree, palettes = palettes,
+        var_palette = var_palette,
+        default_color = default_color)
 
   vtree <- vtree |>
-    mutate(fill = ifelse(is.na(.data[["node_val"]]),
+    mutate(!!what := ifelse(is.na(.data[["node_val"]]),
                          na_fill,
                          .node_fill(.data[["node_col"]],
                                     .data[["node_val"]], na_fill, pal)
-           )) |>
-    mutate(fill_class = map_chr(.data[["node_col"]], \(var)
-      pal[[var]][length(pal[[var]])] %||% na_fill))
+           ))
 
   nodes <- as_tibble(vtree)
 
-  if(! "color" %in% colnames(nodes)) {
+  if(! other %in% colnames(nodes)) {
     vtree <- vtree |> activate("nodes") |>
-      mutate(color = contrast_color(.data[["fill"]]))
+      mutate(!!other := contrast_color(.data[[what]]))
   }
 
   pal_vars <- map_chr(set_names(names(pal)), \(var)
