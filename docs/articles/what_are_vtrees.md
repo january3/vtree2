@@ -58,6 +58,8 @@ vt |>
                    "Class:1st/Sex:Female/Survived:Yes")) |>
   mutate(fill = ifelse(mark, "red", "white")) |>
   plot()
+#> ℹ palette attribute is NULL
+#> legend will be black and white
 ```
 
 ![](what_are_vtrees_files/figure-html/repr3-1.png)

@@ -1,19 +1,26 @@
 # Color palettes for a variable levels
 
-Color palettes for a variable levels
+Generate and add color palettes to vtree objects.
 
 ## Usage
 
 ``` r
 vtree_palette(
   vtree,
-  palettes = c("Reds", "Blues", "Greens", "Oranges", "Purples")
+  palettes = c("Reds", "Blues", "Greens", "Oranges", "Purples"),
+  var_palette = NULL,
+  default_color = "white"
 )
+
+var_palette(var_levels, pal)
 
 add_palette(
   vtree,
   palettes = c("Reds", "Blues", "Greens", "Oranges", "Purples"),
-  na_fill = "white"
+  na_fill = "white",
+  var_palette = NULL,
+  what = "fill",
+  default_color = "white"
 )
 ```
 
@@ -28,9 +35,35 @@ add_palette(
   The names of RColorBrewer palettes corresponding to the subsequent
   columns in the vtree
 
+- var_palette:
+
+  a named list of named vectors. The var_palette names correspond to the
+  variables; the names of the vectors are the levels of the given
+  variable; the values are colors.
+
+- default_color:
+
+  default color to use if variable levels from var_palette are missing
+
+- var_levels:
+
+  a character vector of values to which colors are assigned from a
+  palette
+
+- pal:
+
+  name of a palette (e.g. "Greens")
+
 - na_fill:
 
   fill color used for nodes associated with NA values
+
+- what:
+
+  By default, add_palette() adds a fill color for the nodes and
+  automatically chooses a contrast color for the text. If 'what' is
+  'color', it adds a text color for the node and automatically chooses a
+  contrast color for the fill.
 
 ## Value
 
@@ -41,14 +74,21 @@ the variable. `add_palette()` returns the vtree object with the columns
 
 ## Details
 
-`vtree_palette()` returns a color palette for a variable level in a
-vtree. The colors are chosen from the RColorBrewer package.
-
 `add_palette()` assigns fill colors to the nodes of a vtree based on the
 variable levels. The fill colors are stored in a new column in the nodes
 data frame called "fill". If a `color` column is missing, it will be
 added with automatic contrast colors as well, but it will not be
 overwritten if present.
+
+If the parameter `what` is `color`, then instead of generating a fill
+color from the palettes, the function generates a text color and chooses
+a contrast fill automatically.
+
+`vtree_palette()` returns a color palette for a variable level in a
+vtree. The colors are chosen from the RColorBrewer package.
+
+`var_palette()` generates a series of colors from a palette and assigns
+them to the provided character vector.
 
 ## Examples
 
@@ -86,4 +126,19 @@ vt |> add_palette(palettes = "Blues") |>
 # color the NA nodes with red
 vt |> add_palette(palettes = "Blues", na_fill = "red") |>
    plot()
+
+
+# males blue, females red; rest automatic
+vt |>
+  add_palette(var_palette =
+      list(Sex = c(Male = "blue", Female = "Red"))) |>
+      plot()
+
+
+# same, but now the text color is generated from the palette
+vt |>
+  add_palette(what = "color",
+      var_palette = list(Sex = c(Male = "blue", Female = "Red"))) |>
+      plot()
+
 ```

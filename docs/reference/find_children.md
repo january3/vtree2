@@ -47,5 +47,7 @@ vt |> mutate(fill =
             ifelse(follow, "red",
                    ifelse(precede, "blue", fill))) |>
       plot()
+#> ℹ palette attribute is NULL
+#> legend will be black and white
 
 ```

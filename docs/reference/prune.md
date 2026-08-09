@@ -142,16 +142,22 @@ mask <- find_nodes(vt, node_col == "Survived" &
 
 # mark these nodes with red color on the plot
 vt |> mutate(fill = ifelse(mask, "red", "white")) |> plot()
+#> ℹ palette attribute is NULL
+#> legend will be black and white
 
 
 # mark the nodes directly
 mark(vt, node_col == "Survived" & node_val == "No" & freq > .2) |>
   mutate(fill = ifelse(mark, "red", "white")) |> plot()
+#> ℹ palette attribute is NULL
+#> legend will be black and white
 
 
 # mark all nodes that follow the 3rd Class node
 mark(vt, path == "Class:3rd", follow_only=TRUE) |>
   mutate(fill = ifelse(mark, "red", "white")) |> plot()
+#> ℹ palette attribute is NULL
+#> legend will be black and white
 
 
 # how keep_na_sisters influences the plot

@@ -72,6 +72,7 @@
 - [`add_layout()`](https://january3.github.io/vtree2/reference/add_layout.md)
   : Prepare a layout for plotting a vtree
 - [`vtree_palette()`](https://january3.github.io/vtree2/reference/vtree_palette.md)
+  [`var_palette()`](https://january3.github.io/vtree2/reference/vtree_palette.md)
   [`add_palette()`](https://january3.github.io/vtree2/reference/vtree_palette.md)
   : Color palettes for a variable levels
 - [`contrast_color()`](https://january3.github.io/vtree2/reference/contrast_color.md)

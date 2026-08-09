@@ -123,7 +123,9 @@ calculated above:</p>
 <span>  <span class="fu"><a href="../reference/prune.html">mark</a></span><span class="op">(</span><span class="va">path</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"root"</span>, <span class="st">"Class:1st"</span>, <span class="st">"Class:1st/Sex:Female"</span>,</span>
 <span>                   <span class="st">"Class:1st/Sex:Female/Survived:Yes"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">mark</span>, <span class="st">"red"</span>, <span class="st">"white"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> palette attribute is NULL</span></span>
+<span><span class="co">#&gt; legend will be black and white</span></span></code></pre></div>
 <p><img src="what_are_vtrees_files/figure-html/repr3-1.png" class="r-plt" alt="" width="576"></p>
 <p>In a way, this is reminding of a consort diagram. We can style the
 above plot so it looks a bit more like a consort diagram:</p>

@@ -460,11 +460,15 @@ p1 <- vt |> add_labels() |>
   mutate(label = ifelse(path == "Class:1st", "First class", label)) |>
   mutate(fill = ifelse(path == "Class:1st", "red", "white")) |>
   plot()
+#> ℹ palette attribute is NULL
+#> legend will be black and white
 
 # mark the nodes to prune in red
 p2 <- vt |> prune(path == "Class:2nd/Sex:NA", mark_only=TRUE) |>
   mutate(fill = ifelse(!mark, "white", "red")) |>
   plot()
+#> ℹ palette attribute is NULL
+#> legend will be black and white
 plot_grid(p1, p2)
 ```
 

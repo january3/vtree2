@@ -218,11 +218,15 @@ pal <- colorRampPalette(c("white", "steelblue"))(101)
 vt |>
   mutate(fill = pal[round(freq * 100) + 1]) |>
   plot()
+#> ℹ palette attribute is NULL
+#> legend will be black and white
 
 
 vt |>
   mutate(abs_freq = n / max(n)) |>
   mutate(fill = pal[round(abs_freq * 100) + 1]) |>
  plot()
+#> ℹ palette attribute is NULL
+#> legend will be black and white
 
 ```

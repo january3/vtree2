@@ -645,11 +645,15 @@ pal <- colorRampPalette(c("white", "steelblue"))(101)
 p1 <- vt |>
   mutate(fill = pal[round(freq * 100) + 1]) |>
   plot()
+#> ℹ palette attribute is NULL
+#> legend will be black and white
 
 p2 <- vt |>
   mutate(abs_freq = n / max(n)) |>
   mutate(fill = pal[round(abs_freq * 100) + 1]) |>
  plot()
+#> ℹ palette attribute is NULL
+#> legend will be black and white
 
 cowplot::plot_grid(p1, p2)
 ```
