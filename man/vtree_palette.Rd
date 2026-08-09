@@ -52,8 +52,7 @@ automatically chooses a contrast color for the fill.}
 \value{
 \code{vtree_palette()} returns a character vector of colors for the
 levels of the variable. \code{add_palette()} returns the vtree object with
-the columns \code{fill} and \code{color}, and with additional attributes \code{palette}
-and \code{palette_vars}.
+the columns \code{fill} \code{color}, and with additional attribute \code{palette}.
 }
 \description{
 Generate and add color palettes to vtree objects.
@@ -65,9 +64,14 @@ data frame called "fill". If a \code{color} column is missing, it will be
 added with automatic contrast colors as well, but it will not be
 overwritten if present.
 
+It also sets the mapping between colors and variable levels, stored in
+the attribute "palette", which is used when showing the legend. If you
+modify the \code{fill} and \code{color} columns manually (without using
+\code{add_palette()}, you will not change the color code.
+
 If the parameter \code{what} is \code{color}, then instead of generating a fill
 color from the palettes, the function generates a text color and chooses
-a contrast fill automatically.
+a contrast fill color automatically.
 
 \code{vtree_palette()} returns a color palette for a variable level in a vtree.
 The colors are chosen from the RColorBrewer package.
@@ -108,4 +112,8 @@ vt |>
       var_palette = list(Sex = c(Male = "blue", Female = "Red"))) |>
       plot()
 
+}
+\seealso{
+See \code{\link[=contrast_color]{contrast_color()}} for generating white/black contrast
+color automatically.
 }

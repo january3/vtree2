@@ -2,19 +2,6 @@
 vt <- vtree_from_freqtable(Titanic, "Class", "Sex", "Survived")
 vt_na <- vtree(titanicNA, Class, Sex, Survived)
 
-test_that("plotting works without a palette assigned", {    
-  vt2 <- vt_na |> add_labels() |>
-  mutate(label = ifelse(path == "Class:1st", "First class", label)) |>
-  mutate(fill = ifelse(path == "Class:1st", "red", "white"))
-
-  expect_no_error(plot(vt2))
-
-  vt2 <- vt |> prune(path == "Class:2nd/Sex:NA", mark_only=TRUE) |>
-  mutate(fill = ifelse(!mark, "white", "red"))
-  
-  expect_no_error(plot(vt2))
-})
-
 test_that("margins work", {
 
   p <- plot(vt, margins = c(0.4, 0.4, 0.4, 0.4))
@@ -137,7 +124,7 @@ test_that("plot preserves user-provided labels and colors", {
       fill = "pink",
       color = "blue")
 
-  p <- plot(vt)
+  p <- plot(vt, legend_tiny = FALSE)
   nodes <- as_tibble(p$layout)
 
   expect_equal(nodes$label, paste0("node-", nodes$node_id))

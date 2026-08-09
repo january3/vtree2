@@ -33,9 +33,14 @@ contrast_color <- function(color) {
 #' added with automatic contrast colors as well, but it will not be
 #' overwritten if present.
 #'
+#' It also sets the mapping between colors and variable levels, stored in
+#' the attribute "palette", which is used when showing the legend. If you
+#' modify the `fill` and `color` columns manually (without using
+#' `add_palette()`, you will not change the color code.
+#'
 #' If the parameter `what` is `color`, then instead of generating a fill
 #' color from the palettes, the function generates a text color and chooses
-#' a contrast fill automatically.
+#' a contrast fill color automatically.
 #'
 #' `vtree_palette()` returns a color palette for a variable level in a vtree.
 #' The colors are chosen from the RColorBrewer package.
@@ -94,11 +99,12 @@ contrast_color <- function(color) {
 #'
 #' @return `vtree_palette()` returns a character vector of colors for the
 #' levels of the variable. `add_palette()` returns the vtree object with
-#' the columns `fill` and `color`, and with additional attributes `palette`
-#' and `palette_vars`.
+#' the columns `fill` `color`, and with additional attribute `palette`.
 #' @importFrom RColorBrewer brewer.pal
 #' @importFrom grDevices colorRampPalette
 #' @importFrom purrr map imap map2_chr map_chr map_dfr set_names
+#' @seealso See [contrast_color()] for generating white/black contrast
+#' color automatically.
 #' @export
 vtree_palette <- function(vtree,
                           palettes = c("Reds", "Blues", "Greens",
@@ -167,6 +173,14 @@ var_palette <- function(var_levels, pal) {
   ifelse(is.na(node_val), na_fill, candidates)
 }
 
+get_contrast_pal <- function(pal) {
+
+  ret <- map(pal, \(varpal) 
+             map_chr(varpal, \(col) contrast_color(col))
+             )
+  ret
+}
+
 #' @rdname vtree_palette
 #' @importFrom purrr map2_chr map_chr
 #' @export
@@ -179,7 +193,6 @@ add_palette <- function(vtree,
                              default_color = "white") {
 
   what <- match.arg(what, c("fill", "color"))
-  print(what)
 
   if(what == "fill") {
     other <- "color"
@@ -212,8 +225,22 @@ add_palette <- function(vtree,
   pal_vars <- map_chr(set_names(names(pal)), \(var)
                   pal[[var]][ length(pal[[var]]) ])
 
-  attr(vtree, "palette") <- pal
-  attr(vtree, "palette_vars") <- pal_vars
+  # replace the "what" palette in the attributes
+  pal_at <- attr(vtree, "palette")
+
+  if(is.null(pal_at)) {
+    pal_at <- list()
+  }
+
+  pal_at[[what]] <- pal
+
+  # if other is missing, get a contrast one
+  if(is.null(pal_at[[other]])) {
+    pal_at[[other]] <- get_contrast_pal(pal)
+  }
+
+  pal_at$vars <- pal_vars
+  attr(vtree, "palette") <- pal_at
   vtree
 }
 
