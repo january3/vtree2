@@ -19,3 +19,22 @@ levels(x)
 ## Value
 
 A list of character vectors, one for each variable split in the tree,
+
+## Examples
+
+``` r
+vt <- vtree(titanicNA)
+levels(vt)
+#> $Class
+#> [1] "1st"  "2nd"  "3rd"  "Crew"
+#> 
+#> $Sex
+#> [1] "Male"   "Female"
+#> 
+#> $Age
+#> [1] "Child" "Adult"
+#> 
+#> $Survived
+#> [1] "No"  "Yes"
+#> 
+```

@@ -15,3 +15,7 @@ A character vector of variable names
 \description{
 Get the variable names of a vtree object
 }
+\examples{
+vt <- vtree(titanicNA)
+names(vt)
+}

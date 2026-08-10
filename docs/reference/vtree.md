@@ -9,9 +9,16 @@ of samples that correspond to a combination of variable levels, see
 ## Usage
 
 ``` r
-vtree(cases, ..., .vp = TRUE)
+vtree(cases, ..., .vp = TRUE, .cv_sep = ":", .path_sep = "/")
 
-vtree_from_freqtable(x, ..., .freq_col = "Freq", .vp = TRUE)
+vtree_from_freqtable(
+  x,
+  ...,
+  .freq_col = "Freq",
+  .vp = TRUE,
+  .cv_sep = ":",
+  .path_sep = "/"
+)
 ```
 
 ## Arguments
@@ -30,6 +37,12 @@ vtree_from_freqtable(x, ..., .freq_col = "Freq", .vp = TRUE)
 
   valid percentage; when calculating frequencies / percentages, omit NA
   values from the denominator
+
+- .cv_sep, .path_sep:
+
+  By default, the `path` column of the node data frame contains entries
+  such as 'Class:1st/Survived:No'. If your data var columns contain `:`
+  or `/`, change these parameters.
 
 - x:
 
@@ -155,5 +168,5 @@ data(titanicNA)
 vt <- vtree(titanicNA, -Age)
 # same as:
 vt <- vtree(titanicNA, Class, Sex, Survived)
-plot(vt)
+plot(vt, dir="tb")
 ```

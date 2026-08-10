@@ -33,6 +33,11 @@ don't work and ending up with incorrect numbers on your figure. Of course,
 there are many ways to modify them if you really want to, but at least
 this mutate gives some protection.
 }
+\examples{
+vt <- vtree(titanicNA) |>
+  add_labels() |>
+  mutate(label = ifelse(is.na(node_val), "Missing", label))
+}
 \seealso{
 \code{\link[dplyr:mutate]{dplyr::mutate()}}, \code{\link[tidygraph:activate]{tidygraph::activate()}}
 }

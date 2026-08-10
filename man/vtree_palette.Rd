@@ -33,6 +33,8 @@ assigned from a palette}
 
 \item{pal}{name of a palette (e.g. "Greens")}
 
+\item{na}{color used for nodes associated with NA values}
+
 \item{var_palette}{a named list of named vectors. The var_palette names
 correspond to the variables; the names of the vectors are
 the levels of the given variable; the values are colors.}
@@ -46,8 +48,6 @@ palettes defined by the \code{palettes} argument, even if
 and automatically chooses a contrast color for the text. If
 'what' is 'text', it adds a text color for the node and
 automatically chooses a contrast color for the fill.}
-
-\item{na_fill}{text color used for nodes associated with NA values}
 }
 \value{
 \code{vtree_palette()} returns a character vector of colors for the
@@ -114,7 +114,7 @@ vt |> add_palette(palettes = "Blues") |>
   plot()
 
 # color the NA nodes with red
-vt |> add_palette(palettes = "Blues", na_fill = "red") |>
+vt |> add_palette(palettes = "Blues", na = "red") |>
    plot()
 
 # males blue, females red; rest automatic

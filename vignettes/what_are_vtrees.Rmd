@@ -75,7 +75,7 @@ plot so it looks a bit more like a consort diagram:
 ```{r repr4,fig.width=8,fig.height=5}
 vt |>
   mutate(fill = "white") |>
-  plot(dir="tb", layout="flushed_right", legend_tiny = FALSE)
+  plot(dir="tb", layout="flushed_right", legend = FALSE)
 ```
 
 # FP / NPV example
@@ -203,55 +203,6 @@ were actually infected. This is the positive predictive value (PPV) of the
 test and it shows that despite the test being very specific and sensitive,
 when a person has a positive test result, there is more than a
 `r format(100 * (1 - ppv))`% chance that the person is actually healthy.
-
-
-## Vtree workflow
-
-In `vtree2`, the workflow is split into several steps:
-
- * Prepare the data (outside of `vtree2`)
- * Build the vtree object with `vtree()` or `vtree_from_freqtable()`
- * (Optional) Prune, retain or select nodes with `prune()`, `retain()` and
-   friends.
- * (Optional) Create summaries with `summary_vt()`.
- * (Optional) Add aliases for variable names and values with `add_aliases()`.
- * (Optional) Add or modify labels with `add_labels()` and `mutate()`.
- * (Optional) Add or modify colors with `add_palette()` and `mutate()`.
- * Plot the vtree with `plot()`.
-
-Here is an example demonstrating all these steps based on the `titanicNA`
-data set. This data set is the same as the Titanic data set, but with some
-missing values randomly added for demonstration purposes.
-
-
-```{r workflow_example1,fig.width=10,fig.height=5}
-data(titanicNA)
-
-vtree(titanicNA, Class, Sex, Survived) |>
-  # only retain the third class passengers
-  retain(path == "Class:3rd") |>
-  # change how variables are displayed
-  add_aliases(val_alias = list(Class = c("1st" = "First",
-                                    "2nd" = "Second",
-                                    "3rd" = "Third"))) |>
-  # add default labels, built from aliases
-  add_labels() |>
-  # change the labels for the missing values
-  mutate(label = gsub("NA", "Missing", label)) |>
-  # add colors
-  add_palette(palettes = c("Greys", "Blues", "Purples"),
-              na_fill = "grey90") |>
-  # change the color for Females who survived
-  # mark() is a helper function that returns TRUE for the nodes that
-  # match the given condition
-  mark(path == "Class:3rd/Sex:Female/Survived:Yes") |>
-  mutate(fill = ifelse(mark, "red", fill)) |>
-  mutate(color = ifelse(mark, "white", color)) |>
-  # plotting with legend and custom margins
-  plot(legend = TRUE,
-       margins = c(0.05, 0.05, 0.25, 0.05))
-```
-
 
 
 

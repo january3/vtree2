@@ -423,7 +423,7 @@ vtree(FakeData, Group, Severity) |>
                         label)) |>
   plot(dir = "tb",
        richtext = TRUE,
-       legend_tiny = FALSE)
+       legend = FALSE)
 ```
 
 ![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-17-1.png)
@@ -832,7 +832,7 @@ vt |>
                         paste0("Assessed for\neligibility\n", label),
                         label)) |>
   mutate(fill = pal[level + 2]) |>
-  plot(dir = "tb", legend_tiny = FALSE, lwidth=.8, lheight=.7)
+  plot(dir = "tb", legend = FALSE, lwidth=.8, lheight=.7)
 ```
 
 ![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-33-1.png)
@@ -850,7 +850,7 @@ vt |>
                         paste0("Assessed for\neligibility\n", label),
                         label)) |>
   mutate(fill = pal[level + 2]) |>
-  plot(dir = "tb", legend_tiny = FALSE, lwidth=.8, lheight=.7)
+  plot(dir = "tb", legend = FALSE, lwidth=.8, lheight=.7)
 ```
 
 ![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-34-1.png)
@@ -885,7 +885,7 @@ vt |>
                         paste0("Assessed for\neligibility\n", label),
                    paste0(label, "\n", ids_summary[node_key]))) |>
   mutate(fill = pal[level + 2]) |>
-  plot(dir = "tb", legend_tiny = FALSE, lwidth=.8, lheight=.7)
+  plot(dir = "tb", legend = FALSE, lwidth=.8, lheight=.7)
 ```
 
 ![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-35-1.png)

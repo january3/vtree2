@@ -22,11 +22,70 @@ For more information what the vtrees are and how to use them, see the
 Vtrees?](https://january3.github.io/vtree2/articles/what_are_vtrees.md)
 vignette. Read on for the full user manual.
 
-## Vtree2 Manual
+## Vtree workflow
 
-### Building vtree objects
+In `vtree2`, the workflow is split into several steps:
 
-#### Case data
+- Prepare the data (outside of `vtree2`)
+- Build the vtree object with
+  [`vtree()`](https://january3.github.io/vtree2/reference/vtree.md) or
+  [`vtree_from_freqtable()`](https://january3.github.io/vtree2/reference/vtree.md)
+- (Optional) Prune, retain or select nodes with
+  [`prune()`](https://january3.github.io/vtree2/reference/prune.md),
+  [`retain()`](https://january3.github.io/vtree2/reference/prune.md) and
+  friends.
+- (Optional) Create summaries with
+  [`summary_vt()`](https://january3.github.io/vtree2/reference/summary_vt.md).
+- (Optional) Add aliases for variable names and values with
+  [`add_aliases()`](https://january3.github.io/vtree2/reference/add_aliases.md).
+- (Optional) Add or modify labels with
+  [`add_labels()`](https://january3.github.io/vtree2/reference/add_labels.md)
+  and [`mutate()`](https://dplyr.tidyverse.org/reference/mutate.html).
+- (Optional) Add or modify colors with
+  [`add_palette()`](https://january3.github.io/vtree2/reference/vtree_palette.md)
+  and [`mutate()`](https://dplyr.tidyverse.org/reference/mutate.html).
+- Plot the vtree with
+  [`plot()`](https://rdrr.io/r/graphics/plot.default.html).
+
+Here is an example demonstrating all these steps based on the
+`titanicNA` data set. This data set is the same as the Titanic data set,
+but with some missing values randomly added for demonstration purposes.
+
+``` r
+data(titanicNA)
+
+vtree(titanicNA, Class, Sex, Survived) |>
+  # only retain the third class passengers
+  retain(path == "Class:3rd") |>
+  # change how variables are displayed
+  add_aliases(val_alias = list(Class = c("1st" = "First",
+                                    "2nd" = "Second",
+                                    "3rd" = "Third"))) |>
+  # add default labels, built from aliases
+  add_labels() |>
+  # change the labels for the missing values
+  mutate(label = gsub("NA", "Missing", label)) |>
+  # add colors
+  add_palette(palettes = c("Greys", "Blues", "Purples"),
+              na = "grey90") |>
+  # change the color for Females who survived
+  # mark() adds a column `mark` to the vtree object, which is TRUE for
+  # nodes that match the given condition
+  mark(path == "Class:3rd/Sex:Female/Survived:Yes") |>
+  mutate(fill = ifelse(mark, "red", fill)) |>
+  mutate(color = ifelse(mark, "white", color)) |>
+  mutate(label = ifelse(mark, sprintf("**%s**", label), label)) |>
+  # plotting with legend and custom margins
+  plot(legend = TRUE,
+       richtext = TRUE,
+       margins = c(0.05, 0.05, 0.25, 0.05))
+```
+
+![](vtree2_files/figure-html/workflow_example1-1.png)
+
+## Building vtree objects
+
+### Case data
 
 Vtrees are primarly built from *case data*: matrices or data frames in
 which each row corresponds to a single sample. Each column is a data
@@ -100,7 +159,7 @@ vt <- vtree(titanicNA, all_of(vars))
 That is one way to construct vtrees. The other is to use frequency
 tables.
 
-#### Frequency data
+### Frequency data
 
 Often the data is already summarized in a frequency table, where each
 row corresponds to a combination of levels of the selected variables,
@@ -137,7 +196,7 @@ vt <- vtree(cases, Class, Survived)
 vt <- vtree_from_freqtable(Titanic, Class, Survived)
 ```
 
-#### Valid percentages
+### Valid percentages
 
 One of the important concepts to know about are the *valid percentages*.
 In short, a valid percentage is the number of samples with a given value
@@ -161,7 +220,7 @@ Once the vtree has been constructed, this cannot change. Any operations
 downstream (like selecting and pruning nodes and modifying their labels)
 will not change the calculated percentages.
 
-#### Vtree objects
+### Vtree objects
 
 You can inspect the vtree object with a number of methods.
 
@@ -260,7 +319,7 @@ as_tibble(vt)
 #> #   denom <int>, vp <lgl>, leaf <lgl>
 ```
 
-#### Vtree objects as graphs
+### Vtree objects as graphs
 
 The `vtree` class is a wrapper around the `tbl_graph` class from package
 `tidygraph`. It is a directed graph, where each node corresponds to a
@@ -286,9 +345,26 @@ plot(vt_tbl)
 
 ![](vtree2_files/figure-html/vtree9-1.png)
 
-### Pruning, retain and selecting
+### Tidy selection of variables
 
-#### Pruning and keeping
+The selection of columns in
+[`vtree()`](https://january3.github.io/vtree2/reference/vtree.md) and
+related functions follows the `tidyselect` rules. You don’t quote the
+data var names, you can use `:` to select a range or `-` to exclude a
+variable. For programmatic selection, use a character vector and
+[`tidyselect::all_of()`](https://tidyselect.r-lib.org/reference/all_of.html)
+to select the variables. The following are equivalent:
+
+``` r
+vtree(titanicNA, Class, Sex, Age)
+vtree(titanicNA, -Survived)
+vtree(titanicNA, Class:Age)
+vtree(titanicNA, all_of(c("Class", "Sex", "Age")))
+```
+
+## Pruning, retain and selecting
+
+### Pruning and keeping
 
 Quite often, we don’t want to show the whole tree, but only selected
 nodes. For this, you can use the functions
@@ -317,16 +393,16 @@ p1 <- plot(vt)
 # show only 1st class passengers
 p2 <- vt |>
   retain(Class == "1st") |>
-  plot(legend_tiny = FALSE, lwidth =.8)
+  plot(legend = FALSE, lwidth =.8)
 # remove nodes with low frequency or number
 p3 <- vt |>
   prune(freq < .2 | n < 20) |>
-  plot(legend_tiny = FALSE, lwidth =.8)
+  plot(legend = FALSE, lwidth =.8)
 # show only combinations of factors where more than a quarter of passengers
 # survived
 p4 <- vt |>
   retain(Survived == "Yes" & freq > .25) |>
-  plot(legend_tiny = FALSE, lwidth =.8)
+  plot(legend = FALSE, lwidth =.8)
 plot_grid(p1, p2, p3, p4, nrow = 2,
           labels=c("Original", "Retained Class:1st",
          "Pruned freq < .2 | n < 20",
@@ -352,14 +428,14 @@ p1 <- vt |>
   # this should prune the NA nodes, but doesn't
   retain(Class %in% c("1st", "2nd")) |>
   prune(is.na(Sex)) |>
-  plot(legend_tiny = FALSE, lwidth=.8)
+  plot(legend = FALSE, lwidth=.8)
 vt_novp <- vtree(titanicNA, -Age, .vp = FALSE)
 p2 <- vt_novp |>
   # this one prunes the NA nodes, b/c the tree 
   # is created with .vp = FALSE
   retain(Class %in% c("1st", "2nd")) |>
   prune(is.na(Sex)) |>
-  plot(legend_tiny = FALSE, lwidth=.8)
+  plot(legend = FALSE, lwidth=.8)
 plot_grid(p1, p2, nrow = 1,
           labels = c("VP",
                      "No VP"))
@@ -376,7 +452,7 @@ you can ask for nodes where path is equal to `"Class:3rd/Sex:Male"`:
 
 ``` r
 vt <- vtree_from_freqtable(Titanic)
-p1 <- plot(vt, legend_tiny = FALSE, dir="tb", show_root = FALSE)
+p1 <- plot(vt, legend = FALSE, dir="tb", show_root = FALSE)
 p2 <- vt |>
   retain(path == "Class:3rd/Sex:Male") |>
   plot(legend = TRUE, dir="tb", show_root = FALSE)
@@ -391,100 +467,46 @@ This is on purpose: the stat summaries in the legend correspond to the
 whole data set on which the tree was built, and not only the portion
 that is shown in the tree.
 
-#### Finding and marking
+### Finding and marking
 
-### Creating summaries
-
-### Creating layouts
-
-Layouts will be automatically created by
-[`plot()`](https://rdrr.io/r/graphics/plot.default.html) if they are
-missing. The parameters passed to the plot give some basic control over
-the layout: `dir` determines the direction of the tree, `show_root`
-determines whether the root node is shown, and `lwidth`/`lheight`
-determine the width and height of the nodes relative to the available
-space.
+Sometimes rather than change the visibility of selected nodes by pruning
+or retaining, you might want to change their color or label instead. For
+this, you can use
+[`find_nodes()`](https://january3.github.io/vtree2/reference/prune.md)
+to get a logical vector indicating which nodes match a certain condition
+or [`mark()`](https://january3.github.io/vtree2/reference/prune.md) to
+produce a vtree object with a new column, `mark`, holding that logical
+vector.
 
 ``` r
-vt <- vtree_from_freqtable(Titanic, Class, Survived)
-p1 <- plot(vt)
-p2 <- plot(vt, dir = "tb", show_root = FALSE, lwidth = 0.8, lheight = 0.3)
-plot_grid(p1, p2, nrow = 1)
+vt <- vtree(titanicNA, Class, Survived)
+
+# which nodes have a low frequency?
+mask <- find_nodes(vt, freq < 0.2)
+as_tibble(vt) |> filter(mask)
+#> # A tibble: 3 × 16
+#>   path    node_id node_key parent parent_id path_l       level node_col node_val
+#>   <chr>     <int> <chr>    <chr>      <int> <list>       <dbl> <chr>    <chr>   
+#> 1 Class:…       2 node_2   root           1 <named list>     1 Class    1st     
+#> 2 Class:…       3 node_3   root           1 <named list>     1 Class    2nd     
+#> 3 Class:…       6 node_6   root           1 <named list>     1 Class    NA      
+#> # ℹ 7 more variables: n <int>, tot_n <int>, missing <int>, freq <dbl>,
+#> #   denom <int>, vp <lgl>, leaf <lgl>
+
+# mark nodes with low frequency with pink
+# all other nodes will be white
+vt |> mark(freq < .2) |>
+  mutate(fill = ifelse(mark, "pink", "white")) |>
+  plot()
+#> ℹ palette attribute is NULL
+#> legend will be black and white
 ```
 
-![](vtree2_files/figure-html/layouts1-1.png)
+![](vtree2_files/figure-html/unnamed-chunk-3-1.png)
 
-The [`plot()`](https://rdrr.io/r/graphics/plot.default.html) function
-simply calls
-[`add_layout()`](https://january3.github.io/vtree2/reference/add_layout.md)
-to add the layout to the vtree object with the specified parameters.
-Alternatively, you can call the function
-[`add_layout()`](https://january3.github.io/vtree2/reference/add_layout.md)
-directly on the vtree object. The resulting vtree contains the
-additional columns `x`, `y`, `width` and `height` for the nodes and
-`x1`, `y1`, `x2`, `y2` for the edges. You can then modify these columns
-directly.
+## Creating summaries
 
-In the following example we will modify a layout with pruned nodes. We
-will move the nodes on the right (leafs) hand up a bit upwards.
-
-``` r
-vt <- vtree_from_freqtable(Titanic, Class, Survived) |>
-  prune(Class %in% c("1st", "2nd"), follow_only = TRUE) |>
-  add_layout() |>
-  mutate(y = ifelse(leaf, y + height/2, y))
-
-# we need to modify the edges as well, but for that we need information
-# from the nodes
-nodes <- as_tibble(vt)
-
-vt <- mutate(vt, x1 = nodes$x[from], y1 = nodes$y[from],
-                 x2 = nodes$x[to] - nodes$width[to]/2, y2 = nodes$y[to],
-             .edges = TRUE)
-
-plot(vt)
-```
-
-![](vtree2_files/figure-html/layouts3-1.png)
-
-Note how we mutate the edges with the `.edge = TRUE` argument. This is
-different from `tidygraph`, where the object (tree) can either be in
-activated “node” or “edge” mode. In `vtree2`, the object is always in
-“node” mode (because it is more practical), but on the rare occassion
-that you need to access the edges, you can.
-
-The
-[`add_layout()`](https://january3.github.io/vtree2/reference/add_layout.md)
-function has additional parameters: `varspace` and `varsize`. These can
-assign the amount of relative space available to the node depending on
-the variable it is associated with. For example, we might want to show a
-long summary which takes a lot of space for the leafs, but only short
-labels for the internal nodes. You can tune the relative node sizes with
-these two parameters.
-
-``` r
-cases <- cases_from_freqtable(Titanic)
-sm <- summary_vt(cases, vt, Age)
-
-vt <- vtree(cases, Class, Sex, Survived) |>
-  prune(Class == "Crew") |>
-  add_labels() |>
-  mutate(label = ifelse(leaf, paste0(label, "\n", sm), label)) |>
-  add_layout(dir="tb", lheight=.8,
-             varspace=c(root=1, Class=1,Sex=1,Survived=4))
-
-# legend_tiny: not even column names on the margin
-plot(vt, legend_tiny = FALSE)
-```
-
-![](vtree2_files/figure-html/layouts4-1.png)
-
-Note that both `varspace` and `varsize` describe the node sizes along
-the axis of the plot. That is, for horizontal layouts, they control the
-width of the nodes; for vertical layouts, they control the height of the
-nodes.
-
-### Adding column and value aliases
+## Adding column and value aliases
 
 If you prefer to see a different name for the variable or its values on
 the plot, there are basically two approaches.
@@ -551,7 +573,7 @@ Unnecessary gory details:
   [`plot()`](https://rdrr.io/r/graphics/plot.default.html) to create the
   legend.
 
-### Adding and modifying labels
+## Adding and modifying labels
 
 Labels to be plotted are taken from the `label` column of the vtree
 object. If this column is missing,
@@ -569,7 +591,7 @@ to add default labels. For custom labels there are three routes:
   then modify the label column with
   [`mutate()`](https://dplyr.tidyverse.org/reference/mutate.html)
 
-#### Directly creating a label column with `mutate()`
+### Directly creating a label column with `mutate()`
 
 Since the
 [`mutate()`](https://dplyr.tidyverse.org/reference/mutate.html) function
@@ -580,7 +602,7 @@ the `node_key` column, a unique identifier for each node.
 ``` r
 vtree(titanicNA, Class, Survived) |>
   mutate(label = paste0("node_key:\n", node_key)) |>
-  plot(legend_tiny = FALSE)
+  plot(legend = FALSE)
 ```
 
 ![](vtree2_files/figure-html/labels1-1.png)
@@ -604,7 +626,7 @@ plot_grid(p1, p2, nrow = 1)
 These labels are derived directly from columns of the vtree object:
 `node_col`, `node_val`, `freq` and `n`.
 
-#### Using custom formatting
+### Using custom formatting
 
 Formatting can also be done with the `fmt`/`fmt_na` parameters, which
 are R expressions. You can use sprintf, glue, paste or whichever
@@ -635,7 +657,7 @@ vt <- vtree(titanicNA, Class, Sex) |>
     glue("{node_col}: {node_val}\nfreq={format(freq, digits=2)}"),
              fmt_na =
     glue("{node_col}: Missing\nfreq={format(freq, digits=2)}"))
-plot(vt, legend_tiny = FALSE)
+plot(vt, legend = FALSE)
 ```
 
 ![](vtree2_files/figure-html/labels3-1.png)
@@ -654,12 +676,12 @@ vt <- vtree(titanicNA, Class, Sex) |>
   mutate(label = ifelse(path == "root",
                         glue("All passengers\nn={n}"),
                         label))
-plot(vt, legend_tiny = FALSE, dir="tb")
+plot(vt, legend = FALSE, dir="tb")
 ```
 
 ![](vtree2_files/figure-html/labels4-1.png)
 
-#### Using a mask
+### Using a mask
 
 You can specify a mask with
 [`add_labels()`](https://january3.github.io/vtree2/reference/add_labels.md) -
@@ -673,27 +695,102 @@ vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived) |>
 mask <- find_nodes(vt, leaf) # leaf is a logical vector
 add_labels(vt, mask = mask, template = "long") |>
   add_labels(mask = !mask, fmt = glue("{node_val}")) |>
-  plot(legend_tiny = FALSE, dir="tb", show_root = FALSE,
+  plot(legend = FALSE, dir="tb", show_root = FALSE,
        lwidth = 0.5, lheight = 0.5)
 ```
 
 ![](vtree2_files/figure-html/labels_mask-1.png)
 
-### Adding and modifying colors
+## Adding and modifying colors
 
-### Plotting
+There are basically three ways of modifying colors shown on the plot and
+ont the legend:
 
-Objects of type vtree can be directly plotted with the
-[`plot()`](https://rdrr.io/r/graphics/plot.default.html) method. If the
-labels, colors and layouts are missing, then plot adds some automatic
-defaults by running
-`vtree |> add_labels() |> add_colors() |> add_layout()` before plotting.
-Some of the arguments for these functions can be passed directly to the
-[`plot()`](https://rdrr.io/r/graphics/plot.default.html) function.
+- use
+  [`add_palette()`](https://january3.github.io/vtree2/reference/vtree_palette.md)
+  with `palette` argument to assign a palette to each variable. You can
+  use the `RColorBrewer` palettes for that. This will change the colors
+  both on the plot and on the legend.
+- use
+  [`add_palette()`](https://january3.github.io/vtree2/reference/vtree_palette.md)
+  with `var_levels` and `var_colors` arguments to assign colors directly
+  to each variable and variable level. This will change the colors both
+  on the plot and on the legend.
+- change the columns `fill` and `color` in the nodes data frame directly
+  with [`mutate()`](https://dplyr.tidyverse.org/reference/mutate.html)
+  (possibly after generating some defaults with
+  [`add_palette()`](https://january3.github.io/vtree2/reference/vtree_palette.md)).
+  This will change the colors only on the plot, but not on the legend.
 
-#### Layouts
+On the plot, the `fill` and `color` columns determine how each node is
+colored; the palettes stored in the `palette` attribute of the vtree
+object determine how the legend is colored.
 
-Currently, there are three layouts implemented: “regular”,
+If the `fill` column is missing from the vtree object,
+[`plot()`](https://rdrr.io/r/graphics/plot.default.html) will call
+[`add_palette()`](https://january3.github.io/vtree2/reference/vtree_palette.md)
+to assign fill colors automatically. If `color` is missing, but `fill`
+is present, then white or black will be chosen automatically depending
+on the contrast with the fill color.
+
+### Modifying colors with `mutate()`
+
+It is not necessary to call
+[`add_palette()`](https://january3.github.io/vtree2/reference/vtree_palette.md)
+if you just want to change the color of the text and fill on the nodes,
+without changing the legend:
+
+``` r
+pal <- colorRampPalette(c("white", "steelblue"))(101)
+
+p1 <- vt |>
+  mutate(fill = pal[round(freq * 100) + 1]) |>
+  plot(lwidth=.6)
+#> ℹ palette attribute is NULL
+#> legend will be black and white
+
+p2 <- vt |>
+  mutate(abs_freq = n / max(n)) |>
+  mutate(fill = pal[round(abs_freq * 100) + 1]) |>
+ plot(legend = TRUE, lwidth=.6)
+#> ℹ palette attribute is NULL
+#> legend will be black and white
+
+plot_grid(p1, p2)
+```
+
+![](vtree2_files/figure-html/colors1-1.png)
+
+Colors can be also assigned automatically based on names of RColorBrewer
+palettes. There is a default order of palettes for the variables, but
+you can override it with the `palettes` argument of
+[`plot()`](https://rdrr.io/r/graphics/plot.default.html) or
+[`add_palette()`](https://january3.github.io/vtree2/reference/vtree_palette.md).
+
+### Adding palettes with `add_palette()`
+
+The
+[`add_palette()`](https://january3.github.io/vtree2/reference/vtree_palette.md)
+function not only sets the `fill` and `color` columns, but also stores
+the palette in the attribute `palette` of the vtree object. This palette
+in turn is used to create color keys on the legend. If that attribute is
+missing, the legend will be black and white.
+
+## Adding layout with `add_layout()`
+
+### Basic layout configuration with `plot()`
+
+Layouts are added with the
+[`add_layout()`](https://january3.github.io/vtree2/reference/add_layout.md)
+function, which you can call directly on the vtree object, resulting in
+a new vtree object with additional columns for the layout. However, if a
+vtree without a layout is passed to
+[`plot()`](https://rdrr.io/r/graphics/plot.default.html), then
+[`plot()`](https://rdrr.io/r/graphics/plot.default.html) will call
+[`add_layout()`](https://january3.github.io/vtree2/reference/add_layout.md)
+automatically.
+
+Currently, there are four layouts implemented: “regular”,
 “flushed_left”, “flushed_right” and “proportional”. The default layout
 is “regular”, which simply shows the tree structure with all nodes
 having the same sizes. The “flushed\_\*” layouts are similar, but the
@@ -715,11 +812,6 @@ plot_grid(p1, p2, p3, p4, nrow = 2)
 
 ![](vtree2_files/figure-html/layouts2-1.png)
 
-Layouts are added with the
-[`add_layout()`](https://january3.github.io/vtree2/reference/add_layout.md)
-function, which you can call directly on the vtree object, resulting in
-a new vtree object with additional columns for the layout.
-
 With the `layout_func` argument, you can specify a custom function to
 calculate the layout yourself. For example, this function might call
 [`add_layout()`](https://january3.github.io/vtree2/reference/add_layout.md)
@@ -728,55 +820,117 @@ See the documentation for
 [`add_layout()`](https://january3.github.io/vtree2/reference/add_layout.md)
 for details.
 
-#### Colors, fill colors and labels
-
-Colors can be added with the
-[`add_palette()`](https://january3.github.io/vtree2/reference/vtree_palette.md)
-function and then modified by directly manipulating the vtree object
-with [`mutate()`](https://dplyr.tidyverse.org/reference/mutate.html).
-Each node can have the `fill` and `color` columns, corresponding to the
-fill color of the node and the text color of the node label.
-
-If `fill` is missing from the vtree object,
-[`plot()`](https://rdrr.io/r/graphics/plot.default.html) will call
-[`add_palette()`](https://january3.github.io/vtree2/reference/vtree_palette.md)
-to assign fill colors automatically. If `color` is missing, but `fill`
-is present, then white or black will be chosen automatically depending
-on the contrast with the fill color.
+Layouts will be automatically created by
+[`plot()`](https://rdrr.io/r/graphics/plot.default.html) if they are
+missing. The parameters passed to the plot give some basic control over
+the layout: `dir` determines the direction of the tree, `show_root`
+determines whether the root node is shown, and `lwidth`/`lheight`
+determine the width and height of the nodes relative to the available
+space.
 
 ``` r
-pal <- colorRampPalette(c("white", "steelblue"))(101)
-
-p1 <- vt |>
-  mutate(fill = pal[round(freq * 100) + 1]) |>
-  plot()
-#> ℹ palette attribute is NULL
-#> legend will be black and white
-
-p2 <- vt |>
-  mutate(abs_freq = n / max(n)) |>
-  mutate(fill = pal[round(abs_freq * 100) + 1]) |>
- plot()
-#> ℹ palette attribute is NULL
-#> legend will be black and white
-
-cowplot::plot_grid(p1, p2)
+vt <- vtree_from_freqtable(Titanic, Class, Survived)
+p1 <- plot(vt)
+p2 <- plot(vt, dir = "tb", show_root = FALSE, lwidth = 0.8, lheight = 0.3)
+plot_grid(p1, p2, nrow = 1)
 ```
 
-![](vtree2_files/figure-html/colors1-1.png)
+![](vtree2_files/figure-html/layouts1-1.png)
 
-Colors can be also assigned automatically based on names of RColorBrewer
-palettes. There is a default order of palettes for the variables, but
-you can override it with the `palettes` argument of
-[`plot()`](https://rdrr.io/r/graphics/plot.default.html) or
-[`add_palette()`](https://january3.github.io/vtree2/reference/vtree_palette.md).
+The [`plot()`](https://rdrr.io/r/graphics/plot.default.html) function
+simply calls
+[`add_layout()`](https://january3.github.io/vtree2/reference/add_layout.md)
+to add the layout to the vtree object with the specified parameters.
+Alternatively, you can call the function
+[`add_layout()`](https://january3.github.io/vtree2/reference/add_layout.md)
+directly on the vtree object. The resulting vtree contains the
+additional columns `x`, `y`, `width` and `height` for the nodes and
+`x1`, `y1`, `x2`, `y2` for the edges. You can then modify these columns
+directly.
 
-Similarly, if the `label` column is missing from the vtree object,
-[`plot()`](https://rdrr.io/r/graphics/plot.default.html) will call
-[`add_labels()`](https://january3.github.io/vtree2/reference/add_labels.md)
-(see above) to assign labels automatically.
+### Directly modifying the layout
 
-#### Legends with summaries
+In the following example we will modify a layout with pruned nodes. We
+will move the nodes on the right (leafs) hand up a bit upwards.
+
+``` r
+vt <- vtree_from_freqtable(Titanic, Class, Survived) |>
+  prune(Class %in% c("1st", "2nd"), follow_only = TRUE) |>
+  add_layout() |>
+  mutate(y = ifelse(leaf, y + height/2, y))
+
+# we need to modify the edges as well, but for that we need information
+# from the nodes
+nodes <- as_tibble(vt)
+
+vt <- mutate(vt, x1 = nodes$x[from], y1 = nodes$y[from],
+                 x2 = nodes$x[to] - nodes$width[to]/2, y2 = nodes$y[to],
+             .edges = TRUE)
+
+plot(vt)
+```
+
+![](vtree2_files/figure-html/layouts3-1.png)
+
+Note how we mutate the edges with the `.edge = TRUE` argument. This is
+different from `tidygraph`, where the object (tree) can either be in
+activated “node” or “edge” mode. In `vtree2`, the object is always in
+“node” mode (because it is more practical), but on the rare occassion
+that you need to access the edges, you can.
+
+### Fine control with `add_layout(varspace = ..., varsize = ...)`
+
+The
+[`add_layout()`](https://january3.github.io/vtree2/reference/add_layout.md)
+function has additional parameters: `varspace` and `varsize`. These can
+assign the amount of relative space available to the node depending on
+the variable it is associated with. For example, we might want to show a
+long summary which takes a lot of space for the leafs, but only short
+labels for the internal nodes. You can tune the relative node sizes with
+these two parameters.
+
+``` r
+cases <- cases_from_freqtable(Titanic)
+sm <- summary_vt(cases, vt, Age)
+
+vt <- vtree(cases, Class, Sex, Survived) |>
+  prune(Class == "Crew") |>
+  add_labels() |>
+  mutate(label = ifelse(leaf, paste0(label, "\n", sm), label)) |>
+  add_layout(dir="tb", lheight=.8,
+             varspace=c(root=1, Class=1,Sex=1,Survived=4))
+
+# legend = FALSE: not even column names on the margin
+plot(vt, legend = FALSE)
+```
+
+![](vtree2_files/figure-html/layouts4-1.png)
+
+Note that both `varspace` and `varsize` describe the node sizes along
+the axis of the plot. That is, for horizontal layouts, they control the
+width of the nodes; for vertical layouts, they control the height of the
+nodes.
+
+## Plotting
+
+Objects of type vtree can be directly plotted with the
+[`plot()`](https://rdrr.io/r/graphics/plot.default.html) method. If the
+labels, colors and layouts are missing, then plot adds some automatic
+defaults by running (essentially)
+`vtree |> add_labels() |> add_colors() |> add_layout()` before plotting.
+Some of the arguments for these functions can be passed directly to the
+[`plot()`](https://rdrr.io/r/graphics/plot.default.html) function.
+
+### Layouts
+
+Parameters `layout`, `dir`, `show_root`, `lwidth`, `lheight` are passed
+to
+[`add_layout()`](https://january3.github.io/vtree2/reference/add_layout.md)
+to control the layout of the tree. See above for details.
+
+### Colors, fill colors and labels
+
+### Legends with summaries
 
 The legend shows a summary for each variable underneath or next to the
 part of the tree which corresponds to this variable. Variable summaries
@@ -816,7 +970,7 @@ plot_grid(p1, p2, nrow = 1)
 
 ![](vtree2_files/figure-html/summaries2-1.png)
 
-#### Other `plot()` arguments
+### Other `plot()` arguments
 
 **`lwidth`, `lheight`** - label width and height relative to available
 space. The layout functions calculate the available space for each node,
@@ -834,16 +988,20 @@ example, for 10% margins on all sides, use
 **`show_root`** - if TRUE (default), show the root node (total
 population).
 
-**`legend_tiny`** - if FALSE, not even minimal variable legend is shown
-on the plot. If TRUE (default), the variable (column) names are shown on
-the margin.
+**`legend`** - if FALSE or “none”, not even minimal variable legend is
+shown on the plot. If “tiny” (default), the variable (column) names are
+shown on the margin. If “full” or TRUE, the variable names and the
+summaries are shown on the margin.
 
 ``` r
-vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived)
-plot(vt, legend_tiny = FALSE)
+vt <- vtree_from_freqtable(Titanic, Class, Survived)
+p1 <- plot(vt, legend = FALSE)
+p2 <- plot(vt) # or legend = "tiny"
+p3 <- plot(vt, legend = TRUE) # or legend = "full"
+plot_grid(p1, p2, p3, nrow = 1)
 ```
 
-![](vtree2_files/figure-html/unnamed-chunk-2-1.png)
+![](vtree2_files/figure-html/unnamed-chunk-4-1.png)
 
 **`dir`** direction of the tree. One of “lr” (left to right), “rl”
 (right to left), “tb” (top to bottom), “bt” (bottom to top). Default is
@@ -857,7 +1015,7 @@ p4 <- plot(vt, dir = "rl")
 plot_grid(p1, p2, p3, p4, nrow = 1)
 ```
 
-![](vtree2_files/figure-html/unnamed-chunk-3-1.png)
+![](vtree2_files/figure-html/unnamed-chunk-5-1.png)
 
 **`fontsizes`** Font sizes for the various labels are automatically fit
 to the available space, but sometimes you might manually adjust them.
@@ -879,7 +1037,7 @@ line width is not relative to the device size, but is fixed to an
 absolute value; therefore, for small devices the lines may appeary too
 thick.
 
-#### Rich text labels
+### Rich text labels
 
 It is possible to use simple HTML or markdown formatting in the labels
 and then use `richtext=TRUE` in the
@@ -924,7 +1082,9 @@ plot(vt, richtext = TRUE, legend = TRUE)
 
 ![](vtree2_files/figure-html/richtext2-1.png)
 
-### Inset plots
+## Patterns
+
+## Inset plots
 
 It is possible to add any kind of “grob” - graphical object - to the
 nodes description. This includes not only bitmap images, but also
@@ -1037,4 +1197,4 @@ too small, bad things will happen:
 plot(vt)
 ```
 
-![](vtree2_files/figure-html/unnamed-chunk-4-1.png)
+![](vtree2_files/figure-html/unnamed-chunk-6-1.png)

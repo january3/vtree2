@@ -59,8 +59,7 @@
 <span>  palettes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Reds"</span>, <span class="st">"Blues"</span>, <span class="st">"Greens"</span>, <span class="st">"Oranges"</span>, <span class="st">"Purples"</span><span class="op">)</span>,</span>
 <span>  na_fill <span class="op">=</span> <span class="st">"white"</span>,</span>
 <span>  show_root <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  legend <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  legend_tiny <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  legend <span class="op">=</span> <span class="st">"tiny"</span>,</span>
 <span>  margins <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  fontsizes <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  richtext <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -107,12 +106,9 @@ population).</p></dd>
 
 
 <dt id="arg-legend">legend<a class="anchor" aria-label="anchor" href="#arg-legend"></a></dt>
-<dd><p>If TRUE, a legend is added to the plot. Default is FALSE.</p></dd>
-
-
-<dt id="arg-legend-tiny">legend_tiny<a class="anchor" aria-label="anchor" href="#arg-legend-tiny"></a></dt>
-<dd><p>If TRUE, just the var names are shown on the margin.
-Default: TRUE.</p></dd>
+<dd><p>If "tiny" (default), only minimal legend with variable
+names is shown. If FALSE or "none", no legend is shown. If TRUE or
+"full", a full legend with variable level summaries is shown.</p></dd>
 
 
 <dt id="arg-margins">margins<a class="anchor" aria-label="anchor" href="#arg-margins"></a></dt>
@@ -221,9 +217,13 @@ details, see <code><a href="add_layout.html">add_layout()</a></code>.</p></div>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">vt</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="plot.vtree-1.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># full legend</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">vt</span>, legend <span class="op">=</span> <span class="st">"full"</span><span class="op">)</span></span></span>
+<span class="r-plt img"><img src="plot.vtree-2.png" alt="" width="700" height="433"></span>
+<span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># proportional plot</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">vt</span>, layout <span class="op">=</span> <span class="st">"proportional"</span><span class="op">)</span></span></span>
-<span class="r-plt img"><img src="plot.vtree-2.png" alt="" width="700" height="433"></span>
+<span class="r-plt img"><img src="plot.vtree-3.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># create custom labels as simple numbers with mutate()</span></span></span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span></span>
@@ -236,7 +236,7 @@ details, see <code><a href="add_layout.html">add_layout()</a></code>.</p></div>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>     intersect, setdiff, setequal, union</span>
 <span class="r-in"><span><span class="va">vt</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>label <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/context.html" class="external-link">n</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-plt img"><img src="plot.vtree-3.png" alt="" width="700" height="433"></span>
+<span class="r-plt img"><img src="plot.vtree-4.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># a bit more complex example</span></span></span>
 <span class="r-in"><span><span class="va">vt</span> <span class="op">|&gt;</span></span></span>
@@ -245,7 +245,7 @@ details, see <code><a href="add_layout.html">add_layout()</a></code>.</p></div>
 <span class="r-in"><span>         <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">node_val</span><span class="op">)</span>, <span class="st">'-'</span>,</span></span>
 <span class="r-in"><span>             <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"%.0f%%"</span>, <span class="fl">100</span> <span class="op">*</span> <span class="va">freq</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-plt img"><img src="plot.vtree-4.png" alt="" width="700" height="433"></span>
+<span class="r-plt img"><img src="plot.vtree-5.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># some color manipulation</span></span></span>
 <span class="r-in"><span><span class="va">pal</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/grDevices/colorRamp.html" class="external-link">colorRampPalette</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"white"</span>, <span class="st">"steelblue"</span><span class="op">)</span><span class="op">)</span><span class="op">(</span><span class="fl">101</span><span class="op">)</span></span></span>
@@ -255,7 +255,7 @@ details, see <code><a href="add_layout.html">add_layout()</a></code>.</p></div>
 <span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> palette attribute is NULL</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> legend will be black and white</span>
-<span class="r-plt img"><img src="plot.vtree-5.png" alt="" width="700" height="433"></span>
+<span class="r-plt img"><img src="plot.vtree-6.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">vt</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>abs_freq <span class="op">=</span> <span class="va">n</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
@@ -263,7 +263,7 @@ details, see <code><a href="add_layout.html">add_layout()</a></code>.</p></div>
 <span class="r-in"><span> <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> palette attribute is NULL</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> legend will be black and white</span>
-<span class="r-plt img"><img src="plot.vtree-6.png" alt="" width="700" height="433"></span>
+<span class="r-plt img"><img src="plot.vtree-7.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

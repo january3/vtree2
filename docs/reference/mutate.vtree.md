@@ -49,3 +49,5 @@ least this mutate gives some protection.
 
 [`dplyr::mutate()`](https://dplyr.tidyverse.org/reference/mutate.html),
 [`tidygraph::activate()`](https://tidygraph.data-imaginist.com/reference/activate.html)
+
+## Examples

@@ -16,3 +16,7 @@ A list of character vectors, one for each variable split in the tree,
 Returns a list of character vectors, one for each variable split in the tree,
 with each ordered vector containing the levels of that variable.
 }
+\examples{
+vt <- vtree(titanicNA)
+levels(vt)
+}

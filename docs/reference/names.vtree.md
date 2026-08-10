@@ -18,3 +18,11 @@ names(x)
 ## Value
 
 A character vector of variable names
+
+## Examples
+
+``` r
+vt <- vtree(titanicNA)
+names(vt)
+#> [1] "Class"    "Sex"      "Age"      "Survived"
+```

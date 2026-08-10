@@ -52,9 +52,7 @@
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">vtree_palette</span><span class="op">(</span></span>
 <span>  <span class="va">vtree</span>,</span>
-<span>  palettes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Reds"</span>, <span class="st">"Blues"</span>, <span class="st">"Greens"</span>, <span class="st">"Oranges"</span>, <span class="st">"Purples"</span><span class="op">)</span>,</span>
-<span>  var_palette <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  default_color <span class="op">=</span> <span class="st">"white"</span></span>
+<span>  palettes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Reds"</span>, <span class="st">"Blues"</span>, <span class="st">"Greens"</span>, <span class="st">"Oranges"</span>, <span class="st">"Purples"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">var_palette</span><span class="op">(</span><span class="va">var_levels</span>, <span class="va">pal</span><span class="op">)</span></span>
@@ -62,11 +60,10 @@
 <span><span class="fu">add_palette</span><span class="op">(</span></span>
 <span>  <span class="va">vtree</span>,</span>
 <span>  palettes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Reds"</span>, <span class="st">"Blues"</span>, <span class="st">"Greens"</span>, <span class="st">"Oranges"</span>, <span class="st">"Purples"</span><span class="op">)</span>,</span>
-<span>  na_fill <span class="op">=</span> <span class="st">"white"</span>,</span>
-<span>  na_color <span class="op">=</span> <span class="st">"black"</span>,</span>
+<span>  na <span class="op">=</span> <span class="st">"white"</span>,</span>
 <span>  var_palette <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  what <span class="op">=</span> <span class="st">"fill"</span>,</span>
-<span>  default_color <span class="op">=</span> <span class="st">"white"</span></span>
+<span>  var_colors <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  what <span class="op">=</span> <span class="st">"fill"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -83,17 +80,6 @@
 subsequent columns in the vtree</p></dd>
 
 
-<dt id="arg-var-palette">var_palette<a class="anchor" aria-label="anchor" href="#arg-var-palette"></a></dt>
-<dd><p>a named list of named vectors. The var_palette names
-correspond to the variables; the names of the vectors are
-the levels of the given variable; the values are colors.</p></dd>
-
-
-<dt id="arg-default-color">default_color<a class="anchor" aria-label="anchor" href="#arg-default-color"></a></dt>
-<dd><p>default color to use if variable levels from var_palette are
-missing</p></dd>
-
-
 <dt id="arg-var-levels">var_levels<a class="anchor" aria-label="anchor" href="#arg-var-levels"></a></dt>
 <dd><p>a character vector of values to which colors are
 assigned from a palette</p></dd>
@@ -103,14 +89,27 @@ assigned from a palette</p></dd>
 <dd><p>name of a palette (e.g. "Greens")</p></dd>
 
 
-<dt id="arg-na-fill">na_fill<a class="anchor" aria-label="anchor" href="#arg-na-fill"></a></dt>
-<dd><p>text color used for nodes associated with NA values</p></dd>
+<dt id="arg-na">na<a class="anchor" aria-label="anchor" href="#arg-na"></a></dt>
+<dd><p>color used for nodes associated with NA values</p></dd>
+
+
+<dt id="arg-var-palette">var_palette<a class="anchor" aria-label="anchor" href="#arg-var-palette"></a></dt>
+<dd><p>a named list of named vectors. The var_palette names
+correspond to the variables; the names of the vectors are
+the levels of the given variable; the values are colors.</p></dd>
+
+
+<dt id="arg-var-colors">var_colors<a class="anchor" aria-label="anchor" href="#arg-var-colors"></a></dt>
+<dd><p>A named character vector with text colors of the variables
+as shown on a legend. If NULL, the colors are taken over from the
+palettes defined by the <code>palettes</code> argument, even if
+<code>var_palette</code> is also defined.</p></dd>
 
 
 <dt id="arg-what">what<a class="anchor" aria-label="anchor" href="#arg-what"></a></dt>
 <dd><p>By default, add_palette() adds a fill color for the nodes
 and automatically chooses a contrast color for the text. If
-'what' is 'color', it adds a text color for the node and
+'what' is 'text', it adds a text color for the node and
 automatically chooses a contrast color for the fill.</p></dd>
 
 </dl></div>
@@ -134,7 +133,20 @@ modify the <code>fill</code> and <code>color</code> columns manually (without us
 <p>If the parameter <code>what</code> is <code>color</code>, then instead of generating a fill
 color from the palettes, the function generates a text color and chooses
 a contrast fill color automatically.</p>
-<p><code>vtree_palette()</code> returns a color palette for a variable level in a vtree.
+<p>The following arguments determine the hierarchy of the color-control on
+the resulting plot:</p><ul><li><p><code>palettes</code> - determines both the palette for the legend and the
+colors of the nodes</p></li>
+<li><p><code>var_palette</code> - low level adjustment of colors. Does not have to
+include all variable and all variable levels, and does not influence
+the colors of the variable names shown on the legend, but it does
+change the colors of the variable levels shown on the legend.</p></li>
+<li><p><code>var_colors</code> - influences only the colors of the variable names shown
+on the legend. If NULL, a default from the <code>palettes</code> argument will be
+inferred.</p></li>
+<li><p><code>na</code> - color for the missing values for all variables. If <code>what</code> is
+"fill", then it is interpreted as the background fill color; if <code>what</code> is
+"text", then it is interpreted as the text (foreground) color.</p></li>
+</ul><p><code>vtree_palette()</code> returns a color palette for a variable level in a vtree.
 The colors are chosen from the RColorBrewer package.</p>
 <p><code>var_palette()</code> generates a series of colors from a palette and assigns
 them to the provided character vector.</p>
@@ -178,7 +190,7 @@ color automatically.</p></div>
 <span class="r-plt img"><img src="vtree_palette-2.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># color the NA nodes with red</span></span></span>
-<span class="r-in"><span><span class="va">vt</span> <span class="op">|&gt;</span> <span class="fu">add_palette</span><span class="op">(</span>palettes <span class="op">=</span> <span class="st">"Blues"</span>, na_fill <span class="op">=</span> <span class="st">"red"</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span><span class="va">vt</span> <span class="op">|&gt;</span> <span class="fu">add_palette</span><span class="op">(</span>palettes <span class="op">=</span> <span class="st">"Blues"</span>, na <span class="op">=</span> <span class="st">"red"</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>   <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="vtree_palette-3.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
@@ -191,7 +203,7 @@ color automatically.</p></div>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># same, but now the text color is generated from the palette</span></span></span>
 <span class="r-in"><span><span class="va">vt</span> <span class="op">|&gt;</span></span></span>
-<span class="r-in"><span>  <span class="fu">add_palette</span><span class="op">(</span>what <span class="op">=</span> <span class="st">"color"</span>,</span></span>
+<span class="r-in"><span>  <span class="fu">add_palette</span><span class="op">(</span>what <span class="op">=</span> <span class="st">"text"</span>,</span></span>
 <span class="r-in"><span>      var_palette <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>Sex <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>Male <span class="op">=</span> <span class="st">"blue"</span>, Female <span class="op">=</span> <span class="st">"Red"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>      <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="vtree_palette-5.png" alt="" width="700" height="433"></span>

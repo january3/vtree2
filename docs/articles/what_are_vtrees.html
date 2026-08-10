@@ -132,7 +132,7 @@ above plot so it looks a bit more like a consort diagram:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">vt</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="st">"white"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span>dir<span class="op">=</span><span class="st">"tb"</span>, layout<span class="op">=</span><span class="st">"flushed_right"</span>, legend_tiny <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+<span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span>dir<span class="op">=</span><span class="st">"tb"</span>, layout<span class="op">=</span><span class="st">"flushed_right"</span>, legend <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
 <p><img src="what_are_vtrees_files/figure-html/repr4-1.png" class="r-plt" alt="" width="768"></p>
 </div>
 <div class="section level2">
@@ -241,58 +241,6 @@ infected. This is the positive predictive value (PPV) of the test and it
 shows that despite the test being very specific and sensitive, when a
 person has a positive test result, there is more than a 50% chance that
 the person is actually healthy.</p>
-<div class="section level3">
-<h3 id="vtree-workflow">Vtree workflow<a class="anchor" aria-label="anchor" href="#vtree-workflow"></a>
-</h3>
-<p>In <code>vtree2</code>, the workflow is split into several steps:</p>
-<ul>
-<li>Prepare the data (outside of <code>vtree2</code>)</li>
-<li>Build the vtree object with <code><a href="../reference/vtree.html">vtree()</a></code> or
-<code><a href="../reference/vtree.html">vtree_from_freqtable()</a></code>
-</li>
-<li>(Optional) Prune, retain or select nodes with <code><a href="../reference/prune.html">prune()</a></code>,
-<code><a href="../reference/prune.html">retain()</a></code> and friends.</li>
-<li>(Optional) Create summaries with <code><a href="../reference/summary_vt.html">summary_vt()</a></code>.</li>
-<li>(Optional) Add aliases for variable names and values with
-<code><a href="../reference/add_aliases.html">add_aliases()</a></code>.</li>
-<li>(Optional) Add or modify labels with <code><a href="../reference/add_labels.html">add_labels()</a></code> and
-<code><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate()</a></code>.</li>
-<li>(Optional) Add or modify colors with <code><a href="../reference/vtree_palette.html">add_palette()</a></code> and
-<code><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate()</a></code>.</li>
-<li>Plot the vtree with <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code>.</li>
-</ul>
-<p>Here is an example demonstrating all these steps based on the
-<code>titanicNA</code> data set. This data set is the same as the
-Titanic data set, but with some missing values randomly added for
-demonstration purposes.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">titanicNA</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="../reference/vtree.html">vtree</a></span><span class="op">(</span><span class="va">titanicNA</span>, <span class="va">Class</span>, <span class="va">Sex</span>, <span class="va">Survived</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="co"># only retain the third class passengers</span></span>
-<span>  <span class="fu"><a href="../reference/prune.html">retain</a></span><span class="op">(</span><span class="va">path</span> <span class="op">==</span> <span class="st">"Class:3rd"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="co"># change how variables are displayed</span></span>
-<span>  <span class="fu"><a href="../reference/add_aliases.html">add_aliases</a></span><span class="op">(</span>val_alias <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>Class <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"1st"</span> <span class="op">=</span> <span class="st">"First"</span>,</span>
-<span>                                    <span class="st">"2nd"</span> <span class="op">=</span> <span class="st">"Second"</span>,</span>
-<span>                                    <span class="st">"3rd"</span> <span class="op">=</span> <span class="st">"Third"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="co"># add default labels, built from aliases</span></span>
-<span>  <span class="fu"><a href="../reference/add_labels.html">add_labels</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="co"># change the labels for the missing values</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>label <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">gsub</a></span><span class="op">(</span><span class="st">"NA"</span>, <span class="st">"Missing"</span>, <span class="va">label</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="co"># add colors</span></span>
-<span>  <span class="fu"><a href="../reference/vtree_palette.html">add_palette</a></span><span class="op">(</span>palettes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Greys"</span>, <span class="st">"Blues"</span>, <span class="st">"Purples"</span><span class="op">)</span>,</span>
-<span>              na_fill <span class="op">=</span> <span class="st">"grey90"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="co"># change the color for Females who survived</span></span>
-<span>  <span class="co"># mark() is a helper function that returns TRUE for the nodes that</span></span>
-<span>  <span class="co"># match the given condition</span></span>
-<span>  <span class="fu"><a href="../reference/prune.html">mark</a></span><span class="op">(</span><span class="va">path</span> <span class="op">==</span> <span class="st">"Class:3rd/Sex:Female/Survived:Yes"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">mark</span>, <span class="st">"red"</span>, <span class="va">fill</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>color <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">mark</span>, <span class="st">"white"</span>, <span class="va">color</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="co"># plotting with legend and custom margins</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span>legend <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>       margins <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.05</span>, <span class="fl">0.05</span>, <span class="fl">0.25</span>, <span class="fl">0.05</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><img src="what_are_vtrees_files/figure-html/workflow_example1-1.png" class="r-plt" alt="" width="960"></p>
-</div>
 </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

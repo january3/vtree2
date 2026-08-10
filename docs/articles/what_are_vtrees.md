@@ -70,7 +70,7 @@ plot so it looks a bit more like a consort diagram:
 ``` r
 vt |>
   mutate(fill = "white") |>
-  plot(dir="tb", layout="flushed_right", legend_tiny = FALSE)
+  plot(dir="tb", layout="flushed_right", legend = FALSE)
 ```
 
 ![](what_are_vtrees_files/figure-html/repr4-1.png)
@@ -174,65 +174,6 @@ infected. This is the positive predictive value (PPV) of the test and it
 shows that despite the test being very specific and sensitive, when a
 person has a positive test result, there is more than a 50% chance that
 the person is actually healthy.
-
-### Vtree workflow
-
-In `vtree2`, the workflow is split into several steps:
-
-- Prepare the data (outside of `vtree2`)
-- Build the vtree object with
-  [`vtree()`](https://january3.github.io/vtree2/reference/vtree.md) or
-  [`vtree_from_freqtable()`](https://january3.github.io/vtree2/reference/vtree.md)
-- (Optional) Prune, retain or select nodes with
-  [`prune()`](https://january3.github.io/vtree2/reference/prune.md),
-  [`retain()`](https://january3.github.io/vtree2/reference/prune.md) and
-  friends.
-- (Optional) Create summaries with
-  [`summary_vt()`](https://january3.github.io/vtree2/reference/summary_vt.md).
-- (Optional) Add aliases for variable names and values with
-  [`add_aliases()`](https://january3.github.io/vtree2/reference/add_aliases.md).
-- (Optional) Add or modify labels with
-  [`add_labels()`](https://january3.github.io/vtree2/reference/add_labels.md)
-  and [`mutate()`](https://dplyr.tidyverse.org/reference/mutate.html).
-- (Optional) Add or modify colors with
-  [`add_palette()`](https://january3.github.io/vtree2/reference/vtree_palette.md)
-  and [`mutate()`](https://dplyr.tidyverse.org/reference/mutate.html).
-- Plot the vtree with
-  [`plot()`](https://rdrr.io/r/graphics/plot.default.html).
-
-Here is an example demonstrating all these steps based on the
-`titanicNA` data set. This data set is the same as the Titanic data set,
-but with some missing values randomly added for demonstration purposes.
-
-``` r
-data(titanicNA)
-
-vtree(titanicNA, Class, Sex, Survived) |>
-  # only retain the third class passengers
-  retain(path == "Class:3rd") |>
-  # change how variables are displayed
-  add_aliases(val_alias = list(Class = c("1st" = "First",
-                                    "2nd" = "Second",
-                                    "3rd" = "Third"))) |>
-  # add default labels, built from aliases
-  add_labels() |>
-  # change the labels for the missing values
-  mutate(label = gsub("NA", "Missing", label)) |>
-  # add colors
-  add_palette(palettes = c("Greys", "Blues", "Purples"),
-              na_fill = "grey90") |>
-  # change the color for Females who survived
-  # mark() is a helper function that returns TRUE for the nodes that
-  # match the given condition
-  mark(path == "Class:3rd/Sex:Female/Survived:Yes") |>
-  mutate(fill = ifelse(mark, "red", fill)) |>
-  mutate(color = ifelse(mark, "white", color)) |>
-  # plotting with legend and custom margins
-  plot(legend = TRUE,
-       margins = c(0.05, 0.05, 0.25, 0.05))
-```
-
-![](what_are_vtrees_files/figure-html/workflow_example1-1.png)
 
 [^1]: [`vtree()`](https://january3.github.io/vtree2/reference/vtree.md)
     works with cases data frames, where each row is a single
