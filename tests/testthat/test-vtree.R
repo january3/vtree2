@@ -1,5 +1,3 @@
-
-
 test_that("vtree works", {
   cases <- cases_from_freqtable(Titanic)  
   vt <- vtree(cases, Class, Survived)
@@ -214,6 +212,11 @@ test_that("column names are checked", {
                "Reserved columns used in the cases data frame")
 
   cases <- cases_from_freqtable(Titanic)
+  cases[["Sex"]] <- rnorm(nrow(cases))
+  expect_error(vtree(cases, Class, Sex, Survived),
+               "Only factor or character columns are supported")
+
+  cases <- cases_from_freqtable(Titanic)
   vt <- vtree(cases, Class, Sex, Survived)
   expect_in("sep", names(attributes(vt)))
   expect_in(c("path", "cv"), names(attr(vt, "sep")))
@@ -242,4 +245,27 @@ test_that("column names are checked", {
   colnames(cases)[2] <- "S:x/"
   expect_no_warning(vtree(cases, Class, `S:x/`, Survived,
                           .cv_sep = '|', .path_sep = '>'))
+})
+
+test_that("printing vtree works", {
+
+  vt <- vtree(titanicNA)
+  out <- capture_output(print(vt))
+  expect_match(out, "vtree object with 4 variables and 2201 observations")
+  expect_match(out, "Frequencies computed as valid percentages")
+
+  vt <- vtree(titanicNA, .vp = FALSE)
+  out <- capture_output(print(vt))
+  expect_match(out, "Frequencies computed with total numbers")
+
+  vt <- vtree(titanicNA, .vp = FALSE) |> add_layout()
+  out <- capture_output(print(vt))
+  expect_match(out, "Object has a layout")
+
+  vt <- vtree(titanicNA, .vp = FALSE) |> add_palette() |> add_labels()
+  out <- capture_output(print(vt))
+  expect_match(out, "Properties present:")
+  expect_match(out, "label")
+  expect_match(out, "color")
+  expect_match(out, "fill")
 })
