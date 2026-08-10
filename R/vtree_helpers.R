@@ -140,7 +140,8 @@ find_parent <- function(path, all_paths) {
 
 # from the pattern data frame, which contains one path through the tree per
 # row, collect all unique nodes.
-collect_nodes <- function(pattern, columns) {
+collect_nodes <- function(pattern, columns,
+                          cv_sep=":", path_sep="/") {
 
   # map over the levels. i denotes the level; the node is defined by the
   # columns 1:i.
@@ -168,10 +169,10 @@ collect_nodes <- function(pattern, columns) {
       # the c_across is specifically for rowwise operations
       rowwise() |>
       mutate(parent = ifelse(i == 1, "root",
-        paste0(paste0(columns[1:(i-1)], ":",
-                      c_across(all_of(columns[1:(i-1)]))), collapse = "/"))) |>
-      mutate(path = paste0(paste0(columns[1:i], ":",
-                      c_across(all_of(columns[1:i]))), collapse = "/")) |>
+        paste0(paste0(columns[1:(i-1)], cv_sep,
+                      c_across(all_of(columns[1:(i-1)]))), collapse = path_sep))) |>
+      mutate(path = paste0(paste0(columns[1:i], cv_sep,
+                      c_across(all_of(columns[1:i]))), collapse = path_sep)) |>
 
       # we want also to store the path as a list column for easier
       # processing downstream
@@ -196,9 +197,9 @@ collect_nodes <- function(pattern, columns) {
 
 # this one creates a node data frame directly from the pattern,
 # one line per node. It also collects the order of the nodes.
-pat2nodes <- function(pattern, columns) {
+pat2nodes <- function(pattern, columns, cv_sep, path_sep) {
 
-  ret <- collect_nodes(pattern, columns)
+  ret <- collect_nodes(pattern, columns, cv_sep, path_sep)
   N <- sum(ret |> filter(.data[["level"]] == 1) |> pull("n"))
 
   # that special root node
@@ -222,4 +223,31 @@ pat2nodes <- function(pattern, columns) {
                     "path_l", "level", "node_col", "node_val",
                     "n", "tot_n", "missing", "freq", "denom")))
   ret
+}
+
+
+.check_col_names <- function(cnms, cv_sep=':', path_sep='/') {
+
+  cv_violate <- grepl(cv_sep, cnms, fixed=TRUE)
+  path_violate <- grepl(path_sep, cnms, fixed=TRUE)
+
+  if(any(cv_violate)) {
+    sel <- cnms[cv_violate]
+    cli::cli_warn(
+      c(x = "Column names contain col/val separator `{cv_sep}`",
+      "Following columns contain the separator: {sel}",
+      i = "Change the .cv_sep parameter to use another separator"
+
+    ))
+  }
+
+  if(any(path_violate)) {
+    sel <- cnms[path_violate]
+    cli::cli_warn(
+      c(x = "Column names contain path separator `{path_sep}`",
+      "Following columns contain the separator: {sel}",
+      i = "Change the .cv_path parameter to use another separator"
+      ))
+  }
+
 }

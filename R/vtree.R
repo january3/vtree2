@@ -162,7 +162,7 @@ as_vtree <- function(x) {
 #' vt <- vtree(titanicNA, -Age)
 #' # same as:
 #' vt <- vtree(titanicNA, Class, Sex, Survived)
-#' plot(vt)
+#' plot(vt, dir="tb")
 #' @param cases A data frame, one row per observation, one column per variable
 #' @param x A frequency table (matrix, table or data frame)
 #' @param ... Columns to use for the tree. If no columns are specified, all
@@ -172,6 +172,9 @@ as_vtree <- function(x) {
 #'           omit NA values from the denominator
 #' @param .freq_col The name of the column in a frequency table that
 #' contains the frequency counts. Default is "Freq".
+#' @param .cv_sep,.path_sep By default, the `path` column of the node data
+#' frame contains entries such as 'Class:1st/Survived:No'. If your data var
+#' columns contain `:` or `/`, change these parameters.
 #' @return an object of class vtree
 #' @importFrom dplyr select mutate group_by summarize ungroup
 #' @importFrom dplyr distinct rename rowwise c_across all_of
@@ -184,7 +187,8 @@ as_vtree <- function(x) {
 #' @importFrom tidygraph tbl_graph map_bfs_back_int
 #' @importFrom tidygraph .N .E
 #' @export
-vtree <- function(cases, ..., .vp = TRUE) {
+vtree <- function(cases, ..., .vp = TRUE,
+                  .cv_sep = ':', .path_sep = '/') {
 
   if(length(colnames(cases)) < 1L) {
     cli_abort(c(x = "No columns in the data frame cases"))
@@ -199,6 +203,7 @@ vtree <- function(cases, ..., .vp = TRUE) {
   if(length(cnms) < 1L) {
     cnms <- colnames(cases)
   }
+  .check_col_names(cnms, .cv_sep, .path_sep)
 
   if(!is.null(attr(cases, "levels"))) {
     levels <- attr(cases, "levels")
@@ -216,7 +221,7 @@ vtree <- function(cases, ..., .vp = TRUE) {
 
   pat <- vtree_pat(cases, cnms, vp = .vp)
 
-  df <- pat2nodes(pat, cnms)
+  df <- pat2nodes(pat, cnms, .cv_sep, .path_sep)
   df[["vp"]] <- .vp
 
   edges <- node2edge(df)
@@ -231,6 +236,7 @@ vtree <- function(cases, ..., .vp = TRUE) {
   })
 
   attr(vtree, "source_summary") <- summaries
+  attr(vtree, "sep") <- list(cv = .cv_sep, path = .path_sep)
   attr(vtree, "pruned") <- FALSE
   vtree
 }
@@ -322,9 +328,11 @@ cases_from_freqtable <- function(x, ..., .freq_col = "Freq") {
 #' @rdname vtree
 #' @export
 vtree_from_freqtable <- function(x, ..., .freq_col = "Freq", 
-                                 .vp = TRUE) {
+                                 .vp = TRUE,
+                                 .cv_sep = ':', .path_sep = '/') {
 
   x <- cases_from_freqtable(x, ..., .freq_col = .freq_col)
   cnms <- colnames(x)
-  vtree(cases = x, all_of(cnms), .vp = .vp)
+  vtree(cases = x, all_of(cnms), .vp = .vp,
+        .cv_sep = .cv_sep, .path_sep = .path_sep)
 }

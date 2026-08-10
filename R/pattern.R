@@ -121,6 +121,7 @@ pattern <- function(vtree) {
   attr(d1, "N") <- attr(vtree, "N")
   attr(d1, "vp") <- attr(vtree, "vp")
   attr(d1, "levels") <- attr(vtree, "levels")
+  attr(d1, "sep") <- attr(vtree, "sep")
   d1
 }
 
@@ -152,8 +153,12 @@ vtree_from_pattern <- function(pat) {
   # for each row in the pattern, we create one branch of the tree with the
   # interim nodes. The long branches are attached to the root only.
 
+  sep <- attr(pat, "sep") %||% list()
+  sep_cv <- sep$cv %||% ':'
+  sep_path <- sep$path %||% '/'
+
   nodes <- map_dfr(1:nrow(pat), \(i) {
-    nn <- collect_nodes(pat[i, ], cnms) |>
+    nn <- collect_nodes(pat[i, ], cnms, sep_cv, sep_path) |>
       mutate(level = row_number() + 1)
     # generate a "pattern" node to mimick the behavior of the original
     # vtree package with pattern=TRUE option.

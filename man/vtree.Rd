@@ -5,9 +5,16 @@
 \alias{vtree_from_freqtable}
 \title{Create a vtree object from a data frame}
 \usage{
-vtree(cases, ..., .vp = TRUE)
+vtree(cases, ..., .vp = TRUE, .cv_sep = ":", .path_sep = "/")
 
-vtree_from_freqtable(x, ..., .freq_col = "Freq", .vp = TRUE)
+vtree_from_freqtable(
+  x,
+  ...,
+  .freq_col = "Freq",
+  .vp = TRUE,
+  .cv_sep = ":",
+  .path_sep = "/"
+)
 }
 \arguments{
 \item{cases}{A data frame, one row per observation, one column per variable}
@@ -18,6 +25,10 @@ tables) will be used. Use tidyselect syntax to access columns.}
 
 \item{.vp}{valid percentage; when calculating frequencies / percentages,
 omit NA values from the denominator}
+
+\item{.cv_sep, .path_sep}{By default, the \code{path} column of the node data
+frame contains entries such as 'Class:1st/Survived:No'. If your data var
+columns contain \code{:} or \code{/}, change these parameters.}
 
 \item{x}{A frequency table (matrix, table or data frame)}
 
@@ -123,5 +134,5 @@ data(titanicNA)
 vt <- vtree(titanicNA, -Age)
 # same as:
 vt <- vtree(titanicNA, Class, Sex, Survived)
-plot(vt)
+plot(vt, dir="tb")
 }
