@@ -225,8 +225,21 @@ pat2nodes <- function(pattern, columns, cv_sep, path_sep) {
   ret
 }
 
+.check_col_names <- function(cnms, reserved, cv_sep=':', path_sep='/') {
 
-.check_col_names <- function(cnms, cv_sep=':', path_sep='/') {
+  .check_col_names_sep(cnms, cv_sep, path_sep)
+
+  if(any(cnms %in% reserved)) {
+    sel <- cnms[ cnms %in% reserved ]
+    cli_abort(c(
+      x = "Reserved columns used in the cases data frame",
+      "Following column names are reserved: {sel}",
+      i = "using these columns may lead to unexpected behavior"))
+  }
+}
+
+
+.check_col_names_sep <- function(cnms, cv_sep=':', path_sep='/') {
 
   cv_violate <- grepl(cv_sep, cnms, fixed=TRUE)
   path_violate <- grepl(path_sep, cnms, fixed=TRUE)
@@ -249,5 +262,4 @@ pat2nodes <- function(pattern, columns, cv_sep, path_sep) {
       i = "Change the .cv_path parameter to use another separator"
       ))
   }
-
 }

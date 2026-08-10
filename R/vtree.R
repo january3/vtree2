@@ -203,7 +203,11 @@ vtree <- function(cases, ..., .vp = TRUE,
   if(length(cnms) < 1L) {
     cnms <- colnames(cases)
   }
-  .check_col_names(cnms, .cv_sep, .path_sep)
+
+  reserved <- c("node_col", "node_id", "path", "freq", "count",
+                 "denom", "node_key", "tot_n", "vp")
+
+  .check_col_names(cnms, reserved, .cv_sep, .path_sep)
 
   if(!is.null(attr(cases, "levels"))) {
     levels <- attr(cases, "levels")
