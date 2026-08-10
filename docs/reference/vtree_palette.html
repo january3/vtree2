@@ -63,6 +63,7 @@
 <span>  <span class="va">vtree</span>,</span>
 <span>  palettes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Reds"</span>, <span class="st">"Blues"</span>, <span class="st">"Greens"</span>, <span class="st">"Oranges"</span>, <span class="st">"Purples"</span><span class="op">)</span>,</span>
 <span>  na_fill <span class="op">=</span> <span class="st">"white"</span>,</span>
+<span>  na_color <span class="op">=</span> <span class="st">"black"</span>,</span>
 <span>  var_palette <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  what <span class="op">=</span> <span class="st">"fill"</span>,</span>
 <span>  default_color <span class="op">=</span> <span class="st">"white"</span></span>
@@ -103,7 +104,7 @@ assigned from a palette</p></dd>
 
 
 <dt id="arg-na-fill">na_fill<a class="anchor" aria-label="anchor" href="#arg-na-fill"></a></dt>
-<dd><p>fill color used for nodes associated with NA values</p></dd>
+<dd><p>text color used for nodes associated with NA values</p></dd>
 
 
 <dt id="arg-what">what<a class="anchor" aria-label="anchor" href="#arg-what"></a></dt>
@@ -117,8 +118,7 @@ automatically chooses a contrast color for the fill.</p></dd>
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p><code>vtree_palette()</code> returns a character vector of colors for the
 levels of the variable. <code>add_palette()</code> returns the vtree object with
-the columns <code>fill</code> and <code>color</code>, and with additional attributes <code>palette</code>
-and <code>palette_vars</code>.</p>
+the columns <code>fill</code> <code>color</code>, and with additional attribute <code>palette</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -127,13 +127,22 @@ variable levels. The fill colors are stored in a new column in the nodes
 data frame called "fill". If a <code>color</code> column is missing, it will be
 added with automatic contrast colors as well, but it will not be
 overwritten if present.</p>
+<p>It also sets the mapping between colors and variable levels, stored in
+the attribute "palette", which is used when showing the legend. If you
+modify the <code>fill</code> and <code>color</code> columns manually (without using
+<code>add_palette()</code>, you will not change the color code.</p>
 <p>If the parameter <code>what</code> is <code>color</code>, then instead of generating a fill
 color from the palettes, the function generates a text color and chooses
-a contrast fill automatically.</p>
+a contrast fill color automatically.</p>
 <p><code>vtree_palette()</code> returns a color palette for a variable level in a vtree.
 The colors are chosen from the RColorBrewer package.</p>
 <p><code>var_palette()</code> generates a series of colors from a palette and assigns
 them to the provided character vector.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
+    <div class="dont-index"><p>See <code><a href="contrast_color.html">contrast_color()</a></code> for generating white/black contrast
+color automatically.</p></div>
     </div>
 
     <div class="section level2">

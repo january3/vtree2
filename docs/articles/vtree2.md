@@ -288,6 +288,111 @@ plot(vt_tbl)
 
 ### Pruning, retain and selecting
 
+#### Pruning and keeping
+
+Quite often, we don’t want to show the whole tree, but only selected
+nodes. For this, you can use the functions
+[`prune()`](https://january3.github.io/vtree2/reference/prune.md) and
+[`retain()`](https://january3.github.io/vtree2/reference/prune.md). Each
+has a few pecularities and defaults.
+
+**Pruning** a node means: remove the node from the tree, along all the
+nodes that follow it. However, with the parameter `follow_only=TRUE`,
+all the following nodes will be pruned, but the given node will be kept.
+
+**Retaining** means that you indicate which nodes you would like to
+keep, and prune all other nodes.
+
+Both pruning and retaining take a logical expression as an argument. The
+expression is evaluated in a particular context: you can use both all
+the node data frame columns (i.e., data vars such as `freq`, `n` or
+`path`), as well as the node variables (like `Class` or `Survived`). All
+this works naturally: you can specify that you want only to see the node
+where `Class == "1st"` or all nodes where `freq > 0.5`.
+
+``` r
+# all variables except for Age
+vt <- vtree_from_freqtable(Titanic, -Age)
+p1 <- plot(vt)
+# show only 1st class passengers
+p2 <- vt |>
+  retain(Class == "1st") |>
+  plot(legend_tiny = FALSE, lwidth =.8)
+# remove nodes with low frequency or number
+p3 <- vt |>
+  prune(freq < .2 | n < 20) |>
+  plot(legend_tiny = FALSE, lwidth =.8)
+# show only combinations of factors where more than a quarter of passengers
+# survived
+p4 <- vt |>
+  retain(Survived == "Yes" & freq > .25) |>
+  plot(legend_tiny = FALSE, lwidth =.8)
+plot_grid(p1, p2, p3, p4, nrow = 2,
+          labels=c("Original", "Retained Class:1st",
+         "Pruned freq < .2 | n < 20",
+         "Retained freq > .25 & Survived:Yes"),
+         label_size = 10)
+```
+
+![](vtree2_files/figure-html/nodes1-1.png)
+
+**Valid percentages and NA nodes.** There is one pecularity about how
+the NA nodes are shown. If you try to prune a node corresponding to a
+missing value, it will still be shown - if the tree was constructed with
+the so-called “valid percentages” (`.vp=TRUE`, default). VP means that
+the denominator used to calculate frequencies on the tree was the number
+of *valid* samples, i.e. excluding the missing values. Therefore,
+without the NA node shown for a VP-based tree, you lack information
+necessary to understand the percentages shown.
+
+``` r
+# all variables except for Age
+vt <- vtree(titanicNA, -Age)
+p1 <- vt |>
+  # this should prune the NA nodes, but doesn't
+  retain(Class %in% c("1st", "2nd")) |>
+  prune(is.na(Sex)) |>
+  plot(legend_tiny = FALSE, lwidth=.8)
+vt_novp <- vtree(titanicNA, -Age, .vp = FALSE)
+p2 <- vt_novp |>
+  # this one prunes the NA nodes, b/c the tree 
+  # is created with .vp = FALSE
+  retain(Class %in% c("1st", "2nd")) |>
+  prune(is.na(Sex)) |>
+  plot(legend_tiny = FALSE, lwidth=.8)
+plot_grid(p1, p2, nrow = 1,
+          labels = c("VP",
+                     "No VP"))
+```
+
+![](vtree2_files/figure-html/nodes2-1.png)
+
+**Targetting nodes.** Quite often, you want to pick one particular node
+and either prune it or select only that node for plotting. The `path`
+column contains a human-readable specification of the node which makes
+picking a certain node easy. For example, if you want to keep only the
+node corresponding to males from 3rd class (and the following nodes),
+you can ask for nodes where path is equal to `"Class:3rd/Sex:Male"`:
+
+``` r
+vt <- vtree_from_freqtable(Titanic)
+p1 <- plot(vt, legend_tiny = FALSE, dir="tb", show_root = FALSE)
+p2 <- vt |>
+  retain(path == "Class:3rd/Sex:Male") |>
+  plot(legend = TRUE, dir="tb", show_root = FALSE)
+plot_grid(p1, p2, nrow = 1, labels = c("Original tree", "Retained node"))
+```
+
+![](vtree2_files/figure-html/nodes3-1.png)
+
+Note that the legend shown on the left in the above plot still contains
+all the other variable levels, even if you can’t see them on the tree.
+This is on purpose: the stat summaries in the legend correspond to the
+whole data set on which the tree was built, and not only the portion
+that is shown in the tree.
+
+#### Finding and marking
+
 ### Creating summaries
 
 ### Creating layouts

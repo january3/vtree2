@@ -18,6 +18,7 @@ add_palette(
   vtree,
   palettes = c("Reds", "Blues", "Greens", "Oranges", "Purples"),
   na_fill = "white",
+  na_color = "black",
   var_palette = NULL,
   what = "fill",
   default_color = "white"
@@ -56,7 +57,7 @@ add_palette(
 
 - na_fill:
 
-  fill color used for nodes associated with NA values
+  text color used for nodes associated with NA values
 
 - what:
 
@@ -69,8 +70,7 @@ add_palette(
 
 `vtree_palette()` returns a character vector of colors for the levels of
 the variable. `add_palette()` returns the vtree object with the columns
-`fill` and `color`, and with additional attributes `palette` and
-`palette_vars`.
+`fill` `color`, and with additional attribute `palette`.
 
 ## Details
 
@@ -80,15 +80,26 @@ data frame called "fill". If a `color` column is missing, it will be
 added with automatic contrast colors as well, but it will not be
 overwritten if present.
 
+It also sets the mapping between colors and variable levels, stored in
+the attribute "palette", which is used when showing the legend. If you
+modify the `fill` and `color` columns manually (without using
+`add_palette()`, you will not change the color code.
+
 If the parameter `what` is `color`, then instead of generating a fill
 color from the palettes, the function generates a text color and chooses
-a contrast fill automatically.
+a contrast fill color automatically.
 
 `vtree_palette()` returns a color palette for a variable level in a
 vtree. The colors are chosen from the RColorBrewer package.
 
 `var_palette()` generates a series of colors from a palette and assigns
 them to the provided character vector.
+
+## See also
+
+See
+[`contrast_color()`](https://january3.github.io/vtree2/reference/contrast_color.md)
+for generating white/black contrast color automatically.
 
 ## Examples
 
