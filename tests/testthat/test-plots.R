@@ -42,7 +42,7 @@ test_that("plot returns a gTree object", {
   expect_setequal(c("edges", "nodes", "legend"), names(p2$children))
   expect_setequal(names(p2$children$legend$children), c("titles", "levels"))
 
-  p3 <- plot(vt, legend_tiny = FALSE)
+  p3 <- plot(vt, legend = FALSE)
   expect_setequal(c("edges", "nodes"), names(p3$children))
 })
     
@@ -90,7 +90,7 @@ test_that("plotting works (smoke tests)", {
   expect_no_error(plot(vt, lwidth = .1, layout = "flushed_left"))
   expect_no_error(plot(vt, lwidth = .1, layout = "flushed_right"))
   expect_no_error(plot(vt, show_root = FALSE))
-  expect_no_error(plot(vt, legend_tiny = FALSE))
+  expect_no_error(plot(vt, legend = FALSE))
   expect_no_error(plot(vt, fontsizes = list(nodes=9, var_labels=10,
                                             legend_labels=11)))
   expect_no_error(plot(vt, fontsizes = list(nodes="adaptive", var_labels=10,
@@ -124,7 +124,7 @@ test_that("plot preserves user-provided labels and colors", {
       fill = "pink",
       color = "blue")
 
-  p <- plot(vt, legend_tiny = FALSE)
+  p <- plot(vt, legend = FALSE)
   nodes <- as_tibble(p$layout)
 
   expect_equal(nodes$label, paste0("node-", nodes$node_id))
@@ -153,7 +153,7 @@ test_that("makeContent applies fixed font size to node labels", {
   # on a small device, fontsizes should decrease
   p <- plot(vt, fontsizes = list(nodes = "adaptive"),
             show_root = FALSE,
-            legend_tiny = FALSE)
+            legend = FALSE)
   fs <- unlist(map(p$children$nodes$children$text$children,
                    \(x) x$gp$fontsize))
   p2 <- grid::makeContent(p)
@@ -163,7 +163,7 @@ test_that("makeContent applies fixed font size to node labels", {
 
   p <- plot(vt, fontsizes = list(nodes = "fixed"),
             show_root = FALSE,
-            legend_tiny = FALSE)
+            legend = FALSE)
   fs <- unlist(map(p$children$nodes$children$text$children,
                    \(x) x$gp$fontsize))
   p2 <- grid::makeContent(p)
@@ -177,7 +177,7 @@ test_that("makeContent applies fixed font size to node labels", {
   dev.new <- grDevices::pdf(tmpfile, width=12, height=12)
   p <- plot(vt, fontsizes = list(nodes = "adaptive"),
             show_root = FALSE,
-            legend_tiny = FALSE)
+            legend = FALSE)
   fs <- unlist(map(p$children$nodes$children$text$children,
                    \(x) x$gp$fontsize))
   p2 <- grid::makeContent(p)
@@ -187,7 +187,7 @@ test_that("makeContent applies fixed font size to node labels", {
 
   p <- plot(vt, fontsizes = list(nodes = "fixed"),
             show_root = FALSE,
-            legend_tiny = FALSE)
+            legend = FALSE)
   fs <- unlist(map(p$children$nodes$children$text$children,
                    \(x) x$gp$fontsize))
   p2 <- grid::makeContent(p)
@@ -199,7 +199,7 @@ test_that("makeContent applies fixed font size to node labels", {
 
   dev.new <- grDevices::pdf(tmpfile, width=5, height=5)
   # fontsizes set directly should not change
-  p <- plot(vt, fontsizes = list(nodes = 8), legend_tiny = FALSE)
+  p <- plot(vt, fontsizes = list(nodes = 8), legend = FALSE)
 
   p2 <- grid::makeContent(p)
 

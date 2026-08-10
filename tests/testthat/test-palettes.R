@@ -11,18 +11,24 @@ test_that("adding palettes works", {
   pal <- attr(vtp, "palette")
   expect_true(!is.null(pal))
   expect_in(c("fill", "color"), names(pal))
-  expect_in(names(vtp), names(pal$fill))
-  expect_in(names(vtp), names(pal$color))
-  expect_in(unlist(pal$color), c("black", "white"))
+  expect_type(pal$fill, "list")
+  expect_type(pal$color, "list")
+  expect_in(c("scale", "na", "vars"), names(pal$fill))
+  expect_in(c("scale", "na", "vars"), names(pal$color))
+  expect_in(names(vtp), names(pal$fill$scale))
+  expect_in(names(vtp), names(pal$color$scale))
+  expect_in(unlist(pal$color$scale), c("black", "white"))
 
   expect_setequal(nd$fill, c("white", unlist(pal$fill)))
 
-  vtp <- add_palette(vt, what="color")
+  vtp <- add_palette(vt, what="text")
   nd <- as_tibble(vtp)
+
   expect_in(nd$fill, c("black", "white"))
+
   pal <- attr(vtp, "palette")
-  expect_in(unlist(pal$fill), c("black", "white"))
-  expect_setequal(nd$color, c("white", unlist(pal$color)))
+  expect_in(unlist(pal$fill$scale), c("black", "white"))
+  expect_setequal(nd$color, c("white", unlist(pal$color$scale)))
 
   vtp <- add_palette(vt, var_palette= 
                      list(Class = c("1st" = "red", "2nd" = "blue",
@@ -32,10 +38,10 @@ test_that("adding palettes works", {
   expect_setequal(nd$fill[nd$node_col == "Class"],
                   c("red", "blue", "green", "yellow"))
   pal <- attr(vtp, "palette")
-  expect_setequal(pal$fill$Class, c("red", "blue", "green", "yellow"))
-  expect_setequal(pal$color$Class, c("black", "white"))
+  expect_setequal(pal$fill$scale$Class, c("red", "blue", "green", "yellow"))
+  expect_setequal(pal$color$scale$Class, c("black", "white"))
 
-  vtp <- add_palette(vt, what="color", var_palette= 
+  vtp <- add_palette(vt, what="text", var_palette= 
                      list(Class = c("1st" = "red", "2nd" = "blue",
                                     "3rd" = "green", "Crew" = "yellow")))
   nd <- as_tibble(vtp)
@@ -43,8 +49,8 @@ test_that("adding palettes works", {
   expect_setequal(nd$color[nd$node_col == "Class"],
                   c("red", "blue", "green", "yellow"))
   pal <- attr(vtp, "palette")
-  expect_setequal(pal$color$Class, c("red", "blue", "green", "yellow"))
-  expect_setequal(pal$fill$Class, c("black", "white"))
+  expect_setequal(pal$color$scale$Class, c("red", "blue", "green", "yellow"))
+  expect_setequal(pal$fill$scale$Class, c("black", "white"))
 })
 
 test_that("edge cases work", {
@@ -54,14 +60,12 @@ test_that("edge cases work", {
 
   expect_message(plot(vtp), "palette attribute is NULL")
   expect_message(plot(vtp, legend=TRUE), "palette attribute is NULL")
-  expect_no_message(plot(vtp, legend_tiny = FALSE))
+  expect_no_message(plot(vtp, legend = FALSE))
 
   vtp <- add_palette(vt)
   attr(vtp, "palette")$fill <- NULL
   expect_no_error(plot(vtp, legend = TRUE))
   attr(vtp, "palette")$color <- NULL
-  expect_no_error(plot(vtp, legend = TRUE))
-  attr(vtp, "palette")$vars <- NULL
   expect_no_error(plot(vtp, legend = TRUE))
 })
 
