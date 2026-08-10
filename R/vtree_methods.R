@@ -21,6 +21,9 @@ as_tbl_graph.vtree <- function(x, ...) {
 #'
 #' @param x A vtree object.
 #' @return A character vector of variable names
+#' @examples
+#' vt <- vtree(titanicNA)
+#' names(vt)
 #' @export
 names.vtree <- function(x) {
   attr(x, "cols")
@@ -78,6 +81,10 @@ is_vp <- function(x) {
 #' @return An object of class vtree
 #' @seealso
 #' [dplyr::mutate()], [tidygraph::activate()]
+#' @examples
+#' vt <- vtree(titanicNA) |>
+#'   add_labels() |>
+#'   mutate(label = ifelse(is.na(node_val), "Missing", label))
 #' @export
 mutate.vtree <- function(.data, ..., .edges = FALSE, .check = TRUE) {
   if(.edges) {
@@ -116,6 +123,9 @@ mutate.vtree <- function(.data, ..., .edges = FALSE, .check = TRUE) {
 #' with each ordered vector containing the levels of that variable.
 #' @param x A vtree object.
 #' @return A list of character vectors, one for each variable split in the tree,
+#' @examples
+#' vt <- vtree(titanicNA)
+#' levels(vt)
 #' @export
 levels.vtree <- function(x) {
   attr(x, "levels")
