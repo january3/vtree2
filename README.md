@@ -191,10 +191,10 @@ More docs available [here](https://january3.github.io/vtree2/).
 
 - the nodes of the diagrammer are adjusted to the size of the labels. We
   could do that, actually. I think it doesn’t look so good, but OK.
-- better support in add_palette for 1/ variable driven palettes
+- ~~better support in add_palette for 1/ variable driven palettes
   (i.e. one color for one tree level / variable of the tree,
   deterministic such that colors don’t change if we prune a tree) 2/
-  fully customized palettes
+  fully customized palettes~~
 - vtree constructors take only character or factor variables
 - ~~original vtree tries to keep sister NA nodes of the retained nodes.
   This behavior is reproduced by the keep_na_sisters parameter, which
@@ -244,6 +244,8 @@ More docs available [here](https://january3.github.io/vtree2/).
 
 ## BUGS
 
+- ~~“Missing” is missing from the legend on the user guide example for
+  adding aliases~~
 - legend titles sometimes overlap with the legend
 - ~~if some variables disappear from the plot, the legend throws an
   error~~
