@@ -9,7 +9,7 @@ test_that("vtree works", {
   nodes <- as_tibble(vt)
   expect_equal(nrow(nodes), 13)
   expect_in(c("path", "node_col", "node_val", "parent",
-              "path_l", "level", "n", "freq", "vp"), colnames(nodes))
+              "path_l", "level", "n", "freq"), colnames(nodes))
 
   expect_setequal(c("root", "Class", "Survived"), unique(nodes$node_col))
 
@@ -51,7 +51,7 @@ test_that("vtree_from_freqtable works", {
 
   expect_equal(nrow(nodes), 51)
   expect_in(c("path", "node_col", "node_val", "parent",
-              "path_l", "level", "n", "freq", "vp"), colnames(nodes))
+              "path_l", "level", "n", "freq"), colnames(nodes))
   expect_setequal(c("root", "Class", "Sex", "Age",
                     "Survived"), unique(nodes$node_col))
 
@@ -201,16 +201,17 @@ test_that("errors are raised", {
   xx <- data.frame()
   expect_error(vtree(xx), "No columns in the data frame cases")
 
-  attr(cases, "levels") <- list(Class = "1st")
-  expect_error(vtree(cases, Sex), "not all column names in levels")
-
   expect_error(mutate(vt, tot_n = 99),
                "tried to modify following immutable column")
   expect_no_error(mutate(vt, tot_n = 99, .check = FALSE))
 
 })
 
-test_that("separators are checked and set", {
+test_that("column names are checked", {
+  cases <- cases_from_freqtable(Titanic)
+  colnames(cases)[2] <- "freq"
+  expect_error(vtree(cases, Class, `freq`, Survived),
+               "Reserved columns used in the cases data frame")
 
   cases <- cases_from_freqtable(Titanic)
   vt <- vtree(cases, Class, Sex, Survived)

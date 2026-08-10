@@ -3,7 +3,7 @@
     Code
       nodes
     Output
-      # A tibble: 15 x 16
+      # A tibble: 15 x 15
          path   node_id node_key parent parent_id path_l       level node_col node_val
          <chr>    <int> <chr>    <chr>      <int> <list>       <dbl> <chr>    <chr>   
        1 Class~       7 node_7   Class~         2 <named list>     2 Sex      Female  
@@ -21,6 +21,6 @@
       13 Class~      19 node_19  Class~         6 <named list>     2 Sex      Female  
       14 Class~      20 node_20  Class~         6 <named list>     2 Sex      Male    
       15 Class~      21 node_21  Class~         6 <named list>     2 Sex      <NA>    
-      # i 7 more variables: n <int>, tot_n <int>, missing <int>, freq <dbl>,
-      #   denom <int>, vp <lgl>, leaf <lgl>
+      # i 6 more variables: n <int>, tot_n <int>, missing <int>, freq <dbl>,
+      #   denom <int>, leaf <lgl>
 
