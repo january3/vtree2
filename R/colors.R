@@ -81,8 +81,7 @@ contrast_color <- function(color) {
 #'        palettes defined by the `palettes` argument, even if
 #'        `var_palette` is also defined.
 #' @param pal name of a palette (e.g. "Greens")
-#' @param na_fill fill color used for nodes associated with NA values
-#' @param na_fill text color used for nodes associated with NA values
+#' @param na color used for nodes associated with NA values
 #' @examples
 #' vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived)
 #' vtree_palette(vt)
@@ -101,7 +100,7 @@ contrast_color <- function(color) {
 #'   plot()
 #'
 #' # color the NA nodes with red
-#' vt |> add_palette(palettes = "Blues", na_fill = "red") |>
+#' vt |> add_palette(palettes = "Blues", na = "red") |>
 #'    plot()
 #'
 #' # males blue, females red; rest automatic
@@ -157,14 +156,14 @@ var_palette <- function(var_levels, pal) {
 
 }
 
-.node_fill <- function(node_col, node_val, na_fill, pal) {
+.node_fill <- function(node_col, node_val, na, pal) {
 
   node_val <- as.character(node_val)
   candidates <- map2_chr(node_val, node_col, \(val, var) {
-      pal[[var]][as.character(val)] %||% na_fill
+      pal[[var]][as.character(val)] %||% na
   })
 
-  ifelse(is.na(node_val), na_fill, candidates)
+  ifelse(is.na(node_val), na, candidates)
 }
 
 get_contrast_pal <- function(pal) {
