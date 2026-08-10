@@ -189,6 +189,7 @@ vtree_from_pattern <- function(pat) {
   vtree <- tbl_graph(nodes = nodes, edges = edges,
                      directed = TRUE, node_key = "node_key")
 
+  attr(vtree, "vp") <- attr(pat, "vp")
   attr(vtree, "cols") <- c("pattern", cnms)
   attr(vtree, "levels") <- c(pattern="", levels)
   ret <- as_vtree(vtree)
