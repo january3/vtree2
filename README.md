@@ -56,6 +56,7 @@ vt <- vtree(tdf, Class, Sex, Survived)
 vt
 #> vtree object with 3 variables and 2201 observations
 #> Variables: Class, Sex, Survived 
+#> Frequencies computed as valid percentages (vp == TRUE)
 #> Overview:
 #> # Tibble (class tbl_df) 6 x 29:
 #> # (Showing rows 1 - 20 out of 29)
@@ -205,10 +206,12 @@ More docs available [here](https://january3.github.io/vtree2/).
 - ~~fix the mess around legend param~~
 - ~~vtree constructors should check for presence of ‘/’ and ‘:’ in
   variable names~~
-- vtree constructors should test for the presence of structural columns
-  in the data. e.g. if the data has already a column called “n” or
-  “freq”, we will have a clash when pruning and virtual columns are
-  created.
+- ~~vtree constructors should check that all columns are factors or
+  characters~~
+- ~~vtree constructors should test for the presence of structural
+  columns in the data. e.g. if the data has already a column called “n”
+  or “freq”, we will have a clash when pruning and virtual columns are
+  created.~~
 - print.vtree should show the status of added layouts / colors / etc etc
 - ~~pruning:~~
   - ~~streamline and clean up pruning / selecting nodes~~
