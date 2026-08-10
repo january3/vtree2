@@ -578,14 +578,14 @@ length as the number of nodes - to indicate which nodes should have their
 labels modified. For example, you may want a different information for the
 leaf nodes as for other nodes:
 
-```{r labels_mask,fig.width=4,fig.height=4}
+```{r labels_mask,fig.width=5,fig.height=4}
 vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived) |>
   retain(path == "Class:1st") # only keep the first class passengers
 mask <- find_nodes(vt, leaf) # leaf is a logical vector
 add_labels(vt, mask = mask, template = "long") |>
   add_labels(mask = !mask, fmt = glue("{node_val}")) |>
   plot(legend = FALSE, dir="tb", show_root = FALSE,
-       lwidth = 0.5, lheight = 0.5)
+       lwidth = 0.7, lheight = 0.5)
 ```
 
 # Adding and modifying colors

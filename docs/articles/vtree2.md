@@ -100,7 +100,7 @@ data(titanicNA)
 head(titanicNA)
 #> # A tibble: 6 × 4
 #>   Class Sex   Age   Survived
-#>   <chr> <chr> <chr> <chr>   
+#>   <fct> <fct> <fct> <fct>   
 #> 1 3rd   Male  Child No      
 #> 2 3rd   Male  Child No      
 #> 3 3rd   NA    Child No      
@@ -121,6 +121,7 @@ vt <- vtree(titanicNA, Class, Survived)
 vt
 #> vtree object with 2 variables and 2201 observations
 #> Variables: Class, Survived 
+#> Frequencies computed as valid percentages (vp == TRUE)
 #> Overview:
 #> # Tibble (class tbl_df) 6 x 16:
 #>   │path                   │n    │freq │tot_n│missing│denom
@@ -292,14 +293,14 @@ which is just a wrapper around `colnames(as_tibble(vt))`:
 nodecols(vt)
 #>  [1] "path"      "node_id"   "node_key"  "parent"    "parent_id" "path_l"   
 #>  [7] "level"     "node_col"  "node_val"  "n"         "tot_n"     "missing"  
-#> [13] "freq"      "denom"     "vp"        "leaf"
+#> [13] "freq"      "denom"     "leaf"
 ```
 
 You can convert the vtree object to a data frame with `as_tibble`:
 
 ``` r
 as_tibble(vt)
-#> # A tibble: 13 × 16
+#> # A tibble: 13 × 15
 #>    path   node_id node_key parent parent_id path_l       level node_col node_val
 #>    <chr>    <int> <chr>    <chr>      <int> <list>       <dbl> <chr>    <chr>   
 #>  1 root         1 node_1   NA            NA <lgl [1]>        0 root     ""      
@@ -315,8 +316,8 @@ as_tibble(vt)
 #> 11 Class…      11 node_11  Class…         4 <named list>     2 Survived "Yes"   
 #> 12 Class…      12 node_12  Class…         5 <named list>     2 Survived "No"    
 #> 13 Class…      13 node_13  Class…         5 <named list>     2 Survived "Yes"   
-#> # ℹ 7 more variables: n <int>, tot_n <int>, missing <int>, freq <dbl>,
-#> #   denom <int>, vp <lgl>, leaf <lgl>
+#> # ℹ 6 more variables: n <int>, tot_n <int>, missing <int>, freq <dbl>,
+#> #   denom <int>, leaf <lgl>
 ```
 
 ### Vtree objects as graphs
@@ -484,14 +485,14 @@ vt <- vtree(titanicNA, Class, Survived)
 # which nodes have a low frequency?
 mask <- find_nodes(vt, freq < 0.2)
 as_tibble(vt) |> filter(mask)
-#> # A tibble: 3 × 16
+#> # A tibble: 3 × 15
 #>   path    node_id node_key parent parent_id path_l       level node_col node_val
 #>   <chr>     <int> <chr>    <chr>      <int> <list>       <dbl> <chr>    <chr>   
 #> 1 Class:…       2 node_2   root           1 <named list>     1 Class    1st     
 #> 2 Class:…       3 node_3   root           1 <named list>     1 Class    2nd     
 #> 3 Class:…       6 node_6   root           1 <named list>     1 Class    NA      
-#> # ℹ 7 more variables: n <int>, tot_n <int>, missing <int>, freq <dbl>,
-#> #   denom <int>, vp <lgl>, leaf <lgl>
+#> # ℹ 6 more variables: n <int>, tot_n <int>, missing <int>, freq <dbl>,
+#> #   denom <int>, leaf <lgl>
 
 # mark nodes with low frequency with pink
 # all other nodes will be white
@@ -696,7 +697,7 @@ mask <- find_nodes(vt, leaf) # leaf is a logical vector
 add_labels(vt, mask = mask, template = "long") |>
   add_labels(mask = !mask, fmt = glue("{node_val}")) |>
   plot(legend = FALSE, dir="tb", show_root = FALSE,
-       lwidth = 0.5, lheight = 0.5)
+       lwidth = 0.7, lheight = 0.5)
 ```
 
 ![](vtree2_files/figure-html/labels_mask-1.png)

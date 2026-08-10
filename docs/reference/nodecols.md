@@ -25,5 +25,5 @@ vt <- vtree(titanicNA, Class, Sex, Survived)
 nodecols(vt)
 #>  [1] "path"      "node_id"   "node_key"  "parent"    "parent_id" "path_l"   
 #>  [7] "level"     "node_col"  "node_val"  "n"         "tot_n"     "missing"  
-#> [13] "freq"      "denom"     "vp"        "leaf"     
+#> [13] "freq"      "denom"     "leaf"     
 ```

@@ -164,7 +164,7 @@ some of the values were replaced by NAs to simulate missing data:</p>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">titanicNA</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 4</span></span></span>
 <span><span class="co">#&gt;   Class Sex   Age   Survived</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   </span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span> <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span> <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span> <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span>   </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 3rd   Male  Child No      </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 3rd   Male  Child No      </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 3rd   <span style="color: #BB0000;">NA</span>    Child No      </span></span>
@@ -182,6 +182,7 @@ of levels:</p>
 <span><span class="va">vt</span></span>
 <span><span class="co">#&gt; <span style="color: #0000BB;">vtree object with 2 variables and 2201 observations</span></span></span>
 <span><span class="co"><span style="color: #0000BB;">#&gt; </span>Variables: Class, Survived </span></span>
+<span><span class="co">#&gt; Frequencies computed as valid percentages (vp == TRUE)</span></span>
 <span><span class="co">#&gt; <span style="color: #0000BB;">Overview:</span></span></span>
 <span><span class="co"><span style="color: #0000BB;">#&gt; </span><span style="color: #555555; font-style: italic;"># Tibble (class tbl_df) 6 x 16:</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BBBBBB; background-color: #0087AF; font-weight: bold;">  │path                   │n    │freq │tot_n│missing│denom</span></span></span>
@@ -354,12 +355,12 @@ with the various <code>add_*()</code> functions, for example:</p>
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/nodecols.html">nodecols</a></span><span class="op">(</span><span class="va">vt</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  [1] "path"      "node_id"   "node_key"  "parent"    "parent_id" "path_l"   </span></span>
 <span><span class="co">#&gt;  [7] "level"     "node_col"  "node_val"  "n"         "tot_n"     "missing"  </span></span>
-<span><span class="co">#&gt; [13] "freq"      "denom"     "vp"        "leaf"</span></span></code></pre></div>
+<span><span class="co">#&gt; [13] "freq"      "denom"     "leaf"</span></span></code></pre></div>
 <p>You can convert the vtree object to a data frame with
 <code>as_tibble</code>:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://tibble.tidyverse.org/reference/as_tibble.html" class="external-link">as_tibble</a></span><span class="op">(</span><span class="va">vt</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 13 × 16</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 13 × 15</span></span></span>
 <span><span class="co">#&gt;    path   node_id node_key parent parent_id path_l       level node_col node_val</span></span>
 <span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;list&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> root         1 node_1   <span style="color: #BB0000;">NA</span>            <span style="color: #BB0000;">NA</span> <span style="color: #949494;">&lt;lgl [1]&gt;</span>        0 root     <span style="color: #949494;">""</span>      </span></span>
@@ -375,8 +376,8 @@ with the various <code>add_*()</code> functions, for example:</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">11</span> Class…      11 node_11  Class…         4 <span style="color: #949494;">&lt;named list&gt;</span>     2 Survived <span style="color: #949494;">"</span>Yes<span style="color: #949494;">"</span>   </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">12</span> Class…      12 node_12  Class…         5 <span style="color: #949494;">&lt;named list&gt;</span>     2 Survived <span style="color: #949494;">"</span>No<span style="color: #949494;">"</span>    </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">13</span> Class…      13 node_13  Class…         5 <span style="color: #949494;">&lt;named list&gt;</span>     2 Survived <span style="color: #949494;">"</span>Yes<span style="color: #949494;">"</span>   </span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 7 more variables: n &lt;int&gt;, tot_n &lt;int&gt;, missing &lt;int&gt;, freq &lt;dbl&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   denom &lt;int&gt;, vp &lt;lgl&gt;, leaf &lt;lgl&gt;</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 6 more variables: n &lt;int&gt;, tot_n &lt;int&gt;, missing &lt;int&gt;, freq &lt;dbl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   denom &lt;int&gt;, leaf &lt;lgl&gt;</span></span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="vtree-objects-as-graphs">Vtree objects as graphs<a class="anchor" aria-label="anchor" href="#vtree-objects-as-graphs"></a>
@@ -525,14 +526,14 @@ logical vector indicating which nodes match a certain condition or
 <span><span class="co"># which nodes have a low frequency?</span></span>
 <span><span class="va">mask</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prune.html">find_nodes</a></span><span class="op">(</span><span class="va">vt</span>, <span class="va">freq</span> <span class="op">&lt;</span> <span class="fl">0.2</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://tibble.tidyverse.org/reference/as_tibble.html" class="external-link">as_tibble</a></span><span class="op">(</span><span class="va">vt</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">mask</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 16</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 15</span></span></span>
 <span><span class="co">#&gt;   path    node_id node_key parent parent_id path_l       level node_col node_val</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;list&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> Class:…       2 node_2   root           1 <span style="color: #949494;">&lt;named list&gt;</span>     1 Class    1st     </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> Class:…       3 node_3   root           1 <span style="color: #949494;">&lt;named list&gt;</span>     1 Class    2nd     </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> Class:…       6 node_6   root           1 <span style="color: #949494;">&lt;named list&gt;</span>     1 Class    <span style="color: #BB0000;">NA</span>      </span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 7 more variables: n &lt;int&gt;, tot_n &lt;int&gt;, missing &lt;int&gt;, freq &lt;dbl&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   denom &lt;int&gt;, vp &lt;lgl&gt;, leaf &lt;lgl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 6 more variables: n &lt;int&gt;, tot_n &lt;int&gt;, missing &lt;int&gt;, freq &lt;dbl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   denom &lt;int&gt;, leaf &lt;lgl&gt;</span></span></span>
 <span></span>
 <span><span class="co"># mark nodes with low frequency with pink</span></span>
 <span><span class="co"># all other nodes will be white</span></span>
@@ -721,8 +722,8 @@ different information for the leaf nodes as for other nodes:</p>
 <span><span class="fu"><a href="../reference/add_labels.html">add_labels</a></span><span class="op">(</span><span class="va">vt</span>, mask <span class="op">=</span> <span class="va">mask</span>, template <span class="op">=</span> <span class="st">"long"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/add_labels.html">add_labels</a></span><span class="op">(</span>mask <span class="op">=</span> <span class="op">!</span><span class="va">mask</span>, fmt <span class="op">=</span> <span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html" class="external-link">glue</a></span><span class="op">(</span><span class="st">"{node_val}"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span>legend <span class="op">=</span> <span class="cn">FALSE</span>, dir<span class="op">=</span><span class="st">"tb"</span>, show_root <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>       lwidth <span class="op">=</span> <span class="fl">0.5</span>, lheight <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span></span></code></pre></div>
-<p><img src="vtree2_files/figure-html/labels_mask-1.png" class="r-plt" alt="" width="384"></p>
+<span>       lwidth <span class="op">=</span> <span class="fl">0.7</span>, lheight <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span></span></code></pre></div>
+<p><img src="vtree2_files/figure-html/labels_mask-1.png" class="r-plt" alt="" width="480"></p>
 </div>
 </div>
 <div class="section level2">

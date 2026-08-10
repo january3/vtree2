@@ -203,26 +203,31 @@
 <h2 id="todoproblems">TODO/PROBLEMS<a class="anchor" aria-label="anchor" href="#todoproblems"></a>
 </h2>
 <ul>
+<li>write a manual in the main vignette [——| ] 85% complete</li>
 <li>the nodes of the diagrammer are adjusted to the size of the labels. We could do that, actually. I think it doesn’t look so good, but OK.</li>
 <li><del>better support in add_palette for 1/ variable driven palettes (i.e. one color for one tree level / variable of the tree, deterministic such that colors don’t change if we prune a tree) 2/ fully customized palettes</del></li>
 <li>vtree constructors take only character or factor variables</li>
 <li><del>original vtree tries to keep sister NA nodes of the retained nodes. This behavior is reproduced by the keep_na_sisters parameter, which adds NA nodes to the retained nodes. However, if we target an NA node with is.na(), then the behavior results in the NA node being kept.</del></li>
 <li><del>sameline template for add_labels()</del></li>
-<li>vtree constructors should check for presence of ‘/’ and ‘:’ in variable names</li>
+<li><del>fix the mess around legend param</del></li>
+<li><del>vtree constructors should check for presence of ‘/’ and ‘:’ in variable names</del></li>
 <li>vtree constructors should test for the presence of structural columns in the data. e.g. if the data has already a column called “n” or “freq”, we will have a clash when pruning and virtual columns are created.</li>
 <li>print.vtree should show the status of added layouts / colors / etc etc</li>
-<li>pruning:
+<li>
+<del>pruning:</del>
 <ul>
 <li><del>streamline and clean up pruning / selecting nodes</del></li>
-<li>remove mark_only parameter, enough to have “mark()”</li>
-<li>unexport find_parents / find_children</li>
+<li>
+<del>remove mark_only parameter, enough to have “mark()”</del> -&gt; nah, it is useful for debugging</li>
+<li>
+<del>unexport find_parents / find_children</del> -&gt; nah, they might be useful</li>
 <li><del>remove the na.rm tag</del></li>
 </ul>
 </li>
 <li>add_layout should not modify shape if present</li>
 <li>the arrows should be attached dynamically in grob.R rather than in layout?</li>
-<li>write a manual in the main vignette [—–| ] 80% complete</li>
-<li>add prefix and suffix parameters to add_labels, to make the handling easier - nah, you can just paste() it.</li>
+<li>
+<del>add prefix and suffix parameters to add_labels, to make the handling easier</del> - nah, you can just paste() it.</li>
 <li>how is vtree actually handling the palettes?</li>
 <li><del>root node should not show percentages on default labels</del></li>
 <li><del>make sure that node_name is used for displaying variable names</del></li>
@@ -248,13 +253,14 @@
 <h2 id="bugs">BUGS<a class="anchor" aria-label="anchor" href="#bugs"></a>
 </h2>
 <ul>
+<li>aliases are ignored for the legend. Maybe aliases should behave like palettes, i.e. also set an attribute to be used by legend?</li>
 <li><del>“Missing” is missing from the legend on the user guide example for adding aliases</del></li>
 <li>legend titles sometimes overlap with the legend</li>
 <li><del>if some variables disappear from the plot, the legend throws an error</del></li>
 <li><del>prune(!Severity %in% c(“Mild”, “Moderate”), follow_only = TRUE) does not work</del></li>
 <li><del>na.rm handling in prune() is not consistent, at least not with vtree’s behavior</del></li>
 <li><del>layout=“proportional” stopped working</del></li>
-<li>with precomputed layout, plot doesn’t know that the direction is vertical and the legends suck -&gt; should the legends be computed by the layout function? naaaah. layout should store the attributes via an exported function. Should we make an S3 class? vtree_layout?</li>
+<li><del>with precomputed layout, plot doesn’t know that the direction is vertical and the legends suck -&gt; should the legends be computed by the layout function? naaaah. layout should store the attributes via an exported function. Should we make an S3 class? vtree_layout?</del></li>
 </ul>
 </div>
 </div>

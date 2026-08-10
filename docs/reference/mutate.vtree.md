@@ -51,3 +51,9 @@ least this mutate gives some protection.
 [`tidygraph::activate()`](https://tidygraph.data-imaginist.com/reference/activate.html)
 
 ## Examples
+
+``` r
+vt <- vtree(titanicNA) |>
+  add_labels() |>
+  mutate(label = ifelse(is.na(node_val), "Missing", label))
+```

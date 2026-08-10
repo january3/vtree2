@@ -207,6 +207,7 @@ More docs available [here](https://january3.github.io/vtree2/).
 
 ## TODO/PROBLEMS
 
+- write a manual in the main vignette \[——\| \] 85% complete
 - the nodes of the diagrammer are adjusted to the size of the labels. We
   could do that, actually. I think it doesn’t look so good, but OK.
 - ~~better support in add_palette for 1/ variable driven palettes
@@ -219,24 +220,26 @@ More docs available [here](https://january3.github.io/vtree2/).
   adds NA nodes to the retained nodes. However, if we target an NA node
   with is.na(), then the behavior results in the NA node being kept.~~
 - ~~sameline template for add_labels()~~
-- vtree constructors should check for presence of ‘/’ and ‘:’ in
-  variable names
+- ~~fix the mess around legend param~~
+- ~~vtree constructors should check for presence of ‘/’ and ‘:’ in
+  variable names~~
 - vtree constructors should test for the presence of structural columns
   in the data. e.g. if the data has already a column called “n” or
   “freq”, we will have a clash when pruning and virtual columns are
   created.
 - print.vtree should show the status of added layouts / colors / etc etc
-- pruning:
+- ~~pruning:~~
   - ~~streamline and clean up pruning / selecting nodes~~
-  - remove mark_only parameter, enough to have “mark()”
-  - unexport find_parents / find_children
+  - ~~remove mark_only parameter, enough to have “mark()”~~ -\> nah, it
+    is useful for debugging
+  - ~~unexport find_parents / find_children~~ -\> nah, they might be
+    useful
   - ~~remove the na.rm tag~~
 - add_layout should not modify shape if present
 - the arrows should be attached dynamically in grob.R rather than in
   layout?
-- write a manual in the main vignette \[—–\| \] 80% complete
-- add prefix and suffix parameters to add_labels, to make the handling
-  easier - nah, you can just paste() it.
+- ~~add prefix and suffix parameters to add_labels, to make the handling
+  easier~~ - nah, you can just paste() it.
 - how is vtree actually handling the palettes?
 - ~~root node should not show percentages on default labels~~
 - ~~make sure that node_name is used for displaying variable names~~
@@ -262,6 +265,8 @@ More docs available [here](https://january3.github.io/vtree2/).
 
 ## BUGS
 
+- aliases are ignored for the legend. Maybe aliases should behave like
+  palettes, i.e. also set an attribute to be used by legend?
 - ~~“Missing” is missing from the legend on the user guide example for
   adding aliases~~
 - legend titles sometimes overlap with the legend
@@ -272,10 +277,10 @@ More docs available [here](https://january3.github.io/vtree2/).
 - ~~na.rm handling in prune() is not consistent, at least not with
   vtree’s behavior~~
 - ~~layout=“proportional” stopped working~~
-- with precomputed layout, plot doesn’t know that the direction is
+- ~~with precomputed layout, plot doesn’t know that the direction is
   vertical and the legends suck -\> should the legends be computed by
   the layout function? naaaah. layout should store the attributes via an
-  exported function. Should we make an S3 class? vtree_layout?
+  exported function. Should we make an S3 class? vtree_layout?~~
 
 # Package index
 

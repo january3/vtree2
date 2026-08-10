@@ -113,7 +113,7 @@ added:
 ``` r
 vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived)
 add_layout(vt, layout = "regular", dir = "lr") |> tibble::as_tibble()
-#> # A tibble: 29 × 26
+#> # A tibble: 29 × 25
 #>    path   node_id node_key parent parent_id path_l       level node_col node_val
 #>    <chr>    <int> <chr>    <chr>      <int> <list>       <dbl> <chr>    <chr>   
 #>  1 root         1 node_1   NA            NA <lgl [1]>        0 root     ""      
@@ -127,10 +127,10 @@ add_layout(vt, layout = "regular", dir = "lr") |> tibble::as_tibble()
 #>  9 Class…       9 node_9   Class…         3 <named list>     2 Sex      "Female"
 #> 10 Class…      10 node_10  Class…         4 <named list>     2 Sex      "Male"  
 #> # ℹ 19 more rows
-#> # ℹ 17 more variables: n <int>, tot_n <int>, missing <int>, freq <dbl>,
-#> #   denom <int>, vp <lgl>, leaf <lgl>, nleafs <int>, offset <int>,
-#> #   offset_tot <int>, full_w <dbl>, width <dbl>, x <dbl>, height <dbl>,
-#> #   full_h <dbl>, y <dbl>, shape <chr>
+#> # ℹ 16 more variables: n <int>, tot_n <int>, missing <int>, freq <dbl>,
+#> #   denom <int>, leaf <lgl>, nleafs <int>, offset <int>, offset_tot <int>,
+#> #   full_w <dbl>, width <dbl>, x <dbl>, height <dbl>, full_h <dbl>, y <dbl>,
+#> #   shape <chr>
 # the layout parameter from plot() is passed on to add_layout()
 plot(vt, layout="proportional")
 
