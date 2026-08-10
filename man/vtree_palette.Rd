@@ -19,6 +19,7 @@ add_palette(
   vtree,
   palettes = c("Reds", "Blues", "Greens", "Oranges", "Purples"),
   na_fill = "white",
+  na_color = "black",
   var_palette = NULL,
   what = "fill",
   default_color = "white"
@@ -42,7 +43,7 @@ assigned from a palette}
 
 \item{pal}{name of a palette (e.g. "Greens")}
 
-\item{na_fill}{fill color used for nodes associated with NA values}
+\item{na_fill}{text color used for nodes associated with NA values}
 
 \item{what}{By default, add_palette() adds a fill color for the nodes
 and automatically chooses a contrast color for the text. If

@@ -114,7 +114,14 @@
 
 .get_vals <- function(node_col, node_val, pal) {
   if(is.null(pal)) { return(NULL) }
-  Map(\(nc, nv) pal[[nc]][nv], node_col, node_val) |> unlist()
+  ret <- Map(\(nc, nv) {
+               if(is.na(nv)) {
+                 return(pal[["NAs"]])
+               }
+               pal[[nc]][nv]
+             }, node_col, node_val)
+  ret <- unlist(ret)
+  ret
 }
 
 # vertical legend arrangement

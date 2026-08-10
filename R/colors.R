@@ -64,6 +64,7 @@ contrast_color <- function(color) {
 #'        missing
 #' @param pal name of a palette (e.g. "Greens")
 #' @param na_fill fill color used for nodes associated with NA values
+#' @param na_fill text color used for nodes associated with NA values
 #' @examples
 #' vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived)
 #' vtree_palette(vt)
@@ -111,7 +112,6 @@ vtree_palette <- function(vtree,
                                        "Oranges", "Purples"),
                           var_palette = NULL,
                           default_color = "white") {
-  #family <- families[(level - 1L) %% length(families) + 1L]
 
   if(!inherits(vtree, "vtree")) {
     cli_abort(c(x = "vtree_palette() requires a vtree object"))
@@ -175,9 +175,12 @@ var_palette <- function(var_levels, pal) {
 
 get_contrast_pal <- function(pal) {
 
-  ret <- map(pal, \(varpal) 
-             map_chr(varpal, \(col) contrast_color(col))
-             )
+  ret <- imap(pal, \(varpal, var) {
+               if(var == "NAs") {
+                 return(contrast_color(varpal))
+               }
+               map_chr(varpal, \(col) contrast_color(col))
+             })
   ret
 }
 
@@ -188,6 +191,7 @@ add_palette <- function(vtree,
                              palettes = c("Reds", "Blues", "Greens",
                                        "Oranges", "Purples"),
                              na_fill = "white",
+                             na_color = "black",
                              var_palette = NULL,
                              what = "fill",
                              default_color = "white") {
@@ -233,10 +237,15 @@ add_palette <- function(vtree,
   }
 
   pal_at[[what]] <- pal
+  if(what == "fill") {
+    pal_at[[what]][["NAs"]] <- na_fill
+  } else {
+    pal_at[[what]][["NAs"]] <- na_color
+  }
 
   # if other is missing, get a contrast one
   if(is.null(pal_at[[other]])) {
-    pal_at[[other]] <- get_contrast_pal(pal)
+    pal_at[[other]] <- get_contrast_pal(pal_at[[what]])
   }
 
   pal_at$vars <- pal_vars
