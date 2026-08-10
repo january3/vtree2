@@ -225,6 +225,20 @@ pat2nodes <- function(pattern, columns, cv_sep, path_sep) {
   ret
 }
 
+.check_col_types <- function(x) {
+
+  cnms <- colnames(x)
+  coltypes <- purrr::map_lgl(x, \(xx) is.character(xx) || is.factor(xx))
+
+  if(any(!coltypes)) {
+    sel <- cnms[!coltypes]
+    cli_abort(c(
+        x = "Only factor or character columns are supported by vtree",
+        "Following columns are neither: {sel}",
+        i = "Convert numerical or logical columns explicitly"))
+  }
+}
+
 .check_col_names <- function(cnms, reserved, cv_sep=':', path_sep='/') {
 
   .check_col_names_sep(cnms, cv_sep, path_sep)

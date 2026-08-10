@@ -44,6 +44,10 @@ as_vtree <- function(x) {
     cli_abort(c(x = "The node_col column must not contain NA values"))
   }
 
+  if(is.null(attr(x, "vp"))) {
+    cli_abort(c(x = "VTree object lacks vp attribute"))
+  }
+
   cnms <- unique(nodes$node_col[ nodes$level > 0 ])
 
   if(is.null(attr(x, "cols"))) {
@@ -54,16 +58,8 @@ as_vtree <- function(x) {
     attr(x, "N") <- N
   }
 
-  if(is.null(attr(x, "vp"))) {
-    attr(x, "vp") <- TRUE
-  }
-
   if(is.null(attr(x, "levels"))) {
     cli_abort(c(x = "The vtree must have an attribute 'levels'"))
-  }
-
-  if("vp" %in% colnames(nodes) & !all(nodes[["vp"]])) {
-    attr(x, "vp") <- FALSE
   }
 
   class(x) <- c("vtree", class(x))
@@ -135,7 +131,6 @@ as_vtree <- function(x) {
 #'   `.vp` is true, this is equal to the number of valid observations in the
 #'   parent node; if `.vp` is false, this is equal to `n` of the parent
 #'   node.
-#' * `vp`: whether the valid percentage was calculated (`TRUE`).
 #' * `leaf`: whether the node is a leaf (`FALSE`).
 #'
 #' Note that the variables `tot_n`, `denom` and `missing` all refer to the
@@ -205,33 +200,29 @@ vtree <- function(cases, ..., .vp = TRUE,
   }
 
   reserved <- c("node_col", "node_id", "path", "freq", "count",
-                 "denom", "node_key", "tot_n", "vp")
+                 "denom", "node_key", "tot_n")
 
   .check_col_names(cnms, reserved, .cv_sep, .path_sep)
 
-  if(!is.null(attr(cases, "levels"))) {
-    levels <- attr(cases, "levels")
-    levels <- levels[cnms]
-  } else {
-    levels <- .get_levels(cases, cnms)
-  }
+  levels <- .get_levels(cases, cnms)
 
   if(!all(cnms %in% names(levels))) {
     cli_abort(c(x="not all column names in levels"))
   }
 
   cases <- select(cases, all_of(cnms))
+  .check_col_types(cases)
+
   N <- nrow(cases)
 
   pat <- vtree_pat(cases, cnms, vp = .vp)
-
   df <- pat2nodes(pat, cnms, .cv_sep, .path_sep)
-  df[["vp"]] <- .vp
 
   edges <- node2edge(df)
   vtree <- tbl_graph(nodes = df, edges = edges,
                      directed = TRUE, node_key = "node_key")
 
+  attr(vtree, "vp") <- .vp
   attr(vtree, "levels") <- levels
   vtree <- as_vtree(vtree)
 
