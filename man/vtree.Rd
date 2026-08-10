@@ -104,7 +104,6 @@ cases in the parent node (\code{0.446}).
 \code{.vp} is true, this is equal to the number of valid observations in the
 parent node; if \code{.vp} is false, this is equal to \code{n} of the parent
 node.
-\item \code{vp}: whether the valid percentage was calculated (\code{TRUE}).
 \item \code{leaf}: whether the node is a leaf (\code{FALSE}).
 }
 
