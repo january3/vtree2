@@ -42,6 +42,22 @@ contrast_color <- function(color) {
 #' color from the palettes, the function generates a text color and chooses
 #' a contrast fill color automatically.
 #'
+#' The following arguments determine the hierarchy of the color-control on
+#' the resulting plot:
+#'
+#'  * `palettes` - determines both the palette for the legend and the
+#'  colors of the nodes
+#'  * `var_palette` - low level adjustment of colors. Does not have to
+#'  include all variable and all variable levels, and does not influence
+#'  the colors of the variable names shown on the legend, but it does
+#'  change the colors of the variable levels shown on the legend.
+#'  * `var_colors` - influences only the colors of the variable names shown
+#'  on the legend. If NULL, a default from the `palettes` argument will be
+#'  inferred.
+#'  * `na` - color for the missing values for all variables. If `what` is
+#'  "fill", then it is interpreted as the background fill color; if `what` is
+#'  "text", then it is interpreted as the text (foreground) color.
+#'
 #' `vtree_palette()` returns a color palette for a variable level in a vtree.
 #' The colors are chosen from the RColorBrewer package.
 #'
@@ -53,15 +69,17 @@ contrast_color <- function(color) {
 #'                 subsequent columns in the vtree
 #' @param what By default, add_palette() adds a fill color for the nodes
 #'             and automatically chooses a contrast color for the text. If
-#'             'what' is 'color', it adds a text color for the node and
+#'             'what' is 'text', it adds a text color for the node and
 #'             automatically chooses a contrast color for the fill.
 #' @param var_levels a character vector of values to which colors are
 #'        assigned from a palette
 #' @param var_palette a named list of named vectors. The var_palette names
 #'        correspond to the variables; the names of the vectors are
 #'        the levels of the given variable; the values are colors.
-#' @param default_color default color to use if variable levels from var_palette are
-#'        missing
+#' @param var_colors A named character vector with text colors of the variables
+#'        as shown on a legend. If NULL, the colors are taken over from the
+#'        palettes defined by the `palettes` argument, even if
+#'        `var_palette` is also defined.
 #' @param pal name of a palette (e.g. "Greens")
 #' @param na_fill fill color used for nodes associated with NA values
 #' @param na_fill text color used for nodes associated with NA values
@@ -85,7 +103,7 @@ contrast_color <- function(color) {
 #' # color the NA nodes with red
 #' vt |> add_palette(palettes = "Blues", na_fill = "red") |>
 #'    plot()
-#' 
+#'
 #' # males blue, females red; rest automatic
 #' vt |>
 #'   add_palette(var_palette =
@@ -94,7 +112,7 @@ contrast_color <- function(color) {
 #'
 #' # same, but now the text color is generated from the palette
 #' vt |>
-#'   add_palette(what = "color",
+#'   add_palette(what = "text",
 #'       var_palette = list(Sex = c(Male = "blue", Female = "Red"))) |>
 #'       plot()
 #'
@@ -109,9 +127,7 @@ contrast_color <- function(color) {
 #' @export
 vtree_palette <- function(vtree,
                           palettes = c("Reds", "Blues", "Greens",
-                                       "Oranges", "Purples"),
-                          var_palette = NULL,
-                          default_color = "white") {
+                                       "Oranges", "Purples")) {
 
   if(!inherits(vtree, "vtree")) {
     cli_abort(c(x = "vtree_palette() requires a vtree object"))
@@ -126,28 +142,6 @@ vtree_palette <- function(vtree,
   ret <- imap(palettes, \(pal, var) {
     var_palette(levs[[var]], pal)
   })
-
-  if(is.null(var_palette)) {
-    return(ret)
-  }
-
-  nm <- names(var_palette)
-  if(any(!nm %in% names(levs))) {
-    nm <- nm[ !nm %in% names(levs) ]
-    cli_abort(c(
-      x = "Incorrect variables in var_palette:",
-      i = "{nm}"))
-  }
-
-  for(n in nm) {
-    ret[[n]] <- map_chr(set_names(names(ret[[n]])), \(.n) {
-       if(is.na(var_palette[[n]][.n])) {
-         default_color
-       } else {
-         var_palette[[n]][.n]
-       }
-    })
-  }
 
   ret
 }
@@ -190,66 +184,72 @@ get_contrast_pal <- function(pal) {
 add_palette <- function(vtree,
                              palettes = c("Reds", "Blues", "Greens",
                                        "Oranges", "Purples"),
-                             na_fill = "white",
-                             na_color = "black",
+                             na = "white",
                              var_palette = NULL,
-                             what = "fill",
-                             default_color = "white") {
+                             var_colors = NULL,
+                             what = "fill") {
 
-  what <- match.arg(what, c("fill", "color"))
+  what <- match.arg(what, c("fill", "text"))
 
   if(what == "fill") {
-    other <- "color"
+    other <- "text"
   } else {
     other <- "fill"
   }
+
+  if(what == "text") { what <- "color" }
+  if(other == "text") { other <- "color" }
 
   if(!inherits(vtree, "vtree")) {
     cli_abort(c(x = "add_palette() requires a vtree object"))
   }
 
-  pal <- vtree_palette(vtree, palettes = palettes,
-        var_palette = var_palette,
-        default_color = default_color)
+  # the palette associated with the tree
+  pal_at <- attr(vtree, "palette") %||% list()
 
-  vtree <- vtree |>
-    mutate(!!what := ifelse(is.na(.data[["node_val"]]),
-                         na_fill,
-                         .node_fill(.data[["node_col"]],
-                                    .data[["node_val"]], na_fill, pal)
-           ))
+  # generate the palette based on the provided params
+  pal <- vtree_palette(vtree, palettes = palettes)
 
-  nodes <- as_tibble(vtree)
-
-  if(! other %in% colnames(nodes)) {
-    vtree <- vtree |> activate("nodes") |>
-      mutate(!!other := contrast_color(.data[[what]]))
-  }
-
-  pal_vars <- map_chr(set_names(names(pal)), \(var)
+  # generate the variable colors
+  if(is.null(var_colors)) {
+    var_colors <- map_chr(set_names(names(pal)), \(var)
                   pal[[var]][ length(pal[[var]]) ])
-
-  # replace the "what" palette in the attributes
-  pal_at <- attr(vtree, "palette")
-
-  if(is.null(pal_at)) {
-    pal_at <- list()
   }
 
-  pal_at[[what]] <- pal
-  if(what == "fill") {
-    pal_at[[what]][["NAs"]] <- na_fill
-  } else {
-    pal_at[[what]][["NAs"]] <- na_color
-  }
+
+  # replace by colors defined by users
+  pal <- scale_add(pal, var_palette)
+
+  # assign to what will become the attribute
+  pal_at[[what]] <- list(scale = pal,
+                         na = na)
 
   # if other is missing, get a contrast one
   if(is.null(pal_at[[other]])) {
-    pal_at[[other]] <- get_contrast_pal(pal_at[[what]])
+    pal_contrast <- get_contrast_pal(pal)
+    pal_at[[other]] <- list(scale = pal_contrast,
+                            na = contrast_color(na))
   }
 
-  pal_at$vars <- pal_vars
+  # now the vars. We choose to use the text color to be fill color.
+  pal_at[[other]]$vars <- var_colors
+  pal_at[[what]]$vars <- map_chr(var_colors, contrast_color)
+
   attr(vtree, "palette") <- pal_at
+
+  ## now apply the color palette
+  vtree <- .apply_pal(vtree, pal, na, what, other)
+  vtree
+}
+
+.apply_pal <- function(vtree, pal, na, what, other) {
+
+  vtree <- mutate(vtree, !!what := .node_fill(.data[["node_col"]],
+                                    .data[["node_val"]], na, pal))
+
+  if(! other %in% nodecols(vtree)) {
+    vtree <- mutate(vtree, !!other := contrast_color(.data[[what]]))
+  }
   vtree
 }
 

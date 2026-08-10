@@ -33,7 +33,7 @@ normalize_layout <- function(layout) {
   nodes <- as_tibble(x)
 
   if(! "fill" %in% colnames(nodes)) {
-    x <- add_palette(x, palettes = palettes, na_fill = na_fill)
+    x <- add_palette(x, palettes = palettes, na = na_fill)
   }
 
   if(! "color" %in% colnames(nodes)) {

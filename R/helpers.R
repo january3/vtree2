@@ -73,3 +73,59 @@ get_alias_attr <- function(x, what=NULL) {
 
   return(alias)
 }
+
+# add values from mapping to the existing scale
+scale_add <- function(scale, mapping) {
+
+  # add mapping to existing scale
+  if(!is.null(mapping)) {
+    if(!is.list(mapping)) {
+      cli_abort(c(x = "mapping should be a list"))
+    }
+
+    for(n in names(scale)) {
+
+      if(!is.null(mapping[[n]])) {
+        dn <- mapping[[n]]
+        dn <- dn[ names(dn) %in% names(scale[[n]]) ]
+        scale[[n]][ names(dn) ] <- dn
+      }
+    }
+  }
+
+  scale
+}
+
+# levels is a list of character values, e.g. one returned by
+# levels(vtree); defaults are the default values for the structure
+# na is the value to be used for missing values
+# mapping is customized mapping to be used
+get_scale <- function(levels,
+                      defaults=NULL,
+                      default_value = NA,
+                      na=NA) {
+
+  # populate with the default value
+  scale <- map(levels, \(l) {
+                    .r <- rep(as.character(default_value), length(l))
+                    set_names(.r, l)
+                })
+
+  scale <- scale_add(scale, defaults)
+
+  ret <- list(scale=scale, na=na)
+  ret
+}
+
+
+# get values from a 2-level mapping
+.get_vals <- function(key1, key2, mapping, na=NA) {
+  if(is.null(mapping)) { return(NULL) }
+
+  ret <- Map(\(nc, nv) {
+               if(is.na(nv)) { return(na) }
+               mapping[[nc]][nv]
+             }, key1, key2)
+  ret <- unlist(ret)
+  ret
+}

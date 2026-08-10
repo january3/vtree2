@@ -112,18 +112,6 @@
     }))
 }
 
-.get_vals <- function(node_col, node_val, pal) {
-  if(is.null(pal)) { return(NULL) }
-  ret <- Map(\(nc, nv) {
-               if(is.na(nv)) {
-                 return(pal[["NAs"]])
-               }
-               pal[[nc]][nv]
-             }, node_col, node_val)
-  ret <- unlist(ret)
-  ret
-}
-
 # vertical legend arrangement
 .legend_vertical <- function(legend, titles, maxpos, margins) {
 
@@ -240,14 +228,22 @@ layout_legend <- function(layout, margins) {
   if(is.null(pal)) {
     cli::cli_inform(c(i="palette attribute is NULL",
                "legend will be black and white"))
-    pals_fill <- NULL
     pals_color <- NULL
-    pals_v <- NULL
+    pals_fill <- NULL
+    na_text <- "black"
+    na_fill <- "white"
+    pals_vt <- NULL
+    pals_vf <- NULL
   } else {
-    pals_fill <- pal$fill %||% NULL
-    pals_color <- pal$color %||% NULL
-    pals_v <- pal$vars %||% NULL
+    pals_color <- pal$color$scale %||% NULL
+    pals_fill <- pal$fill$scale %||% NULL
+    na_text <- pal$color$na %||% "black"
+    na_fill <- pal$fill$na %||% "white"
+    pals_vt <- pal$color$vars %||% NULL
+    pals_vf <- pal$fill$vars %||% NULL
   }
+
+
 
   summaries <- .layout_summary(layout) |>
     group_by(.data[["node_col"]]) |>
@@ -255,9 +251,12 @@ layout_legend <- function(layout, margins) {
     ungroup() |>
     filter(.data[["count"]] != 0) |>
     mutate(fill = .get_vals(.data[["node_col"]],
-                            .data[["node_val"]], pals_fill) %||% "white") |>
+                            .data[["node_val"]],
+                            pals_fill, na_fill) %||% na_fill) |>
     mutate(color = .get_vals(.data[["node_col"]],
-                             .data[["node_val"]], pals_color) %||% "black")
+                             .data[["node_val"]],
+                             pals_color, na_text) %||% na_text)
+
 
   legend <- merge(pospar, summaries, by = "node_col", all.y=TRUE) |>
       mutate(node_key = paste0("legend_", 1:n())) |>
@@ -275,10 +274,12 @@ layout_legend <- function(layout, margins) {
     mutate(label_type = "var_name_label") |>
     mutate(shape = NA)
 
-  if(is.null(pals_v)) {
+  if(is.null(pals_vt) || is.null(pals_vf)) {
     titles$color <- "black"
+    titles$fill <- "white"
   } else {
-    titles$color <- pals_v[ titles$node_col ]
+    titles$color <- pals_vt[ titles$node_col ]
+    titles$fill  <- pals_vf[ titles$node_col ]
   }
 
   if(dir %in% c("tb", "bt")) {
@@ -306,15 +307,19 @@ layout_legend_minimal <- function(layout, margins) {
   if(is.null(attr(layout, "palette"))) {
     cli::cli_inform(c(i="palette attribute is NULL",
                "legend will be black and white"))
-    pals_v <- NULL
+    pals_vt <- NULL
+    pals_vf <- NULL
   } else {
-    pals_v <- attr(layout, "palette")$vars
+    pals_vt <- attr(layout, "palette")$text$vars
+    pals_vf <- attr(layout, "palette")$fill$vars
   }
 
-  if(!is.null(pals_v)) {
-    nodes$color <- pals_v[ nodes[["node_col"]] ]
+  if(!is.null(pals_vf) & !is.null(pals_vt)) {
+    nodes$color <- pals_vt[ nodes[["node_col"]] ]
+    nodes$fill  <- pals_vf[ nodes[["node_col"]] ]
   } else {
     nodes$color <- "black"
+    nodes$fill <- "white"
   }
 
   if(dir %in% c("bt", "tb")) {
