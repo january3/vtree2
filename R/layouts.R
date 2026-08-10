@@ -243,8 +243,6 @@ layout_legend <- function(layout, margins) {
     pals_vf <- pal$fill$vars %||% NULL
   }
 
-
-
   summaries <- .layout_summary(layout) |>
     group_by(.data[["node_col"]]) |>
     mutate(pos = 1:n()) |>
@@ -310,7 +308,7 @@ layout_legend_minimal <- function(layout, margins) {
     pals_vt <- NULL
     pals_vf <- NULL
   } else {
-    pals_vt <- attr(layout, "palette")$text$vars
+    pals_vt <- attr(layout, "palette")$color$vars
     pals_vf <- attr(layout, "palette")$fill$vars
   }
 
