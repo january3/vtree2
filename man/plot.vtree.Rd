@@ -13,8 +13,7 @@ plot_vtree(
   palettes = c("Reds", "Blues", "Greens", "Oranges", "Purples"),
   na_fill = "white",
   show_root = TRUE,
-  legend = FALSE,
-  legend_tiny = TRUE,
+  legend = "tiny",
   margins = NULL,
   fontsizes = NULL,
   richtext = FALSE,
@@ -44,10 +43,9 @@ default arguments to the vtree_palette() function.}
 \item{show_root}{If TRUE (default), show the root node (total
 population).}
 
-\item{legend}{If TRUE, a legend is added to the plot. Default is FALSE.}
-
-\item{legend_tiny}{If TRUE, just the var names are shown on the margin.
-Default: TRUE.}
+\item{legend}{If "tiny" (default), only minimal legend with variable
+names is shown. If FALSE or "none", no legend is shown. If TRUE or
+"full", a full legend with variable level summaries is shown.}
 
 \item{margins}{numerical vector: top/right/bottom/left margins in
 fraction of available space (from 0 to 1).}
@@ -139,6 +137,9 @@ vt <- vtree_from_freqtable(Titanic)
 
 # regular plot
 plot(vt)
+
+# full legend
+plot(vt, legend = "full")
 
 # proportional plot
 plot(vt, layout = "proportional")

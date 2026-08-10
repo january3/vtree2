@@ -72,18 +72,20 @@ normalize_layout <- function(layout) {
 
 # set some default margins depending on the presence of legends
 # and plot direction
-.normalize_margins <- function(margins, dir, legend_tiny, legend) {
-
+.normalize_margins <- function(margins, dir, legend) {
   # default margins
+  ltin <- legend == "tiny"
+  lful <- legend == "full"
   if(is.null(margins)) {
     if(dir %in% c("lr", "rl")) {
       margins <- margins %||% list(top = .01, right = .01,
-                    bottom = .01 + .05 * legend_tiny +
-                      .15 * legend,
+                    bottom = .01 + .05 * ltin +
+                      .15 * lful,
                     left = .01)
     } else {
       margins <- margins %||% list(top = .01, right = .01,
-                    bottom = .01, left = .01 + .15 * (legend_tiny || legend))
+                    bottom = .01,
+                    left = .01 + .15 * (lful || ltin))
 
     }
     return(margins)
@@ -217,6 +219,21 @@ normalize_layout <- function(layout) {
   "lr"
 }
 
+.normalize_legend <- function(legend) {
+
+ if(is.logical(legend)) {
+   if(legend) {
+     return("full")
+   } else {
+     return("none")
+   }
+ }
+
+
+ legend <- match.arg(legend, c("tiny", "none", "full"))
+ return(legend)
+
+}
 
 #' Plot a vtree
 #'
@@ -301,9 +318,9 @@ normalize_layout <- function(layout) {
 #'        each label will be fit separately.
 #' @param lwd line width for use with plotting
 #' @param na_fill The color to use for NA values. Default is "white".
-#' @param legend If TRUE, a legend is added to the plot. Default is FALSE.
-#' @param legend_tiny If TRUE, just the var names are shown on the margin.
-#'        Default: TRUE.
+#' @param legend If "tiny" (default), only minimal legend with variable
+#'        names is shown. If FALSE or "none", no legend is shown. If TRUE or
+#'        "full", a full legend with variable level summaries is shown.
 #' @seealso [vtree2::mutate.vtree()] for modifying the node data frame, and
 #' [vtree2::add_labels()] for adding labels to the nodes. For layout
 #' details, see [vtree2::add_layout()].
@@ -312,6 +329,9 @@ normalize_layout <- function(layout) {
 #'
 #' # regular plot
 #' plot(vt)
+#'
+#' # full legend
+#' plot(vt, legend = "full")
 #'
 #' # proportional plot
 #' plot(vt, layout = "proportional")
@@ -357,8 +377,7 @@ plot_vtree <- function(x,
                                    "Oranges", "Purples"),
                       na_fill = "white",
                       show_root = TRUE,
-                      legend = FALSE,
-                      legend_tiny = TRUE,
+                      legend = "tiny",
                       margins = NULL,
                       fontsizes = NULL,
                       richtext = FALSE,
@@ -371,7 +390,8 @@ plot_vtree <- function(x,
 
   layout_arg <- match.arg(layout)
 
-  margins    <- .normalize_margins(margins, dir, legend_tiny, legend)
+  legend <- .normalize_legend(legend)
+  margins    <- .normalize_margins(margins, dir, legend)
   fontsizes  <- .normalize_fontsizes(fontsizes, layout_arg)
 
   grobs <- extract_grobs(x)
@@ -380,12 +400,14 @@ plot_vtree <- function(x,
 
   layout <- .normalize_layout(x, layout_arg, lwidth, lheight, show_root, dir)
 
+
   layout <- .fit_margins(layout, margins)
   layout <- normalize_layout(layout)
 
-  if(legend) {
+
+  if(legend == "full") {
     legend <- layout_legend(layout, margins)
-  } else if(legend_tiny) {
+  } else if(legend == "tiny") {
     legend <- layout_legend_minimal(layout, margins)
   } else {
     legend <- NULL
