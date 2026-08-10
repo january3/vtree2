@@ -159,6 +159,23 @@ print.vtree <- function(x, ...) {
   cat(cli::col_blue(paste("vtree object with",
                length(cols), "variables and", N, "observations\n")))
   cat("Variables:", paste(cols, collapse = ", "), "\n")
+  if(is_vp(x)) {
+    cat("Frequencies computed as valid percentages (vp == TRUE)\n")
+  } else {
+    cat("Frequencies computed with total numbers (vp == FALSE)\n")
+  }
+  if(has_layout(x)) {
+    cat("Object has a layout\n")
+  }
+
+  cols2check <- c("label", "color", "fill", "col_alias", "var_alias")
+  cols2check <- cols2check[ cols2check %in% nodecols(x) ]
+  if(length(cols2check) > 0L) {
+    cat("Properties present: ")
+    cat(paste(cols2check, collapse=", "))
+    cat("\n")
+  }
+
   col_to_show <- c("path", "n", "freq",
                    "tot_n", "missing", "denom")
   cat(cli::col_blue("Overview:\n"))
@@ -196,4 +213,19 @@ print.vtree <- function(x, ...) {
 #' @export
 summary.vtree <- function(object, ...) {
   attr(object, "source_summary")
+}
+
+
+has_layout <- function(x) {
+  if(!inherits(x, "vtree")) {
+    cli_abort(c(x = "x must be a vtree object"))
+  }
+
+  node_names <- igraph::vertex_attr_names(x)
+  edge_names <- igraph::edge_attr_names(x)
+
+  has_cols <- all(c("x", "y", "width", "height") %in% node_names) &&
+              all(c("x1", "x2", "y1", "y2") %in% edge_names)
+
+  has_cols || inherits(vtree, "vtree_layout")
 }

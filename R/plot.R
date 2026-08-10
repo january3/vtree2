@@ -172,13 +172,7 @@ normalize_layout <- function(layout) {
 # check whether vtree already has a layout. If so, return vtree
 .normalize_layout <- function(vtree, layout_arg, lwidth, lheight, show_root, dir) {
 
-  node_names <- igraph::vertex_attr_names(vtree)
-  edge_names <- igraph::edge_attr_names(vtree)
-
-  has_cols <- all(c("x", "y", "width", "height") %in% node_names) &&
-              all(c("x1", "x2", "y1", "y2") %in% edge_names)
-
-  if(inherits(vtree, "vtree_layout") || has_cols) {
+  if(has_layout(vtree)) {
     if(!is.na(lwidth) || !is.na(lheight)) {
       cli::cli_warn(
        c(i = "vtree already has a layout; ignoring lwidth and lheight"))
