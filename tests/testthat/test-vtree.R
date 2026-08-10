@@ -209,3 +209,36 @@ test_that("errors are raised", {
   expect_no_error(mutate(vt, tot_n = 99, .check = FALSE))
 
 })
+
+test_that("separators are checked and set", {
+
+  cases <- cases_from_freqtable(Titanic)
+  vt <- vtree(cases, Class, Sex, Survived)
+  expect_in("sep", names(attributes(vt)))
+  expect_in(c("path", "cv"), names(attr(vt, "sep")))
+
+  colnames(cases)[2] <- "S:x"
+  expect_warning(vtree(cases, Class, `S:x`, Survived),
+                 "Column names contain col/val separator `:`")
+
+  cases <- cases_from_freqtable(Titanic)
+  colnames(cases)[2] <- "Sex/"
+  expect_warning(vtree(cases, Class, `Sex/`, Survived),
+                 "Column names contain path separator `/`")
+
+  cases <- cases_from_freqtable(Titanic)
+  vt <- vtree(cases, Class, Sex, Survived,
+              .cv_sep = '|', .path_sep = '>')
+  sep <- attr(vt, "sep")
+  expect_equal(sep$cv, '|')
+  expect_equal(sep$path, '>')
+  nd <- as_tibble(vt)
+
+  expect_all_true(!grepl(":", nd$path))
+  expect_all_true(!grepl("/", nd$path))
+  expect_equal(nd$path[6], "Class|1st>Sex|Male")
+
+  colnames(cases)[2] <- "S:x/"
+  expect_no_warning(vtree(cases, Class, `S:x/`, Survived,
+                          .cv_sep = '|', .path_sep = '>'))
+})
