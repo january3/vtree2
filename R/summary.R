@@ -119,9 +119,8 @@
 #' @param cases A data frame of cases, with one row per observation.
 #' @param fmt An expression for customized formatting. See Examples.
 #' @param col The column variable to summarize. This should be a single
-#'            column name, quoted or not.
-#' @param .col If you want to provide a column name in a variable, use .col
-#' and not col.
+#'            column name, quoted or not. It uses tidyselect evaluation, so
+#'            you can do `all_of("Survived")`.
 #' @importFrom rlang ensym as_name
 #' @return A tibble with one row per node of the vtree, and columns for the
 #' summary statistics of the specified variable for the cases that match
@@ -175,18 +174,14 @@
 #'   plot()
 #'
 #' @export
-summary_vt <- function(cases, vtree, col, fmt = NULL, .col = NULL) {
+summary_vt <- function(cases, vtree, col, fmt = NULL) {
+  col <- enquo(col)
+# col <- tidyselect::eval_select(col, data = cases)
+# col <- names(col)
 
   fmt <- enquo(fmt)
 
-  if(!is.null(.col)) {
-    col <- .col
-  } else {
-    col <- rlang::ensym(col)
-    col <- rlang::as_name(col)
-  }
-
-  df <- summary_vt_df(cases, vtree, col, .col = col)
+  df <- summary_vt_df(cases, vtree, !!col)
 
   type <- df$type[1]
   type <- match.arg(type, c("categorical", "numeric"))
@@ -239,22 +234,7 @@ summary_vt <- function(cases, vtree, col, fmt = NULL, .col = NULL) {
 
 #' @rdname summary_vt
 #' @export
-summary_vt_df <- function(cases, vtree, col, .col = NULL) {
-
-  if(!is.null(.col)) {
-    col <- .col
-  } else {
-    col <- rlang::ensym(col)
-    col <- rlang::as_name(col)
-  }
-
-  if(!length(col) == 1L) {
-    cli_abort(c(
-      x = "Only one column can be summarized at a time",
-      i = "You provided {length(col)} columns: {paste(col, collapse = ', ')}"
-    ))
-  }
-
+summary_vt_df <- function(cases, vtree, col) {
   if(!is.data.frame(cases)) {
     cli_abort(c(
       x = "cases must be a data frame",
@@ -268,6 +248,18 @@ summary_vt_df <- function(cases, vtree, col, .col = NULL) {
       i = "You provided an object of class {class(vtree)}"
     ))
   }
+
+  col <- enquo(col)
+  col <- tidyselect::eval_select(col, data = cases)
+  col <- names(col)
+
+  if(!length(col) == 1L) {
+    cli_abort(c(
+      x = "Only one column can be summarized at a time",
+      i = "You provided {length(col)} columns: {paste(col, collapse = ', ')}"
+    ))
+  }
+
 
   # first, check that all necessary variables are in the colnames of cases
   cols <- names(vtree)
@@ -550,6 +542,22 @@ vtree_apply <- function(cases, vtree, FUN, ...,
 
 
 
+#' @return a data frame with number of rows equal to the number rows in the
+#' nodes data frame of the vtree object
+label_level_perc <- function(cases, vt, var) {
+
+  if(!var %in% colnames(cases)) {
+    cli_abort(c(x = "Column {var} not found in cases data frame"))
+  }
+
+  if(!is.factor(cases[[var]]) & !is.character(cases[[var]])) {
+    cli_abort(c(x = "Column {var} is not numeric or factor"))
+  }
+
+  
+
+
+}
 
 
 #' Get a value list as character vector
@@ -562,7 +570,7 @@ vtree_apply <- function(cases, vtree, FUN, ...,
 #' contain a list of values for each node.
 #'
 #' @param cases a data frame with cases (one sample per row)
-#' @param vt a vtree object
+#' @param vtree a vtree object
 #' @param var a variable name from cases and vt
 #' @param width formatting width in characters
 #' @param sort whether the variable levels should be sorted (default TRUE)

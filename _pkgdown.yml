@@ -44,6 +44,7 @@ reference:
       - summary_vt_df
       - summary_at_var
       - vtree_apply
+      - label_var_levels
   - title: Labels and aliases
     contents:
       - add_aliases

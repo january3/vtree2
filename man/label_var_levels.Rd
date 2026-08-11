@@ -17,6 +17,8 @@ label_var_levels(
 \arguments{
 \item{cases}{a data frame with cases (one sample per row)}
 
+\item{vtree}{a vtree object}
+
 \item{var}{a variable name from cases and vt}
 
 \item{width}{formatting width in characters}
@@ -28,8 +30,6 @@ TRUE)}
 \item{sort}{whether the variable levels should be sorted (default TRUE)}
 
 \item{sep}{separator to put between the values}
-
-\item{vt}{a vtree object}
 }
 \value{
 a character vector of length equal to the number rows in the

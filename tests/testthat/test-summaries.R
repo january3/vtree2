@@ -80,12 +80,12 @@ test_that("errors are raised", {
 
   expect_error(summary_vt(vt, cases, Survived),
                "cases must be a data frame")
-  expect_error(summary_vt(cases, vt, .col = c("Survived", "Sex")),
+  expect_error(summary_vt(cases, vt, all_of(c("Survived", "Sex"))),
                "Only one column can be summarized at a time")
   expect_error(summary_vt(cases, as_tibble(vt), Survived),
                "vtree must be a vtree object")
   expect_error(summary_vt(cases, vt, Foooo),
-               "The column to summarize is not found")
+               "Can't select columns that don't exist.")
   cases$foo <- rnorm(nrow(cases))
   expect_error(vtree_apply(vt, vt, \(x) mean(x$foo)),
                "requires a data frame")
@@ -157,4 +157,21 @@ test_that("vtree_apply works", {
 
   vtf_df <- Reduce(rbind, vtf)
   expect_identical(nd, vtf_df)
+})
+
+test_that("label_var_levels works", {
+  cases <- cases_from_freqtable(Titanic)
+  vt <- vtree(cases, Class, Survived)
+
+  labs <- label_var_levels(cases, vt, "Sex")
+  expect_match(labs, "Male \\(n=[[:digit:]]+\\), Female \\(n=[[:digit:]]+\\)")
+
+  labs <- label_var_levels(cases, vt, "Sex", sep="%")
+  expect_match(labs, "%Female")
+
+  vt <- vtree(InsectSprays, spray)
+  labs <- label_var_levels(InsectSprays, vt, "count", shorten=F,
+      width=1e6)
+  lab2 <- as.numeric(unlist(strsplit(labs[2], ", ")))
+  expect_setequal(lab2, subset(InsectSprays, spray == "A")$count)
 })

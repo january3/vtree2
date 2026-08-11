@@ -5,9 +5,9 @@
 \alias{summary_vt_df}
 \title{Summarize a case variable for each node of a vtree}
 \usage{
-summary_vt(cases, vtree, col, fmt = NULL, .col = NULL)
+summary_vt(cases, vtree, col, fmt = NULL)
 
-summary_vt_df(cases, vtree, col, .col = NULL)
+summary_vt_df(cases, vtree, col)
 }
 \arguments{
 \item{cases}{A data frame of cases, with one row per observation.}
@@ -15,12 +15,10 @@ summary_vt_df(cases, vtree, col, .col = NULL)
 \item{vtree}{A vtree object.}
 
 \item{col}{The column variable to summarize. This should be a single
-column name, quoted or not.}
+column name, quoted or not. It uses tidyselect evaluation, so
+you can do \code{all_of("Survived")}.}
 
 \item{fmt}{An expression for customized formatting. See Examples.}
-
-\item{.col}{If you want to provide a column name in a variable, use .col
-and not col.}
 }
 \value{
 A tibble with one row per node of the vtree, and columns for the
