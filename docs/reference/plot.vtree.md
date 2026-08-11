@@ -193,14 +193,6 @@ plot(vt, layout = "proportional")
 
 # create custom labels as simple numbers with mutate()
 library(dplyr)
-#> 
-#> Attaching package: ‘dplyr’
-#> The following objects are masked from ‘package:stats’:
-#> 
-#>     filter, lag
-#> The following objects are masked from ‘package:base’:
-#> 
-#>     intersect, setdiff, setequal, union
 vt |> mutate(label = as.character(1:n())) |> plot()
 
 

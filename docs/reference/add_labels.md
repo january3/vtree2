@@ -14,6 +14,9 @@ add_labels(
   mask = NULL,
   fmt = NULL,
   fmt_na = NULL,
+  prefix = NULL,
+  suffix = NULL,
+  sep = "\n",
   root_label = NA
 )
 ```
@@ -47,6 +50,18 @@ add_labels(
   omit frequency data from NA nodes if the missing data was not used as
   a denominator to calculate percentages. If NULL and fmt is not NULL,
   fmt will be used for NA nodes as well.
+
+- prefix:
+
+  add a prefix (character vector) to the label
+
+- suffix:
+
+  add a suffix (character vector) to the label
+
+- sep:
+
+  separator for prefix/suffix
 
 - root_label:
 

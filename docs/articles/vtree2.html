@@ -248,6 +248,17 @@ for each combination of levels of the four variables:</p>
 <span><span class="va">vt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/vtree.html">vtree_from_freqtable</a></span><span class="op">(</span><span class="va">Titanic</span>, <span class="va">Class</span>, <span class="va">Survived</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
+<h3 id="data-preparation">Data preparation<a class="anchor" aria-label="anchor" href="#data-preparation"></a>
+</h3>
+<p>The vtree object constructors (<code><a href="../reference/vtree.html">vtree()</a></code> and
+<code><a href="../reference/vtree.html">vtree_from_freqtable()</a></code>) can only use factors and character
+values. They flatly refuse to process numeric or logical columns. This
+is by design: numeric and logical values are not categorical, and vtrees
+are meant to visualize categorical data.</p>
+<p>Also, converting numerical or logical values to factors or character
+vectors is easy. It is best done with regular R code.</p>
+</div>
+<div class="section level3">
 <h3 id="valid-percentages">Valid percentages<a class="anchor" aria-label="anchor" href="#valid-percentages"></a>
 </h3>
 <p>One of the important concepts to know about are the <em>valid

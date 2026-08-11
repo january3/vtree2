@@ -890,7 +890,237 @@ vt |>
 
 ![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-35-1.png)
 
-#### New functionality ~~Killer features~~
+#### Other examples
+
+``` r
+# ESOPH <- esoph
+# levels(ESOPH$agegp)[levels(ESOPH$agegp)=="75+"] <- "75plus"
+# 
+# vtree(ESOPH,"agegp=75plus",sameline=TRUE,cdigits=0,
+#   summary=c("ncases \ncases=%sum%%leafonly%",
+#   "ncontrols  controls=%sum%%leafonly%"))
+
+# replace the agegp data var with a new one
+ESOPH <- esoph |>
+  mutate(agegp = ifelse(agegp == "75+", "75+", "< 75")) |>
+  mutate(agegp = factor(agegp, levels = c("< 75", "75+")))
+
+vt <- vtree(ESOPH, agegp)
+
+# summary for ncases/ncontrols
+ncases <- summary_vt(ESOPH, vt, ncases,
+                  fmt=sprintf("cases=%d", n))
+ncntrls <- summary_vt(ESOPH, vt, ncontrols,
+                  fmt=sprintf("controls=%d", n))
+suffix <- paste(ncases, ncntrls)
+
+vt <- vt |>
+  add_labels(template = "sameline") |>
+  mutate(label = ifelse(path == "root", n,
+                        paste0(label, "\n", suffix))) |>
+  # shrink relative size of the root nodes
+  add_layout(varspace = c(root=1, agegp=4), lwidth=.8)
+plot(vt)
+```
+
+![](vtree2_for_vtree_users_files/figure-html/esoph-1.png)
+
+``` r
+# hec <- crosstabToCases(HairEyeColor)
+# vtree(hec,"Hair Eye=Green Sex",sameline=TRUE)
+
+cases_from_freqtable(HairEyeColor) |>
+  # replace the Eye data var
+  mutate(Eye = ifelse(Eye == "Green",
+                      "Green", "Not Green")) |>
+  vtree() |>
+  add_labels(template="sameline") |>
+  plot(lwidth=.8)
+```
+
+![](vtree2_for_vtree_users_files/figure-html/hair-1.png)
+
+``` r
+# mt <- mtcars
+# mt$name <- rownames(mt)
+# rownames(mt) <- NULL
+#
+# vtree(mt,"cyl gear carb",summary="hp \nmean (SD) HP %mean% (%SD%)")
+
+# for vtree2, we need to convert the numeric columns to factors
+mt <- mtcars |>
+  mutate(across(c(cyl, gear, carb), as.factor))
+vt <- vtree(mt, cyl, gear, carb)
+smt <- summary_vt(mt, vt, hp, fmt=sprintf("mean (SD) %.1f (%.1f)",
+                                          mean, sd))
+vt |> add_labels() |>
+  add_labels(fmt=sprintf("%s\n%s", label, smt)) |>
+  plot(lwidth=.8)
+```
+
+![](vtree2_for_vtree_users_files/figure-html/mtcars-1.png)
+
+``` r
+
+# this doesn't work for me:
+# vtree(mt,"cyl gear carb",summary="hp mean (SD) HP %mean% (%SD%)",
+#   cdigits=0,labelvar=c(cyl="# cylinders",gear="# gears",carb="# carburetors"),
+#   ptable=TRUE)
+```
+
+``` r
+# vtree(mt,"gear carb",
+# summary="name \n%list%%noroot%",splitwidth=50,sameline=TRUE,
+#   labelvar=c(gear="# gears",carb="# carburetors"))
+
+mt <- mtcars |>
+  mutate(across(c(cyl, gear, carb), as.factor)) |>
+  tibble::rownames_to_column("name")
+
+vt <- vtree(mt, gear, carb) |>
+  add_aliases(col_alias=c(gear="# gears", carb="# carburators"))
+idlist <- vtree_apply(mt, vt, \(df) {
+                        ret <- paste(df$name, collapse=", ")
+                        ret <- strwrap(ret, 60)
+                        ret <- paste(ret, collapse = "\n")
+  })
+
+vt |>
+  add_labels(template = "sameline") |>
+  add_labels(fmt = ifelse(path == "root", n,
+                          sprintf("%s\n%s", label, idlist))) |>
+  add_layout(lwidth=.9, varspace = c(root=1, gear=4, carb=2)) |>
+  plot(lwidth=.9, fontsizes = list(nodes="adaptive"))
+#> Warning: ℹ vtree already has a layout; ignoring lwidth and
+#> lheight
+```
+
+![](vtree2_for_vtree_users_files/figure-html/mtcars2-1.png)
+
+``` r
+# ucb <- crosstabToCases(UCBAdmissions)
+# vtree(ucb,"Dept Gender",summary="Admit=Admitted \n%pct% admitted",sameline=TRUE)
+
+# ucb <- vtree::crosstabToCases(UCBAdmissions)
+# vtree::svtree(ucb,"Dept Gender",summary="Admit=Admitted \n%pct% admitted",sameline=TRUE)
+
+ucb <- cases_from_freqtable(UCBAdmissions)
+vt <- vtree(ucb, Dept, Gender)
+summary_vt_df(ucb, vt, Admit)
+#> # A tibble: 19 × 9
+#>    path                 col   type      n valid missing unique levels levels_str
+#>    <chr>                <chr> <chr> <int> <int>   <int>  <int> <list> <chr>     
+#>  1 root                 Admit cate…  4526  4526       0      2 <int>  "Admitted…
+#>  2 Dept:A               Admit cate…   933   933       0      2 <int>  "Admitted…
+#>  3 Dept:B               Admit cate…   585   585       0      2 <int>  "Admitted…
+#>  4 Dept:C               Admit cate…   918   918       0      2 <int>  "Admitted…
+#>  5 Dept:D               Admit cate…   792   792       0      2 <int>  "Admitted…
+#>  6 Dept:E               Admit cate…   584   584       0      2 <int>  "Admitted…
+#>  7 Dept:F               Admit cate…   714   714       0      2 <int>  "Admitted…
+#>  8 Dept:A/Gender:Male   Admit cate…   825   825       0      2 <int>  "Admitted…
+#>  9 Dept:A/Gender:Female Admit cate…   108   108       0      2 <int>  "Admitted…
+#> 10 Dept:B/Gender:Male   Admit cate…   560   560       0      2 <int>  "Admitted…
+#> 11 Dept:B/Gender:Female Admit cate…    25    25       0      2 <int>  "Admitted…
+#> 12 Dept:C/Gender:Male   Admit cate…   325   325       0      2 <int>  "Admitted…
+#> 13 Dept:C/Gender:Female Admit cate…   593   593       0      2 <int>  "Admitted…
+#> 14 Dept:D/Gender:Male   Admit cate…   417   417       0      2 <int>  "Admitted…
+#> 15 Dept:D/Gender:Female Admit cate…   375   375       0      2 <int>  "Admitted…
+#> 16 Dept:E/Gender:Male   Admit cate…   191   191       0      2 <int>  "Admitted…
+#> 17 Dept:E/Gender:Female Admit cate…   393   393       0      2 <int>  "Admitted…
+#> 18 Dept:F/Gender:Male   Admit cate…   373   373       0      2 <int>  "Admitted…
+#> 19 Dept:F/Gender:Female Admit cate…   341   341       0      2 <int>  "Admitted…
+perc_func <- \(x) 100 * x["Admitted"] / (x["Admitted"] + x["Rejected"])
+smt <- summary_vt(ucb, vt, Admit,
+               fmt=sprintf("%.0f %% admitted", map_dbl(levels, perc_func)))
+vt |> add_labels(template="sameline", suffix = smt) |>
+  plot(lwidth=.7)
+```
+
+![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-36-1.png)
+
+``` r
+# vtree(ChickWeight,"Diet Time",
+#   keep=list(Time=c("0","4")),summary="weight \nmean weight %mean%g")
+# vtree::svtree(ChickWeight,"Diet Time",
+#   keep=list(Time=c("0","4")),summary="weight \nmean weight %mean%g")
+#
+# vtree::svtree(ChickWeight,"Diet Time",keep=list(Time=c("0","4")),
+#   labelnode=list(
+#     Diet=c("Diet 1"="1","Diet 2"="2","Diet 3"="3","Diet 4"="4"),
+#     Time=c("0 days"="0","4 days"="4")),
+#   labelvar=c(Time="Days since birth"),summary="weight \nmean weight %mean%g")
+
+# need to convert Time to a factor. Best make the Time and Diet vars
+# absolutely nonambiguous
+cwcases <- ChickWeight |>
+  mutate(Time = paste("Time", Time)) |>
+  mutate(Diet = paste("Diet", Diet))
+
+vt <- vtree(cwcases, Diet, Time) |>
+  retain(Time %in% c("Time 0", "Time 4"))
+
+smt <- summary_vt(cwcases, vt, weight,
+                  fmt = sprintf("mean weight %.1fg", mean))
+vt |>
+  add_aliases(col_alias=c(Time = "Days since birth")) |>
+  add_labels(suffix = smt) |>
+  plot(lwidth=.6)
+```
+
+![](vtree2_for_vtree_users_files/figure-html/chickweight-1.png)
+
+``` r
+# vtree(InsectSprays,"spray",splitwidth=80,sameline=TRUE,
+#   summary="count \ncounts: %list%%noroot%",cdigits=0)
+# vtree::svtree(InsectSprays,"spray",splitwidth=80,sameline=TRUE,
+#   summary="count \ncounts: %list%%noroot%",cdigits=0)
+# use the label_var_levels shortcut function for that
+
+vt <- vtree(InsectSprays, spray) |>
+  add_labels(template="sameline")
+levlab <- label_var_levels(InsectSprays, vt, "count")
+vt |>
+  add_labels(mask=find_nodes(vt, !path == "root"),
+             template="sameline",
+             suffix=paste0("counts: ", levlab)) |>
+  add_layout(varspace=c(root=1,spray=4), lwidth=.8) |>
+  plot()
+```
+
+![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-37-1.png)
+
+``` r
+#vtree(ToothGrowth,"supp dose",summary="len>20 \n%pct% length > 20")
+#vtree::svtree(ToothGrowth,"supp dose",summary="len>20 \n%pct% length > 20")
+# vtree(ToothGrowth,"supp dose",summary="len>20 \n%pct% length > 20",
+#   labelvar=c("supp"="Supplement type","dose"="Dose (mg/day)"),
+#   labelnode=list(supp=c("Vitamin C"="VC","Orange Juice"="OJ")))
+#vtree::svtree(ToothGrowth,"supp dose",summary="len>20 \n%pct% length > 20",
+#  labelvar=c("supp"="Supplement type","dose"="Dose (mg/day)"),
+#  labelnode=list(supp=c("Vitamin C"="VC","Orange Juice"="OJ")))
+
+# setup the tree with aliases
+tg <- mutate(ToothGrowth, dose = factor(dose))
+vt <- vtree(tg, supp, dose) |>
+  add_aliases(col_alias = c(supp = "Supplement type",
+                            dose = "Dose (mg/day)"),
+              val_alias = list(supp=c(OJ = "Orange Juice",
+                            VC = "Vitamin C")))
+
+# create the summary information
+smt <- vtree_apply(tg, vt, \(df) {
+                     frac_l20 <- sum(df$len > 20)/nrow(df)
+                     sprintf("%.0f%% length > 20", 100 * frac_l20)
+  }) |> unlist()
+
+# add labels; add the summary as suffix
+vt |> add_labels(suffix = smt) |>
+  plot(lwidth=.8)
+```
+
+![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-38-1.png)
+
+#### New functionality in vtree2 compared to vtree ~~Killer features~~
 
 - frequency plots: where nodes are scaled by the number of observations
 - inserting other graphical objects into nodes: images or ggplot2’s

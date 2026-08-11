@@ -59,6 +59,9 @@ Labels are used by the <code><a href="plot.vtree.html">plot.vtree()</a></code> f
 <span>  mask <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  fmt <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  fmt_na <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  prefix <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  suffix <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  sep <span class="op">=</span> <span class="st">"\n"</span>,</span>
 <span>  root_label <span class="op">=</span> <span class="cn">NA</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -94,6 +97,18 @@ This is mostly to omit frequency data from NA nodes if the
 missing data was not used as a denominator to calculate
 percentages. If NULL and fmt is not NULL, fmt will be used for NA
 nodes as well.</p></dd>
+
+
+<dt id="arg-prefix">prefix<a class="anchor" aria-label="anchor" href="#arg-prefix"></a></dt>
+<dd><p>add a prefix (character vector) to the label</p></dd>
+
+
+<dt id="arg-suffix">suffix<a class="anchor" aria-label="anchor" href="#arg-suffix"></a></dt>
+<dd><p>add a suffix (character vector) to the label</p></dd>
+
+
+<dt id="arg-sep">sep<a class="anchor" aria-label="anchor" href="#arg-sep"></a></dt>
+<dd><p>separator for prefix/suffix</p></dd>
 
 
 <dt id="arg-root-label">root_label<a class="anchor" aria-label="anchor" href="#arg-root-label"></a></dt>

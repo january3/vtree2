@@ -136,8 +136,6 @@ node from the `Titanic` example.
   the parent node; if `.vp` is false, this is equal to `n` of the parent
   node.
 
-- `vp`: whether the valid percentage was calculated (`TRUE`).
-
 - `leaf`: whether the node is a leaf (`FALSE`).
 
 Note that the variables `tot_n`, `denom` and `missing` all refer to the

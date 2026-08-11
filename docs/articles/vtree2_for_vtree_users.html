@@ -835,7 +835,214 @@ dogs example in the vtree vignette, you can do this:</p>
 <p><img src="vtree2_for_vtree_users_files/figure-html/unnamed-chunk-35-1.png" class="r-plt" alt="" width="1152"></p>
 </div>
 <div class="section level4">
-<h4 id="new-functionality-killer-features">New functionality <del>Killer features</del><a class="anchor" aria-label="anchor" href="#new-functionality-killer-features"></a>
+<h4 id="other-examples">Other examples<a class="anchor" aria-label="anchor" href="#other-examples"></a>
+</h4>
+<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># ESOPH &lt;- esoph</span></span>
+<span><span class="co"># levels(ESOPH$agegp)[levels(ESOPH$agegp)=="75+"] &lt;- "75plus"</span></span>
+<span><span class="co"># </span></span>
+<span><span class="co"># vtree(ESOPH,"agegp=75plus",sameline=TRUE,cdigits=0,</span></span>
+<span><span class="co">#   summary=c("ncases \ncases=%sum%%leafonly%",</span></span>
+<span><span class="co">#   "ncontrols  controls=%sum%%leafonly%"))</span></span>
+<span></span>
+<span><span class="co"># replace the agegp data var with a new one</span></span>
+<span><span class="va">ESOPH</span> <span class="op">&lt;-</span> <span class="va">esoph</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>agegp <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">agegp</span> <span class="op">==</span> <span class="st">"75+"</span>, <span class="st">"75+"</span>, <span class="st">"&lt; 75"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>agegp <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">agegp</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"&lt; 75"</span>, <span class="st">"75+"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">vt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/vtree.html">vtree</a></span><span class="op">(</span><span class="va">ESOPH</span>, <span class="va">agegp</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># summary for ncases/ncontrols</span></span>
+<span><span class="va">ncases</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/summary_vt.html">summary_vt</a></span><span class="op">(</span><span class="va">ESOPH</span>, <span class="va">vt</span>, <span class="va">ncases</span>,</span>
+<span>                  fmt<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"cases=%d"</span>, <span class="va">n</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">ncntrls</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/summary_vt.html">summary_vt</a></span><span class="op">(</span><span class="va">ESOPH</span>, <span class="va">vt</span>, <span class="va">ncontrols</span>,</span>
+<span>                  fmt<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"controls=%d"</span>, <span class="va">n</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">suffix</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">ncases</span>, <span class="va">ncntrls</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">vt</span> <span class="op">&lt;-</span> <span class="va">vt</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/add_labels.html">add_labels</a></span><span class="op">(</span>template <span class="op">=</span> <span class="st">"sameline"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>label <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">path</span> <span class="op">==</span> <span class="st">"root"</span>, <span class="va">n</span>,</span>
+<span>                        <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">label</span>, <span class="st">"\n"</span>, <span class="va">suffix</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="co"># shrink relative size of the root nodes</span></span>
+<span>  <span class="fu"><a href="../reference/add_layout.html">add_layout</a></span><span class="op">(</span>varspace <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>root<span class="op">=</span><span class="fl">1</span>, agegp<span class="op">=</span><span class="fl">4</span><span class="op">)</span>, lwidth<span class="op">=</span><span class="fl">.8</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">vt</span><span class="op">)</span></span></code></pre></div>
+<p><img src="vtree2_for_vtree_users_files/figure-html/esoph-1.png" class="r-plt" alt="" width="480"></p>
+<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># hec &lt;- crosstabToCases(HairEyeColor)</span></span>
+<span><span class="co"># vtree(hec,"Hair Eye=Green Sex",sameline=TRUE)</span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/cases_from_freqtable.html">cases_from_freqtable</a></span><span class="op">(</span><span class="va">HairEyeColor</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="co"># replace the Eye data var</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>Eye <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">Eye</span> <span class="op">==</span> <span class="st">"Green"</span>,</span>
+<span>                      <span class="st">"Green"</span>, <span class="st">"Not Green"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/vtree.html">vtree</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/add_labels.html">add_labels</a></span><span class="op">(</span>template<span class="op">=</span><span class="st">"sameline"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span>lwidth<span class="op">=</span><span class="fl">.8</span><span class="op">)</span></span></code></pre></div>
+<p><img src="vtree2_for_vtree_users_files/figure-html/hair-1.png" class="r-plt" alt="" width="384"></p>
+<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># mt &lt;- mtcars</span></span>
+<span><span class="co"># mt$name &lt;- rownames(mt)</span></span>
+<span><span class="co"># rownames(mt) &lt;- NULL</span></span>
+<span><span class="co">#</span></span>
+<span><span class="co"># vtree(mt,"cyl gear carb",summary="hp \nmean (SD) HP %mean% (%SD%)")</span></span>
+<span></span>
+<span><span class="co"># for vtree2, we need to convert the numeric columns to factors</span></span>
+<span><span class="va">mt</span> <span class="op">&lt;-</span> <span class="va">mtcars</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/across.html" class="external-link">across</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">cyl</span>, <span class="va">gear</span>, <span class="va">carb</span><span class="op">)</span>, <span class="va">as.factor</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">vt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/vtree.html">vtree</a></span><span class="op">(</span><span class="va">mt</span>, <span class="va">cyl</span>, <span class="va">gear</span>, <span class="va">carb</span><span class="op">)</span></span>
+<span><span class="va">smt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/summary_vt.html">summary_vt</a></span><span class="op">(</span><span class="va">mt</span>, <span class="va">vt</span>, <span class="va">hp</span>, fmt<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"mean (SD) %.1f (%.1f)"</span>,</span>
+<span>                                          <span class="va">mean</span>, <span class="va">sd</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">vt</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/add_labels.html">add_labels</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/add_labels.html">add_labels</a></span><span class="op">(</span>fmt<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"%s\n%s"</span>, <span class="va">label</span>, <span class="va">smt</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span>lwidth<span class="op">=</span><span class="fl">.8</span><span class="op">)</span></span></code></pre></div>
+<p><img src="vtree2_for_vtree_users_files/figure-html/mtcars-1.png" class="r-plt" alt="" width="576"></p>
+<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span></span>
+<span><span class="co"># this doesn't work for me:</span></span>
+<span><span class="co"># vtree(mt,"cyl gear carb",summary="hp mean (SD) HP %mean% (%SD%)",</span></span>
+<span><span class="co">#   cdigits=0,labelvar=c(cyl="# cylinders",gear="# gears",carb="# carburetors"),</span></span>
+<span><span class="co">#   ptable=TRUE)</span></span></code></pre></div>
+<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># vtree(mt,"gear carb",</span></span>
+<span><span class="co"># summary="name \n%list%%noroot%",splitwidth=50,sameline=TRUE,</span></span>
+<span><span class="co">#   labelvar=c(gear="# gears",carb="# carburetors"))</span></span>
+<span></span>
+<span><span class="va">mt</span> <span class="op">&lt;-</span> <span class="va">mtcars</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/across.html" class="external-link">across</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">cyl</span>, <span class="va">gear</span>, <span class="va">carb</span><span class="op">)</span>, <span class="va">as.factor</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames_to_column</a></span><span class="op">(</span><span class="st">"name"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">vt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/vtree.html">vtree</a></span><span class="op">(</span><span class="va">mt</span>, <span class="va">gear</span>, <span class="va">carb</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/add_aliases.html">add_aliases</a></span><span class="op">(</span>col_alias<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>gear<span class="op">=</span><span class="st">"# gears"</span>, carb<span class="op">=</span><span class="st">"# carburators"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">idlist</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/vtree_apply.html">vtree_apply</a></span><span class="op">(</span><span class="va">mt</span>, <span class="va">vt</span>, \<span class="op">(</span><span class="va">df</span><span class="op">)</span> <span class="op">{</span></span>
+<span>                        <span class="va">ret</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">df</span><span class="op">$</span><span class="va">name</span>, collapse<span class="op">=</span><span class="st">", "</span><span class="op">)</span></span>
+<span>                        <span class="va">ret</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/strwrap.html" class="external-link">strwrap</a></span><span class="op">(</span><span class="va">ret</span>, <span class="fl">60</span><span class="op">)</span></span>
+<span>                        <span class="va">ret</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">ret</span>, collapse <span class="op">=</span> <span class="st">"\n"</span><span class="op">)</span></span>
+<span>  <span class="op">}</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">vt</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/add_labels.html">add_labels</a></span><span class="op">(</span>template <span class="op">=</span> <span class="st">"sameline"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/add_labels.html">add_labels</a></span><span class="op">(</span>fmt <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">path</span> <span class="op">==</span> <span class="st">"root"</span>, <span class="va">n</span>,</span>
+<span>                          <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"%s\n%s"</span>, <span class="va">label</span>, <span class="va">idlist</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/add_layout.html">add_layout</a></span><span class="op">(</span>lwidth<span class="op">=</span><span class="fl">.9</span>, varspace <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>root<span class="op">=</span><span class="fl">1</span>, gear<span class="op">=</span><span class="fl">4</span>, carb<span class="op">=</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span>lwidth<span class="op">=</span><span class="fl">.9</span>, fontsizes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>nodes<span class="op">=</span><span class="st">"adaptive"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning: <span style="color: #00BBBB;">ℹ</span> vtree already has a layout; ignoring lwidth and</span></span>
+<span><span class="co">#&gt; lheight</span></span></code></pre></div>
+<p><img src="vtree2_for_vtree_users_files/figure-html/mtcars2-1.png" class="r-plt" alt="" width="576"></p>
+<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># ucb &lt;- crosstabToCases(UCBAdmissions)</span></span>
+<span><span class="co"># vtree(ucb,"Dept Gender",summary="Admit=Admitted \n%pct% admitted",sameline=TRUE)</span></span>
+<span></span>
+<span><span class="co"># ucb &lt;- vtree::crosstabToCases(UCBAdmissions)</span></span>
+<span><span class="co"># vtree::svtree(ucb,"Dept Gender",summary="Admit=Admitted \n%pct% admitted",sameline=TRUE)</span></span>
+<span></span>
+<span><span class="va">ucb</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cases_from_freqtable.html">cases_from_freqtable</a></span><span class="op">(</span><span class="va">UCBAdmissions</span><span class="op">)</span></span>
+<span><span class="va">vt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/vtree.html">vtree</a></span><span class="op">(</span><span class="va">ucb</span>, <span class="va">Dept</span>, <span class="va">Gender</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/summary_vt.html">summary_vt_df</a></span><span class="op">(</span><span class="va">ucb</span>, <span class="va">vt</span>, <span class="va">Admit</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 19 × 9</span></span></span>
+<span><span class="co">#&gt;    path                 col   type      n valid missing unique levels levels_str</span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;list&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> root                 Admit cate…  <span style="text-decoration: underline;">4</span>526  <span style="text-decoration: underline;">4</span>526       0      2 <span style="color: #949494;">&lt;int&gt;</span>  <span style="color: #949494;">"</span>Admitted…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> Dept:A               Admit cate…   933   933       0      2 <span style="color: #949494;">&lt;int&gt;</span>  <span style="color: #949494;">"</span>Admitted…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> Dept:B               Admit cate…   585   585       0      2 <span style="color: #949494;">&lt;int&gt;</span>  <span style="color: #949494;">"</span>Admitted…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> Dept:C               Admit cate…   918   918       0      2 <span style="color: #949494;">&lt;int&gt;</span>  <span style="color: #949494;">"</span>Admitted…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> Dept:D               Admit cate…   792   792       0      2 <span style="color: #949494;">&lt;int&gt;</span>  <span style="color: #949494;">"</span>Admitted…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> Dept:E               Admit cate…   584   584       0      2 <span style="color: #949494;">&lt;int&gt;</span>  <span style="color: #949494;">"</span>Admitted…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> Dept:F               Admit cate…   714   714       0      2 <span style="color: #949494;">&lt;int&gt;</span>  <span style="color: #949494;">"</span>Admitted…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> Dept:A/Gender:Male   Admit cate…   825   825       0      2 <span style="color: #949494;">&lt;int&gt;</span>  <span style="color: #949494;">"</span>Admitted…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> Dept:A/Gender:Female Admit cate…   108   108       0      2 <span style="color: #949494;">&lt;int&gt;</span>  <span style="color: #949494;">"</span>Admitted…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> Dept:B/Gender:Male   Admit cate…   560   560       0      2 <span style="color: #949494;">&lt;int&gt;</span>  <span style="color: #949494;">"</span>Admitted…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">11</span> Dept:B/Gender:Female Admit cate…    25    25       0      2 <span style="color: #949494;">&lt;int&gt;</span>  <span style="color: #949494;">"</span>Admitted…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">12</span> Dept:C/Gender:Male   Admit cate…   325   325       0      2 <span style="color: #949494;">&lt;int&gt;</span>  <span style="color: #949494;">"</span>Admitted…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">13</span> Dept:C/Gender:Female Admit cate…   593   593       0      2 <span style="color: #949494;">&lt;int&gt;</span>  <span style="color: #949494;">"</span>Admitted…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">14</span> Dept:D/Gender:Male   Admit cate…   417   417       0      2 <span style="color: #949494;">&lt;int&gt;</span>  <span style="color: #949494;">"</span>Admitted…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">15</span> Dept:D/Gender:Female Admit cate…   375   375       0      2 <span style="color: #949494;">&lt;int&gt;</span>  <span style="color: #949494;">"</span>Admitted…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">16</span> Dept:E/Gender:Male   Admit cate…   191   191       0      2 <span style="color: #949494;">&lt;int&gt;</span>  <span style="color: #949494;">"</span>Admitted…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">17</span> Dept:E/Gender:Female Admit cate…   393   393       0      2 <span style="color: #949494;">&lt;int&gt;</span>  <span style="color: #949494;">"</span>Admitted…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">18</span> Dept:F/Gender:Male   Admit cate…   373   373       0      2 <span style="color: #949494;">&lt;int&gt;</span>  <span style="color: #949494;">"</span>Admitted…</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">19</span> Dept:F/Gender:Female Admit cate…   341   341       0      2 <span style="color: #949494;">&lt;int&gt;</span>  <span style="color: #949494;">"</span>Admitted…</span></span>
+<span><span class="va">perc_func</span> <span class="op">&lt;-</span> \<span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fl">100</span> <span class="op">*</span> <span class="va">x</span><span class="op">[</span><span class="st">"Admitted"</span><span class="op">]</span> <span class="op">/</span> <span class="op">(</span><span class="va">x</span><span class="op">[</span><span class="st">"Admitted"</span><span class="op">]</span> <span class="op">+</span> <span class="va">x</span><span class="op">[</span><span class="st">"Rejected"</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="va">smt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/summary_vt.html">summary_vt</a></span><span class="op">(</span><span class="va">ucb</span>, <span class="va">vt</span>, <span class="va">Admit</span>,</span>
+<span>               fmt<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"%.0f %% admitted"</span>, <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map_dbl</a></span><span class="op">(</span><span class="va">levels</span>, <span class="va">perc_func</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">vt</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/add_labels.html">add_labels</a></span><span class="op">(</span>template<span class="op">=</span><span class="st">"sameline"</span>, suffix <span class="op">=</span> <span class="va">smt</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span>lwidth<span class="op">=</span><span class="fl">.7</span><span class="op">)</span></span></code></pre></div>
+<p><img src="vtree2_for_vtree_users_files/figure-html/unnamed-chunk-36-1.png" class="r-plt" alt="" width="700"></p>
+<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># vtree(ChickWeight,"Diet Time",</span></span>
+<span><span class="co">#   keep=list(Time=c("0","4")),summary="weight \nmean weight %mean%g")</span></span>
+<span><span class="co"># vtree::svtree(ChickWeight,"Diet Time",</span></span>
+<span><span class="co">#   keep=list(Time=c("0","4")),summary="weight \nmean weight %mean%g")</span></span>
+<span><span class="co">#</span></span>
+<span><span class="co"># vtree::svtree(ChickWeight,"Diet Time",keep=list(Time=c("0","4")),</span></span>
+<span><span class="co">#   labelnode=list(</span></span>
+<span><span class="co">#     Diet=c("Diet 1"="1","Diet 2"="2","Diet 3"="3","Diet 4"="4"),</span></span>
+<span><span class="co">#     Time=c("0 days"="0","4 days"="4")),</span></span>
+<span><span class="co">#   labelvar=c(Time="Days since birth"),summary="weight \nmean weight %mean%g")</span></span>
+<span></span>
+<span><span class="co"># need to convert Time to a factor. Best make the Time and Diet vars</span></span>
+<span><span class="co"># absolutely nonambiguous</span></span>
+<span><span class="va">cwcases</span> <span class="op">&lt;-</span> <span class="va">ChickWeight</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>Time <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">"Time"</span>, <span class="va">Time</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>Diet <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">"Diet"</span>, <span class="va">Diet</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">vt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/vtree.html">vtree</a></span><span class="op">(</span><span class="va">cwcases</span>, <span class="va">Diet</span>, <span class="va">Time</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/prune.html">retain</a></span><span class="op">(</span><span class="va">Time</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Time 0"</span>, <span class="st">"Time 4"</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">smt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/summary_vt.html">summary_vt</a></span><span class="op">(</span><span class="va">cwcases</span>, <span class="va">vt</span>, <span class="va">weight</span>,</span>
+<span>                  fmt <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"mean weight %.1fg"</span>, <span class="va">mean</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">vt</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/add_aliases.html">add_aliases</a></span><span class="op">(</span>col_alias<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>Time <span class="op">=</span> <span class="st">"Days since birth"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/add_labels.html">add_labels</a></span><span class="op">(</span>suffix <span class="op">=</span> <span class="va">smt</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span>lwidth<span class="op">=</span><span class="fl">.6</span><span class="op">)</span></span></code></pre></div>
+<p><img src="vtree2_for_vtree_users_files/figure-html/chickweight-1.png" class="r-plt" alt="" width="384"></p>
+<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># vtree(InsectSprays,"spray",splitwidth=80,sameline=TRUE,</span></span>
+<span><span class="co">#   summary="count \ncounts: %list%%noroot%",cdigits=0)</span></span>
+<span><span class="co"># vtree::svtree(InsectSprays,"spray",splitwidth=80,sameline=TRUE,</span></span>
+<span><span class="co">#   summary="count \ncounts: %list%%noroot%",cdigits=0)</span></span>
+<span><span class="co"># use the label_var_levels shortcut function for that</span></span>
+<span></span>
+<span><span class="va">vt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/vtree.html">vtree</a></span><span class="op">(</span><span class="va">InsectSprays</span>, <span class="va">spray</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/add_labels.html">add_labels</a></span><span class="op">(</span>template<span class="op">=</span><span class="st">"sameline"</span><span class="op">)</span></span>
+<span><span class="va">levlab</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/label_var_levels.html">label_var_levels</a></span><span class="op">(</span><span class="va">InsectSprays</span>, <span class="va">vt</span>, <span class="st">"count"</span><span class="op">)</span></span>
+<span><span class="va">vt</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/add_labels.html">add_labels</a></span><span class="op">(</span>mask<span class="op">=</span><span class="fu"><a href="../reference/prune.html">find_nodes</a></span><span class="op">(</span><span class="va">vt</span>, <span class="op">!</span><span class="va">path</span> <span class="op">==</span> <span class="st">"root"</span><span class="op">)</span>,</span>
+<span>             template<span class="op">=</span><span class="st">"sameline"</span>,</span>
+<span>             suffix<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"counts: "</span>, <span class="va">levlab</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/add_layout.html">add_layout</a></span><span class="op">(</span>varspace<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>root<span class="op">=</span><span class="fl">1</span>,spray<span class="op">=</span><span class="fl">4</span><span class="op">)</span>, lwidth<span class="op">=</span><span class="fl">.8</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p><img src="vtree2_for_vtree_users_files/figure-html/unnamed-chunk-37-1.png" class="r-plt" alt="" width="700"></p>
+<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">#vtree(ToothGrowth,"supp dose",summary="len&gt;20 \n%pct% length &gt; 20")</span></span>
+<span><span class="co">#vtree::svtree(ToothGrowth,"supp dose",summary="len&gt;20 \n%pct% length &gt; 20")</span></span>
+<span><span class="co"># vtree(ToothGrowth,"supp dose",summary="len&gt;20 \n%pct% length &gt; 20",</span></span>
+<span><span class="co">#   labelvar=c("supp"="Supplement type","dose"="Dose (mg/day)"),</span></span>
+<span><span class="co">#   labelnode=list(supp=c("Vitamin C"="VC","Orange Juice"="OJ")))</span></span>
+<span><span class="co">#vtree::svtree(ToothGrowth,"supp dose",summary="len&gt;20 \n%pct% length &gt; 20",</span></span>
+<span><span class="co">#  labelvar=c("supp"="Supplement type","dose"="Dose (mg/day)"),</span></span>
+<span><span class="co">#  labelnode=list(supp=c("Vitamin C"="VC","Orange Juice"="OJ")))</span></span>
+<span></span>
+<span><span class="co"># setup the tree with aliases</span></span>
+<span><span class="va">tg</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span><span class="va">ToothGrowth</span>, dose <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">dose</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">vt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/vtree.html">vtree</a></span><span class="op">(</span><span class="va">tg</span>, <span class="va">supp</span>, <span class="va">dose</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/add_aliases.html">add_aliases</a></span><span class="op">(</span>col_alias <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>supp <span class="op">=</span> <span class="st">"Supplement type"</span>,</span>
+<span>                            dose <span class="op">=</span> <span class="st">"Dose (mg/day)"</span><span class="op">)</span>,</span>
+<span>              val_alias <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>supp<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>OJ <span class="op">=</span> <span class="st">"Orange Juice"</span>,</span>
+<span>                            VC <span class="op">=</span> <span class="st">"Vitamin C"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># create the summary information</span></span>
+<span><span class="va">smt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/vtree_apply.html">vtree_apply</a></span><span class="op">(</span><span class="va">tg</span>, <span class="va">vt</span>, \<span class="op">(</span><span class="va">df</span><span class="op">)</span> <span class="op">{</span></span>
+<span>                     <span class="va">frac_l20</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">df</span><span class="op">$</span><span class="va">len</span> <span class="op">&gt;</span> <span class="fl">20</span><span class="op">)</span><span class="op">/</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span></span>
+<span>                     <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"%.0f%% length &gt; 20"</span>, <span class="fl">100</span> <span class="op">*</span> <span class="va">frac_l20</span><span class="op">)</span></span>
+<span>  <span class="op">}</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># add labels; add the summary as suffix</span></span>
+<span><span class="va">vt</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/add_labels.html">add_labels</a></span><span class="op">(</span>suffix <span class="op">=</span> <span class="va">smt</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span>lwidth<span class="op">=</span><span class="fl">.8</span><span class="op">)</span></span></code></pre></div>
+<p><img src="vtree2_for_vtree_users_files/figure-html/unnamed-chunk-38-1.png" class="r-plt" alt="" width="700"></p>
+</div>
+<div class="section level4">
+<h4 id="new-functionality-in-vtree2-compared-to-vtree-killer-features">New functionality in vtree2 compared to vtree <del>Killer
+features</del><a class="anchor" aria-label="anchor" href="#new-functionality-in-vtree2-compared-to-vtree-killer-features"></a>
 </h4>
 <ul>
 <li>frequency plots: where nodes are scaled by the number of

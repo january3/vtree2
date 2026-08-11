@@ -197,6 +197,19 @@ vt <- vtree(cases, Class, Survived)
 vt <- vtree_from_freqtable(Titanic, Class, Survived)
 ```
 
+### Data preparation
+
+The vtree object constructors
+([`vtree()`](https://january3.github.io/vtree2/reference/vtree.md) and
+[`vtree_from_freqtable()`](https://january3.github.io/vtree2/reference/vtree.md))
+can only use factors and character values. They flatly refuse to process
+numeric or logical columns. This is by design: numeric and logical
+values are not categorical, and vtrees are meant to visualize
+categorical data.
+
+Also, converting numerical or logical values to factors or character
+vectors is easy. It is best done with regular R code.
+
 ### Valid percentages
 
 One of the important concepts to know about are the *valid percentages*.

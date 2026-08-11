@@ -56,6 +56,8 @@
   : Summarize a variable at a given node of a vtree
 - [`vtree_apply()`](https://january3.github.io/vtree2/reference/vtree_apply.md)
   : Apply a function to a data frame by nodes in the vtree
+- [`label_var_levels()`](https://january3.github.io/vtree2/reference/label_var_levels.md)
+  : Get a value list as character vector
 
 ## Labels and aliases
 

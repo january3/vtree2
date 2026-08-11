@@ -61,6 +61,7 @@ vt <- vtree(tdf, Class, Sex, Survived)
 vt
 #> vtree object with 3 variables and 2201 observations
 #> Variables: Class, Sex, Survived 
+#> Frequencies computed as valid percentages (vp == TRUE)
 #> Overview:
 #> # Tibble (class tbl_df) 6 x 29:
 #> # (Showing rows 1 - 20 out of 29)
@@ -208,13 +209,20 @@ More docs available [here](https://january3.github.io/vtree2/).
 ## TODO/PROBLEMS
 
 - write a manual in the main vignette \[——\| \] 85% complete
+- summaries_vt and summaries_vt_df - that is clunky, maybe as_df option
+  or smth?
 - the nodes of the diagrammer are adjusted to the size of the labels. We
   could do that, actually. I think it doesn’t look so good, but OK.
+- vtree constructors take only character or factor variables: ~~build in
+  checking for column type~~ maybe add functions to convert numeric to
+  factor? or some automation controlled with a param?
+- add_layout should not modify shape if present
+- faster processing of cases into trees
+- why is plotting patterns so slow?
 - ~~better support in add_palette for 1/ variable driven palettes
   (i.e. one color for one tree level / variable of the tree,
   deterministic such that colors don’t change if we prune a tree) 2/
   fully customized palettes~~
-- vtree constructors take only character or factor variables
 - ~~original vtree tries to keep sister NA nodes of the retained nodes.
   This behavior is reproduced by the keep_na_sisters parameter, which
   adds NA nodes to the retained nodes. However, if we target an NA node
@@ -223,11 +231,14 @@ More docs available [here](https://january3.github.io/vtree2/).
 - ~~fix the mess around legend param~~
 - ~~vtree constructors should check for presence of ‘/’ and ‘:’ in
   variable names~~
-- vtree constructors should test for the presence of structural columns
-  in the data. e.g. if the data has already a column called “n” or
-  “freq”, we will have a clash when pruning and virtual columns are
-  created.
-- print.vtree should show the status of added layouts / colors / etc etc
+- ~~vtree constructors should check that all columns are factors or
+  characters~~
+- ~~vtree constructors should test for the presence of structural
+  columns in the data. e.g. if the data has already a column called “n”
+  or “freq”, we will have a clash when pruning and virtual columns are
+  created.~~
+- ~~print.vtree should show the status of added layouts / colors / etc
+  etc~~
 - ~~pruning:~~
   - ~~streamline and clean up pruning / selecting nodes~~
   - ~~remove mark_only parameter, enough to have “mark()”~~ -\> nah, it
@@ -235,12 +246,11 @@ More docs available [here](https://january3.github.io/vtree2/).
   - ~~unexport find_parents / find_children~~ -\> nah, they might be
     useful
   - ~~remove the na.rm tag~~
-- add_layout should not modify shape if present
 - the arrows should be attached dynamically in grob.R rather than in
   layout?
 - ~~add prefix and suffix parameters to add_labels, to make the handling
   easier~~ - nah, you can just paste() it.
-- how is vtree actually handling the palettes?
+- ~~how is vtree actually handling the palettes?~~
 - ~~root node should not show percentages on default labels~~
 - ~~make sure that node_name is used for displaying variable names~~
 - ~~plotting function for patterns~~
@@ -254,7 +264,6 @@ More docs available [here](https://january3.github.io/vtree2/).
   vtree_from_freqtable, we can just use vtree(…, .freq_col=“Freq”) or
   something like this.~~ nah, better make it explicit.
 - ~~maybe gridtext for the labels so we can use some basic formatting~~
-- faster processing of cases into trees
 - questions to N:
   - which NA nodes are kept when vp=TRUE, only the sisters or all on the
     same level?
@@ -265,11 +274,11 @@ More docs available [here](https://january3.github.io/vtree2/).
 
 ## BUGS
 
-- aliases are ignored for the legend. Maybe aliases should behave like
-  palettes, i.e. also set an attribute to be used by legend?
+- legend titles sometimes overlap with the legend
+- ~~aliases are ignored for the legend. Maybe aliases should behave like
+  palettes, i.e. also set an attribute to be used by legend?~~
 - ~~“Missing” is missing from the legend on the user guide example for
   adding aliases~~
-- legend titles sometimes overlap with the legend
 - ~~if some variables disappear from the plot, the legend throws an
   error~~
 - ~~prune(!Severity %in% c(“Mild”, “Moderate”), follow_only = TRUE) does
