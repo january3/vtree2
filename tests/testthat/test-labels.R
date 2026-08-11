@@ -96,4 +96,16 @@ test_that("add_labels works", {
 
 })
 
+test_that("prefix/suffix works", {
 
+  vt1 <- add_labels(vt)
+  nd1 <- as_tibble(vt1)
+  vt2 <- add_labels(vt, prefix = "PRE", suffix = "SUF")
+  nd2 <- as_tibble(vt2)
+
+  expect_all_true(nd2$label == paste0("PRE\n", nd1$label, "\nSUF"))
+
+  vt2 <- add_labels(vt, prefix = "PRE", suffix = "SUF", sep="-")
+  nd2 <- as_tibble(vt2)
+  expect_all_true(nd2$label == paste0("PRE-", nd1$label, "-SUF"))
+})

@@ -64,7 +64,7 @@
                sprintf("%d", .data[["n"]]),
                ifelse(!is.na(.data[["val_alias"]]) & .data[["val_alias"]] == "",
                sprintf("%d (%.0f%%)", .data[["n"]], .data[["freq"]] * 100),
-               sprintf("%s %d (%.0f%%)", .data[["val_alias"]],
+               sprintf("%s: %d (%.0f%%)", .data[["val_alias"]],
                                           .data[["n"]], .data[["freq"]] * 100))))
     fmt_na = quo(ifelse(!is.na(.data[["val_alias"]]) & .data[["val_alias"]] == "",
                         sprintf("%d", .data[["n"]]),
@@ -137,6 +137,9 @@
 #'        missing data was not used as a denominator to calculate
 #'        percentages. If NULL and fmt is not NULL, fmt will be used for NA
 #'        nodes as well.
+#' @param prefix add a prefix (character vector) to the label
+#' @param suffix add a suffix (character vector) to the label
+#' @param sep separator for prefix/suffix
 #' @param root_label Label to be used for the root node. If NA, do not
 #'        modify the root label.
 #' @return an object of class vtree with added labels
@@ -167,6 +170,9 @@ add_labels <- function(vtree,
                        mask = NULL,
                        fmt = NULL,
                        fmt_na = NULL,
+                       prefix = NULL,
+                       suffix = NULL,
+                       sep = "\n",
                        root_label = NA) {
 
   template <- match.arg(template, c("simple", "sameline", "long"))
@@ -196,6 +202,16 @@ add_labels <- function(vtree,
   nodes <- as_tibble(vtree) |> .ensure_aliases()
   labels    <- eval_tidy(fmt, data = nodes)
   labels_na <- eval_tidy(fmt_na, data = nodes)
+
+  if(!is.null(prefix)) {
+    labels <- paste0(prefix, sep, labels)
+    labels_na <- paste0(prefix, sep, labels_na)
+  }
+
+  if(!is.null(suffix)) {
+    labels <- paste0(labels, sep, suffix)
+    labels_na <- paste0(labels_na, sep, suffix)
+  }
 
   if(is.null(mask)) {
     mask <- rep(TRUE, nrow(nodes))
