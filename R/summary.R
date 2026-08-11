@@ -379,11 +379,16 @@ fmt_label <- function(x, fmt = NULL) {
 #' of the variables such that for each node in the vtree, the function is
 #' applied to the subset of data that matches the path to that node.
 #'
-#' The function `FUN` may take two arguments (if the option .twoarg is
-#' TRUE). The first is the subset of the data frame that matches the path
-#' to the node. The second is a one row data frame with the information of
-#' the node (the row of the vtree node data frame corresponding to the
-#' node).
+#' `vtree_apply` applies the function FUN sequentially to groups of samples
+#' from the `cases` data frame corresponding to a given node. By default,
+#' the argument passed to the function is the subset of the cases data
+#' frame, however two other arguments may be included: the row from the
+#' vtree node data frame corresponding to the given node (including the
+#' node id, path etc.), and a logical vector of the same length as the
+#' number of rows in the cases data frame and a TRUE value if the given row
+#' is included in the current node.
+#'
+#' Order and number of arguments are given by the `.args` parameter.
 #' @param cases A data frame of cases, with one row per observation.
 #' @param vtree A vtree object.
 #' @param FUN A function to apply to the subset of cases that match the path
@@ -391,10 +396,10 @@ fmt_label <- function(x, fmt = NULL) {
 #' @param .mask An optional logical vector of the same length as the number of
 #'              nodes in the vtree. If provided,
 #'              only the nodes for which .mask is TRUE will be processed.
-#' @param .twoarg A logical value indicating whether FUN takes two
-#'        arguments. If TRUE, the first argument will be the fragment of
-#'        cases corresponding to the node, and the second will be the row
-#'        from the nodes data frame of vtree corresponding to that node.
+#' @param .args character vector specifying which arguments should FUN be
+#'        called with: `cases` for the relevant fragment of the cases data
+#'        frame; 'nodes` for a single-row nodes data frame with the given
+#'        node; `sel` for the logical selection vector.
 #' @param ... Additional arguments to pass to FUN.
 #' @return A list of the results of applying FUN to each subset of cases
 #'         named with the node_key of the corresponding node in the vtree.
@@ -418,7 +423,7 @@ fmt_label <- function(x, fmt = NULL) {
 #'   plot(dir="tb")
 #' @export
 vtree_apply <- function(cases, vtree, FUN, ...,
-                        .mask=NULL, .twoarg=FALSE) {
+                        .mask=NULL, .args="cases") {
 
   if(!inherits(vtree, "vtree")) {
     cli_abort(c(x = "vtree_apply() requires a vtree object"))
@@ -428,6 +433,13 @@ vtree_apply <- function(cases, vtree, FUN, ...,
     cli_abort(c(x = "vtree_apply() requires a data frame for cases"))
   }
 
+  allowed <- c("cases", "nodes", "sel")
+  if(any(!.args %in% allowed)) {
+    wrong <- .args[!.args %in% allowed]
+    cli_abort(c(x=
+      ".args may only contain following values: {allowed}",
+    i = "following values are not allowed: {wrong}"))
+  }
 
   # check that all necessary variables are in the colnames of cases
   cols <- names(vtree)
@@ -459,12 +471,14 @@ vtree_apply <- function(cases, vtree, FUN, ...,
 
   ret <- map(seq_along(matches), \(i) {
                m <- matches[[i]]
-               if(.twoarg) {
-                 nr <- nodes[i, , drop = FALSE]
-                 FUN(cases[m, , drop = FALSE], nr, ...)
-               } else {
-                 FUN(cases[m, , drop = FALSE], ...)
-               }
+               args <- list(sel=m,
+                            nodes = nodes[i, , drop=FALSE],
+                            cases = cases[m, , drop=FALSE])
+               #args <- c(args[.args], ...)
+               args <- c(args[.args], ...)
+               names(args) <- NULL
+
+               do.call(FUN, args)
 
   })
   names(ret) <- nodes$node_key[.mask]

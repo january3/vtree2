@@ -152,7 +152,7 @@ test_that("vtree_apply works", {
   expect_all_true(names(vtf) == nd$node_key)
   expect_all_true(purrr::map_lgl(vtf, is.numeric) == TRUE)
 
-  vtf <- vtree_apply(cases, vt, \(x, y) y, .twoarg = TRUE) 
+  vtf <- vtree_apply(cases, vt, \(x) x, .args = "nodes") 
   expect_type(vtf, "list")
   expect_length(vtf, nrow(nd))
   expect_all_true(names(vtf) == nd$node_key)
