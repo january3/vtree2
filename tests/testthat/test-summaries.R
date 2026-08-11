@@ -4,14 +4,17 @@ test_that("summary_vt works", {
   vt <- vtree(cases, Class, Sex, Survived)
   nodes <- vt |> activate("nodes") |> as_tibble()
 
-  stxt <- summary_vt(cases, vt, Survived)
+  stxt <- as_label(summarize_by_node(cases, vt, Survived))
   expect_equal(length(stxt), nrow(nodes))
   expect_snapshot(stxt)
  
-  s1 <- summary_vt_df(cases, vt, Age)
-  expect_in(c("path", "n", "valid",
+  s1 <- summarize_by_node(cases, vt, Age)
+  expect_in(c("node_id", "path", "n", "valid",
               "missing", "unique",
-              "levels", "levels_str"), colnames(s1))
+              "levels",
+              "denom", "Child",
+              "Child_freq", "Adult", "Adult_freq",
+              "col"), colnames(s1))
 
   expect_true(all(s1$n == s1$valid))
   expect_equal(nrow(s1), nrow(nodes))
@@ -36,13 +39,12 @@ test_that("summary_vt works", {
   cases$Survived[ runif(nrow(cases)) < .1 ] <- NA
   vt1 <- vtree(cases, Class, Sex, Survived)
   nodes <- vt1 |> as_tibble()
-  s1 <- summary_vt_df(cases, vt1, Survived)
+  s1 <- summarize_by_node(cases, vt1, Survived)
   expect_equal(nrow(s1), nrow(nodes))
 
-  s1txt <- summary_vt(cases, vt1, Survived)
+  s1txt <- as_label(s1)
   expect_equal(length(s1txt), nrow(nodes))
   expect_snapshot(s1txt)
-
 })
 
 test_that("numeric summaries work", {
@@ -55,15 +57,15 @@ test_that("numeric summaries work", {
   cases$foo <- rnorm(nrow(cases))
   cases$foo[ runif(nrow(cases)) < .1 ] <- NA
 
-  s1 <- summary_vt_df(cases, vt, foo)
+  s1 <- summarize_by_node(cases, vt, foo)
   expect_equal(nrow(s1), nrow(nodes))
-  expect_in(c("path", "n", "mean", "sd", "min",
+  expect_in(c("node_id", "path", "n", "mean", "sd", "min",
               "max", "median", "iqr", "q1", "q3",
               "valid", "missing"), colnames(s1))
   expect_all_true(s1$valid + s1$missing == s1$n)
   expect_snapshot(s1)
 
-  s2 <- summary_vt(cases, vt, foo)
+  s2 <- as_label(s1)
   expect_length(s2, nrow(nodes))
   expect_type(s2, "character")
   expect_all_true(grepl("^foo", s2))
@@ -78,13 +80,13 @@ test_that("errors are raised", {
   cases <- cases_from_freqtable(Titanic)
   vt <- vtree(cases, Class, Sex, Survived)
 
-  expect_error(summary_vt(vt, cases, Survived),
+  expect_error(summarize_by_node(vt, cases, Survived),
                "cases must be a data frame")
-  expect_error(summary_vt(cases, vt, all_of(c("Survived", "Sex"))),
+  expect_error(summarize_by_node(cases, vt, all_of(c("Survived", "Sex"))),
                "Only one column can be summarized at a time")
-  expect_error(summary_vt(cases, as_tibble(vt), Survived),
+  expect_error(summarize_by_node(cases, as_tibble(vt), Survived),
                "vtree must be a vtree object")
-  expect_error(summary_vt(cases, vt, Foooo),
+  expect_error(summarize_by_node(cases, vt, Foooo),
                "Can't select columns that don't exist.")
   cases$foo <- rnorm(nrow(cases))
   expect_error(vtree_apply(vt, vt, \(x) mean(x$foo)),
@@ -96,7 +98,7 @@ test_that("errors are raised", {
                "length of .mask must be equal to the number of nodes")
 
   cases <- cases[, c("Class", "Survived")]
-  expect_error(summary_vt(cases, vt, Survived),
+  expect_error(summarize_by_node(cases, vt, Survived),
                "columns in the vtree are not found in the cases data frame")
   expect_error(vtree_apply(cases, vt, \(x) mean(x$foo)),
                "columns in the vtree are not found in the cases data frame")

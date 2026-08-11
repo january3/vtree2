@@ -1,8 +1,3 @@
-.na_comp <- function(x, y) {
-  (is.na(x) & is.na(y)) |
-  (!is.na(x) & !is.na(y) & x == y)
-}
-
 # calculate the overall product of all matches to select the correct
 # classes
 .find_match_recursively <- function(df, path, match = TRUE) {
@@ -31,76 +26,95 @@
 
 # get a single summary, the lowlevel function
 #' @importFrom stats quantile IQR sd median
-.get_summary <- function(cases, col, matches) {
-
-  num <- is.numeric(cases[[col]])
-  if(!is.factor(cases[[col]])) {
-    fa <- factor(cases[[col]])
-  } else {
-    fa <- cases[[col]]
-  }
+# numeric summary
+.get_summary_numeric <- function(vec, matches) {
 
   ret <- map_dfr(matches, \(m) {
-    x <- cases[[col]][m]
-    if(num) {
-      ret <- tibble(
-        col = col,
-        type = "numeric",
-        n = length(x),
-        mean = mean(x, na.rm = TRUE),
-        sd = sd(x, na.rm = TRUE),
-        min = min(x, na.rm = TRUE),
-        max = max(x, na.rm = TRUE),
-        median = median(x, na.rm = TRUE),
-        q1 = quantile(x, .25, na.rm = TRUE),
-        q3 = quantile(x, .75, na.rm = TRUE),
-        iqr = IQR(x, na.rm = TRUE),
-        valid = sum(!is.na(x)),
-        missing = sum(is.na(x))
-      )
-    } else {
-      ret <- tibble(
-        col = col,
-        type = "categorical",
-        n = length(x),
-        valid = sum(!is.na(x)),
-        missing = sum(is.na(x)),
-        unique = length(unique(x)),
-        levels = list(summary(fa[m]))
-      ) |>
-      mutate(levels_str =
-             map_chr(levels, \(l) paste(names(l), l, sep = ": ", collapse = "\n")))
-    }
-    ret
+    x <- vec[m]
+    tibble(
+      type = "numeric",
+      n = length(x),
+      mean = mean(x, na.rm = TRUE),
+      sd = sd(x, na.rm = TRUE),
+      min = min(x, na.rm = TRUE),
+      max = max(x, na.rm = TRUE),
+      median = median(x, na.rm = TRUE),
+      q1 = quantile(x, .25, na.rm = TRUE),
+      q3 = quantile(x, .75, na.rm = TRUE),
+      iqr = IQR(x, na.rm = TRUE),
+      valid = sum(!is.na(x)),
+      missing = sum(is.na(x))
+    )
   })
 
   ret
 }
 
+.get_summary_factor <- function(vec, matches, vp) {
+
+  if(is.logical(vec)) {
+    vec <- as.character(vec)
+  }
+
+  # factor/character summary
+  if(!is.factor(vec)) {
+    fa <- factor(vec)
+  } else {
+    fa <- vec
+  }
+
+  ret <- map_dfr(matches, \(m) {
+    x <- vec[m]
+    tibble(
+      type = "categorical",
+      n = length(x),
+      valid = sum(!is.na(x)),
+      missing = sum(is.na(x)),
+      unique = length(unique(x)),
+      levels = list(summary(fa[m]))
+    )
+  })
+
+  ret <- cbind(ret, perc_var_levels(vec, ret, vp))
+  ret
+}
+
 #' Summarize a case variable for each node of a vtree
 #'
-#' `summary_vt()` and `summary_vt_df()` summarize a case variable for each
-#' node of a vtree. That is, for each node in the vtree, they select the
-#' cases that match the path to that node and summarize the specified
-#' variable for those cases.
+#' The function `summarize_by_node()` summarizes a case variable for each
+#' node of a vtree. That is, for each node in the vtree, it selects the
+#' cases from the cases data frame that match the path to that node and
+#' summarize the specified variable for those cases.
 #'
 #' For example, in the Titanic data set, you can ask what were the
 #' different proportions of survivors for males in the 1st class. This
 #' corresponds to the summary of variable `Survived` for the node with
 #' path `Class:1st/Sex:Male`.
 #'
-#' The `summary_vt_df()` function returns a data frame with columns
-#' corresponding to various and column data type dependent statistic
-#' measures, while `summary_vt()` creates a character vector with these
-#' measures.
+#' The `as_label()` functions creates a character vector with these
+#' measures. The provided format is an expression evaluated in the context
+#' of the data frame returned by `summarize_by_node()` and can use the
+#' different columns created by that function.
 #'
-#' For numeric variables, the resulting data frame (tibble) returned by
-#' `summary_vt_df()` will contain
+#' For numeric variables, the data frame (tibble) returned by
+#' `summarize_by_node()` will contain
 #' the following columns: `n`, `mean`, `sd`, `min`, `max`, `median`, `q1`,
 #' `q3`, `iqr`, `valid`, and `missing`.
 #'
-#' For factor variables, the resulting data frame will contain the following
-#' columns: `n`, `valid`, `missing`, `unique`, `levels` and `levels_str`.
+#' For factor variables (and variables which can be safely converted to a
+#' factor, i.e. character and logical vectors), the resulting data frame
+#' will contain the following columns: `n`, `valid`, `missing`, `denom`,
+#' `unique` and `levels`. In addition, for each level "lev" of the factor,
+#' it includes the columns "lev" and "lev_freq", which are the number and
+#' percentage of the samples with this level of the variable.
+#'
+#' The frequency calculation uses, by default, the same type of denominator
+#' as the vtree. That is, if the vtree was calculated using valid
+#' percentages, the denominator used to calculate the frequencies is equal
+#' to the number of samples minus number of NAs; otherwise it is equal to
+#' the number of samples and the frequencies are also calculated for the NA
+#' samples.
+#' 
 #' The `levels` column is a list column, and each cell contains a list of
 #' the counts of each level of the factor variable for that node. The
 #' `levels_str` column is a character column that contains a string
@@ -117,6 +131,7 @@
 #'
 #' @param vtree A vtree object.
 #' @param cases A data frame of cases, with one row per observation.
+#' @param vp whether frequencies should be calculated using valid percentages
 #' @param fmt An expression for customized formatting. See Examples.
 #' @param col The column variable to summarize. This should be a single
 #'            column name, quoted or not. It uses tidyselect evaluation, so
@@ -126,26 +141,33 @@
 #' summary statistics of the specified variable for the cases that match
 #' the path to that node.
 #' @examples
-#'
+#' 
 #' cases <- cases_from_freqtable(Titanic)
 #' vt <- vtree(cases, Class, Sex, Survived)
-#'
-#' csm_txt <- cases |> summary_vt(vt, Age)
-#' vt |> mutate(label = csm_txt) |> plot()
-#'
+#' 
+#' csm_txt <- cases |> summarize_by_node(vt, Age) |>
+#'   as_label()
+#' vt |> add_labels(fmt = csm_txt) |> plot()
+#' 
+#' # some random values
 #' cases$Random <- rnorm(nrow(cases)) + (cases$Sex == "Male")
-#' csm_txt <- cases |> summary_vt(vt, Random)
-#' vt |> mutate(label = csm_txt) |> plot()
-#'
+#' cases$Random[runif(nrow(cases)) < .1] <- NA
+#' csm_txt <- cases |> summarize_by_node(vt, Random) |>
+#'   as_label()
+#' vt |> add_labels(fmt = csm_txt) |>
+#'   retain(path == "Class:1st") |>
+#'   plot(lwidth=.9)
+#' 
 #' # make some default labels
 #' vt <- vt |> add_labels()
+#' # add median to the labels
 #' csm_txt <- cases |>
-#'   summary_vt(vt, Random,
-#'              fmt = sprintf("median: %.1f",median))
+#'   summarize_by_node(vt, Random) |>
+#'   as_label(fmt = sprintf("median: %.1f",median))
 #' vt |>
-#'   mutate(label = paste0(label, "\n", csm_txt)) |>
+#'   add_labels(fmt = paste0(label, "\n", csm_txt)) |>
 #'   plot()
-#'
+#' 
 #' # now the same but only for the leafs
 #' # leaf is a column in the nodes data frame, TRUE or FALSE
 #' vt |>
@@ -153,88 +175,26 @@
 #'      paste0(label, "\n", csm_txt),
 #'      label)) |>
 #'   plot()
-#'
-#' # introduce a few missing values
-#' cases$Random[ runif(nrow(cases)) < .1 ] <- NA
-#'
+#' 
 #' csm_txt <- cases |>
-#'   summary_vt(vt, Random,
-#'      fmt = sprintf("valid: %d/%d (%d%%)",
+#'   summarize_by_node(vt, Random) |>
+#'   as_label(fmt = sprintf("valid: %d/%d (%d%%)",
 #'            valid, n, round(100 * valid/n)))
-#'
+#' 
 #' vt |>
 #'   mutate(label = paste0(label, "\n", csm_txt)) |>
-#'   plot()
-#'
-#' # Example for the data frame variant
-#' csm_df <- cases |> summary_vt_df(vt, Age)
+#'   retain(path == "Class:1st") |>
+#'   plot(lwidth=.8)
+#' 
+#' # Directly use output from summarize_by_node
+#' df <- cases |> summarize_by_node(vt, Age)
 #' vt |>
-#'   mutate(label = sprintf("%s\n%s", node_val,
-#'                          csm_df$levels_str)) |>
+#'   mutate(label = sprintf("%s\nChildren: %.0f%%", node_val,
+#'                          df$Child_freq * 100)) |>
 #'   plot()
-#'
+#' 
 #' @export
-summary_vt <- function(cases, vtree, col, fmt = NULL) {
-  col <- enquo(col)
-# col <- tidyselect::eval_select(col, data = cases)
-# col <- names(col)
-
-  fmt <- enquo(fmt)
-
-  df <- summary_vt_df(cases, vtree, !!col)
-
-  type <- df$type[1]
-  type <- match.arg(type, c("categorical", "numeric"))
-
-  if(type == "categorical") {
-    ret <- .summary_vt_categoric(df, fmt)
-  } else {
-    ret <- .summary_vt_numeric(df, fmt)
-  }
-
-  ret
-
-}
-
-.summary_vt_categoric <- function(summary_df, fmt=NULL) {
-
-  if(quo_is_null(fmt)) {
-    fmt <- quo(
-      sprintf("%s\n%s",
-        .data[["col"]],
-        .data[["levels_str"]]))
-  }
-
-  ret <- eval_tidy(fmt, data = summary_df)
-  ret
-}
-
-.summary_vt_numeric <- function(summary_df, fmt=NULL) {
-
-  if(quo_is_null(fmt)) {
-    fmt <- quo(
-      sprintf(
-        "%s\nNAs: %d\nmean %s SD %s\nmedian %s IQR %s, %s\nrange %s, %s",
-         .data[["col"]],
-         .data[["missing"]],
-         format(.data[["mean"]], digits=1),
-         format(.data[["sd"]], digits=1),
-         format(.data[["median"]], digits=1),
-         format(.data[["q1"]], digits=1),
-         format(.data[["q3"]], digits=1),
-         format(.data[["min"]], digits=1),
-         format(.data[["max"]], digits=1)
-
-         ))
-  }
-
-  ret <- eval_tidy(fmt, data = summary_df)
-  ret
-}
-
-#' @rdname summary_vt
-#' @export
-summary_vt_df <- function(cases, vtree, col) {
+summarize_by_node <- function(cases, vtree, col, vp=is_vp(vtree)) {
   if(!is.data.frame(cases)) {
     cli_abort(c(
       x = "cases must be a data frame",
@@ -289,13 +249,316 @@ summary_vt_df <- function(cases, vtree, col) {
   # than looking for each combination of variables manually
   matches <- map(nodes$path_l, \(p) .find_match_recursively(cases, p))
 
-  ret <- .get_summary(cases, col, matches) |>
+  vec <- cases[[col]]
+  if(is.numeric(vec)) {
+    ret <- .get_summary_numeric(vec, matches)
+  } else {
+    ret <- .get_summary_factor(vec, matches, vp)
+  }
+
+  ret <- ret |>
+    mutate(node_id = nodes$node_id) |>
     mutate(path = nodes$path) |>
-    select(all_of("path"), everything())
+    mutate(col = col) |>
+    select(all_of(c("node_id", "path", "col", "type")),
+           everything())
   ret
 }
 
-# returns a formatted summary for a variable at the given node of the vtree
+.summary_vt_categoric <- function(summary_df, fmt=NULL) {
+
+  if(quo_is_null(fmt)) {
+    fmt <- quo(
+      sprintf("%s\n%s",
+        .data[["col"]],
+        .data[["levels_str"]]))
+  }
+
+  ret <- eval_tidy(fmt, data = summary_df)
+  ret
+}
+
+.summary_vt_numeric <- function(summary_df, fmt=NULL) {
+
+  if(quo_is_null(fmt)) {
+    fmt <- quo(
+      sprintf(
+        "%s\nNAs: %d\nmean %s SD %s\nmedian %s IQR %s, %s\nrange %s, %s",
+         .data[["col"]],
+         .data[["missing"]],
+         format(.data[["mean"]], digits=1),
+         format(.data[["sd"]], digits=1),
+         format(.data[["median"]], digits=1),
+         format(.data[["q1"]], digits=1),
+         format(.data[["q3"]], digits=1),
+         format(.data[["min"]], digits=1),
+         format(.data[["max"]], digits=1)
+
+         ))
+  }
+
+  ret <- eval_tidy(fmt, data = summary_df)
+  ret
+}
+
+# Compute summary statistics such as percentage and sample size of a
+# variable from the `cases` data frame for each node of a vtree.
+#
+# @param cases a data frame with cases (one row per sample)
+# @param df result of summary_vt_df
+# @param var variable name
+# @return a data frame with number of rows equal to the number rows in the
+# nodes data frame of the vtree object. The columns of the data frame
+# correspond to the frequency, number of observations, number of valid
+# observations and number of missing values.
+perc_var_levels <- function(col, df, vp) {
+
+  levs <- levnames <- levels(col)
+
+  if(!vp) {
+    levs <- c(levnames, "NAs")
+  }
+
+  ret <- map_dfc(set_names(levs), \(l) {
+    n <- map_int(df$levels, \(x) {
+                   if(l %in% names(x)) x[[l]] else 0
+      })
+    ret <- tibble(!!l := n)
+  })
+
+  ret <- cbind(df[ , c("n", "missing", "valid")], ret)
+
+  if(vp) {
+    ret <- ret |>
+      mutate(denom = .data[["valid"]]) |>
+      mutate(across(all_of(levs),
+                  list(freq= ~ .x/denom),
+                  .names = "{.col}_{.fn}"))
+  } else {
+    ret <- ret |>
+      mutate(denom = .data[["n"]]) |>
+      mutate(across(all_of(levs),
+                  list(freq= ~ .x/denom),
+                  .names = "{.col}_{.fn}"))
+  }
+
+  ret <- ret |>
+    select(denom,
+           starts_with(levs))
+  return(ret)
+}
+
+#' @rdname summarize_by_node
+#' @export
+as_label <- function(x, fmt = NULL) {
+  fmt <- enquo(fmt)
+
+  type <- x$type[1]
+  type <- match.arg(type, c("categorical", "numeric"))
+
+  if(type == "categorical") {
+    pst <- \(l) paste(names(l), l, sep=": ", collapse="\n")
+    x <- mutate(x, levels_str = map_chr(levels, pst))
+    ret <- .summary_vt_categoric(x, fmt)
+  } else {
+    ret <- .summary_vt_numeric(x, fmt)
+  }
+
+  ret
+}
+
+
+
+
+
+
+#' Apply a function to a data frame by nodes in the vtree
+#'
+#' Apply a function to a data frame by nodes in the vtree. The data frame
+#' must contain the same variables as the vtree. It is split by the levels
+#' of the variables such that for each node in the vtree, the function is
+#' applied to the subset of data that matches the path to that node.
+#'
+#' The function `FUN` may take two arguments (if the option .twoarg is
+#' TRUE). The first is the subset of the data frame that matches the path
+#' to the node. The second is a one row data frame with the information of
+#' the node (the row of the vtree node data frame corresponding to the
+#' node).
+#' @param cases A data frame of cases, with one row per observation.
+#' @param vtree A vtree object.
+#' @param FUN A function to apply to the subset of cases that match the path
+#'            to each node in the vtree.
+#' @param .mask An optional logical vector of the same length as the number of
+#'              nodes in the vtree. If provided,
+#'              only the nodes for which .mask is TRUE will be processed.
+#' @param .twoarg A logical value indicating whether FUN takes two
+#'        arguments. If TRUE, the first argument will be the fragment of
+#'        cases corresponding to the node, and the second will be the row
+#'        from the nodes data frame of vtree corresponding to that node.
+#' @param ... Additional arguments to pass to FUN.
+#' @return A list of the results of applying FUN to each subset of cases
+#'         named with the node_key of the corresponding node in the vtree.
+#' @examples
+#' vt <- vtree_from_freqtable(Titanic, Class, Sex)
+#'
+#' # only leaf nodes
+#' mask <- find_nodes(vt, leaf)
+#'
+#' # prepare labels with summary of Survived for each node
+#' sumfnc <- \(df, ...) summary(df$Survived)
+#' sm <- vtree_apply(titanicNA, vt, sumfnc, .mask = mask) |>
+#'       purrr::map_chr(\(x) paste0(names(x), ": ", x, collapse = "\n"))
+#'
+#' # plot with custom layout making more space for the labels in the last
+#' # node ("Sex")
+#' vt |> add_labels() |>
+#'   mutate(label = ifelse(mask, paste0(label, "\n", sm[node_key]), label)) |>
+#'   add_layout(varspace = c(root=1, Class=1, Sex=3),
+#'              dir="tb", lheight=.8) |>
+#'   plot(dir="tb")
+#' @export
+vtree_apply <- function(cases, vtree, FUN, ...,
+                        .mask=NULL, .twoarg=FALSE) {
+
+  if(!inherits(vtree, "vtree")) {
+    cli_abort(c(x = "vtree_apply() requires a vtree object"))
+  }
+
+  if(!is.data.frame(cases)) {
+    cli_abort(c(x = "vtree_apply() requires a data frame for cases"))
+  }
+
+
+  # check that all necessary variables are in the colnames of cases
+  cols <- names(vtree)
+  if(!all(cols %in% colnames(cases))) {
+    missing_cols <- setdiff(cols, colnames(cases))
+    cli_abort(c(
+      x = "Some columns in the vtree are not found in the cases data frame",
+      i = "All columns from the vtree must be present in the cases data frame",
+      i = "Missing columns: {missing_cols}",
+      i = "Columns in cases: {colnames(cases)}"
+    ))
+  }
+
+  nodes <- as_tibble(vtree)
+
+  if(is.null(.mask)) {
+    .mask <- rep(TRUE, nrow(nodes))
+  } else {
+    if(length(.mask) != nrow(nodes)) {
+      cli_abort(c(
+        x = "The length of .mask must be equal to the number of nodes in the vtree",
+        i = "You provided a mask of length {length(.mask)} for a vtree with {nrow(nodes)} nodes"
+      ))
+    }
+  }
+
+  # next create a match vector between the vtree and the cases data frame
+  matches <- map(nodes$path_l[.mask], \(p) .find_match_recursively(cases, p))
+
+  ret <- map(seq_along(matches), \(i) {
+               m <- matches[[i]]
+               if(.twoarg) {
+                 nr <- nodes[i, , drop = FALSE]
+                 FUN(cases[m, , drop = FALSE], nr, ...)
+               } else {
+                 FUN(cases[m, , drop = FALSE], ...)
+               }
+
+  })
+  names(ret) <- nodes$node_key[.mask]
+  ret
+}
+
+
+
+
+
+#' Get a value list as character vector
+#'
+#' For each node of the tree, identify the cases that correspond to that
+#' node and create a formatted string label listing all values of variable
+#' `var` which correspond to that node.
+#'
+#' Simple wrapper around [`vtree_apply()`] to create formatted labels which
+#' contain a list of values for each node.
+#'
+#' @param cases a data frame with cases (one sample per row)
+#' @param vtree a vtree object
+#' @param var a variable name from cases and vt. It is a tidyselect data
+#' var, so you don't need to quote it.
+#' @param width formatting width in characters
+#' @param sort whether the variable levels should be sorted (default TRUE)
+#' @param shorten if a variable level occurs more than once, should it be
+#' mentioned only once with the number of occurences appended (default
+#' TRUE)
+#' @param sep separator to put between the values
+#' @return a character vector of length equal to the number rows in the
+#' nodes data frame of the vtree object
+#' @examples
+#' library(tibble)
+#' library(dplyr)
+#' mt <- mtcars |>
+#'   mutate(across(c(cyl, gear, carb), as.factor)) |>
+#'   rownames_to_column("name")
+#' vt <- vtree(mt, cyl, gear, carb)
+#' # car names into a label
+#' ids <- label_var_levels(mt, vt, name, width=60)
+#' vt |>
+#'   add_labels(template="sameline", root_label = "All cars") |>
+#'   add_labels(template="sameline", mask = find_nodes(vt, leaf),
+#'              suffix = ids) |>
+#'   add_layout(varspace=c(root=1, cyl=1, gear=1, carb=3), lwidth=.8) |>
+#'   plot(fontsizes = list(nodes="adaptive"))
+#' @export
+label_var_levels <- function(cases, vtree, var,
+                          width=60,
+                          shorten=TRUE,
+                          sort=TRUE,
+                          sep=", ") {
+
+  if(!inherits(vtree, "vtree")) {
+    cli_abort(c(x = "vtree_apply() requires a vtree object"))
+  }
+
+  if(!is.data.frame(cases)) {
+    cli_abort(c(x = "vtree_apply() requires a data frame for cases"))
+  }
+
+  var <- enquo(var)
+  var <- tidyselect::eval_select(var, data = cases)
+  var <- names(var)
+
+  if(!var %in% colnames(cases)) {
+    cli_abort(c(x = "Column {var} not found in cases data frame"))
+  }
+
+  func <- \(df) {
+    ret <- df[[var]]
+    if(sort) {
+      ret <- sort(ret)
+    }
+    ret <- as.character(ret)
+
+    if(shorten) {
+      sret <- summary(factor(ret))[unique(ret)]
+      ret <- names(sret)
+      ret <- ifelse(sret == 1L,
+                    ret,
+                    sprintf("%s (n=%d)",
+                            ret, sret))
+    }
+
+    ret <- paste(ret, collapse=sep)
+    ret <- strwrap(ret, width)
+    ret <- paste(ret, collapse="\n")
+    ret
+  }
+
+  ret <- vtree_apply(cases, vtree, func)
+  unlist(ret)
+}
 
 #' Summarize a variable at a given node of a vtree
 #'
@@ -438,196 +701,4 @@ summary_at_var <- function(vtree, varname, as_char = FALSE,
   }
 
   ret
-}
-
-
-#' Apply a function to a data frame by nodes in the vtree
-#'
-#' Apply a function to a data frame by nodes in the vtree. The data frame
-#' must contain the same variables as the vtree. It is split by the levels
-#' of the variables such that for each node in the vtree, the function is
-#' applied to the subset of data that matches the path to that node.
-#'
-#' The function `FUN` may take two arguments (if the option .twoarg is
-#' TRUE). The first is the subset of the data frame that matches the path
-#' to the node. The second is a one row data frame with the information of
-#' the node (the row of the vtree node data frame corresponding to the
-#' node).
-#' @param cases A data frame of cases, with one row per observation.
-#' @param vtree A vtree object.
-#' @param FUN A function to apply to the subset of cases that match the path
-#'            to each node in the vtree.
-#' @param .mask An optional logical vector of the same length as the number of
-#'              nodes in the vtree. If provided,
-#'              only the nodes for which .mask is TRUE will be processed.
-#' @param .twoarg A logical value indicating whether FUN takes two
-#'        arguments. If TRUE, the first argument will be the fragment of
-#'        cases corresponding to the node, and the second will be the row
-#'        from the nodes data frame of vtree corresponding to that node.
-#' @param ... Additional arguments to pass to FUN.
-#' @return A list of the results of applying FUN to each subset of cases
-#'         named with the node_key of the corresponding node in the vtree.
-#' @examples
-#' vt <- vtree_from_freqtable(Titanic, Class, Sex)
-#'
-#' # only leaf nodes
-#' mask <- find_nodes(vt, leaf)
-#'
-#' # prepare labels with summary of Survived for each node
-#' sumfnc <- \(df, ...) summary(df$Survived)
-#' sm <- vtree_apply(titanicNA, vt, sumfnc, .mask = mask) |>
-#'       purrr::map_chr(\(x) paste0(names(x), ": ", x, collapse = "\n"))
-#'
-#' # plot with custom layout making more space for the labels in the last
-#' # node ("Sex")
-#' vt |> add_labels() |>
-#'   mutate(label = ifelse(mask, paste0(label, "\n", sm[node_key]), label)) |>
-#'   add_layout(varspace = c(root=1, Class=1, Sex=3),
-#'              dir="tb", lheight=.8) |>
-#'   plot(dir="tb")
-#' @export
-vtree_apply <- function(cases, vtree, FUN, ...,
-                        .mask=NULL, .twoarg=FALSE) {
-
-  if(!inherits(vtree, "vtree")) {
-    cli_abort(c(x = "vtree_apply() requires a vtree object"))
-  }
-
-  if(!is.data.frame(cases)) {
-    cli_abort(c(x = "vtree_apply() requires a data frame for cases"))
-  }
-
-
-  # check that all necessary variables are in the colnames of cases
-  cols <- names(vtree)
-  if(!all(cols %in% colnames(cases))) {
-    missing_cols <- setdiff(cols, colnames(cases))
-    cli_abort(c(
-      x = "Some columns in the vtree are not found in the cases data frame",
-      i = "All columns from the vtree must be present in the cases data frame",
-      i = "Missing columns: {missing_cols}",
-      i = "Columns in cases: {colnames(cases)}"
-    ))
-  }
-
-  nodes <- as_tibble(vtree)
-
-  if(is.null(.mask)) {
-    .mask <- rep(TRUE, nrow(nodes))
-  } else {
-    if(length(.mask) != nrow(nodes)) {
-      cli_abort(c(
-        x = "The length of .mask must be equal to the number of nodes in the vtree",
-        i = "You provided a mask of length {length(.mask)} for a vtree with {nrow(nodes)} nodes"
-      ))
-    }
-  }
-
-  # next create a match vector between the vtree and the cases data frame
-  matches <- map(nodes$path_l[.mask], \(p) .find_match_recursively(cases, p))
-
-  ret <- map(seq_along(matches), \(i) {
-               m <- matches[[i]]
-               if(.twoarg) {
-                 nr <- nodes[i, , drop = FALSE]
-                 FUN(cases[m, , drop = FALSE], nr, ...)
-               } else {
-                 FUN(cases[m, , drop = FALSE], ...)
-               }
-
-  })
-  names(ret) <- nodes$node_key[.mask]
-  ret
-}
-
-
-
-#' @return a data frame with number of rows equal to the number rows in the
-#' nodes data frame of the vtree object
-label_level_perc <- function(cases, vt, var) {
-
-  if(!var %in% colnames(cases)) {
-    cli_abort(c(x = "Column {var} not found in cases data frame"))
-  }
-
-  if(!is.factor(cases[[var]]) & !is.character(cases[[var]])) {
-    cli_abort(c(x = "Column {var} is not numeric or factor"))
-  }
-
-  
-
-
-}
-
-
-#' Get a value list as character vector
-#'
-#' For each node of the tree, identify the cases that correspond to that
-#' node and create a formatted string label listing all values of variable
-#' `var` which correspond to that node.
-#'
-#' Simple wrapper around [`vtree_apply()`] to create formatted labels which
-#' contain a list of values for each node.
-#'
-#' @param cases a data frame with cases (one sample per row)
-#' @param vtree a vtree object
-#' @param var a variable name from cases and vt
-#' @param width formatting width in characters
-#' @param sort whether the variable levels should be sorted (default TRUE)
-#' @param shorten if a variable level occurs more than once, should it be
-#' mentioned only once with the number of occurences appended (default
-#' TRUE)
-#' @param sep separator to put between the values
-#' @return a character vector of length equal to the number rows in the
-#' nodes data frame of the vtree object
-#' @examples
-#' library(tibble)
-#' library(dplyr)
-#' mt <- mtcars |>
-#'   mutate(across(c(cyl, gear, carb), as.factor)) |>
-#'   rownames_to_column("name")
-#' vt <- vtree(mt, cyl, gear, carb)
-#' # car names into a label
-#' ids <- label_var_levels(mt, vt, "name", width=60)
-#' vt |>
-#'   add_labels(template="sameline", root_label = "All cars") |>
-#'   add_labels(template="sameline", mask = find_nodes(vt, leaf),
-#'              suffix = ids) |>
-#'   add_layout(varspace=c(root=1, cyl=1, gear=1, carb=3), lwidth=.8) |>
-#'   plot(fontsizes = list(nodes="adaptive"))
-#' @export
-label_var_levels <- function(cases, vtree, var,
-                          width=60,
-                          shorten=TRUE,
-                          sort=TRUE,
-                          sep=", ") {
-
-  if(!var %in% colnames(cases)) {
-    cli_abort(c(x = "Column {var} not found in cases data frame"))
-  }
-
-  func <- \(df) {
-    ret <- df[[var]]
-    if(sort) {
-      ret <- sort(ret)
-    }
-    ret <- as.character(ret)
-
-    if(shorten) {
-      sret <- summary(factor(ret))[unique(ret)]
-      ret <- names(sret)
-      ret <- ifelse(sret == 1L,
-                    ret,
-                    sprintf("%s (n=%d)",
-                            ret, sret))
-    }
-
-    ret <- paste(ret, collapse=sep)
-    ret <- strwrap(ret, width)
-    ret <- paste(ret, collapse="\n")
-    ret
-  }
-
-  ret <- vtree_apply(cases, vtree, func)
-  unlist(ret)
 }
