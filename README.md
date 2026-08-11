@@ -32,9 +32,9 @@ pak::pak("january3/vtree2")
 4.  Add labels and colors with `add_labels()` and `add_palette()` or by
     directly manipulating the `label`, `color` and `fill` columns of the
     vtree object. `find_nodes()` and `prune(..., mark_only = TRUE)` can
-    be used to select nodes for coloring or labeling. The `summary_vt()`
-    function can be used to produce additional per-node summaries which
-    can be used for labeling or coloring.
+    be used to select nodes for coloring or labeling. The
+    `summarize_by_node()` function can be used to produce additional
+    per-node summaries which can be used for labeling or coloring.
 5.  plot the tree with `plot()`.
 
 ### Basic plots
@@ -151,7 +151,9 @@ example with `mark()`:
 ``` r
 vt <- vtree(tdf, Class, Sex, Survived)
                                          
-sm_txt <- summary_vt(tdf, vt, Age)
+sm_txt <- summarize_by_node(tdf, vt, Age) |>
+  as_label()
+
 vt |> 
   add_labels() |>
   # only for the leaf nodes. leaf is a column in the vt nodes data frame
@@ -165,10 +167,10 @@ vt |>
 
 <img src="man/figures/README-example_summary-1.png" alt="" width="100%" />
 
-**There is more:** `summary_vt()` can be used to calculate any summary
-of categorical or continuous variables as a character vector which can
-be then used as labels for the nodes. `summary_vt_df()` produces a data
-frame with per-node summary statistics (different for categorical and
+**There is more:** `summarize_by_node()` can be used to calculate any
+summary of categorical or continuous variables as a character vector
+which can be then used as labels for the nodes. It produces a data frame
+with per-node summary statistics (different for categorical and
 continuous variables) which can be used for further analysis.
 
 ## AI disclosure
@@ -191,6 +193,8 @@ More docs available [here](https://january3.github.io/vtree2/).
 ## TODO/PROBLEMS
 
 - write a manual in the main vignette \[——\| \] 85% complete
+- summaries_vt and summaries_vt_df - that is clunky, maybe as_df option
+  or smth?
 - the nodes of the diagrammer are adjusted to the size of the labels. We
   could do that, actually. I think it doesn’t look so good, but OK.
 - vtree constructors take only character or factor variables: ~~build in
@@ -254,11 +258,11 @@ More docs available [here](https://january3.github.io/vtree2/).
 
 ## BUGS
 
-- aliases are ignored for the legend. Maybe aliases should behave like
-  palettes, i.e. also set an attribute to be used by legend?
+- legend titles sometimes overlap with the legend
+- ~~aliases are ignored for the legend. Maybe aliases should behave like
+  palettes, i.e. also set an attribute to be used by legend?~~
 - ~~“Missing” is missing from the legend on the user guide example for
   adding aliases~~
-- legend titles sometimes overlap with the legend
 - ~~if some variables disappear from the plot, the legend throws an
   error~~
 - ~~prune(!Severity %in% c(“Mild”, “Moderate”), follow_only = TRUE) does
