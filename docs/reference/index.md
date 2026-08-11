@@ -49,8 +49,8 @@
 
 ## Summaries
 
-- [`summary_vt()`](https://january3.github.io/vtree2/reference/summary_vt.md)
-  [`summary_vt_df()`](https://january3.github.io/vtree2/reference/summary_vt.md)
+- [`summarize_by_node()`](https://january3.github.io/vtree2/reference/summarize_by_node.md)
+  [`fmt_label()`](https://january3.github.io/vtree2/reference/summarize_by_node.md)
   : Summarize a case variable for each node of a vtree
 - [`summary_at_var()`](https://january3.github.io/vtree2/reference/summary_at_var.md)
   : Summarize a variable at a given node of a vtree

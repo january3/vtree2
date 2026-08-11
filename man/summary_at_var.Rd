@@ -57,7 +57,7 @@ vt3 <- vtree(titanicNA, Class, Sex,
 summary_at_var(vt3, "Class")
 
 # summaries differ if you prune the tree!
-vt_p <- prune(vt, freq < .15) 
+vt_p <- prune(vt, freq < .15)
 summary_at_var(vt_p, "Class", as_df = TRUE)
 # compare with:
 summary(vt_p)

@@ -114,7 +114,7 @@
 #' to the number of samples minus number of NAs; otherwise it is equal to
 #' the number of samples and the frequencies are also calculated for the NA
 #' samples.
-#' 
+#'
 #' The `levels` column is a list column, and each cell contains a list of
 #' the counts of each level of the factor variable for that node. The
 #' `levels_str` column is a character column that contains a string
@@ -141,14 +141,14 @@
 #' summary statistics of the specified variable for the cases that match
 #' the path to that node.
 #' @examples
-#' 
+#'
 #' cases <- cases_from_freqtable(Titanic)
 #' vt <- vtree(cases, Class, Sex, Survived)
-#' 
+#'
 #' csm_txt <- cases |> summarize_by_node(vt, Age) |>
 #'   fmt_label()
 #' vt |> add_labels(fmt = csm_txt) |> plot()
-#' 
+#'
 #' # some random values
 #' cases$Random <- rnorm(nrow(cases)) + (cases$Sex == "Male")
 #' cases$Random[runif(nrow(cases)) < .1] <- NA
@@ -157,7 +157,7 @@
 #' vt |> add_labels(fmt = csm_txt) |>
 #'   retain(path == "Class:1st") |>
 #'   plot(lwidth=.9)
-#' 
+#'
 #' # make some default labels
 #' vt <- vt |> add_labels()
 #' # add median to the labels
@@ -167,7 +167,7 @@
 #' vt |>
 #'   add_labels(fmt = paste0(label, "\n", csm_txt)) |>
 #'   plot()
-#' 
+#'
 #' # now the same but only for the leafs
 #' # leaf is a column in the nodes data frame, TRUE or FALSE
 #' vt |>
@@ -175,24 +175,24 @@
 #'      paste0(label, "\n", csm_txt),
 #'      label)) |>
 #'   plot()
-#' 
+#'
 #' csm_txt <- cases |>
 #'   summarize_by_node(vt, Random) |>
 #'   fmt_label(fmt = sprintf("valid: %d/%d (%d%%)",
 #'            valid, n, round(100 * valid/n)))
-#' 
+#'
 #' vt |>
 #'   mutate(label = paste0(label, "\n", csm_txt)) |>
 #'   retain(path == "Class:1st") |>
 #'   plot(lwidth=.8)
-#' 
+#'
 #' # Directly use output from summarize_by_node
 #' df <- cases |> summarize_by_node(vt, Age)
 #' vt |>
 #'   mutate(label = sprintf("%s\nChildren: %.0f%%", node_val,
 #'                          df$Child_freq * 100)) |>
 #'   plot()
-#' 
+#'
 #' @export
 summarize_by_node <- function(cases, vtree, col, vp=is_vp(vtree)) {
   if(!is.data.frame(cases)) {
@@ -417,10 +417,11 @@ fmt_label <- function(x, fmt = NULL) {
 #' # plot with custom layout making more space for the labels in the last
 #' # node ("Sex")
 #' vt |> add_labels() |>
-#'   mutate(label = ifelse(mask, paste0(label, "\n", sm[node_key]), label)) |>
+#'   add_labels(mask = mask,
+#'              fmt = paste0(label, "\n", sm[node_key])) |>
 #'   add_layout(varspace = c(root=1, Class=1, Sex=3),
 #'              dir="tb", lheight=.8) |>
-#'   plot(dir="tb")
+#'   plot(dir="tb", legend=FALSE)
 #' @export
 vtree_apply <- function(cases, vtree, FUN, ...,
                         .mask=NULL, .args="cases") {
@@ -590,8 +591,8 @@ label_var_levels <- function(cases, vtree, var,
 #' the tree was constructed using total percentages, the percentages are
 #' calculated based on the total counts.
 #' @return if `as_char` is TRUE, a character string with the counts and
-#' percentages of each level of the variable at that node. If `as_char` 
-#' is FALSE (default), a named integer vector with the counts of each 
+#' percentages of each level of the variable at that node. If `as_char`
+#' is FALSE (default), a named integer vector with the counts of each
 #' level of the variable at that node.
 #'
 #' @examples
@@ -610,7 +611,7 @@ label_var_levels <- function(cases, vtree, var,
 #' summary_at_var(vt3, "Class")
 #'
 #' # summaries differ if you prune the tree!
-#' vt_p <- prune(vt, freq < .15) 
+#' vt_p <- prune(vt, freq < .15)
 #' summary_at_var(vt_p, "Class", as_df = TRUE)
 #' # compare with:
 #' summary(vt_p)

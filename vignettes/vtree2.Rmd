@@ -65,7 +65,7 @@ In `vtree2`, the workflow is split into several steps:
  * Build the vtree object with `vtree()` or `vtree_from_freqtable()`
  * (Optional) Prune, retain or select nodes with `prune()`, `retain()` and
    friends.
- * (Optional) Create summaries with `summary_vt()`.
+ * (Optional) Create summaries with `summarize_by_node()` and `fmt_label()`.
  * (Optional) Add aliases for variable names and values with `add_aliases()`.
  * (Optional) Add or modify labels with `add_labels()` and `mutate()`.
  * (Optional) Add or modify colors with `add_palette()` and `mutate()`.
@@ -436,7 +436,7 @@ vt |> mark(freq < .2) |>
 
 
 
-# Creating summaries
+
 
 
 # Adding column and value aliases
@@ -535,6 +535,19 @@ plot_grid(p1, p2, nrow = 1)
 These labels are derived directly from columns of the vtree object:
 `node_col`, `node_val`, `freq` and `n`.
 
+It is quite normal to call `add_labels()` multiple times, for example to
+conditionally add labels. The following makes simple default labels and
+adds a more informative label only to the leafs on the tree:
+
+```{r labels2b,fig.width=4,fig.height=7}
+vt <- vtree(titanicNA, Class, Survived)
+mask <- pull(vt, leaf) # leaf is a logical vector
+vt |>
+  add_labels(template = "sameline") |>
+  add_labels(mask = mask, template = "long") |>
+  plot()
+```
+
 ## Using custom formatting
 
 Formatting can also be done with the `fmt`/`fmt_na` parameters, which are
@@ -598,6 +611,164 @@ add_labels(vt, mask = mask, template = "long") |>
   plot(legend = FALSE, dir="tb", show_root = FALSE,
        lwidth = 0.7, lheight = 0.5)
 ```
+
+# Creating summaries
+
+One of the more useful aspects of using vtrees is that you can partition
+the data using a set of variables and then show summary information *for
+another variable*. For example, consider the ToothGrowth data set,
+containing two categorical variables – dose and type of supplement – as
+well as numeric result. We can use the categorical variables for data
+splits and ask what the average tooth growth is at the different nodes.
+
+```{r summaries1,fig.wilth=8,fig.height=5}
+# make sure that dose is a factor
+tg <- ToothGrowth |>
+  mutate(dose = factor(paste("Dose", dose)))
+
+vt <- vtree(tg, supp, dose)
+
+library(glue)
+sm <- summarize_by_node(tg, vt, len) |>
+  fmt_label() #fmt = sprintf("mean: %.1f sd: %.1f", mean, sd))
+
+vt |>
+  add_aliases(col_alias = c(supp = "Supplement",
+                            dose = "Dose (mg/day)")) |>
+  add_labels(template = "sameline") |>
+  add_labels(fmt = paste0(label, "\n", sm)) |>
+  plot(lwidth=.75)
+```
+
+The above example demonstrates the main workflow of generating summaries:
+
+ * you need a cases data frame to generate summaries
+ * generate summaries in a separate step
+ * use `summarize_by_node()` to compute, `fmt_label()` to format
+
+It is also possible to include graphical summaries; see the section "Inset
+plots" for more details.
+
+## Summaries with `summarize_by_node()` and `fmt_label()`.
+
+Each row of the data frame returned by `summarize_by_node` corresponds to
+one row of the nodes data frame in the vtree, hence the name
+of the function.
+
+The columns in the data frame returned by `summarize_by_node` depend on
+whether the data is categorical or numeric. For numeric data, as above, the
+columns include mean, sd, n, quantiles 1, 3, and median, iqr, as well as
+the number of valid and missing samples. 
+
+```{r summaries2}
+# numerical data
+sm <- summarize_by_node(tg, vt, len)
+head(sm)
+```
+
+For categorical data, the function returns a data frame including total
+number of observations, number of valid, missing and unique observations, a
+list column containing the counts for each level of the variable chosen, as
+well `denom` (denominator) and the calculated frequencies of individual
+levels.
+
+Here we return to the Titanic example and ask, what was the fraction of
+women who survived or not for the different Classes. We use the `titanicNA` data
+set, which contains some randomly introduced missing data.
+
+```{r summaries3}
+# categorical data
+vt <- vtree(titanicNA, Class, Survived)
+
+sm <- summarize_by_node(titanicNA, vt, Sex)
+head(sm)
+```
+
+As when calculating the vtree, for calculating a frequency of a level for a
+variable in the above summary (e.g. the frequency of females among 1st
+Class passengers), we can choose whether we use valid percentages or not.
+That is, we have to decide whether we calculate the fraction as the
+fraction of *valid* samples, or the fraction of *total* samples at this
+node. In the above, the total fraction is $0.458 = 120/262$ - we see that
+by looking at the `denom` (denominator) column of the table above.
+
+By default, `summarize_by_node()` uses the same procedure as was used for
+the vtree provided as parameter. However, you may choose to control this
+behavior with the `vp` parameter:
+
+
+```{r summaries4}
+# categorical data
+vt <- vtree(titanicNA, Class, Survived)
+
+sm <- summarize_by_node(titanicNA, vt, Sex, vp=FALSE)
+head(sm)
+```
+
+The denominator above is equal to column `n`, total number of cases per
+node.
+
+## Custom statistics with `vtree_apply()`
+
+Sometimes you need to calculate some per-node statistics which goes beyond
+simple descriptive statistics.
+
+`vtree_apply()` goes through nodes in the vtree object, and for each
+object, finds the matching rows in the `cases` data frame. Then it calls
+the user-provided function and calls it with some arguments.
+
+The arguments are also configurable. By default, the function is called
+with the subset of the original `cases` data frame which corresponds to the
+given node. For example, we can calculate how many samples there are for a
+node:
+
+```{r summaries5}
+cases <- cases_from_freqtable(Titanic)
+vt <- vtree(cases, Class, Survived)
+
+vtree_apply(cases, vt, nrow) |> unlist()
+
+# same as:
+vt |> pull(n)
+```
+
+However, you can configure that also to provide e.g. the logical selection
+vector. Say, we want, for each node, determine whether the male:female
+ratio in that node is significantly different from the rest of the data.
+
+
+```{r vtreapply1}
+
+test_func <- function(sel) {
+  # root node includes all samples
+  if(sum(sel) == length(sel)) {
+    return(NA)
+  }
+
+  chisq.test(table(cases$Sex, sel))$p.value
+}
+
+pvals <- vtree_apply(cases, vt, test_func, .args="sel") |> unlist()
+pvals_l <- format.pval(pvals, digits=2)
+
+# color the nodes by p-value
+logp <- floor(-log10(pvals))
+pal <- colorRampPalette(c("white", "steelblue"))(101)
+
+# use simpler summaries 
+sm <- summarize_by_node(cases, vt, Sex) |>
+  fmt_label(fmt = sprintf("Females: %.0f%%", Female_freq * 100))
+
+vt |> add_labels(suffix = sm) |>
+  add_labels(fmt = ifelse(path == "root", label,
+                          paste0(label, "\n", 
+                                 pvals_l))) |>
+  mutate(fill = pal[logp + 1]) |>
+  plot()
+```
+
+
+
 
 # Adding and modifying colors
 
@@ -752,7 +923,8 @@ sizes with these two parameters.
 
 ```{r layouts4,fig.width=8,fig.height=2}
 cases <- cases_from_freqtable(Titanic)
-sm <- summary_vt(cases, vt, Age)
+sm <- summarize_by_node(cases, vt, Age) |>
+  fmt_label()
 
 vt <- vtree(cases, Class, Sex, Survived) |>
   prune(Class == "Crew") |>
@@ -792,7 +964,7 @@ part of the tree which corresponds to this variable. Variable summaries are
 calculated when vtree is constructed and stored in the `summary` attribute
 of the vtree object. You can print them with `summary(vtree_object)`:
 
-```{r summaries1}
+```{r plot_summaries1}
 vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived)
 summary(vt)
 ```
@@ -801,7 +973,7 @@ The summaries will not change if you prune the tree, since they are tied to
 the data and not the tree structure:
 
 
-```{r summaries2,fig.width=8,fig.height=4}
+```{r plot_summaries2,fig.width=8,fig.height=4}
 mar <- c(0.05, 0.05, 0.33, 0.05)
 p1 <- plot(vt, legend = TRUE, lwidth=.8, margins = mar)
 p2 <- retain(vt, path == "Class:1st") |>

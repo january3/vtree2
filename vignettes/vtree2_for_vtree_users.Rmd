@@ -75,7 +75,8 @@ vtree(titanicNA) |> plot()
 vt <- vtree(titanicNA) 
 
 # extra statistics
-stats <- summary_vt(titanicNA, vt, Age)
+stats <- summarize_by_node(titanicNA, vt, Age) |>
+  fmt_label()
 
 vt |>
   # prune returns a pruned vtree which we
@@ -105,7 +106,8 @@ p1 <- vtree(titanicNA) |> plot()
 vt <- vtree(titanicNA) 
 
 # extra statistics
-stats <- summary_vt(titanicNA, vt, Age)
+stats <- summarize_by_node(titanicNA, vt, Age) |>
+  fmt_label()
 
 # prune returns a pruned vtree which we
 # then pass down the pipeline
@@ -471,10 +473,19 @@ plot_grid(p1, p2)
 
 #### Summaries
 
-More complex summaries can be achieved with `summary_vt()`. This function
+More complex summaries can be achieved with `summarize_by_node()`
+and `fmt_label()`. The first function takes a cases data frame and a vtree
+as an argument, and returns a data frame containing a comprehensive summary
+of the selected variable from the cases data frame at each node of the
+tree.
+
+The `fmt_label()` function turns the columns of that data frame into a
+character vector of labels.
+
+The `summarize_by_node()` 
 takes a cases data frame as the first argument and a vtree - a vtree object
 only keeps track of the variables that were assigned from start and ignores
-other columns in the cases data frame. However, with `summary_vt()` it is
+other columns in the cases data frame. However, with `summarize_by_node()` it is
 possible to generate summaries for any other variables. For example:
 
 
@@ -484,7 +495,8 @@ possible to generate summaries for any other variables. For example:
 vt <- vtree(FakeData, Severity)
 
 # first, prep the summary
-sum_labs <- summary_vt(FakeData, vt, Score)
+sum_labs <- summarize_by_node(FakeData, vt, Score) |>
+  fmt_label()
 
 # add standard labels
 vt |> add_labels() |>
@@ -502,8 +514,14 @@ summary_at_var(vt, "Category", as_df=TRUE)
 ```
 
 In `vtree`, it is also possible, with a shorthand notation, to get
-summaries for variables only for a given category. In `vtree2`, it is
-possible, but requires a bit of coding:
+summaries for variables only for a given level of a variable. 
+The `summarize_by_node` function generates two columns containing the count
+and frequency for each level of the variable, which can then be used to
+generate the labels.
+
+E.g., in the following example, the `Category` column of `FakeData`
+contains levels `single`, `double` and `triple`, and we can pull out the
+count and frequency of the `single` category only:
 
 ```{r}
 ## vtree(FakeData,"Severity",summary="Category=single",horiz=FALSE)
@@ -513,18 +531,16 @@ library(dplyr)
 library(purrr)
 
 # this gives us, in the levels column, the counts
-smvt <- summary_vt_df(FakeData, vt, Category) |>
-  mutate(single = map_int(levels, ~ .x["single"])) |>
-  mutate(single_freq = single / n) |>
-  mutate(label = sprintf("Category=single: %d (%.0f%%)",
+smvt <- summarize_by_node(FakeData, vt, Category) |>
+  fmt_label(fmt = sprintf("Category=single: %d (%.0f%%)",
                          single, 100 * single_freq))
 
 vt |> add_labels() |>
-  mutate(label = paste0(label, "\n", smvt$label)) |>
+  add_labels(fmt = paste0(label, "\n", smvt)) |>
   plot(dir = "tb")
 ```
 
-I agree, this is way more complicated, but then also way more verbose. In a
+I agree, this is longer code, but then also way more verbose. In a
 way the code above, with some modifications, replaces all the other
 summary-related options in `vtree`.
 
@@ -544,8 +560,9 @@ mini-language are replaced directly by R expressions.
 ## vtree(FakeData,"Severity",summary="Score \nmean score\n%mean%",sameline=TRUE,horiz=FALSE)
 
 vt <- vtree(FakeData, Severity)
-smvt <- summary_vt(FakeData, vt, Score, fmt = sprintf("mean score\n%.1f",
-                                                      mean))
+smvt <- summarize_by_node(FakeData, vt, Score) |>
+  fmt_label(fmt = sprintf("mean score\n%.1f", mean))
+
 vt |> add_labels() |>
   mutate(label = paste0(label, "\n", smvt)) |>
   plot(dir = "tb")
@@ -553,18 +570,18 @@ vt |> add_labels() |>
 
 To get the missing value information as well but only if missing values are
 present, we need a more complex approach. In the example below, I will use
-`summary_vt_df` (returning a data frame) and `glue` instead of `sprintf`:
+`summarize_by_node` (returning a data frame) and `glue` instead of `sprintf`:
 
 
 ```{r fig.width=10,fig.height=4}
 library(glue)
-smvt <- summary_vt_df(FakeData, vt, Score) |>
-  mutate(label = ifelse(missing > 0,
+smvt <- summarize_by_node(FakeData, vt, Score) |>
+  fmt_label(fmt = ifelse(missing > 0,
                     glue("mean score\n{round(mean, 1)} mv = {missing}"),
                     glue("mean score\n{round(mean, 1)}")))
 
 vt |> add_labels() |>
-  mutate(label = paste0(label, "\n", smvt$label)) |>
+  add_labels(fmt = paste0(label, "\n", smvt)) |>
   plot(dir = "tb")
 ```
 
@@ -584,15 +601,15 @@ vt <- vtree(FakeData, Severity, Category)
 
 smvt <- FakeData |>
   mutate(RelDiff = (Post - Pre)/Pre) |>
-  summary_vt_df(vt, RelDiff) |>
-  mutate(label = ifelse(missing > 0,
+  summarize_by_node(vt, RelDiff) |>
+  fmt_label(fmt = ifelse(missing > 0,
                     glue("mean(RD) = {round(mean, 1)} mv = {missing}"),
                     glue("mean(RD) = {round(mean, 1)}")))
 
 vt |> 
   add_labels(fmt = glue("{node_val} {n} ({round(100 * freq)}%)")) |>
   #mutate(label = gsub("\n",  ", ", label)) |>
-  mutate(label = paste0(label, "\n", smvt$label)) |>
+  add_labels(fmt = paste0(label, "\n", smvt)) |>
   plot(dir = "tb")
 ```
 
@@ -869,10 +886,10 @@ ESOPH <- esoph |>
 vt <- vtree(ESOPH, agegp)
 
 # summary for ncases/ncontrols
-ncases <- summary_vt(ESOPH, vt, ncases,
-                  fmt=sprintf("cases=%d", n))
-ncntrls <- summary_vt(ESOPH, vt, ncontrols,
-                  fmt=sprintf("controls=%d", n))
+ncases <- summarize_by_node(ESOPH, vt, ncases) |>
+                  fmt_label(fmt=sprintf("cases=%d", n))
+ncntrls <- summarize_by_node(ESOPH, vt, ncontrols) |>
+                  fmt_label(fmt=sprintf("controls=%d", n))
 suffix <- paste(ncases, ncntrls)
 
 vt <- vt |>
@@ -912,8 +929,9 @@ cases_from_freqtable(HairEyeColor) |>
 mt <- mtcars |>
   mutate(across(c(cyl, gear, carb), as.factor))
 vt <- vtree(mt, cyl, gear, carb)
-smt <- summary_vt(mt, vt, hp, fmt=sprintf("mean (SD) %.1f (%.1f)",
-                                          mean, sd))
+smt <- summarize_by_node(mt, vt, hp) |>
+  fmt_label(fmt=sprintf("mean (SD) %.1f (%.1f)",
+                       mean, sd))
 vt |> add_labels() |>
   add_labels(fmt=sprintf("%s\n%s", label, smt)) |>
   plot(lwidth=.8)
@@ -960,10 +978,9 @@ vt |>
 
 ucb <- cases_from_freqtable(UCBAdmissions)
 vt <- vtree(ucb, Dept, Gender)
-summary_vt_df(ucb, vt, Admit)
-perc_func <- \(x) 100 * x["Admitted"] / (x["Admitted"] + x["Rejected"])
-smt <- summary_vt(ucb, vt, Admit,
-               fmt=sprintf("%.0f %% admitted", map_dbl(levels, perc_func)))
+
+smt <- summarize_by_node(ucb, vt, Admit) |>
+  fmt_label(fmt=sprintf("%.0f %% admitted", 100*Admitted_freq))
 vt |> add_labels(template="sameline", suffix = smt) |>
   plot(lwidth=.7)
 ```
@@ -990,8 +1007,8 @@ cwcases <- ChickWeight |>
 vt <- vtree(cwcases, Diet, Time) |>
   retain(Time %in% c("Time 0", "Time 4"))
 
-smt <- summary_vt(cwcases, vt, weight,
-                  fmt = sprintf("mean weight %.1fg", mean))
+smt <- summarize_by_node(cwcases, vt, weight) |>
+                  fmt_label(fmt = sprintf("mean weight %.1fg", mean))
 vt |>
   add_aliases(col_alias=c(Time = "Days since birth")) |>
   add_labels(suffix = smt) |>
@@ -1097,7 +1114,7 @@ The following are not yet implemented in vtree2:
  * There are some automatic summary and plotting functions, but you can
    also have a very tight control about the labels by modifying the
    `label` column in the vtree object.
- * The summary_vt function can be used to calculate summary statistics for
+ * The `summarize_by_node` function can be used to calculate summary statistics for
    each node based on any additional data. It is not limited to using the
    data from which the vtree was constructed, and you can use the exposed
    statistics to shape any label you would like.

@@ -84,7 +84,7 @@
 <li>Prepare the data with <code><a href="reference/vtree.html">vtree()</a></code> or <code><a href="reference/vtree.html">vtree_from_freqtable()</a></code>. After this step, the data is immutable, frequencies and counts calculated will not change any more.</li>
 <li>Prune the tree for visualization with <code><a href="reference/prune.html">prune()</a></code> or <code><a href="reference/prune.html">retain()</a></code>.</li>
 <li>Add variable and variable level aliases with <code><a href="reference/add_aliases.html">add_aliases()</a></code>.</li>
-<li>Add labels and colors with <code><a href="reference/add_labels.html">add_labels()</a></code> and <code><a href="reference/vtree_palette.html">add_palette()</a></code> or by directly manipulating the <code>label</code>, <code>color</code> and <code>fill</code> columns of the vtree object. <code><a href="reference/prune.html">find_nodes()</a></code> and <code>prune(..., mark_only = TRUE)</code> can be used to select nodes for coloring or labeling. The <code><a href="reference/summary_vt.html">summary_vt()</a></code> function can be used to produce additional per-node summaries which can be used for labeling or coloring.</li>
+<li>Add labels and colors with <code><a href="reference/add_labels.html">add_labels()</a></code> and <code><a href="reference/vtree_palette.html">add_palette()</a></code> or by directly manipulating the <code>label</code>, <code>color</code> and <code>fill</code> columns of the vtree object. <code><a href="reference/prune.html">find_nodes()</a></code> and <code>prune(..., mark_only = TRUE)</code> can be used to select nodes for coloring or labeling. The <code>summary_vt()</code> function can be used to produce additional per-node summaries which can be used for labeling or coloring.</li>
 <li>plot the tree with <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code>.</li>
 </ol>
 </div>
@@ -171,7 +171,7 @@
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">vt</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/vtree.html">vtree</a></span><span class="op">(</span><span class="va">tdf</span>, <span class="va">Class</span>, <span class="va">Sex</span>, <span class="va">Survived</span><span class="op">)</span></span>
 <span>                                         </span>
-<span><span class="va">sm_txt</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/summary_vt.html">summary_vt</a></span><span class="op">(</span><span class="va">tdf</span>, <span class="va">vt</span>, <span class="va">Age</span><span class="op">)</span></span>
+<span><span class="va">sm_txt</span> <span class="op">&lt;-</span> <span class="fu">summary_vt</span><span class="op">(</span><span class="va">tdf</span>, <span class="va">vt</span>, <span class="va">Age</span><span class="op">)</span></span>
 <span><span class="va">vt</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="reference/add_labels.html">add_labels</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="co"># only for the leaf nodes. leaf is a column in the vt nodes data frame</span></span>
@@ -182,7 +182,7 @@
 <span>  <span class="fu"><a href="reference/prune.html">retain</a></span><span class="op">(</span><span class="va">path</span> <span class="op">==</span> <span class="st">"Class:3rd"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span>show_root <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
 <p><img src="reference/figures/README-example_summary-1.png" alt="" width="100%"></p>
-<p><strong>There is more:</strong> <code><a href="reference/summary_vt.html">summary_vt()</a></code> can be used to calculate any summary of categorical or continuous variables as a character vector which can be then used as labels for the nodes. <code><a href="reference/summary_vt.html">summary_vt_df()</a></code> produces a data frame with per-node summary statistics (different for categorical and continuous variables) which can be used for further analysis.</p>
+<p><strong>There is more:</strong> <code>summary_vt()</code> can be used to calculate any summary of categorical or continuous variables as a character vector which can be then used as labels for the nodes. <code>summary_vt_df()</code> produces a data frame with per-node summary statistics (different for categorical and continuous variables) which can be used for further analysis.</p>
 </div>
 </div>
 <div class="section level2">

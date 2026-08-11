@@ -24,9 +24,14 @@ label_var_levels(
 
   a data frame with cases (one sample per row)
 
+- vtree:
+
+  a vtree object
+
 - var:
 
-  a variable name from cases and vt
+  a variable name from cases and vt. It is a tidyselect data var, so you
+  don't need to quote it.
 
 - width:
 
@@ -44,10 +49,6 @@ label_var_levels(
 - sep:
 
   separator to put between the values
-
-- vt:
-
-  a vtree object
 
 ## Value
 
@@ -78,7 +79,7 @@ mt <- mtcars |>
   rownames_to_column("name")
 vt <- vtree(mt, cyl, gear, carb)
 # car names into a label
-ids <- label_var_levels(mt, vt, "name", width=60)
+ids <- label_var_levels(mt, vt, name, width=60)
 vt |>
   add_labels(template="sameline", root_label = "All cars") |>
   add_labels(template="sameline", mask = find_nodes(vt, leaf),

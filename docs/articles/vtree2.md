@@ -35,7 +35,9 @@ In `vtree2`, the workflow is split into several steps:
   [`retain()`](https://january3.github.io/vtree2/reference/prune.md) and
   friends.
 - (Optional) Create summaries with
-  [`summary_vt()`](https://january3.github.io/vtree2/reference/summary_vt.md).
+  [`summarize_by_node()`](https://january3.github.io/vtree2/reference/summarize_by_node.md)
+  and
+  [`fmt_label()`](https://january3.github.io/vtree2/reference/summarize_by_node.md).
 - (Optional) Add aliases for variable names and values with
   [`add_aliases()`](https://january3.github.io/vtree2/reference/add_aliases.md).
 - (Optional) Add or modify labels with
@@ -518,8 +520,6 @@ vt |> mark(freq < .2) |>
 
 ![](vtree2_files/figure-html/unnamed-chunk-3-1.png)
 
-## Creating summaries
-
 ## Adding column and value aliases
 
 If you prefer to see a different name for the variable or its values on
@@ -640,6 +640,23 @@ plot_grid(p1, p2, nrow = 1)
 These labels are derived directly from columns of the vtree object:
 `node_col`, `node_val`, `freq` and `n`.
 
+It is quite normal to call
+[`add_labels()`](https://january3.github.io/vtree2/reference/add_labels.md)
+multiple times, for example to conditionally add labels. The following
+makes simple default labels and adds a more informative label only to
+the leafs on the tree:
+
+``` r
+vt <- vtree(titanicNA, Class, Survived)
+mask <- pull(vt, leaf) # leaf is a logical vector
+vt |>
+  add_labels(template = "sameline") |>
+  add_labels(mask = mask, template = "long") |>
+  plot()
+```
+
+![](vtree2_files/figure-html/labels2b-1.png)
+
 ### Using custom formatting
 
 Formatting can also be done with the `fmt`/`fmt_na` parameters, which
@@ -714,6 +731,218 @@ add_labels(vt, mask = mask, template = "long") |>
 ```
 
 ![](vtree2_files/figure-html/labels_mask-1.png)
+
+## Creating summaries
+
+One of the more useful aspects of using vtrees is that you can partition
+the data using a set of variables and then show summary information *for
+another variable*. For example, consider the ToothGrowth data set,
+containing two categorical variables – dose and type of supplement – as
+well as numeric result. We can use the categorical variables for data
+splits and ask what the average tooth growth is at the different nodes.
+
+``` r
+# make sure that dose is a factor
+tg <- ToothGrowth |>
+  mutate(dose = factor(paste("Dose", dose)))
+
+vt <- vtree(tg, supp, dose)
+
+library(glue)
+sm <- summarize_by_node(tg, vt, len) |>
+  fmt_label() #fmt = sprintf("mean: %.1f sd: %.1f", mean, sd))
+
+vt |>
+  add_aliases(col_alias = c(supp = "Supplement",
+                            dose = "Dose (mg/day)")) |>
+  add_labels(template = "sameline") |>
+  add_labels(fmt = paste0(label, "\n", sm)) |>
+  plot(lwidth=.75)
+```
+
+![](vtree2_files/figure-html/summaries1-1.png)
+
+The above example demonstrates the main workflow of generating
+summaries:
+
+- you need a cases data frame to generate summaries
+- generate summaries in a separate step
+- use
+  [`summarize_by_node()`](https://january3.github.io/vtree2/reference/summarize_by_node.md)
+  to compute,
+  [`fmt_label()`](https://january3.github.io/vtree2/reference/summarize_by_node.md)
+  to format
+
+It is also possible to include graphical summaries; see the section
+“Inset plots” for more details.
+
+### Summaries with `summarize_by_node()` and `fmt_label()`.
+
+Each row of the data frame returned by `summarize_by_node` corresponds
+to one row of the nodes data frame in the vtree, hence the name of the
+function.
+
+The columns in the data frame returned by `summarize_by_node` depend on
+whether the data is categorical or numeric. For numeric data, as above,
+the columns include mean, sd, n, quantiles 1, 3, and median, iqr, as
+well as the number of valid and missing samples.
+
+``` r
+# numerical data
+sm <- summarize_by_node(tg, vt, len)
+head(sm)
+#> # A tibble: 6 × 15
+#>   node_id path      col   type      n  mean    sd   min   max median    q1    q3
+#>     <int> <chr>     <chr> <chr> <int> <dbl> <dbl> <dbl> <dbl>  <dbl> <dbl> <dbl>
+#> 1       1 root      len   nume…    60  18.8  7.65   4.2  33.9   19.2  13.1  25.3
+#> 2       2 supp:OJ   len   nume…    30  20.7  6.61   8.2  30.9   22.7  15.5  25.7
+#> 3       3 supp:VC   len   nume…    30  17.0  8.27   4.2  33.9   16.5  11.2  23.1
+#> 4       4 supp:OJ/… len   nume…    10  13.2  4.46   8.2  21.5   12.2   9.7  16.2
+#> 5       5 supp:OJ/… len   nume…    10  22.7  3.91  14.5  27.3   23.5  20.3  25.6
+#> 6       6 supp:OJ/… len   nume…    10  26.1  2.66  22.4  30.9   26.0  24.6  27.1
+#> # ℹ 3 more variables: iqr <dbl>, valid <int>, missing <int>
+```
+
+For categorical data, the function returns a data frame including total
+number of observations, number of valid, missing and unique
+observations, a list column containing the counts for each level of the
+variable chosen, as well `denom` (denominator) and the calculated
+frequencies of individual levels.
+
+Here we return to the Titanic example and ask, what was the fraction of
+women who survived or not for the different Classes. We use the
+`titanicNA` data set, which contains some randomly introduced missing
+data.
+
+``` r
+# categorical data
+vt <- vtree(titanicNA, Class, Survived)
+
+sm <- summarize_by_node(titanicNA, vt, Sex)
+head(sm)
+#>   node_id       path col        type    n valid missing unique         levels
+#> 1       1       root Sex categorical 2201  1978     223      3 1553, 425, 223
+#> 2       2  Class:1st Sex categorical  294   262      32      3   142, 120, 32
+#> 3       3  Class:2nd Sex categorical  258   230      28      3    146, 84, 28
+#> 4       4  Class:3rd Sex categorical  633   570      63      3   408, 162, 63
+#> 5       5 Class:Crew Sex categorical  793   718      75      3    698, 20, 75
+#> 6       6   Class:NA Sex categorical  223   198      25      3    159, 39, 25
+#>   denom Male Male_freq Female Female_freq
+#> 1  1978 1553 0.7851365    425  0.21486350
+#> 2   262  142 0.5419847    120  0.45801527
+#> 3   230  146 0.6347826     84  0.36521739
+#> 4   570  408 0.7157895    162  0.28421053
+#> 5   718  698 0.9721448     20  0.02785515
+#> 6   198  159 0.8030303     39  0.19696970
+```
+
+As when calculating the vtree, for calculating a frequency of a level
+for a variable in the above summary (e.g. the frequency of females among
+1st Class passengers), we can choose whether we use valid percentages or
+not. That is, we have to decide whether we calculate the fraction as the
+fraction of *valid* samples, or the fraction of *total* samples at this
+node. In the above, the total fraction is $`0.458 = 120/262`$ - we see
+that by looking at the `denom` (denominator) column of the table above.
+
+By default,
+[`summarize_by_node()`](https://january3.github.io/vtree2/reference/summarize_by_node.md)
+uses the same procedure as was used for the vtree provided as parameter.
+However, you may choose to control this behavior with the `vp`
+parameter:
+
+``` r
+# categorical data
+vt <- vtree(titanicNA, Class, Survived)
+
+sm <- summarize_by_node(titanicNA, vt, Sex, vp=FALSE)
+head(sm)
+#>   node_id       path col        type    n valid missing unique         levels
+#> 1       1       root Sex categorical 2201  1978     223      3 1553, 425, 223
+#> 2       2  Class:1st Sex categorical  294   262      32      3   142, 120, 32
+#> 3       3  Class:2nd Sex categorical  258   230      28      3    146, 84, 28
+#> 4       4  Class:3rd Sex categorical  633   570      63      3   408, 162, 63
+#> 5       5 Class:Crew Sex categorical  793   718      75      3    698, 20, 75
+#> 6       6   Class:NA Sex categorical  223   198      25      3    159, 39, 25
+#>   denom Male Male_freq Female Female_freq NAs   NAs_freq
+#> 1  2201 1553 0.7055884    425  0.19309405 223 0.10131758
+#> 2   294  142 0.4829932    120  0.40816327  32 0.10884354
+#> 3   258  146 0.5658915     84  0.32558140  28 0.10852713
+#> 4   633  408 0.6445498    162  0.25592417  63 0.09952607
+#> 5   793  698 0.8802018     20  0.02522068  75 0.09457755
+#> 6   223  159 0.7130045     39  0.17488789  25 0.11210762
+```
+
+The denominator above is equal to column `n`, total number of cases per
+node.
+
+### Custom statistics with `vtree_apply()`
+
+Sometimes you need to calculate some per-node statistics which goes
+beyond simple descriptive statistics.
+
+[`vtree_apply()`](https://january3.github.io/vtree2/reference/vtree_apply.md)
+goes through nodes in the vtree object, and for each object, finds the
+matching rows in the `cases` data frame. Then it calls the user-provided
+function and calls it with some arguments.
+
+The arguments are also configurable. By default, the function is called
+with the subset of the original `cases` data frame which corresponds to
+the given node. For example, we can calculate how many samples there are
+for a node:
+
+``` r
+cases <- cases_from_freqtable(Titanic)
+vt <- vtree(cases, Class, Survived)
+
+vtree_apply(cases, vt, nrow) |> unlist()
+#>  node_1  node_2  node_3  node_4  node_5  node_6  node_7  node_8  node_9 node_10 
+#>    2201     325     285     706     885     122     203     167     118     528 
+#> node_11 node_12 node_13 
+#>     178     673     212
+
+# same as:
+vt |> pull(n)
+#>  [1] 2201  325  285  706  885  122  203  167  118  528  178  673  212
+```
+
+However, you can configure that also to provide e.g. the logical
+selection vector. Say, we want, for each node, determine whether the
+male:female ratio in that node is significantly different from the rest
+of the data.
+
+``` r
+
+test_func <- function(sel) {
+  # root node includes all samples
+  if(sum(sel) == length(sel)) {
+    return(NA)
+  }
+
+  chisq.test(table(cases$Sex, sel))$p.value
+}
+
+pvals <- vtree_apply(cases, vt, test_func, .args="sel") |> unlist()
+pvals_l <- format.pval(pvals, digits=2)
+
+# color the nodes by p-value
+logp <- floor(-log10(pvals))
+pal <- colorRampPalette(c("white", "steelblue"))(101)
+
+# use simpler summaries 
+sm <- summarize_by_node(cases, vt, Sex) |>
+  fmt_label(fmt = sprintf("Females: %.0f%%", Female_freq * 100))
+
+vt |> add_labels(suffix = sm) |>
+  add_labels(fmt = ifelse(path == "root", label,
+                          paste0(label, "\n", 
+                                 pvals_l))) |>
+  mutate(fill = pal[logp + 1]) |>
+  plot()
+#> ℹ palette attribute is NULL
+#> legend will be black and white
+```
+
+![](vtree2_files/figure-html/vtreapply1-1.png)
 
 ## Adding and modifying colors
 
@@ -905,7 +1134,8 @@ these two parameters.
 
 ``` r
 cases <- cases_from_freqtable(Titanic)
-sm <- summary_vt(cases, vt, Age)
+sm <- summarize_by_node(cases, vt, Age) |>
+  fmt_label()
 
 vt <- vtree(cases, Class, Sex, Survived) |>
   prune(Class == "Crew") |>
@@ -982,7 +1212,7 @@ p2 <- retain(vt, path == "Class:1st") |>
 plot_grid(p1, p2, nrow = 1)
 ```
 
-![](vtree2_files/figure-html/summaries2-1.png)
+![](vtree2_files/figure-html/plot_summaries2-1.png)
 
 ### Other `plot()` arguments
 

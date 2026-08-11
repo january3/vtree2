@@ -164,7 +164,7 @@ function (see below).
 
 For variables which are not associated with the nodes and additional
 summary variables (ranges, medians, standard deviations and more), see
-[`summary_vt()`](https://january3.github.io/vtree2/reference/summary_vt.md).
+`summary_vt()`.
 
 ## See also
 
