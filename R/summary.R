@@ -547,3 +547,79 @@ vtree_apply <- function(cases, vtree, FUN, ...,
   names(ret) <- nodes$node_key[.mask]
   ret
 }
+
+
+
+
+
+#' Get a value list as character vector
+#'
+#' For each node of the tree, identify the cases that correspond to that
+#' node and create a formatted string label listing all values of variable
+#' `var` which correspond to that node.
+#'
+#' Simple wrapper around [`vtree_apply()`] to create formatted labels which
+#' contain a list of values for each node.
+#'
+#' @param cases a data frame with cases (one sample per row)
+#' @param vt a vtree object
+#' @param var a variable name from cases and vt
+#' @param width formatting width in characters
+#' @param sort whether the variable levels should be sorted (default TRUE)
+#' @param shorten if a variable level occurs more than once, should it be
+#' mentioned only once with the number of occurences appended (default
+#' TRUE)
+#' @param sep separator to put between the values
+#' @return a character vector of length equal to the number rows in the
+#' nodes data frame of the vtree object
+#' @examples
+#' library(tibble)
+#' library(dplyr)
+#' mt <- mtcars |>
+#'   mutate(across(c(cyl, gear, carb), as.factor)) |>
+#'   rownames_to_column("name")
+#' vt <- vtree(mt, cyl, gear, carb)
+#' # car names into a label
+#' ids <- label_var_levels(mt, vt, "name", width=60)
+#' vt |>
+#'   add_labels(template="sameline", root_label = "All cars") |>
+#'   add_labels(template="sameline", mask = find_nodes(vt, leaf),
+#'              suffix = ids) |>
+#'   add_layout(varspace=c(root=1, cyl=1, gear=1, carb=3), lwidth=.8) |>
+#'   plot(fontsizes = list(nodes="adaptive"))
+#' @export
+label_var_levels <- function(cases, vtree, var,
+                          width=60,
+                          shorten=TRUE,
+                          sort=TRUE,
+                          sep=", ") {
+
+  if(!var %in% colnames(cases)) {
+    cli_abort(c(x = "Column {var} not found in cases data frame"))
+  }
+
+  func <- \(df) {
+    ret <- df[[var]]
+    if(sort) {
+      ret <- sort(ret)
+    }
+    ret <- as.character(ret)
+
+    if(shorten) {
+      sret <- summary(factor(ret))[unique(ret)]
+      ret <- names(sret)
+      ret <- ifelse(sret == 1L,
+                    ret,
+                    sprintf("%s (n=%d)",
+                            ret, sret))
+    }
+
+    ret <- paste(ret, collapse=sep)
+    ret <- strwrap(ret, width)
+    ret <- paste(ret, collapse="\n")
+    ret
+  }
+
+  ret <- vtree_apply(cases, vtree, func)
+  unlist(ret)
+}

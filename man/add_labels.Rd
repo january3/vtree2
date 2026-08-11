@@ -10,6 +10,9 @@ add_labels(
   mask = NULL,
   fmt = NULL,
   fmt_na = NULL,
+  prefix = NULL,
+  suffix = NULL,
+  sep = "\\n",
   root_label = NA
 )
 }
@@ -32,6 +35,12 @@ This is mostly to omit frequency data from NA nodes if the
 missing data was not used as a denominator to calculate
 percentages. If NULL and fmt is not NULL, fmt will be used for NA
 nodes as well.}
+
+\item{prefix}{add a prefix (character vector) to the label}
+
+\item{suffix}{add a suffix (character vector) to the label}
+
+\item{sep}{separator for prefix/suffix}
 
 \item{root_label}{Label to be used for the root node. If NA, do not
 modify the root label.}
