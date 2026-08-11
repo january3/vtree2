@@ -4,7 +4,7 @@ test_that("summary_vt works", {
   vt <- vtree(cases, Class, Sex, Survived)
   nodes <- vt |> activate("nodes") |> as_tibble()
 
-  stxt <- as_label(summarize_by_node(cases, vt, Survived))
+  stxt <- fmt_label(summarize_by_node(cases, vt, Survived))
   expect_equal(length(stxt), nrow(nodes))
   expect_snapshot(stxt)
  
@@ -42,7 +42,7 @@ test_that("summary_vt works", {
   s1 <- summarize_by_node(cases, vt1, Survived)
   expect_equal(nrow(s1), nrow(nodes))
 
-  s1txt <- as_label(s1)
+  s1txt <- fmt_label(s1)
   expect_equal(length(s1txt), nrow(nodes))
   expect_snapshot(s1txt)
 })
@@ -65,7 +65,7 @@ test_that("numeric summaries work", {
   expect_all_true(s1$valid + s1$missing == s1$n)
   expect_snapshot(s1)
 
-  s2 <- as_label(s1)
+  s2 <- fmt_label(s1)
   expect_length(s2, nrow(nodes))
   expect_type(s2, "character")
   expect_all_true(grepl("^foo", s2))

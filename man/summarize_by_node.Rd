@@ -2,12 +2,12 @@
 % Please edit documentation in R/summary.R
 \name{summarize_by_node}
 \alias{summarize_by_node}
-\alias{as_label}
+\alias{fmt_label}
 \title{Summarize a case variable for each node of a vtree}
 \usage{
 summarize_by_node(cases, vtree, col, vp = is_vp(vtree))
 
-as_label(x, fmt = NULL)
+fmt_label(x, fmt = NULL)
 }
 \arguments{
 \item{cases}{A data frame of cases, with one row per observation.}
@@ -39,7 +39,7 @@ different proportions of survivors for males in the 1st class. This
 corresponds to the summary of variable \code{Survived} for the node with
 path \verb{Class:1st/Sex:Male}.
 
-The \code{as_label()} functions creates a character vector with these
+The \code{fmt_label()} function creates a character vector with these
 measures. The provided format is an expression evaluated in the context
 of the data frame returned by \code{summarize_by_node()} and can use the
 different columns created by that function.
@@ -83,14 +83,14 @@ cases <- cases_from_freqtable(Titanic)
 vt <- vtree(cases, Class, Sex, Survived)
 
 csm_txt <- cases |> summarize_by_node(vt, Age) |>
-  as_label()
+  fmt_label()
 vt |> add_labels(fmt = csm_txt) |> plot()
 
 # some random values
 cases$Random <- rnorm(nrow(cases)) + (cases$Sex == "Male")
 cases$Random[runif(nrow(cases)) < .1] <- NA
 csm_txt <- cases |> summarize_by_node(vt, Random) |>
-  as_label()
+  fmt_label()
 vt |> add_labels(fmt = csm_txt) |>
   retain(path == "Class:1st") |>
   plot(lwidth=.9)
@@ -100,7 +100,7 @@ vt <- vt |> add_labels()
 # add median to the labels
 csm_txt <- cases |>
   summarize_by_node(vt, Random) |>
-  as_label(fmt = sprintf("median: \%.1f",median))
+  fmt_label(fmt = sprintf("median: \%.1f",median))
 vt |>
   add_labels(fmt = paste0(label, "\n", csm_txt)) |>
   plot()
@@ -115,7 +115,7 @@ vt |>
 
 csm_txt <- cases |>
   summarize_by_node(vt, Random) |>
-  as_label(fmt = sprintf("valid: \%d/\%d (\%d\%\%)",
+  fmt_label(fmt = sprintf("valid: \%d/\%d (\%d\%\%)",
            valid, n, round(100 * valid/n)))
 
 vt |>

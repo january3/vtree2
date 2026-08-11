@@ -91,7 +91,7 @@
 #' corresponds to the summary of variable `Survived` for the node with
 #' path `Class:1st/Sex:Male`.
 #'
-#' The `as_label()` functions creates a character vector with these
+#' The `fmt_label()` function creates a character vector with these
 #' measures. The provided format is an expression evaluated in the context
 #' of the data frame returned by `summarize_by_node()` and can use the
 #' different columns created by that function.
@@ -146,14 +146,14 @@
 #' vt <- vtree(cases, Class, Sex, Survived)
 #' 
 #' csm_txt <- cases |> summarize_by_node(vt, Age) |>
-#'   as_label()
+#'   fmt_label()
 #' vt |> add_labels(fmt = csm_txt) |> plot()
 #' 
 #' # some random values
 #' cases$Random <- rnorm(nrow(cases)) + (cases$Sex == "Male")
 #' cases$Random[runif(nrow(cases)) < .1] <- NA
 #' csm_txt <- cases |> summarize_by_node(vt, Random) |>
-#'   as_label()
+#'   fmt_label()
 #' vt |> add_labels(fmt = csm_txt) |>
 #'   retain(path == "Class:1st") |>
 #'   plot(lwidth=.9)
@@ -163,7 +163,7 @@
 #' # add median to the labels
 #' csm_txt <- cases |>
 #'   summarize_by_node(vt, Random) |>
-#'   as_label(fmt = sprintf("median: %.1f",median))
+#'   fmt_label(fmt = sprintf("median: %.1f",median))
 #' vt |>
 #'   add_labels(fmt = paste0(label, "\n", csm_txt)) |>
 #'   plot()
@@ -178,7 +178,7 @@
 #' 
 #' csm_txt <- cases |>
 #'   summarize_by_node(vt, Random) |>
-#'   as_label(fmt = sprintf("valid: %d/%d (%d%%)",
+#'   fmt_label(fmt = sprintf("valid: %d/%d (%d%%)",
 #'            valid, n, round(100 * valid/n)))
 #' 
 #' vt |>
@@ -350,7 +350,7 @@ perc_var_levels <- function(col, df, vp) {
 
 #' @rdname summarize_by_node
 #' @export
-as_label <- function(x, fmt = NULL) {
+fmt_label <- function(x, fmt = NULL) {
   fmt <- enquo(fmt)
 
   type <- x$type[1]

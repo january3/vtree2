@@ -40,9 +40,9 @@ reference:
       - find_parents
   - title: Summaries
     contents:
-      - summary_vt
-      - summary_vt_df
+      - summarize_by_node
       - summary_at_var
+      - fmt_label
       - vtree_apply
       - label_var_levels
   - title: Labels and aliases
