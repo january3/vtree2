@@ -294,15 +294,6 @@ cases_from_freqtable <- function(x, ..., .freq_col = "Freq") {
     ))
   }
 
-  if(!all(cnms %in% colnames(x))) {
-    missing_cols <- setdiff(cnms, colnames(x))
-    cli_abort(c(
-      x = "Some columns specified in .cols or ... are not found in the data frame",
-      i = "Missing columns: {paste(missing_cols, collapse = ', ')}",
-      i = "Available columns: {paste(colnames(x), collapse = ', ')}"
-    ))
-  }
-
   if(length(cnms) < 1L) {
     cnms <- setdiff(colnames(x), .freq_col)
   }

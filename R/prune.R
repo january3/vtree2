@@ -364,10 +364,6 @@ prune <- function(vtree, condition, follow_only = FALSE,
 
   ensure(vtree, "vtree")
 
-  if(missing(condition)) {
-    condition <- expr(FALSE)
-  }
-
   condition <- enquo(condition)
 
   .prune(vtree, condition, follow_only = follow_only,
