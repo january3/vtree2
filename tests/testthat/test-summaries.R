@@ -111,6 +111,9 @@ test_that("errors are raised", {
   expect_error(vtree_apply(cases, vt, \(x) mean(x$foo),
                            .mask=c(TRUE, FALSE)),
                "length of .mask must be equal to the number of nodes")
+  expect_error(vtree_apply(cases, vt, \(x) mean(x$foo),
+                           .args = c("nodes", "foo")),
+               "args may only contain following values:")
 
   cases <- cases[, c("Class", "Survived")]
   expect_error(summarize_by_node(cases, vt, Survived),
@@ -174,6 +177,15 @@ test_that("vtree_apply works", {
 
   vtf_df <- Reduce(rbind, vtf)
   expect_identical(nd, vtf_df)
+
+  vtf <- vtree_apply(cases, vt, \(x) is.logical(x), .args = "sel")
+  expect_all_true(unlist(vtf))
+
+  vtf <- vtree_apply(cases, vt, \(x) is.data.frame(x), .args = "nodes")
+  expect_all_true(unlist(vtf))
+  vtf <- vtree_apply(cases, vt, \(x) nrow(x) == 1, .args = "nodes")
+  expect_all_true(unlist(vtf))
+
 })
 
 test_that("label_var_levels works", {
