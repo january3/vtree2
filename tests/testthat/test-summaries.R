@@ -1,4 +1,4 @@
-test_that("summary_vt works", {
+test_that("summarize_by_node works", {
 
   cases <- cases_from_freqtable(Titanic)
   vt <- vtree(cases, Class, Sex, Survived)

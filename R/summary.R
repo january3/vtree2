@@ -145,11 +145,11 @@
 #'
 #' cases <- cases_from_freqtable(Titanic)
 #' vt <- vtree(cases, Class, Sex, Survived)
-#' 
+#'
 #' csm_txt <- cases |> summarize_by_node(vt, Age) |>
 #'   fmt_label()
 #' vt |> add_labels(fmt = "{csm_txt}") |> plot()
-#' 
+#'
 #' # some random values
 #' cases$Random <- rnorm(nrow(cases)) + (cases$Sex == "Male")
 #' cases$Random[runif(nrow(cases)) < .1] <- NA
@@ -158,17 +158,17 @@
 #' vt |> add_labels(fmt = "{csm_txt}") |>
 #'   retain(path == "Class:1st") |>
 #'   plot(lwidth=.9)
-#' 
+#'
 #' # make some default labels
 #' vt <- vt |> add_labels()
 #' # add median to the labels
 #' csm_txt <- cases |>
 #'   summarize_by_node(vt, Random) |>
-#'   fmt_label(fmt = sprintf("median: %.1f",median))
+#'   fmt_label(fmt = "median: {median}", digits=1)
 #' vt |>
 #'   add_labels(fmt = "{label}\n{csm_txt}") |>
 #'   plot()
-#' 
+#'
 #' # now the same but only for the leafs
 #' # leaf is a column in the nodes data frame, TRUE or FALSE
 #' vt |>
@@ -176,24 +176,23 @@
 #'      paste0(label, "\n", csm_txt),
 #'      label)) |>
 #'   plot()
-#' 
+#'
 #' csm_txt <- cases |>
 #'   summarize_by_node(vt, Random) |>
-#'   fmt_label(fmt = sprintf("valid: %d/%d (%d%%)",
-#'            valid, n, round(100 * valid/n)))
-#' 
+#'   fmt_label(fmt = "valid: {valid}/{n} ({round(100 * valid/n)}%)")
+#'
 #' vt |>
 #'   add_labels(fmt = "{label}\n{csm_txt}") |>
 #'   retain(path == "Class:1st") |>
 #'   plot(lwidth=.8)
-#' 
+#'
 #' # Directly use output from summarize_by_node
 #' df <- cases |> summarize_by_node(vt, Age)
 #' vt |>
 #'   add_labels(expr = sprintf("%s\nChildren: %.0f%%", node_val,
 #'                          df$Child_freq * 100)) |>
 #'   plot()
-#' 
+#'
 #' @export
 summarize_by_node <- function(cases, vtree, col, vp=is_vp(vtree)) {
   if(!is.data.frame(cases)) {
@@ -266,42 +265,6 @@ summarize_by_node <- function(cases, vtree, col, vp=is_vp(vtree)) {
   ret
 }
 
-.summary_vt_categoric <- function(summary_df, fmt=NULL) {
-
-  if(quo_is_null(fmt)) {
-    fmt <- quo(
-      sprintf("%s\n%s",
-        .data[["col"]],
-        .data[["levels_str"]]))
-  }
-
-  ret <- eval_tidy(fmt, data = summary_df)
-  ret
-}
-
-.summary_vt_numeric <- function(summary_df, fmt=NULL) {
-
-  if(quo_is_null(fmt)) {
-    fmt <- quo(
-      sprintf(
-        "%s\nNAs: %d\nmean %s SD %s\nmedian %s IQR %s, %s\nrange %s, %s",
-         .data[["col"]],
-         .data[["missing"]],
-         format(.data[["mean"]], digits=1),
-         format(.data[["sd"]], digits=1),
-         format(.data[["median"]], digits=1),
-         format(.data[["q1"]], digits=1),
-         format(.data[["q3"]], digits=1),
-         format(.data[["min"]], digits=1),
-         format(.data[["max"]], digits=1)
-
-         ))
-  }
-
-  ret <- eval_tidy(fmt, data = summary_df)
-  ret
-}
-
 # Compute summary statistics such as percentage and sample size of a
 # variable from the `cases` data frame for each node of a vtree.
 #
@@ -333,38 +296,65 @@ perc_var_levels <- function(col, df, vp) {
     ret <- ret |>
       mutate(denom = .data[["valid"]]) |>
       mutate(across(all_of(levs),
-                  list(freq= ~ .x/denom),
+                  list(freq= ~ .x/.data[["denom"]]),
                   .names = "{.col}_{.fn}"))
   } else {
     ret <- ret |>
       mutate(denom = .data[["n"]]) |>
       mutate(across(all_of(levs),
-                  list(freq= ~ .x/denom),
+                  list(freq= ~ .x/.data[["denom"]]),
                   .names = "{.col}_{.fn}"))
   }
 
   ret <- ret |>
-    select(denom,
+    select(all_of("denom"),
            starts_with(levs))
   return(ret)
 }
 
+# format all numeric columns in x by rounding them to the specified number
+# of digits.
+fmt_df_numeric <- function(x, digits=2) {
+  num_cols <- sapply(x, is.numeric)
+  x[num_cols] <- lapply(x[num_cols], \(col) round(col, digits))
+  x
+}
+
 #' @rdname summarize_by_node
 #' @export
-fmt_label <- function(x, fmt = NULL) {
-  fmt <- enquo(fmt)
+fmt_label <- function(x, fmt = NULL, expr = NULL, digits = 2) {
+
+  expr <- enquo(expr)
+
+  if(!quo_is_null(expr)) {
+    ret <- eval_tidy(expr, data = x)
+    return(ret)
+  }
 
   type <- x$type[1]
   type <- match.arg(type, c("categorical", "numeric"))
 
+  pst <- \(l) paste(names(l), l, sep=": ", collapse="\n")
+
   if(type == "categorical") {
-    pst <- \(l) paste(names(l), l, sep=": ", collapse="\n")
     x <- mutate(x, levels_str = map_chr(levels, pst))
-    ret <- .summary_vt_categoric(x, fmt)
-  } else {
-    ret <- .summary_vt_numeric(x, fmt)
   }
 
+  x <- fmt_df_numeric(x, digits = digits)
+
+  if(is.null(fmt)) {
+    if(type == "categorical") {
+      fmt <- "{col}\n{levels_str}"
+    } else {
+      fmt <- paste(c("{col}",
+                     "NAs: {missing}",
+                     "mean {mean} SD {sd}",
+                     "median {median} IQR {q1}, {q3}",
+                     "range {min}, {max}"), collapse="\n")
+    }
+  }
+
+  ret <- glue_data(x, fmt)
   ret
 }
 
@@ -407,15 +397,15 @@ fmt_label <- function(x, fmt = NULL) {
 #' @examples
 #' cases <- cases_from_freqtable(Titanic)
 #' vt <- vtree(cases, Class, Sex)
-#' 
+#'
 #' # only leaf nodes
 #' mask <- find_nodes(vt, leaf)
-#' 
+#'
 #' # prepare labels with summary of Survived for each node
 #' sumfnc <- \(df, ...) summary(df$Survived)
 #' sm <- vtree_apply(cases, vt, sumfnc, .mask = mask) |>
 #'       purrr::map_chr(\(x) paste0(names(x), ": ", x, collapse = "\n"))
-#' 
+#'
 #' # plot with custom layout making more space for the labels in the last
 #' # node ("Sex")
 #' vt |> add_labels() |>

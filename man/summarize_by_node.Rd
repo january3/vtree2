@@ -7,7 +7,7 @@
 \usage{
 summarize_by_node(cases, vtree, col, vp = is_vp(vtree))
 
-fmt_label(x, fmt = NULL)
+fmt_label(x, fmt = NULL, expr = NULL, digits = 2)
 }
 \arguments{
 \item{cases}{A data frame of cases, with one row per observation.}
@@ -102,7 +102,7 @@ vt <- vt |> add_labels()
 # add median to the labels
 csm_txt <- cases |>
   summarize_by_node(vt, Random) |>
-  fmt_label(fmt = sprintf("median: \%.1f",median))
+  fmt_label(fmt = "median: {median}", digits=1)
 vt |>
   add_labels(fmt = "{label}\n{csm_txt}") |>
   plot()
@@ -117,8 +117,7 @@ vt |>
 
 csm_txt <- cases |>
   summarize_by_node(vt, Random) |>
-  fmt_label(fmt = sprintf("valid: \%d/\%d (\%d\%\%)",
-           valid, n, round(100 * valid/n)))
+  fmt_label(fmt = "valid: {valid}/{n} ({round(100 * valid/n)}\%)")
 
 vt |>
   add_labels(fmt = "{label}\n{csm_txt}") |>
