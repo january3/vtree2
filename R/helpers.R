@@ -47,17 +47,6 @@ ensure_vtree <- function(x) {
   x
 }
 
-ensure_data_frame <- function(x) {
-  arg <- rlang::caller_arg(x)
-
-  if(!is.data.frame(x)) {
-    cli_abort(c(x = "Argument `{arg}` is not a data frame",
-      i = "You provided an object of class {class(x)}"
-    ))
-  }
-  x
-}
-
 #' @importFrom cli cli_abort
 die <- function(message = "Unspecified error.",
                 call = .envir, .envir = parent.frame()) {
@@ -65,16 +54,7 @@ die <- function(message = "Unspecified error.",
 }
 
 
-# extract required columns from a tidygraph object
-# this is b/c extracting all vertex attributes is costly
-#' @importFrom stats setNames
-node_attrs <- function(graph, cols) {
-  tibble::as_tibble(
-    setNames(
-      lapply(cols, \(col) igraph::vertex_attr(graph, col)),
-      cols
-    ))
-}
+
 
 # if grobs are in the vtree, extract them and return as a list
 extract_grobs <- function(vtree) {
@@ -154,27 +134,6 @@ scale_add <- function(scale, mapping) {
   }
 
   scale
-}
-
-# levels is a list of character values, e.g. one returned by
-# levels(vtree); defaults are the default values for the structure
-# na is the value to be used for missing values
-# mapping is customized mapping to be used
-get_scale <- function(levels,
-                      defaults=NULL,
-                      default_value = NA,
-                      na=NA) {
-
-  # populate with the default value
-  scale <- map(levels, \(l) {
-                    .r <- rep(as.character(default_value), length(l))
-                    set_names(.r, l)
-                })
-
-  scale <- scale_add(scale, defaults)
-
-  ret <- list(scale=scale, na=na)
-  ret
 }
 
 
