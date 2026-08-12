@@ -520,10 +520,6 @@ label_var_levels <- function(cases, vtree, var,
   var <- tidyselect::eval_select(var, data = cases)
   var <- names(var)
 
-  if(!var %in% colnames(cases)) {
-    cli_abort(c(x = "Column {var} not found in cases data frame"))
-  }
-
   func <- \(df) {
     ret <- df[[var]]
     if(sort) {
