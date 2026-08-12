@@ -60,6 +60,14 @@ test_that("Aliases work", {
                           nd4$val_alias,
                           nd4$n,
                           nd4$freq * 100)[-1])
+
+  vt3 <- add_aliases(vt, col_alias = list(Class = "Klass"),
+                     val_alias = list(Class = c("1st" = "First")))
+  expect_warning(add_aliases(vt3, col_alias = list(Sex = "Gender")),
+                 "Overwriting existing col_alias column")
+  expect_warning(add_aliases(vt3, val_alias = list(Class = c("1st" = "First2"))),
+                  "Overwriting existing val_alias column")
+
 })
 
 
