@@ -199,10 +199,6 @@ add_palette <- function(vtree,
   if(what == "text") { what <- "color" }
   if(other == "text") { other <- "color" }
 
-  if(!inherits(vtree, "vtree")) {
-    cli_abort(c(x = "add_palette() requires a vtree object"))
-  }
-
   # the palette associated with the tree
   pal_at <- attr(vtree, "palette") %||% list()
 
