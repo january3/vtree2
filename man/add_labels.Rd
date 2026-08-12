@@ -7,13 +7,15 @@
 add_labels(
   vtree,
   template = "simple",
-  mask = NULL,
+  mask = TRUE,
   fmt = NULL,
   fmt_na = NULL,
+  fmt_root = NULL,
   prefix = NULL,
   suffix = NULL,
   sep = "\\n",
-  root_label = NA
+  expr = NULL,
+  digits = 0
 )
 }
 \arguments{
@@ -23,18 +25,22 @@ add_labels(
 'sameline' or 'long'.  If \code{fmt} or \code{fmt_na} is defined, it will
 be overridden by the respective formatting expression.}
 
-\item{mask}{If not NULL, then a logical vector is expected indicating
+\item{mask}{a logical vector indicating
 the nodes for which the labels will be modified.}
 
-\item{fmt}{an R expression to format the valid value nodes. If not
+\item{fmt}{a glue string to format the valid value nodes. If not
 NULL, replaces the format from the template.}
 
-\item{fmt_na}{an R expression to format NA nodes in trees with valid
+\item{fmt_na}{glue string to format NA nodes in trees with valid
 percentages. If not NULL, replaces the format from the template.
 This is mostly to omit frequency data from NA nodes if the
 missing data was not used as a denominator to calculate
 percentages. If NULL and fmt is not NULL, fmt will be used for NA
 nodes as well.}
+
+\item{fmt_root}{a glue string to format the root node. If NULL and \code{fmt}
+is not NULL, then \code{fmt} will be used instead, otherwise template
+format will be used.}
 
 \item{prefix}{add a prefix (character vector) to the label}
 
@@ -42,40 +48,85 @@ nodes as well.}
 
 \item{sep}{separator for prefix/suffix}
 
-\item{root_label}{Label to be used for the root node. If NA, do not
-modify the root label.}
+\item{expr}{R expression to generate the labels; if not NULL it will be
+evaluated in the context of the vtree object node data frame.}
+
+\item{digits}{number of decimal digits to keep when rounding the percentage
+column (\code{pct}). This will also influence the number of digits of
+the formatted frequency column \code{f}, since f = pct/100.}
 }
 \value{
 an object of class vtree with added labels
 }
 \description{
-Adds or modifies a column called \code{label} to the node data frame of a vtree object.
-Labels are used by the \code{\link[=plot.vtree]{plot.vtree()}} function to show as node labels.
+Adds or modifies a column called \code{label} to the node data frame of a
+vtree object. Labels are used by the \code{\link[=plot.vtree]{plot.vtree()}} function to show as
+node labels.
 }
 \details{
 By default, \code{add_labels()} produces simple node labels containing the
 associated variable value, number of cases and percentage within the
-parent node.
+parent node. This can be customized by one of the following:
+\itemize{
+\item choose a different \code{template} parameter: \code{short} (default),
+\code{sameline} (same as short, but on one line) or \code{long} (with variable
+names). The templates all reasonably handle NA nodes and root node.
+\item use a \code{\link[glue:glue]{glue::glue()}} syntax for the parameters \code{fmt}, \code{fmt_na} and
+\code{fmt_root}, where variable names are put in curly
+braces. The variable names are the same as column names of the node
+data frame of the vtree object, plus \code{pct} and \code{f} (see below). The
+three parameters will be used to generate regular, NA-nodes or root
+node labels, respectively.
+\item use an arbitrary R expression (parameter \code{expr}) which is evaluated with
+\code{\link[rlang:eval_tidy]{rlang::eval_tidy()}} in the context of the nodes data frame of the
+vtree object.
+}
 
-Formatting can be done with the \code{fmt}/\code{fmt_na} parameter, which is
-an R expression. You can use sprintf, glue, paste or whichever
-expressions you like to construct a label from the following variables:
+Both the glue format syntax and the arbitrary expression syntax can use
+any column name which is already present in the nodes data frame,
+including:
 \itemize{
 \item \code{freq}, the frequency for a node
 \item \code{n}, number of samples of a node
-\item \code{node_col}, name of the variable associated with a node
-\item \code{node_val}, value of the variable associated with a node
 \item \code{col_alias}, the alias for the column/variable associated with a node
 (default same as node_col, but can be modified
 by providing a \code{var_alias} column in the vtree)
 \item \code{val_alias}, the alias for the value of the variable associated with a node
 (default same as node_val, but can be modified
 by providing a \code{val_alias} column in the vtree)
+\item \code{node_col}, name of the variable associated with a node
+\item \code{node_val}, value of the variable associated with a node
 \item plus whatever new columns you have added to the vtree with mutate().
 }
+
+In addition, \code{add_labels()} provides two additional, preformatted
+values:
+\itemize{
+\item \code{pct}, percentage rounded to the specified number of digits (the
+\code{digits} parameter)
+\item \code{f}, equal to pct / 100 (so if the percentage is rounded with 0
+digits after decimal point, \code{f} will have two digits after decimal
+point).
 }
+}
+\section{Parameter precedence}{
+
+
+If \code{expr} is not NULL, it will be used for all labels chosen by the
+mask.
+
+If \code{fmt} is NULL, the selected template will be used.
+If \code{fmt_na} is NULL and \code{fmt} is not NULL, then \code{fmt_na} will be \code{fmt},
+otherwise the selected template will be used. Same for \code{fmt_root}: first
+\code{fmt}, if defined, otherwise the template.
+
+\code{fmt_na} is used for NA values only if \code{is_vp(vtree)} is \code{TRUE}; this is
+because for a vp tree the NA value percentages are meaningless.
+}
+
 \examples{
-vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived)
+# a tree with Class, Sex and Survived vars
+vt <- vtree_from_freqtable(Titanic, -Age)
 # look at the labels
 add_labels(vt) |> pull(label)
 add_labels(vt) |> plot()
@@ -89,10 +140,26 @@ vt |> add_labels(mask = mask) |>
 
 # customize the format
 vt |>
-  add_labels(fmt = sprintf("\%d out of \%d",
-        n, round(n/freq)),
-    fmt_na = "NA") |> plot()
+  retain(path == "Class:1st") |>
+  add_labels(fmt = "{n} out of {max(n)}",
+    fmt_na = "NA") |> plot(lwidth=.7)
 
+# only change the format for the root
+vt |>
+  retain(path == "Class:1st") |>
+  add_labels(fmt_root = "Total:\n{n} samples") |>
+  plot()
+
+# using expr
+vt |>
+  add_labels(expr =
+               ifelse(leaf,
+                      sprintf("\%s:\%s\n\%d (\%.0f)\%\%",
+                              col_alias,
+                              val_alias,
+                              n, pct),
+                      val_alias)) |>
+  plot()
 }
 \seealso{
 \code{\link[=add_aliases]{add_aliases()}}, \code{\link[=plot_vtree]{plot_vtree()}}

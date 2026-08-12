@@ -45,44 +45,26 @@
   col_alias
 }
 
-.def_formats <- function(template) {
+.def_formats <- function(template,
+                         fmt, fmt_na, fmt_root) {
 
-  # this only looks complicated because we have to use .data
   if(template == "simple") {
-    fmt <- quo(ifelse(.data[["node_col"]] == "root",
-               sprintf("%d", .data[["n"]]),
-               ifelse(!is.na(.data[["val_alias"]]) & .data[["val_alias"]] == "",
-               sprintf("%d\n(%.0f%%)", .data[["n"]], .data[["freq"]] * 100),
-               sprintf("%s\n%d (%.0f%%)", .data[["val_alias"]],
-                                          .data[["n"]], .data[["freq"]] * 100))))
-    fmt_na = quo(ifelse(!is.na(.data[["val_alias"]]) & .data[["val_alias"]] == "",
-                        sprintf("%d", .data[["n"]]),
-                        sprintf("%s\n%d", .data[["val_alias"]], .data[["n"]]))
-                       )
+    .fmt_root <- "{n}"
+    .fmt <- "{val_alias}\n{n} ({pct}%)"
+    .fmt_na <- "{val_alias}\n{n}"
   } else if(template == "sameline") {
-    fmt <- quo(ifelse(.data[["node_col"]] == "root",
-               sprintf("%d", .data[["n"]]),
-               ifelse(!is.na(.data[["val_alias"]]) & .data[["val_alias"]] == "",
-               sprintf("%d (%.0f%%)", .data[["n"]], .data[["freq"]] * 100),
-               sprintf("%s: %d (%.0f%%)", .data[["val_alias"]],
-                                          .data[["n"]], .data[["freq"]] * 100))))
-    fmt_na = quo(ifelse(!is.na(.data[["val_alias"]]) & .data[["val_alias"]] == "",
-                        sprintf("%d", .data[["n"]]),
-                        sprintf("%s %d", .data[["val_alias"]], .data[["n"]]))
-                       )
+    .fmt_root <- "{n}"
+    .fmt <- "{val_alias} {n} ({pct}%)"
+    .fmt_na <- "{val_alias} {n}"
   } else if(template == "long") {
-    fmt <- quo(ifelse(!is.na(.data[["val_alias"]]) & .data[["val_alias"]] == "",
-               sprintf("All samples\nN = %d (100%%)", .data[["n"]]),
-               sprintf("%s: %s\nN = %d (%.0f%%)",
-                           .data[["col_alias"]],
-                           .data[["val_alias"]],
-                           .data[["n"]],
-                           .data[["freq"]] * 100)))
-    fmt_na = quo(sprintf("%s: %s\n%d", .data[["col_alias"]],
-                            .data[["val_alias"]], .data[["n"]]))
+    .fmt_root <- "All samples\nN = {n} (100%)"
+    .fmt <- "{col_alias}: {val_alias}\nN = {n} ({pct}%)"
+    .fmt_na <- "{col_alias}: {val_alias}\nN = {n}"
   }
 
-  list(fmt=fmt, fmt_na=fmt_na)
+  list(fmt=fmt %||% .fmt,
+       fmt_na=fmt_na %||% fmt %||% .fmt_na,
+       fmt_root=fmt_root %||% fmt %||% .fmt_root)
 }
 
 .ensure_aliases <- function(df) {
@@ -98,55 +80,107 @@
   df
 }
 
+.add_convenience_cols <- function(df, digits) {
+
+  df <- df |>
+    mutate(pct = round(100 * .data[["freq"]], digits=digits)) |>
+    mutate(f = .data[["pct"]] / 100)
+
+  df
+}
+
 #' Add labels to a plot
 #'
-#' Adds or modifies a column called `label` to the node data frame of a vtree object.
-#' Labels are used by the [plot.vtree()] function to show as node labels.
+#' Adds or modifies a column called `label` to the node data frame of a
+#' vtree object. Labels are used by the [plot.vtree()] function to show as
+#' node labels.
 #'
 #' By default, `add_labels()` produces simple node labels containing the
 #' associated variable value, number of cases and percentage within the
-#' parent node.
+#' parent node. This can be customized by one of the following:
 #'
-#' Formatting can be done with the `fmt`/`fmt_na` parameter, which is
-#' an R expression. You can use sprintf, glue, paste or whichever
-#' expressions you like to construct a label from the following variables:
+#'  * choose a different `template` parameter: `short` (default),
+#'  `sameline` (same as short, but on one line) or `long` (with variable
+#'  names). The templates all reasonably handle NA nodes and root node.
+#'  * use a [glue::glue()] syntax for the parameters `fmt`, `fmt_na` and
+#'  `fmt_root`, where variable names are put in curly
+#'  braces. The variable names are the same as column names of the node
+#'  data frame of the vtree object, plus `pct` and `f` (see below). The
+#'  three parameters will be used to generate regular, NA-nodes or root
+#'  node labels, respectively.
+#'  * use an arbitrary R expression (parameter `expr`) which is evaluated with
+#'  [rlang::eval_tidy()] in the context of the nodes data frame of the
+#'  vtree object.
+#'
+#' Both the glue format syntax and the arbitrary expression syntax can use
+#' any column name which is already present in the nodes data frame,
+#' including:
 #'
 #'  * `freq`, the frequency for a node
 #'  * `n`, number of samples of a node
-#'  * `node_col`, name of the variable associated with a node
-#'  * `node_val`, value of the variable associated with a node
 #'  * `col_alias`, the alias for the column/variable associated with a node
 #'    (default same as node_col, but can be modified
 #'    by providing a `var_alias` column in the vtree)
 #'  * `val_alias`, the alias for the value of the variable associated with a node
-#'    (default same as node_val, but can be modified 
+#'    (default same as node_val, but can be modified
 #'    by providing a `val_alias` column in the vtree)
+#'  * `node_col`, name of the variable associated with a node
+#'  * `node_val`, value of the variable associated with a node
 #'  * plus whatever new columns you have added to the vtree with mutate().
+#'
+#' In addition, `add_labels()` provides two additional, preformatted
+#' values:
+#'
+#'  * `pct`, percentage rounded to the specified number of digits (the
+#'  `digits` parameter)
+#'  * `f`, equal to pct / 100 (so if the percentage is rounded with 0
+#'  digits after decimal point, `f` will have two digits after decimal
+#'  point).
+#'
+#' @section Parameter precedence:
+#'
+#' If `expr` is not NULL, it will be used for all labels chosen by the
+#' mask.
+#'
+#' If `fmt` is NULL, the selected template will be used.
+#' If `fmt_na` is NULL and `fmt` is not NULL, then `fmt_na` will be `fmt`,
+#' otherwise the selected template will be used. Same for `fmt_root`: first
+#' `fmt`, if defined, otherwise the template.
+#'
+#' `fmt_na` is used for NA values only if `is_vp(vtree)` is `TRUE`; this is
+#' because for a vp tree the NA value percentages are meaningless.
 #'
 #' @param vtree an object of class vtree
 #' @param template One of the predefined formats; can be 'simple',
 #'        'sameline' or 'long'.  If `fmt` or `fmt_na` is defined, it will
 #'        be overridden by the respective formatting expression.
-#' @param mask If not NULL, then a logical vector is expected indicating
+#' @param mask a logical vector indicating
 #'        the nodes for which the labels will be modified.
-#' @param fmt an R expression to format the valid value nodes. If not
+#' @param fmt a glue string to format the valid value nodes. If not
 #'        NULL, replaces the format from the template.
-#' @param fmt_na an R expression to format NA nodes in trees with valid
+#' @param fmt_na glue string to format NA nodes in trees with valid
 #'        percentages. If not NULL, replaces the format from the template.
 #'        This is mostly to omit frequency data from NA nodes if the
 #'        missing data was not used as a denominator to calculate
 #'        percentages. If NULL and fmt is not NULL, fmt will be used for NA
 #'        nodes as well.
+#' @param fmt_root a glue string to format the root node. If NULL and `fmt`
+#'        is not NULL, then `fmt` will be used instead, otherwise template
+#'        format will be used.
+#' @param expr R expression to generate the labels; if not NULL it will be
+#'        evaluated in the context of the vtree object node data frame.
+#' @param digits number of decimal digits to keep when rounding the percentage
+#'        column (`pct`). This will also influence the number of digits of
+#'        the formatted frequency column `f`, since f = pct/100.
 #' @param prefix add a prefix (character vector) to the label
 #' @param suffix add a suffix (character vector) to the label
 #' @param sep separator for prefix/suffix
-#' @param root_label Label to be used for the root node. If NA, do not
-#'        modify the root label.
 #' @return an object of class vtree with added labels
 #' @importFrom rlang quo quo_is_null
 #' @seealso [add_aliases()], [plot_vtree()]
 #' @examples
-#' vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived)
+#' # a tree with Class, Sex and Survived vars
+#' vt <- vtree_from_freqtable(Titanic, -Age)
 #' # look at the labels
 #' add_labels(vt) |> pull(label)
 #' add_labels(vt) |> plot()
@@ -160,82 +194,100 @@
 #'
 #' # customize the format
 #' vt |>
-#'   add_labels(fmt = sprintf("%d out of %d",
-#'         n, round(n/freq)),
-#'     fmt_na = "NA") |> plot()
+#'   retain(path == "Class:1st") |>
+#'   add_labels(fmt = "{n} out of {max(n)}",
+#'     fmt_na = "NA") |> plot(lwidth=.7)
 #'
+#' # only change the format for the root
+#' vt |>
+#'   retain(path == "Class:1st") |>
+#'   add_labels(fmt_root = "Total:\n{n} samples") |>
+#'   plot()
+#'
+#' # using expr
+#' vt |>
+#'   add_labels(expr =
+#'                ifelse(leaf,
+#'                       sprintf("%s:%s\n%d (%.0f)%%",
+#'                               col_alias,
+#'                               val_alias,
+#'                               n, pct),
+#'                       val_alias)) |>
+#'   plot()
+#' @importFrom glue glue_data
 #' @export
 add_labels <- function(vtree,
                        template = "simple",
-                       mask = NULL,
+                       mask = TRUE,
                        fmt = NULL,
                        fmt_na = NULL,
+                       fmt_root = NULL,
                        prefix = NULL,
                        suffix = NULL,
                        sep = "\n",
-                       root_label = NA) {
+                       expr = NULL,
+                       digits = 0) {
 
   template <- match.arg(template, c("simple", "sameline", "long"))
 
-  userfmt <- enquo(fmt)
-  userfmt_na <- enquo(fmt_na)
-  default <- .def_formats(template)
+  dflt <- .def_formats(template, fmt, fmt_na, fmt_root)
+  expr <- enquo(expr)
 
-  if(!quo_is_null(userfmt)) {
-    fmt <- userfmt
+  nodes <- as_tibble(vtree) |>
+    .ensure_aliases() |>
+    .add_convenience_cols(digits)
+
+  if(is.null(prefix)) {
+    prefix <- ""
   } else {
-    fmt <- default$fmt
+    prefix <- paste0(prefix, sep)
   }
 
-  if(!quo_is_null(userfmt_na)) {
-    fmt_na <- userfmt_na
-  } else if(!quo_is_null(userfmt)) {
-    fmt_na <- userfmt
+  if(is.null(suffix)) {
+    suffix <- ""
   } else {
-    fmt_na <- default$fmt_na
+    suffix <- paste0(sep, suffix)
   }
 
-  if(quo_is_null(fmt) || quo_is_null(fmt_na)) {
-    stop("fmt/fmt_na not defined")
+  if(!quo_is_null(expr)) {
+    labels_root <-
+      labels_na <-
+         labels <- eval_tidy(expr, data = nodes)
+  } else {
+    labels <- glue_data(nodes, dflt$fmt)
+    labels_na <- glue_data(nodes, dflt$fmt_na)
+    labels_root <- glue_data(nodes, dflt$fmt_root)
   }
 
-  nodes <- as_tibble(vtree) |> .ensure_aliases()
-  labels    <- eval_tidy(fmt, data = nodes)
-  labels_na <- eval_tidy(fmt_na, data = nodes)
-
-  if(!is.null(prefix)) {
-    labels <- paste0(prefix, sep, labels)
-    labels_na <- paste0(prefix, sep, labels_na)
-  }
-
-  if(!is.null(suffix)) {
-    labels <- paste0(labels, sep, suffix)
-    labels_na <- paste0(labels_na, sep, suffix)
-  }
-
-  if(is.null(mask)) {
-    mask <- rep(TRUE, nrow(nodes))
-  }
-
-  # does the tree have valid percentages?
-  is_vp <- attr(vtree, "vp") %||% TRUE
+  labels      <- paste0(prefix, labels, suffix)
+  labels_na   <- paste0(prefix, labels_na, suffix)
+  labels_root <- paste0(prefix, labels_root, suffix)
 
   # add label column if one is missing
   if(!"label" %in% colnames(nodes)) {
     vtree <- mutate(vtree, label = "")
   }
 
-  vtree <- vtree |>
-    mutate(label = ifelse(mask,
-           ifelse(is.na(.data[["node_val"]]) & is_vp,
-                          labels_na,
-                          labels),
-                          .data[["label"]]
-           )) |>
-    mutate(label = ifelse(.data[["node_id"]] == 1 & !is.na(root_label),
-                root_label, .data[["label"]]))
+  # normalize mask
+  if(length(mask) == 1L) {
+    mask <- rep(mask, nrow(nodes))
+  } else if(length(mask) != nrow(nodes)) {
+    cli_abort(c(x= "Parameter mask should have a length of {nrow(nodes)}"))
+  }
 
-  vtree <- as_vtree(vtree)
+  vtree <- vtree |>
+    mutate(label =
+             ifelse(mask,
+               ifelse(is.na(.data[["node_val"]]) & is_vp(vtree),
+                      labels_na,
+                      labels),
+               .data[["label"]])) |>
+
+    mutate(label =
+             ifelse(mask & .data[["node_id"]] == 1,
+               labels_root,
+               .data[["label"]]))
+
   vtree
 }
 

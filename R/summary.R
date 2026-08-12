@@ -131,6 +131,7 @@
 #'
 #' @param vtree A vtree object.
 #' @param cases A data frame of cases, with one row per observation.
+#' @param x data frame, result of `summarize_by_node()`
 #' @param vp whether frequencies should be calculated using valid percentages
 #' @param fmt An expression for customized formatting. See Examples.
 #' @param col The column variable to summarize. This should be a single
@@ -144,20 +145,20 @@
 #'
 #' cases <- cases_from_freqtable(Titanic)
 #' vt <- vtree(cases, Class, Sex, Survived)
-#'
+#' 
 #' csm_txt <- cases |> summarize_by_node(vt, Age) |>
 #'   fmt_label()
-#' vt |> add_labels(fmt = csm_txt) |> plot()
-#'
+#' vt |> add_labels(fmt = "{csm_txt}") |> plot()
+#' 
 #' # some random values
 #' cases$Random <- rnorm(nrow(cases)) + (cases$Sex == "Male")
 #' cases$Random[runif(nrow(cases)) < .1] <- NA
 #' csm_txt <- cases |> summarize_by_node(vt, Random) |>
 #'   fmt_label()
-#' vt |> add_labels(fmt = csm_txt) |>
+#' vt |> add_labels(fmt = "{csm_txt}") |>
 #'   retain(path == "Class:1st") |>
 #'   plot(lwidth=.9)
-#'
+#' 
 #' # make some default labels
 #' vt <- vt |> add_labels()
 #' # add median to the labels
@@ -165,9 +166,9 @@
 #'   summarize_by_node(vt, Random) |>
 #'   fmt_label(fmt = sprintf("median: %.1f",median))
 #' vt |>
-#'   add_labels(fmt = paste0(label, "\n", csm_txt)) |>
+#'   add_labels(fmt = "{label}\n{csm_txt}") |>
 #'   plot()
-#'
+#' 
 #' # now the same but only for the leafs
 #' # leaf is a column in the nodes data frame, TRUE or FALSE
 #' vt |>
@@ -175,24 +176,24 @@
 #'      paste0(label, "\n", csm_txt),
 #'      label)) |>
 #'   plot()
-#'
+#' 
 #' csm_txt <- cases |>
 #'   summarize_by_node(vt, Random) |>
 #'   fmt_label(fmt = sprintf("valid: %d/%d (%d%%)",
 #'            valid, n, round(100 * valid/n)))
-#'
+#' 
 #' vt |>
-#'   mutate(label = paste0(label, "\n", csm_txt)) |>
+#'   add_labels(fmt = "{label}\n{csm_txt}") |>
 #'   retain(path == "Class:1st") |>
 #'   plot(lwidth=.8)
-#'
+#' 
 #' # Directly use output from summarize_by_node
 #' df <- cases |> summarize_by_node(vt, Age)
 #' vt |>
-#'   mutate(label = sprintf("%s\nChildren: %.0f%%", node_val,
+#'   add_labels(expr = sprintf("%s\nChildren: %.0f%%", node_val,
 #'                          df$Child_freq * 100)) |>
 #'   plot()
-#'
+#' 
 #' @export
 summarize_by_node <- function(cases, vtree, col, vp=is_vp(vtree)) {
   if(!is.data.frame(cases)) {
@@ -404,21 +405,22 @@ fmt_label <- function(x, fmt = NULL) {
 #' @return A list of the results of applying FUN to each subset of cases
 #'         named with the node_key of the corresponding node in the vtree.
 #' @examples
-#' vt <- vtree_from_freqtable(Titanic, Class, Sex)
-#'
+#' cases <- cases_from_freqtable(Titanic)
+#' vt <- vtree(cases, Class, Sex)
+#' 
 #' # only leaf nodes
 #' mask <- find_nodes(vt, leaf)
-#'
+#' 
 #' # prepare labels with summary of Survived for each node
 #' sumfnc <- \(df, ...) summary(df$Survived)
-#' sm <- vtree_apply(titanicNA, vt, sumfnc, .mask = mask) |>
+#' sm <- vtree_apply(cases, vt, sumfnc, .mask = mask) |>
 #'       purrr::map_chr(\(x) paste0(names(x), ": ", x, collapse = "\n"))
-#'
+#' 
 #' # plot with custom layout making more space for the labels in the last
 #' # node ("Sex")
 #' vt |> add_labels() |>
 #'   add_labels(mask = mask,
-#'              fmt = paste0(label, "\n", sm[node_key])) |>
+#'              fmt = "{label}\n{sm[node_key]}") |>
 #'   add_layout(varspace = c(root=1, Class=1, Sex=3),
 #'              dir="tb", lheight=.8) |>
 #'   plot(dir="tb", legend=FALSE)
@@ -521,7 +523,10 @@ vtree_apply <- function(cases, vtree, FUN, ...,
 #' # car names into a label
 #' ids <- label_var_levels(mt, vt, name, width=60)
 #' vt |>
-#'   add_labels(template="sameline", root_label = "All cars") |>
+#'   add_aliases(col_alias = c(cyl = "# cylinders",
+#'                             gear = '# gears',
+#'                             carb = '# carburators')) |>
+#'   add_labels(template="sameline", fmt_root = "All cars") |>
 #'   add_labels(template="sameline", mask = find_nodes(vt, leaf),
 #'              suffix = ids) |>
 #'   add_layout(varspace=c(root=1, cyl=1, gear=1, carb=3), lwidth=.8) |>

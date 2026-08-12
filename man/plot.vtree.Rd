@@ -129,7 +129,7 @@ Manipulating these columns is straightforward using the
 
 For variables which are not associated with the nodes and additional
 summary variables (ranges, medians, standard deviations and more), see
-\code{\link[=summary_vt]{summary_vt()}}.
+\code{\link[=summarize_by_node]{summarize_by_node()}}.
 }
 
 \examples{

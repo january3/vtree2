@@ -20,6 +20,8 @@ you can do \code{all_of("Survived")}.}
 
 \item{vp}{whether frequencies should be calculated using valid percentages}
 
+\item{x}{data frame, result of \code{summarize_by_node()}}
+
 \item{fmt}{An expression for customized formatting. See Examples.}
 }
 \value{
@@ -84,14 +86,14 @@ vt <- vtree(cases, Class, Sex, Survived)
 
 csm_txt <- cases |> summarize_by_node(vt, Age) |>
   fmt_label()
-vt |> add_labels(fmt = csm_txt) |> plot()
+vt |> add_labels(fmt = "{csm_txt}") |> plot()
 
 # some random values
 cases$Random <- rnorm(nrow(cases)) + (cases$Sex == "Male")
 cases$Random[runif(nrow(cases)) < .1] <- NA
 csm_txt <- cases |> summarize_by_node(vt, Random) |>
   fmt_label()
-vt |> add_labels(fmt = csm_txt) |>
+vt |> add_labels(fmt = "{csm_txt}") |>
   retain(path == "Class:1st") |>
   plot(lwidth=.9)
 
@@ -102,7 +104,7 @@ csm_txt <- cases |>
   summarize_by_node(vt, Random) |>
   fmt_label(fmt = sprintf("median: \%.1f",median))
 vt |>
-  add_labels(fmt = paste0(label, "\n", csm_txt)) |>
+  add_labels(fmt = "{label}\n{csm_txt}") |>
   plot()
 
 # now the same but only for the leafs
@@ -119,14 +121,14 @@ csm_txt <- cases |>
            valid, n, round(100 * valid/n)))
 
 vt |>
-  mutate(label = paste0(label, "\n", csm_txt)) |>
+  add_labels(fmt = "{label}\n{csm_txt}") |>
   retain(path == "Class:1st") |>
   plot(lwidth=.8)
 
 # Directly use output from summarize_by_node
 df <- cases |> summarize_by_node(vt, Age)
 vt |>
-  mutate(label = sprintf("\%s\nChildren: \%.0f\%\%", node_val,
+  add_labels(expr = sprintf("\%s\nChildren: \%.0f\%\%", node_val,
                          df$Child_freq * 100)) |>
   plot()
 

@@ -55,7 +55,10 @@ vt <- vtree(mt, cyl, gear, carb)
 # car names into a label
 ids <- label_var_levels(mt, vt, name, width=60)
 vt |>
-  add_labels(template="sameline", root_label = "All cars") |>
+  add_aliases(col_alias = c(cyl = "# cylinders",
+                            gear = '# gears',
+                            carb = '# carburators')) |>
+  add_labels(template="sameline", fmt_root = "All cars") |>
   add_labels(template="sameline", mask = find_nodes(vt, leaf),
              suffix = ids) |>
   add_layout(varspace=c(root=1, cyl=1, gear=1, carb=3), lwidth=.8) |>

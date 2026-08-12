@@ -280,7 +280,7 @@ normalize_layout <- function(layout) {
 #'
 #' For variables which are not associated with the nodes and additional
 #' summary variables (ranges, medians, standard deviations and more), see
-#' [vtree2::summary_vt()].
+#' [vtree2::summarize_by_node()].
 #'
 #' @param x A vtree object
 #' @param ... Arguments passed to `plot_vtree()`

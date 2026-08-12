@@ -5,7 +5,7 @@ nodes <- vt |> as_tibble()
 
 test_that("Adding labels works", {
 
-  vt2 <- add_labels(vt, fmt=node_col)
+  vt2 <- add_labels(vt, fmt="{node_col}")
   nd2 <- as_tibble(vt2)
   expect_in("label", names(nd2))
   expect_all_true(nd2$node_col == nd2$label)
@@ -18,7 +18,7 @@ test_that("Adding labels works", {
                           nd3$node_val,
                           nd3$n,
                           nd3$freq * 100)[-1])
-  vt4 <- add_labels(vtNA, fmt_na=paste0(node_col, " IS MISSING"))
+  vt4 <- add_labels(vtNA, fmt_na="{node_col} IS MISSING")
   nd4 <- as_tibble(vt4)
   expect_in("label", names(nd4))
   nas <- is.na(nd4$node_val)
@@ -108,4 +108,15 @@ test_that("prefix/suffix works", {
   vt2 <- add_labels(vt, prefix = "PRE", suffix = "SUF", sep="-")
   nd2 <- as_tibble(vt2)
   expect_all_true(nd2$label == paste0("PRE-", nd1$label, "-SUF"))
+})
+
+
+test_that("expr works", {
+  vt1 <- add_labels(vt, expr = sprintf("%s\n%d (%.0f%%)", node_val, n, freq * 100))
+  nd1 <- as_tibble(vt1)
+  expect_all_true(nd1$label ==
+                  sprintf("%s\n%d (%.0f%%)",
+                          nd1$node_val,
+                          nd1$n,
+                          nd1$freq * 100))
 })
