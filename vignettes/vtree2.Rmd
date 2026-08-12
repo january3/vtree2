@@ -811,7 +811,7 @@ pal <- colorRampPalette(c("white", "red"))(101)
 
 # use simpler summaries 
 sm <- summarize_by_node(cases, vt, Sex) |>
-  fmt_label(fmt = sprintf("Females: %.0f%%", Female_freq * 100))
+  fmt_label(fmt = "Females: {Female_freq * 100}", digits=2)
 
 vt |> add_labels(suffix = sm) |>
   add_labels(fmt = "{label}\n{pvals_l}",

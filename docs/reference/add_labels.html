@@ -91,17 +91,23 @@ the nodes for which the labels will be modified.</p></dd>
 
 
 <dt id="arg-fmt">fmt<a class="anchor" aria-label="anchor" href="#arg-fmt"></a></dt>
-<dd><p>an R expression to format the valid value nodes. If not
+<dd><p>a glue string to format the valid value nodes. If not
 NULL, replaces the format from the template.</p></dd>
 
 
 <dt id="arg-fmt-na">fmt_na<a class="anchor" aria-label="anchor" href="#arg-fmt-na"></a></dt>
-<dd><p>an R expression to format NA nodes in trees with valid
+<dd><p>glue string to format NA nodes in trees with valid
 percentages. If not NULL, replaces the format from the template.
 This is mostly to omit frequency data from NA nodes if the
 missing data was not used as a denominator to calculate
 percentages. If NULL and fmt is not NULL, fmt will be used for NA
 nodes as well.</p></dd>
+
+
+<dt id="arg-fmt-root">fmt_root<a class="anchor" aria-label="anchor" href="#arg-fmt-root"></a></dt>
+<dd><p>a glue string to format the root node. If NULL and <code>fmt</code>
+is not NULL, then <code>fmt</code> will be used instead, otherwise template
+format will be used.</p></dd>
 
 
 <dt id="arg-prefix">prefix<a class="anchor" aria-label="anchor" href="#arg-prefix"></a></dt>
@@ -116,9 +122,15 @@ nodes as well.</p></dd>
 <dd><p>separator for prefix/suffix</p></dd>
 
 
-<dt id="arg-root-label">root_label<a class="anchor" aria-label="anchor" href="#arg-root-label"></a></dt>
-<dd><p>Label to be used for the root node. If NA, do not
-modify the root label.</p></dd>
+<dt id="arg-expr">expr<a class="anchor" aria-label="anchor" href="#arg-expr"></a></dt>
+<dd><p>R expression to generate the labels; if not NULL it will be
+evaluated in the context of the vtree object node data frame.</p></dd>
+
+
+<dt id="arg-digits">digits<a class="anchor" aria-label="anchor" href="#arg-digits"></a></dt>
+<dd><p>number of decimal digits to keep when rounding the percentage
+column (<code>pct</code>). This will also influence the number of digits of
+the formatted frequency column <code>f</code>, since f = pct/100.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -216,7 +228,7 @@ because for a vp tree the NA value percentages are meaningless.</p>
 <span class="r-plt img"><img src="add_labels-4.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># only change the format for the root</span></span></span>
-<span class="r-in"><span><span class="va">vt</span> <span class="op">|&gt;</span> </span></span>
+<span class="r-in"><span><span class="va">vt</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>  <span class="fu"><a href="prune.html">retain</a></span><span class="op">(</span><span class="va">path</span> <span class="op">==</span> <span class="st">"Class:1st"</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>  <span class="fu">add_labels</span><span class="op">(</span>fmt_root <span class="op">=</span> <span class="st">"Total:\n{n} samples"</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="op">)</span></span></span>

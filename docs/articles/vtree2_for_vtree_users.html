@@ -484,7 +484,8 @@ function takes a cases data frame and a vtree as an argument, and
 returns a data frame containing a comprehensive summary of the selected
 variable from the cases data frame at each node of the tree.</p>
 <p>The <code><a href="../reference/summarize_by_node.html">fmt_label()</a></code> function turns the columns of that data
-frame into a character vector of labels.</p>
+frame into a character vector of labels, optionally with a custom
+format.</p>
 <p>The <code><a href="../reference/summarize_by_node.html">summarize_by_node()</a></code> takes a cases data frame as the
 first argument and a vtree - a vtree object only keeps track of the
 variables that were assigned from start and ignores other columns in the
@@ -543,13 +544,14 @@ count and frequency of the <code>single</code> category only:</p>
 <span></span>
 <span><span class="co"># this gives us, in the levels column, the counts</span></span>
 <span><span class="va">sm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/summarize_by_node.html">summarize_by_node</a></span><span class="op">(</span><span class="va">FakeData</span>, <span class="va">vt</span>, <span class="va">Category</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="../reference/summarize_by_node.html">fmt_label</a></span><span class="op">(</span>fmt <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"Category=single: %d (%.0f%%)"</span>,</span>
-<span>                         <span class="va">single</span>, <span class="fl">100</span> <span class="op">*</span> <span class="va">single_freq</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="../reference/summarize_by_node.html">fmt_label</a></span><span class="op">(</span>fmt <span class="op">=</span> </span>
+<span>            <span class="st">"Category=single:{single} ({100 * single_freq}%)"</span>,</span>
+<span>            digits <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">vt</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/add_labels.html">add_labels</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/add_labels.html">add_labels</a></span><span class="op">(</span>fmt <span class="op">=</span> <span class="st">"{label}\n{sm}"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span>dir <span class="op">=</span> <span class="st">"tb"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="vtree2_for_vtree_users_files/figure-html/unnamed-chunk-20-1.png" class="r-plt" alt="" width="700"></p>
+<p><img src="vtree2_for_vtree_users_files/figure-html/summares_by_node-1.png" class="r-plt" alt="" width="672"></p>
 <p>I agree, this is longer code, but then also way more verbose. In a
 way the code above, with some modifications, replaces all the other
 summary-related options in <code>vtree</code>.</p>
@@ -563,33 +565,36 @@ passed to functions such as <code><a href="../reference/prune.html">find_nodes()
 <code><a href="../reference/prune.html">mark()</a></code>, which can then be used to selectively add summaries
 to the nodes.</p>
 <p>Similarly, the different summary formatting options and codes in the
-vtree mini-language are replaced directly by R expressions.</p>
+vtree mini-language are replaced by use of the glue formatting string or
+R expressions (with <code>expr</code> argument).</p>
 <div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">## vtree(FakeData,"Severity",summary="Score \nmean score\n%mean%",sameline=TRUE,horiz=FALSE)</span></span>
 <span></span>
 <span><span class="va">vt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/vtree.html">vtree</a></span><span class="op">(</span><span class="va">FakeData</span>, <span class="va">Severity</span><span class="op">)</span></span>
 <span><span class="va">sm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/summarize_by_node.html">summarize_by_node</a></span><span class="op">(</span><span class="va">FakeData</span>, <span class="va">vt</span>, <span class="va">Score</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="../reference/summarize_by_node.html">fmt_label</a></span><span class="op">(</span>fmt <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"mean score\n%.1f"</span>, <span class="va">mean</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="../reference/summarize_by_node.html">fmt_label</a></span><span class="op">(</span>fmt <span class="op">=</span> <span class="st">"mean score: {mean}"</span>, digits<span class="op">=</span><span class="fl">1</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">vt</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/add_labels.html">add_labels</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/add_labels.html">add_labels</a></span><span class="op">(</span>fmt <span class="op">=</span> <span class="st">"{label}\n{sm}"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span>dir <span class="op">=</span> <span class="st">"tb"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="vtree2_for_vtree_users_files/figure-html/unnamed-chunk-21-1.png" class="r-plt" alt="" width="960"></p>
+<p><img src="vtree2_for_vtree_users_files/figure-html/unnamed-chunk-20-1.png" class="r-plt" alt="" width="960"></p>
 <p>To get the missing value information as well but only if missing
 values are present, we need a more complex approach. In the example
-below, I will use <code>summarize_by_node</code> (returning a data
-frame) and <code>glue</code> instead of <code>sprintf</code>:</p>
+below, we will use <code>summarize_by_node</code> (returning a data
+frame) and the <code>expr</code> argument to <code>fmt_label</code>
+which uses a conditional formatting with the <code>glue</code>
+function.</p>
 <div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://glue.tidyverse.org/" class="external-link">glue</a></span><span class="op">)</span></span>
 <span><span class="va">smvt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/summarize_by_node.html">summarize_by_node</a></span><span class="op">(</span><span class="va">FakeData</span>, <span class="va">vt</span>, <span class="va">Score</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="../reference/summarize_by_node.html">fmt_label</a></span><span class="op">(</span>fmt <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">missing</span> <span class="op">&gt;</span> <span class="fl">0</span>,</span>
+<span>  <span class="fu"><a href="../reference/summarize_by_node.html">fmt_label</a></span><span class="op">(</span>expr <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">missing</span> <span class="op">&gt;</span> <span class="fl">0</span>,</span>
 <span>                    <span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html" class="external-link">glue</a></span><span class="op">(</span><span class="st">"mean score\n{round(mean, 1)} mv = {missing}"</span><span class="op">)</span>,</span>
 <span>                    <span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html" class="external-link">glue</a></span><span class="op">(</span><span class="st">"mean score\n{round(mean, 1)}"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">vt</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/add_labels.html">add_labels</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/add_labels.html">add_labels</a></span><span class="op">(</span>fmt <span class="op">=</span> <span class="st">"{label}\n{sm}"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span>dir <span class="op">=</span> <span class="st">"tb"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="vtree2_for_vtree_users_files/figure-html/unnamed-chunk-22-1.png" class="r-plt" alt="" width="960"></p>
+<p><img src="vtree2_for_vtree_users_files/figure-html/unnamed-chunk-21-1.png" class="r-plt" alt="" width="960"></p>
 <p><strong>R expressions.</strong> In the vtree mini-language it is
 possible to include some R code to make ad hoc calcuations. In
 <code>vtree2</code>, this stage is separated from vtree construction -
@@ -606,7 +611,7 @@ explicitely:</p>
 <span><span class="va">sm</span> <span class="op">&lt;-</span> <span class="va">FakeData</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>RelDiff <span class="op">=</span> <span class="op">(</span><span class="va">Post</span> <span class="op">-</span> <span class="va">Pre</span><span class="op">)</span><span class="op">/</span><span class="va">Pre</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/summarize_by_node.html">summarize_by_node</a></span><span class="op">(</span><span class="va">vt</span>, <span class="va">RelDiff</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="../reference/summarize_by_node.html">fmt_label</a></span><span class="op">(</span>fmt <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">missing</span> <span class="op">&gt;</span> <span class="fl">0</span>,</span>
+<span>  <span class="fu"><a href="../reference/summarize_by_node.html">fmt_label</a></span><span class="op">(</span>expr <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">missing</span> <span class="op">&gt;</span> <span class="fl">0</span>,</span>
 <span>                    <span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html" class="external-link">glue</a></span><span class="op">(</span><span class="st">"mean(RD) = {round(mean, 1)} mv = {missing}"</span><span class="op">)</span>,</span>
 <span>                    <span class="fu"><a href="https://glue.tidyverse.org/reference/glue.html" class="external-link">glue</a></span><span class="op">(</span><span class="st">"mean(RD) = {round(mean, 1)}"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
@@ -615,7 +620,7 @@ explicitely:</p>
 <span>  <span class="co">#mutate(label = gsub("\n",  ", ", label)) |&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/add_labels.html">add_labels</a></span><span class="op">(</span>fmt <span class="op">=</span> <span class="st">"{label}\n{sm}"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span>dir <span class="op">=</span> <span class="st">"tb"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="vtree2_for_vtree_users_files/figure-html/unnamed-chunk-23-1.png" class="r-plt" alt="" width="960"></p>
+<p><img src="vtree2_for_vtree_users_files/figure-html/unnamed-chunk-22-1.png" class="r-plt" alt="" width="960"></p>
 </div>
 <div class="section level4">
 <h4 id="plotting">Plotting<a class="anchor" aria-label="anchor" href="#plotting"></a>
@@ -633,7 +638,7 @@ but you can also use “tb”, “bt”, or “rl”.</p>
 <span><span class="va">p4</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">vt</span>, dir<span class="op">=</span><span class="st">"bt"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/plot_grid.html" class="external-link">plot_grid</a></span><span class="op">(</span><span class="va">p1</span>, <span class="va">p2</span>, <span class="va">p3</span>, <span class="va">p4</span>, ncol<span class="op">=</span><span class="fl">2</span><span class="op">)</span></span></code></pre></div>
-<p><img src="vtree2_for_vtree_users_files/figure-html/unnamed-chunk-24-1.png" class="r-plt" alt="" width="960"></p>
+<p><img src="vtree2_for_vtree_users_files/figure-html/unnamed-chunk-23-1.png" class="r-plt" alt="" width="960"></p>
 <p><strong>Changing variable labels</strong>. In vtree, you can specify
 alternative variable labels with the <code>labelvar</code> parameter. In
 vtree2 you can use the column labels you wish to see in the original
@@ -647,7 +652,7 @@ backticks.</p>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/rename.html" class="external-link">rename</a></span><span class="op">(</span>`Initial\nseverity` <span class="op">=</span> <span class="va">Severity</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/vtree.html">vtree</a></span><span class="op">(</span><span class="va">`Initial\nseverity`</span>, <span class="va">Sex</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span>dir <span class="op">=</span> <span class="st">"tb"</span>, margins<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span>, <span class="fl">0</span>, <span class="fl">.2</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><img src="vtree2_for_vtree_users_files/figure-html/unnamed-chunk-25-1.png" class="r-plt" alt="" width="480"></p>
+<p><img src="vtree2_for_vtree_users_files/figure-html/unnamed-chunk-24-1.png" class="r-plt" alt="" width="480"></p>
 <p>This has the advantage that if you use variable names in the node
 labels, they will show correctly.</p>
 <p>There is also another possibility: as mentioned above, with the
@@ -666,7 +671,7 @@ plots:</p>
 <span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">vt</span>, legend<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">p2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">vt</span>, legend<span class="op">=</span><span class="cn">TRUE</span>, layout <span class="op">=</span> <span class="st">"proportional"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/plot_grid.html" class="external-link">plot_grid</a></span><span class="op">(</span><span class="va">p1</span>, <span class="va">p2</span><span class="op">)</span></span></code></pre></div>
-<p><img src="vtree2_for_vtree_users_files/figure-html/unnamed-chunk-27-1.png" class="r-plt" alt="" width="1440"></p>
+<p><img src="vtree2_for_vtree_users_files/figure-html/unnamed-chunk-26-1.png" class="r-plt" alt="" width="1440"></p>
 </div>
 <div class="section level4">
 <h4 id="patterns">Patterns<a class="anchor" aria-label="anchor" href="#patterns"></a>
@@ -689,7 +694,7 @@ needs:</p>
 <span></span>
 <span><span class="fu"><a href="../reference/pattern.html">pattern</a></span><span class="op">(</span><span class="va">vt</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">Sex_n</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span>palettes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Blues"</span>, <span class="st">"Greens"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><img src="vtree2_for_vtree_users_files/figure-html/unnamed-chunk-29-1.png" class="r-plt" alt="" width="960"></p>
+<p><img src="vtree2_for_vtree_users_files/figure-html/unnamed-chunk-28-1.png" class="r-plt" alt="" width="960"></p>
 </div>
 <div class="section level4">
 <h4 id="redcap-integration">REDCap integration<a class="anchor" aria-label="anchor" href="#redcap-integration"></a>
@@ -733,7 +738,7 @@ renames the variables based on the REDCap attributes:</p>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/across.html" class="external-link">across</a></span><span class="op">(</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/everything.html" class="external-link">everything</a></span><span class="op">(</span><span class="op">)</span>, <span class="va">as.character</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/vtree.html">vtree</a></span><span class="op">(</span><span class="va">Chocolate</span>, <span class="va">Vanilla</span>, <span class="va">Strawberry</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p><img src="vtree2_for_vtree_users_files/figure-html/unnamed-chunk-31-1.png" class="r-plt" alt="" width="700"></p>
+<p><img src="vtree2_for_vtree_users_files/figure-html/unnamed-chunk-30-1.png" class="r-plt" alt="" width="700"></p>
 <p>The various vtree prefixes (<code>rnone:</code>, <code>ri:</code>
 etc.) can be handled in a similar way.</p>
 </div>
@@ -797,7 +802,7 @@ dogs example in the vtree vignette, you can do this:</p>
 <span>  <span class="fu"><a href="../reference/add_labels.html">add_labels</a></span><span class="op">(</span>fmt_root <span class="op">=</span> <span class="st">"Assessed for\neligibility\n{label}"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="va">pal</span><span class="op">[</span><span class="va">level</span> <span class="op">+</span> <span class="fl">2</span><span class="op">]</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span>dir <span class="op">=</span> <span class="st">"tb"</span>, legend <span class="op">=</span> <span class="cn">FALSE</span>, lwidth<span class="op">=</span><span class="fl">.8</span>, lheight<span class="op">=</span><span class="fl">.7</span><span class="op">)</span></span></code></pre></div>
-<p><img src="vtree2_for_vtree_users_files/figure-html/unnamed-chunk-33-1.png" class="r-plt" alt="" width="576"></p>
+<p><img src="vtree2_for_vtree_users_files/figure-html/unnamed-chunk-32-1.png" class="r-plt" alt="" width="576"></p>
 <div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># vtree(FakeRCT,"eligible randomized group followup analyzed",plain=TRUE,</span></span>
 <span><span class="co">#   follow=list(eligible="Eligible",randomized="Randomized",followup="Followed up"),</span></span>
@@ -811,7 +816,7 @@ dogs example in the vtree vignette, you can do this:</p>
 <span>  <span class="fu"><a href="../reference/add_labels.html">add_labels</a></span><span class="op">(</span>fmt_root <span class="op">=</span> <span class="st">"Assessed for\neligibility\n{label}"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="va">pal</span><span class="op">[</span><span class="va">level</span> <span class="op">+</span> <span class="fl">2</span><span class="op">]</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span>dir <span class="op">=</span> <span class="st">"tb"</span>, legend <span class="op">=</span> <span class="cn">FALSE</span>, lwidth<span class="op">=</span><span class="fl">.8</span>, lheight<span class="op">=</span><span class="fl">.7</span><span class="op">)</span></span></code></pre></div>
-<p><img src="vtree2_for_vtree_users_files/figure-html/unnamed-chunk-34-1.png" class="r-plt" alt="" width="1152"></p>
+<p><img src="vtree2_for_vtree_users_files/figure-html/unnamed-chunk-33-1.png" class="r-plt" alt="" width="1152"></p>
 <div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># vtree(FakeRCT,"eligible randomized group followup analyzed",plain=TRUE,</span></span>
 <span><span class="co">#   follow=list(eligible="Eligible",randomized="Randomized",followup="Followed up"),</span></span>
@@ -847,7 +852,7 @@ dogs example in the vtree vignette, you can do this:</p>
 <span>    fmt_root <span class="op">=</span> <span class="st">"Assessed for\neligibility\n{label}"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="va">pal</span><span class="op">[</span><span class="va">level</span> <span class="op">+</span> <span class="fl">2</span><span class="op">]</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span>dir <span class="op">=</span> <span class="st">"tb"</span>, legend <span class="op">=</span> <span class="cn">FALSE</span>, lwidth<span class="op">=</span><span class="fl">.8</span>, lheight<span class="op">=</span><span class="fl">.7</span><span class="op">)</span></span></code></pre></div>
-<p><img src="vtree2_for_vtree_users_files/figure-html/unnamed-chunk-35-1.png" class="r-plt" alt="" width="1152"></p>
+<p><img src="vtree2_for_vtree_users_files/figure-html/unnamed-chunk-34-1.png" class="r-plt" alt="" width="1152"></p>
 </div>
 <div class="section level4">
 <h4 id="other-examples">Other examples<a class="anchor" aria-label="anchor" href="#other-examples"></a>
@@ -869,9 +874,9 @@ dogs example in the vtree vignette, you can do this:</p>
 <span></span>
 <span><span class="co"># summary for ncases/ncontrols</span></span>
 <span><span class="va">ncases</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/summarize_by_node.html">summarize_by_node</a></span><span class="op">(</span><span class="va">ESOPH</span>, <span class="va">vt</span>, <span class="va">ncases</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>                  <span class="fu"><a href="../reference/summarize_by_node.html">fmt_label</a></span><span class="op">(</span>fmt<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"cases=%d"</span>, <span class="va">n</span><span class="op">)</span><span class="op">)</span></span>
+<span>                  <span class="fu"><a href="../reference/summarize_by_node.html">fmt_label</a></span><span class="op">(</span>fmt<span class="op">=</span><span class="st">"cases={n}"</span><span class="op">)</span></span>
 <span><span class="va">ncntrls</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/summarize_by_node.html">summarize_by_node</a></span><span class="op">(</span><span class="va">ESOPH</span>, <span class="va">vt</span>, <span class="va">ncontrols</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>                  <span class="fu"><a href="../reference/summarize_by_node.html">fmt_label</a></span><span class="op">(</span>fmt<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"controls=%d"</span>, <span class="va">n</span><span class="op">)</span><span class="op">)</span></span>
+<span>                  <span class="fu"><a href="../reference/summarize_by_node.html">fmt_label</a></span><span class="op">(</span>fmt<span class="op">=</span><span class="st">"controls={n}"</span><span class="op">)</span></span>
 <span><span class="va">sm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">ncases</span>, <span class="va">ncntrls</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">vt</span> <span class="op">&lt;-</span> <span class="va">vt</span> <span class="op">|&gt;</span></span>
@@ -904,12 +909,11 @@ dogs example in the vtree vignette, you can do this:</p>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/across.html" class="external-link">across</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">cyl</span>, <span class="va">gear</span>, <span class="va">carb</span><span class="op">)</span>, <span class="va">as.factor</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">vt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/vtree.html">vtree</a></span><span class="op">(</span><span class="va">mt</span>, <span class="va">cyl</span>, <span class="va">gear</span>, <span class="va">carb</span><span class="op">)</span></span>
 <span><span class="va">smt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/summarize_by_node.html">summarize_by_node</a></span><span class="op">(</span><span class="va">mt</span>, <span class="va">vt</span>, <span class="va">hp</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="../reference/summarize_by_node.html">fmt_label</a></span><span class="op">(</span>fmt<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"mean (SD) %.1f (%.1f)"</span>,</span>
-<span>                       <span class="va">mean</span>, <span class="va">sd</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="../reference/summarize_by_node.html">fmt_label</a></span><span class="op">(</span>fmt<span class="op">=</span><span class="st">"mean (SD) {mean} ({sd})"</span>, digits<span class="op">=</span><span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">vt</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/add_labels.html">add_labels</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/add_labels.html">add_labels</a></span><span class="op">(</span>fmt<span class="op">=</span><span class="st">"{label}\n{smt}"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span>lwidth<span class="op">=</span><span class="fl">.8</span><span class="op">)</span></span></code></pre></div>
-<p><img src="vtree2_for_vtree_users_files/figure-html/mtcars-1.png" class="r-plt" alt="" width="576"></p>
+<p><img src="vtree2_for_vtree_users_files/figure-html/mtcars-1.png" class="r-plt" alt="" width="480"></p>
 <div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="co"># this doesn't work for me:</span></span>
@@ -952,10 +956,10 @@ dogs example in the vtree vignette, you can do this:</p>
 <span><span class="va">vt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/vtree.html">vtree</a></span><span class="op">(</span><span class="va">ucb</span>, <span class="va">Dept</span>, <span class="va">Gender</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">smt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/summarize_by_node.html">summarize_by_node</a></span><span class="op">(</span><span class="va">ucb</span>, <span class="va">vt</span>, <span class="va">Admit</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="../reference/summarize_by_node.html">fmt_label</a></span><span class="op">(</span>fmt<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"%.0f %% admitted"</span>, <span class="fl">100</span><span class="op">*</span><span class="va">Admitted_freq</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="../reference/summarize_by_node.html">fmt_label</a></span><span class="op">(</span>fmt<span class="op">=</span><span class="st">"{100 * Admitted_freq}% admitted"</span>, digits<span class="op">=</span><span class="fl">2</span><span class="op">)</span></span>
 <span><span class="va">vt</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/add_labels.html">add_labels</a></span><span class="op">(</span>template<span class="op">=</span><span class="st">"sameline"</span>, suffix <span class="op">=</span> <span class="va">smt</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span>lwidth<span class="op">=</span><span class="fl">.7</span><span class="op">)</span></span></code></pre></div>
-<p><img src="vtree2_for_vtree_users_files/figure-html/unnamed-chunk-36-1.png" class="r-plt" alt="" width="700"></p>
+<p><img src="vtree2_for_vtree_users_files/figure-html/unnamed-chunk-35-1.png" class="r-plt" alt="" width="700"></p>
 <div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># vtree(ChickWeight,"Diet Time",</span></span>
 <span><span class="co">#   keep=list(Time=c("0","4")),summary="weight \nmean weight %mean%g")</span></span>
@@ -978,7 +982,7 @@ dogs example in the vtree vignette, you can do this:</p>
 <span>  <span class="fu"><a href="../reference/prune.html">retain</a></span><span class="op">(</span><span class="va">Time</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Time 0"</span>, <span class="st">"Time 4"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">smt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/summarize_by_node.html">summarize_by_node</a></span><span class="op">(</span><span class="va">cwcases</span>, <span class="va">vt</span>, <span class="va">weight</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>                  <span class="fu"><a href="../reference/summarize_by_node.html">fmt_label</a></span><span class="op">(</span>fmt <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"mean weight %.1fg"</span>, <span class="va">mean</span><span class="op">)</span><span class="op">)</span></span>
+<span>                  <span class="fu"><a href="../reference/summarize_by_node.html">fmt_label</a></span><span class="op">(</span>fmt <span class="op">=</span> <span class="st">"mean weight {mean} g"</span>, digits<span class="op">=</span><span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">vt</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/add_aliases.html">add_aliases</a></span><span class="op">(</span>col_alias<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>Time <span class="op">=</span> <span class="st">"Days since birth"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/add_labels.html">add_labels</a></span><span class="op">(</span>suffix <span class="op">=</span> <span class="va">smt</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -1000,7 +1004,7 @@ dogs example in the vtree vignette, you can do this:</p>
 <span>             suffix<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"counts: "</span>, <span class="va">levlab</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/add_layout.html">add_layout</a></span><span class="op">(</span>varspace<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>root<span class="op">=</span><span class="fl">1</span>,spray<span class="op">=</span><span class="fl">4</span><span class="op">)</span>, lwidth<span class="op">=</span><span class="fl">.8</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p><img src="vtree2_for_vtree_users_files/figure-html/unnamed-chunk-37-1.png" class="r-plt" alt="" width="700"></p>
+<p><img src="vtree2_for_vtree_users_files/figure-html/unnamed-chunk-36-1.png" class="r-plt" alt="" width="700"></p>
 <div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#vtree(ToothGrowth,"supp dose",summary="len&gt;20 \n%pct% length &gt; 20")</span></span>
 <span><span class="co">#vtree::svtree(ToothGrowth,"supp dose",summary="len&gt;20 \n%pct% length &gt; 20")</span></span>
@@ -1028,7 +1032,7 @@ dogs example in the vtree vignette, you can do this:</p>
 <span><span class="co"># add labels; add the summary as suffix</span></span>
 <span><span class="va">vt</span> <span class="op">|&gt;</span> <span class="fu"><a href="../reference/add_labels.html">add_labels</a></span><span class="op">(</span>suffix <span class="op">=</span> <span class="va">smt</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span>lwidth<span class="op">=</span><span class="fl">.8</span><span class="op">)</span></span></code></pre></div>
-<p><img src="vtree2_for_vtree_users_files/figure-html/unnamed-chunk-38-1.png" class="r-plt" alt="" width="700"></p>
+<p><img src="vtree2_for_vtree_users_files/figure-html/unnamed-chunk-37-1.png" class="r-plt" alt="" width="700"></p>
 </div>
 <div class="section level4">
 <h4 id="new-functionality-in-vtree2-compared-to-vtree-killer-features">New functionality in vtree2 compared to vtree <del>Killer

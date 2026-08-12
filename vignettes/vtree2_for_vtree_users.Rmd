@@ -481,7 +481,7 @@ of the selected variable from the cases data frame at each node of the
 tree.
 
 The `fmt_label()` function turns the columns of that data frame into a
-character vector of labels.
+character vector of labels, optionally with a custom format.
 
 The `summarize_by_node()` 
 takes a cases data frame as the first argument and a vtree - a vtree object
@@ -524,7 +524,7 @@ E.g., in the following example, the `Category` column of `FakeData`
 contains levels `single`, `double` and `triple`, and we can pull out the
 count and frequency of the `single` category only:
 
-```{r}
+```{r summares_by_node,fig.height=3,fig.width=7}
 ## vtree(FakeData,"Severity",summary="Category=single",horiz=FALSE)
 vt <- vtree(FakeData, Severity)
 
@@ -533,8 +533,9 @@ library(purrr)
 
 # this gives us, in the levels column, the counts
 sm <- summarize_by_node(FakeData, vt, Category) |>
-  fmt_label(fmt = sprintf("Category=single: %d (%.0f%%)",
-                         single, 100 * single_freq))
+  fmt_label(fmt = 
+            "Category=single:{single} ({100 * single_freq}%)",
+            digits = 2)
 
 vt |> add_labels() |>
   add_labels(fmt = "{label}\n{sm}") |>
@@ -554,7 +555,8 @@ as `find_nodes()` or `mark()`, which can then be used to selectively add
 summaries to the nodes.
 
 Similarly, the different summary formatting options and codes in the vtree
-mini-language are replaced directly by R expressions.
+mini-language are replaced by use of the glue formatting string or 
+R expressions (with `expr` argument).
 
 
 ```{r fig.width=10,fig.height=4}
@@ -562,7 +564,7 @@ mini-language are replaced directly by R expressions.
 
 vt <- vtree(FakeData, Severity)
 sm <- summarize_by_node(FakeData, vt, Score) |>
-  fmt_label(fmt = sprintf("mean score\n%.1f", mean))
+  fmt_label(fmt = "mean score: {mean}", digits=1)
 
 vt |> add_labels() |>
   add_labels(fmt = "{label}\n{sm}") |>
@@ -570,14 +572,15 @@ vt |> add_labels() |>
 ```
 
 To get the missing value information as well but only if missing values are
-present, we need a more complex approach. In the example below, I will use
-`summarize_by_node` (returning a data frame) and `glue` instead of `sprintf`:
+present, we need a more complex approach. In the example below, we will use
+`summarize_by_node` (returning a data frame) and the `expr` argument to
+`fmt_label` which uses a conditional formatting with the `glue` function.
 
 
 ```{r fig.width=10,fig.height=4}
 library(glue)
 smvt <- summarize_by_node(FakeData, vt, Score) |>
-  fmt_label(fmt = ifelse(missing > 0,
+  fmt_label(expr = ifelse(missing > 0,
                     glue("mean score\n{round(mean, 1)} mv = {missing}"),
                     glue("mean score\n{round(mean, 1)}")))
 
@@ -603,7 +606,7 @@ vt <- vtree(FakeData, Severity, Category)
 sm <- FakeData |>
   mutate(RelDiff = (Post - Pre)/Pre) |>
   summarize_by_node(vt, RelDiff) |>
-  fmt_label(fmt = ifelse(missing > 0,
+  fmt_label(expr = ifelse(missing > 0,
                     glue("mean(RD) = {round(mean, 1)} mv = {missing}"),
                     glue("mean(RD) = {round(mean, 1)}")))
 
@@ -889,9 +892,9 @@ vt <- vtree(ESOPH, agegp)
 
 # summary for ncases/ncontrols
 ncases <- summarize_by_node(ESOPH, vt, ncases) |>
-                  fmt_label(fmt=sprintf("cases=%d", n))
+                  fmt_label(fmt="cases={n}")
 ncntrls <- summarize_by_node(ESOPH, vt, ncontrols) |>
-                  fmt_label(fmt=sprintf("controls=%d", n))
+                  fmt_label(fmt="controls={n}")
 sm <- paste(ncases, ncntrls)
 
 vt <- vt |>
@@ -919,7 +922,7 @@ cases_from_freqtable(HairEyeColor) |>
 
 
 
-```{r mtcars,fig.width=6,fig.height=8}
+```{r mtcars,fig.width=5,fig.height=8}
 # mt <- mtcars
 # mt$name <- rownames(mt)
 # rownames(mt) <- NULL
@@ -931,8 +934,7 @@ mt <- mtcars |>
   mutate(across(c(cyl, gear, carb), as.factor))
 vt <- vtree(mt, cyl, gear, carb)
 smt <- summarize_by_node(mt, vt, hp) |>
-  fmt_label(fmt=sprintf("mean (SD) %.1f (%.1f)",
-                       mean, sd))
+  fmt_label(fmt="mean (SD) {mean} ({sd})", digits=1)
 vt |> add_labels() |>
   add_labels(fmt="{label}\n{smt}") |>
   plot(lwidth=.8)
@@ -982,7 +984,7 @@ ucb <- cases_from_freqtable(UCBAdmissions)
 vt <- vtree(ucb, Dept, Gender)
 
 smt <- summarize_by_node(ucb, vt, Admit) |>
-  fmt_label(fmt=sprintf("%.0f %% admitted", 100*Admitted_freq))
+  fmt_label(fmt="{100 * Admitted_freq}% admitted", digits=2)
 vt |> add_labels(template="sameline", suffix = smt) |>
   plot(lwidth=.7)
 ```
@@ -1010,7 +1012,7 @@ vt <- vtree(cwcases, Diet, Time) |>
   retain(Time %in% c("Time 0", "Time 4"))
 
 smt <- summarize_by_node(cwcases, vt, weight) |>
-                  fmt_label(fmt = sprintf("mean weight %.1fg", mean))
+                  fmt_label(fmt = "mean weight {mean} g", digits=1)
 vt |>
   add_aliases(col_alias=c(Time = "Days since birth")) |>
   add_labels(suffix = smt) |>

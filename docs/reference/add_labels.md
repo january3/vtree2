@@ -42,16 +42,22 @@ add_labels(
 
 - fmt:
 
-  an R expression to format the valid value nodes. If not NULL, replaces
+  a glue string to format the valid value nodes. If not NULL, replaces
   the format from the template.
 
 - fmt_na:
 
-  an R expression to format NA nodes in trees with valid percentages. If
-  not NULL, replaces the format from the template. This is mostly to
-  omit frequency data from NA nodes if the missing data was not used as
-  a denominator to calculate percentages. If NULL and fmt is not NULL,
-  fmt will be used for NA nodes as well.
+  glue string to format NA nodes in trees with valid percentages. If not
+  NULL, replaces the format from the template. This is mostly to omit
+  frequency data from NA nodes if the missing data was not used as a
+  denominator to calculate percentages. If NULL and fmt is not NULL, fmt
+  will be used for NA nodes as well.
+
+- fmt_root:
+
+  a glue string to format the root node. If NULL and `fmt` is not NULL,
+  then `fmt` will be used instead, otherwise template format will be
+  used.
 
 - prefix:
 
@@ -65,10 +71,16 @@ add_labels(
 
   separator for prefix/suffix
 
-- root_label:
+- expr:
 
-  Label to be used for the root node. If NA, do not modify the root
-  label.
+  R expression to generate the labels; if not NULL it will be evaluated
+  in the context of the vtree object node data frame.
+
+- digits:
+
+  number of decimal digits to keep when rounding the percentage column
+  (`pct`). This will also influence the number of digits of the
+  formatted frequency column `f`, since f = pct/100.
 
 ## Value
 
@@ -182,7 +194,7 @@ vt |>
 
 
 # only change the format for the root
-vt |> 
+vt |>
   retain(path == "Class:1st") |>
   add_labels(fmt_root = "Total:\n{n} samples") |>
   plot()

@@ -489,7 +489,7 @@ selected variable from the cases data frame at each node of the tree.
 The
 [`fmt_label()`](https://january3.github.io/vtree2/reference/summarize_by_node.md)
 function turns the columns of that data frame into a character vector of
-labels.
+labels, optionally with a custom format.
 
 The
 [`summarize_by_node()`](https://january3.github.io/vtree2/reference/summarize_by_node.md)
@@ -561,15 +561,16 @@ library(purrr)
 
 # this gives us, in the levels column, the counts
 sm <- summarize_by_node(FakeData, vt, Category) |>
-  fmt_label(fmt = sprintf("Category=single: %d (%.0f%%)",
-                         single, 100 * single_freq))
+  fmt_label(fmt = 
+            "Category=single:{single} ({100 * single_freq}%)",
+            digits = 2)
 
 vt |> add_labels() |>
   add_labels(fmt = "{label}\n{sm}") |>
   plot(dir = "tb")
 ```
 
-![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-20-1.png)
+![](vtree2_for_vtree_users_files/figure-html/summares_by_node-1.png)
 
 I agree, this is longer code, but then also way more verbose. In a way
 the code above, with some modifications, replaces all the other
@@ -586,31 +587,33 @@ or [`mark()`](https://january3.github.io/vtree2/reference/prune.md),
 which can then be used to selectively add summaries to the nodes.
 
 Similarly, the different summary formatting options and codes in the
-vtree mini-language are replaced directly by R expressions.
+vtree mini-language are replaced by use of the glue formatting string or
+R expressions (with `expr` argument).
 
 ``` r
 ## vtree(FakeData,"Severity",summary="Score \nmean score\n%mean%",sameline=TRUE,horiz=FALSE)
 
 vt <- vtree(FakeData, Severity)
 sm <- summarize_by_node(FakeData, vt, Score) |>
-  fmt_label(fmt = sprintf("mean score\n%.1f", mean))
+  fmt_label(fmt = "mean score: {mean}", digits=1)
 
 vt |> add_labels() |>
   add_labels(fmt = "{label}\n{sm}") |>
   plot(dir = "tb")
 ```
 
-![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-21-1.png)
+![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-20-1.png)
 
 To get the missing value information as well but only if missing values
-are present, we need a more complex approach. In the example below, I
-will use `summarize_by_node` (returning a data frame) and `glue` instead
-of `sprintf`:
+are present, we need a more complex approach. In the example below, we
+will use `summarize_by_node` (returning a data frame) and the `expr`
+argument to `fmt_label` which uses a conditional formatting with the
+`glue` function.
 
 ``` r
 library(glue)
 smvt <- summarize_by_node(FakeData, vt, Score) |>
-  fmt_label(fmt = ifelse(missing > 0,
+  fmt_label(expr = ifelse(missing > 0,
                     glue("mean score\n{round(mean, 1)} mv = {missing}"),
                     glue("mean score\n{round(mean, 1)}")))
 
@@ -619,7 +622,7 @@ vt |> add_labels() |>
   plot(dir = "tb")
 ```
 
-![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-22-1.png)
+![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-21-1.png)
 
 **R expressions.** In the vtree mini-language it is possible to include
 some R code to make ad hoc calcuations. In `vtree2`, this stage is
@@ -637,7 +640,7 @@ vt <- vtree(FakeData, Severity, Category)
 sm <- FakeData |>
   mutate(RelDiff = (Post - Pre)/Pre) |>
   summarize_by_node(vt, RelDiff) |>
-  fmt_label(fmt = ifelse(missing > 0,
+  fmt_label(expr = ifelse(missing > 0,
                     glue("mean(RD) = {round(mean, 1)} mv = {missing}"),
                     glue("mean(RD) = {round(mean, 1)}")))
 
@@ -648,7 +651,7 @@ vt |>
   plot(dir = "tb")
 ```
 
-![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-23-1.png)
+![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-22-1.png)
 
 #### Plotting
 
@@ -668,7 +671,7 @@ p4 <- plot(vt, dir="bt")
 plot_grid(p1, p2, p3, p4, ncol=2)
 ```
 
-![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-24-1.png)
+![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-23-1.png)
 
 **Changing variable labels**. In vtree, you can specify alternative
 variable labels with the `labelvar` parameter. In vtree2 you can use the
@@ -685,7 +688,7 @@ FakeData |>
   plot(dir = "tb", margins=c(0, 0, 0, .2))
 ```
 
-![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-25-1.png)
+![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-24-1.png)
 
 This has the advantage that if you use variable names in the node
 labels, they will show correctly.
@@ -711,7 +714,7 @@ p2 <- plot(vt, legend=TRUE, layout = "proportional")
 plot_grid(p1, p2)
 ```
 
-![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-27-1.png)
+![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-26-1.png)
 
 #### Patterns
 
@@ -737,7 +740,7 @@ pattern(vt) |> arrange(Sex_n) |>
   plot(palettes = c("Blues", "Greens"))
 ```
 
-![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-29-1.png)
+![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-28-1.png)
 
 #### REDCap integration
 
@@ -786,7 +789,7 @@ rewrite_redcap(dessert, "IceCream___") |>
   plot()
 ```
 
-![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-31-1.png)
+![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-30-1.png)
 
 The various vtree prefixes (`rnone:`, `ri:` etc.) can be handled in a
 similar way.
@@ -853,7 +856,7 @@ vt |>
   plot(dir = "tb", legend = FALSE, lwidth=.8, lheight=.7)
 ```
 
-![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-33-1.png)
+![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-32-1.png)
 
 ``` r
 # vtree(FakeRCT,"eligible randomized group followup analyzed",plain=TRUE,
@@ -870,7 +873,7 @@ vt |>
   plot(dir = "tb", legend = FALSE, lwidth=.8, lheight=.7)
 ```
 
-![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-34-1.png)
+![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-33-1.png)
 
 ``` r
 # vtree(FakeRCT,"eligible randomized group followup analyzed",plain=TRUE,
@@ -909,7 +912,7 @@ vt |>
   plot(dir = "tb", legend = FALSE, lwidth=.8, lheight=.7)
 ```
 
-![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-35-1.png)
+![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-34-1.png)
 
 #### Other examples
 
@@ -930,9 +933,9 @@ vt <- vtree(ESOPH, agegp)
 
 # summary for ncases/ncontrols
 ncases <- summarize_by_node(ESOPH, vt, ncases) |>
-                  fmt_label(fmt=sprintf("cases=%d", n))
+                  fmt_label(fmt="cases={n}")
 ncntrls <- summarize_by_node(ESOPH, vt, ncontrols) |>
-                  fmt_label(fmt=sprintf("controls=%d", n))
+                  fmt_label(fmt="controls={n}")
 sm <- paste(ncases, ncntrls)
 
 vt <- vt |>
@@ -970,8 +973,7 @@ mt <- mtcars |>
   mutate(across(c(cyl, gear, carb), as.factor))
 vt <- vtree(mt, cyl, gear, carb)
 smt <- summarize_by_node(mt, vt, hp) |>
-  fmt_label(fmt=sprintf("mean (SD) %.1f (%.1f)",
-                       mean, sd))
+  fmt_label(fmt="mean (SD) {mean} ({sd})", digits=1)
 vt |> add_labels() |>
   add_labels(fmt="{label}\n{smt}") |>
   plot(lwidth=.8)
@@ -1026,12 +1028,12 @@ ucb <- cases_from_freqtable(UCBAdmissions)
 vt <- vtree(ucb, Dept, Gender)
 
 smt <- summarize_by_node(ucb, vt, Admit) |>
-  fmt_label(fmt=sprintf("%.0f %% admitted", 100*Admitted_freq))
+  fmt_label(fmt="{100 * Admitted_freq}% admitted", digits=2)
 vt |> add_labels(template="sameline", suffix = smt) |>
   plot(lwidth=.7)
 ```
 
-![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-36-1.png)
+![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-35-1.png)
 
 ``` r
 # vtree(ChickWeight,"Diet Time",
@@ -1055,7 +1057,7 @@ vt <- vtree(cwcases, Diet, Time) |>
   retain(Time %in% c("Time 0", "Time 4"))
 
 smt <- summarize_by_node(cwcases, vt, weight) |>
-                  fmt_label(fmt = sprintf("mean weight %.1fg", mean))
+                  fmt_label(fmt = "mean weight {mean} g", digits=1)
 vt |>
   add_aliases(col_alias=c(Time = "Days since birth")) |>
   add_labels(suffix = smt) |>
@@ -1082,7 +1084,7 @@ vt |>
   plot()
 ```
 
-![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-37-1.png)
+![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-36-1.png)
 
 ``` r
 #vtree(ToothGrowth,"supp dose",summary="len>20 \n%pct% length > 20")
@@ -1113,7 +1115,7 @@ vt |> add_labels(suffix = smt) |>
   plot(lwidth=.8)
 ```
 
-![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-38-1.png)
+![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-37-1.png)
 
 #### New functionality in vtree2 compared to vtree ~~Killer features~~
 

@@ -64,23 +64,26 @@ Order and number of arguments are given by the `.args` parameter.
 ## Examples
 
 ``` r
-vt <- vtree_from_freqtable(Titanic, Class, Sex)
+cases <- cases_from_freqtable(Titanic)
+vt <- vtree(cases, Class, Sex)
 
 # only leaf nodes
 mask <- find_nodes(vt, leaf)
 
 # prepare labels with summary of Survived for each node
 sumfnc <- \(df, ...) summary(df$Survived)
-sm <- vtree_apply(titanicNA, vt, sumfnc, .mask = mask) |>
+sm <- vtree_apply(cases, vt, sumfnc, .mask = mask) |>
       purrr::map_chr(\(x) paste0(names(x), ": ", x, collapse = "\n"))
 
 # plot with custom layout making more space for the labels in the last
 # node ("Sex")
 vt |> add_labels() |>
   add_labels(mask = mask,
-             fmt = paste0(label, "\n", sm[node_key])) |>
+             fmt = "{label}\n{sm[node_key]}") |>
   add_layout(varspace = c(root=1, Class=1, Sex=3),
              dir="tb", lheight=.8) |>
   plot(dir="tb", legend=FALSE)
-#> Error: object 'label' not found
+#> Error: Failed to evaluate glue component {sm[node_key]}
+#> Caused by error:
+#> ! object 'sm' not found
 ```

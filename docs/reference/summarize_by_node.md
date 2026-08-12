@@ -10,7 +10,7 @@ summarize the specified variable for those cases.
 ``` r
 summarize_by_node(cases, vtree, col, vp = is_vp(vtree))
 
-fmt_label(x, fmt = NULL)
+fmt_label(x, fmt = NULL, expr = NULL, digits = 2)
 ```
 
 ## Arguments
@@ -32,6 +32,10 @@ fmt_label(x, fmt = NULL)
 - vp:
 
   whether frequencies should be calculated using valid percentages
+
+- x:
+
+  data frame, result of `summarize_by_node()`
 
 - fmt:
 
@@ -95,29 +99,35 @@ vt <- vtree(cases, Class, Sex, Survived)
 
 csm_txt <- cases |> summarize_by_node(vt, Age) |>
   fmt_label()
-vt |> add_labels(fmt = csm_txt) |> plot()
-#> Error: All unnamed arguments must be length 1
+vt |> add_labels(fmt = "{csm_txt}") |> plot()
+#> Error: Failed to evaluate glue component {csm_txt}
+#> Caused by error:
+#> ! object 'csm_txt' not found
 
 # some random values
 cases$Random <- rnorm(nrow(cases)) + (cases$Sex == "Male")
 cases$Random[runif(nrow(cases)) < .1] <- NA
 csm_txt <- cases |> summarize_by_node(vt, Random) |>
   fmt_label()
-vt |> add_labels(fmt = csm_txt) |>
+vt |> add_labels(fmt = "{csm_txt}") |>
   retain(path == "Class:1st") |>
   plot(lwidth=.9)
-#> Error: All unnamed arguments must be length 1
+#> Error: Failed to evaluate glue component {csm_txt}
+#> Caused by error:
+#> ! object 'csm_txt' not found
 
 # make some default labels
 vt <- vt |> add_labels()
 # add median to the labels
 csm_txt <- cases |>
   summarize_by_node(vt, Random) |>
-  fmt_label(fmt = sprintf("median: %.1f",median))
+  fmt_label(fmt = "median: {median}", digits=1)
 vt |>
-  add_labels(fmt = paste0(label, "\n", csm_txt)) |>
+  add_labels(fmt = "{label}\n{csm_txt}") |>
   plot()
-#> Error: object 'label' not found
+#> Error: Failed to evaluate glue component {csm_txt}
+#> Caused by error:
+#> ! object 'csm_txt' not found
 
 # now the same but only for the leafs
 # leaf is a column in the nodes data frame, TRUE or FALSE
@@ -130,19 +140,20 @@ vt |>
 
 csm_txt <- cases |>
   summarize_by_node(vt, Random) |>
-  fmt_label(fmt = sprintf("valid: %d/%d (%d%%)",
-           valid, n, round(100 * valid/n)))
+  fmt_label(fmt = "valid: {valid}/{n} ({round(100 * valid/n)}%)")
 
 vt |>
-  mutate(label = paste0(label, "\n", csm_txt)) |>
+  add_labels(fmt = "{label}\n{csm_txt}") |>
   retain(path == "Class:1st") |>
   plot(lwidth=.8)
-
+#> Error: Failed to evaluate glue component {csm_txt}
+#> Caused by error:
+#> ! object 'csm_txt' not found
 
 # Directly use output from summarize_by_node
 df <- cases |> summarize_by_node(vt, Age)
 vt |>
-  mutate(label = sprintf("%s\nChildren: %.0f%%", node_val,
+  add_labels(expr = sprintf("%s\nChildren: %.0f%%", node_val,
                          df$Child_freq * 100)) |>
   plot()
 

@@ -216,6 +216,7 @@ More docs available [here](https://january3.github.io/vtree2/).
 - vtree constructors take only character or factor variables: ~~build in
   checking for column type~~ maybe add functions to convert numeric to
   factor? or some automation controlled with a param?
+- ~~easier formatting of labels using glue syntax~~
 - add_layout should not modify shape if present
 - faster processing of cases into trees
 - why is plotting patterns so slow?
