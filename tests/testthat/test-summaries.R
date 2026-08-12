@@ -192,3 +192,43 @@ test_that("label_var_levels works", {
   lab2 <- as.numeric(unlist(strsplit(labs[2], ", ")))
   expect_setequal(lab2, subset(InsectSprays, spray == "A")$count)
 })
+
+test_that("fmt_label works", {
+
+  set.seed(123)
+  cases <- titanicNA |>
+    mutate(foo = 100 * runif(n()))
+  vt <- vtree(cases, Class, Survived)
+  s1 <- summarize_by_node(cases, vt, Sex)
+
+  labs <- fmt_label(s1)
+  expect_length(labs, nrow(s1))
+  expect_all_true(grepl("Sex", labs))
+
+  labs <- fmt_label(s1, fmt="foo")
+  expect_length(labs, nrow(s1))
+  expect_all_equal(labs, "foo")
+
+  labs <- fmt_label(s1, fmt="{node_id}")
+  expect_all_true(labs == as.character(s1$node_id))
+
+  labs <- fmt_label(s1, expr=ifelse(missing > 20, "MANY", "FEW"))
+  expect_length(labs, nrow(s1))
+  expect_all_true(labs[s1$missing > 20] == "MANY")
+  expect_all_true(labs[s1$missing <= 20] == "FEW")
+
+  s1 <- summarize_by_node(cases, vt, foo)
+  labs <- fmt_label(s1)
+  expect_all_true(grepl("mean", labs))
+  expect_all_true(grepl("median", labs))
+  expect_all_true(grepl("range", labs))
+
+  labs <- fmt_label(s1, "{mean}", digits=2)
+  expect_all_true(nchar(labs) <= 5L)
+  labs <- fmt_label(s1, "{mean}", digits=1)
+  expect_all_true(nchar(labs) <= 4L)
+  labs <- fmt_label(s1, "{mean}", digits=0)
+  expect_all_true(nchar(labs) <= 2L)
+  expect_all_true(as.numeric(labs) == round(s1$mean, 0))
+
+})
