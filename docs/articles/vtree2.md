@@ -638,7 +638,9 @@ plot_grid(p1, p2, nrow = 1)
 ![](vtree2_files/figure-html/labels2-1.png)
 
 These labels are derived directly from columns of the vtree object:
-`node_col`, `node_val`, `freq` and `n`.
+`col_alias`, `val_alias`, `freq` and `n`. If no aliases are set, then
+`col_alias` is the same as `node_col`, and `val_alias` is the same as
+`node_val`.
 
 It is quite normal to call
 [`add_labels()`](https://january3.github.io/vtree2/reference/add_labels.md)
@@ -649,6 +651,7 @@ the leafs on the tree:
 ``` r
 vt <- vtree(titanicNA, Class, Survived)
 mask <- pull(vt, leaf) # leaf is a logical vector
+                       # indicating whether a node is a leaf node
 vt |>
   add_labels(template = "sameline") |>
   add_labels(mask = mask, template = "long") |>
@@ -659,58 +662,90 @@ vt |>
 
 ### Using custom formatting
 
-Formatting can also be done with the `fmt`/`fmt_na` parameters, which
-are R expressions. You can use sprintf, glue, paste or whichever
-expressions you like to construct a label from the following variables:
+By default,
+[`add_labels()`](https://january3.github.io/vtree2/reference/add_labels.md)
+produces simple node labels containing the associated variable value,
+number of cases and percentage within the parent node. This can be
+customized by one of the following:
+
+- choose a different `template` parameter: `short` (default), `sameline`
+  (same as short, but on one line) or `long` (with variable names). The
+  templates all reasonably handle NA nodes and root node.
+- use a \[glue::glue()\] syntax for the parameters `fmt`, `fmt_na` and
+  `fmt_root`, where variable names are put in curly braces. The variable
+  names are the same as column names of the node data frame of the vtree
+  object, plus `pct` and `f` (see below). The three parameters will be
+  used to generate regular, NA-nodes or root node labels, respectively.
+- use an arbitrary R expression (parameter `expr`) which is evaluated
+  with \[rlang::eval_tidy()\] in the context of the nodes data frame of
+  the vtree object.
+
+Both the glue format syntax and the arbitrary expression syntax can use
+any column name which is already present in the nodes data frame,
+including:
 
 - `freq`, the frequency for a node
 - `n`, number of samples of a node
+- `col_alias`, the alias for the column/variable associated with a node
+  (default same as node_col, but can be modified by providing a
+  `var_alias` column in the vtree)
+- `val_alias`, the alias for the value of the variable associated with a
+  node (default same as node_val, but can be modified by providing a
+  `val_alias` column in the vtree)
 - `node_col`, name of the variable associated with a node
 - `node_val`, value of the variable associated with a node
-- `col_alias`,`val_alias`: if you have defined aliases with
-  [`add_aliases()`](https://january3.github.io/vtree2/reference/add_aliases.md),
-  you will find them here. Otherwise the columns are same as `node_col`
-  and `node_val`.
 - plus whatever new columns you have added to the vtree with mutate().
 
 You can list the columns in the node data frame of a vtree object with
 `nodecols(vt)` (or simply `colnames(as_tibble(vt))`).
 
-If provided, `fmt_na` is used to format the NA nodes.
+In addition,
+[`add_labels()`](https://january3.github.io/vtree2/reference/add_labels.md)
+provides two additional, preformatted values:
 
-Here is simple example using
-[`glue()`](https://glue.tidyverse.org/reference/glue.html):
+- `pct`, percentage rounded to the specified number of digits (the
+  `digits` parameter)
+- `f`, equal to pct / 100 (so if the percentage is rounded with 0 digits
+  after decimal point, `f` will have two digits after decimal point).
+
+Here is a formatting example with the `fmt_*` parameters.
 
 ``` r
-library(glue)
 vt <- vtree(titanicNA, Class, Sex) |>
-  add_labels(fmt =
-    glue("{node_col}: {node_val}\nfreq={format(freq, digits=2)}"),
-             fmt_na =
-    glue("{node_col}: Missing\nfreq={format(freq, digits=2)}"))
+  add_labels(fmt = "{node_col}: {node_val}\nfreq={f} ({pct}%)\nN={n}",
+             fmt_na = "{node_col}: Missing\nN={n}",
+             fmt_root = "All data:\nN = {n}")
 plot(vt, legend = FALSE)
 ```
 
 ![](vtree2_files/figure-html/labels3-1.png)
 
-Note that the root node also got a label, but since `node_col` and
-`node_val` are both “” for the root, the label is not very informative.
-We can change it:
+### Using the `expr` parameter
+
+If you need even finer control, you can use the `expr` parameter which
+takes any R expression and evaluates it with `[rlang::eval_tidy()]` in
+the context of the nodes data frame of the vtree object (plus the
+variables `pct` and `f`).
 
 ``` r
-library(glue)
-vt <- vtree(titanicNA, Class, Sex) |>
-  add_labels(fmt =
-    glue("{node_col}: {node_val}\nfreq={format(freq, digits=2)}\nn={n}"),
-             fmt_na =
-    glue("{node_col}: Missing\nfreq={format(freq, digits=2)}\nn={n}")) |>
-  mutate(label = ifelse(path == "root",
-                        glue("All passengers\nn={n}"),
-                        label))
-plot(vt, legend = FALSE, dir="tb")
+vt <- vtree(titanicNA, Class, Survived) |>
+  add_labels() |> # add default labels
+  add_labels(expr =
+             ifelse(node_col != "Survived",
+               label,
+               paste0(
+                 ifelse(freq > .5, "Many ", "Few "),
+                 ifelse(node_val == "Yes", "survived", "perished"),
+                 "\n",
+                 label
+                 )
+               ))
+             
+             
+plot(vt, legend = FALSE)
 ```
 
-![](vtree2_files/figure-html/labels4-1.png)
+![](vtree2_files/figure-html/labels_expr-1.png)
 
 ### Using a mask
 
@@ -725,12 +760,25 @@ vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived) |>
   retain(path == "Class:1st") # only keep the first class passengers
 mask <- find_nodes(vt, leaf) # leaf is a logical vector
 add_labels(vt, mask = mask, template = "long") |>
-  add_labels(mask = !mask, fmt = glue("{node_val}")) |>
+  add_labels(mask = !mask, fmt = "{node_val}") |>
   plot(legend = FALSE, dir="tb", show_root = FALSE,
        lwidth = 0.7, lheight = 0.5)
 ```
 
 ![](vtree2_files/figure-html/labels_mask-1.png)
+
+### Parameter precedence with `add_labels()`
+
+If `expr` is not NULL, it will be used for all labels chosen by the
+mask.
+
+If `fmt` is NULL, the selected template will be used. If `fmt_na` is
+NULL and `fmt` is not NULL, then `fmt_na` will be `fmt`, otherwise the
+selected template will be used. Same for `fmt_root`: first `fmt`, if
+defined, otherwise the template.
+
+`fmt_na` is used for NA values only if `is_vp(vtree)` is `TRUE`; this is
+because for a vp tree the NA value percentages are meaningless.
 
 ## Creating summaries
 
@@ -756,7 +804,7 @@ vt |>
   add_aliases(col_alias = c(supp = "Supplement",
                             dose = "Dose (mg/day)")) |>
   add_labels(template = "sameline") |>
-  add_labels(fmt = paste0(label, "\n", sm)) |>
+  add_labels(fmt = "{label}\n{sm}") |>
   plot(lwidth=.75)
 ```
 
@@ -926,16 +974,15 @@ pvals_l <- format.pval(pvals, digits=2)
 
 # color the nodes by p-value
 logp <- floor(-log10(pvals))
-pal <- colorRampPalette(c("white", "steelblue"))(101)
+pal <- colorRampPalette(c("white", "red"))(101)
 
 # use simpler summaries 
 sm <- summarize_by_node(cases, vt, Sex) |>
   fmt_label(fmt = sprintf("Females: %.0f%%", Female_freq * 100))
 
 vt |> add_labels(suffix = sm) |>
-  add_labels(fmt = ifelse(path == "root", label,
-                          paste0(label, "\n", 
-                                 pvals_l))) |>
+  add_labels(fmt = "{label}\n{pvals_l}",
+             fmt_root = "{label}") |>
   mutate(fill = pal[logp + 1]) |>
   plot()
 #> ℹ palette attribute is NULL
@@ -1134,18 +1181,22 @@ these two parameters.
 
 ``` r
 cases <- cases_from_freqtable(Titanic)
+vt <- vtree(cases, Class, Sex, Survived) |>
+  prune(Class == "Crew")
+
 sm <- summarize_by_node(cases, vt, Age) |>
   fmt_label()
 
-vt <- vtree(cases, Class, Sex, Survived) |>
-  prune(Class == "Crew") |>
-  add_labels() |>
-  mutate(label = ifelse(leaf, paste0(label, "\n", sm), label)) |>
-  add_layout(dir="tb", lheight=.8,
-             varspace=c(root=1, Class=1,Sex=1,Survived=4))
+# get the logical vector indicating whether the node is a leaf
+mask <- pull(vt, leaf)
 
-# legend = FALSE: not even column names on the margin
-plot(vt, legend = FALSE)
+vt |>
+  add_labels() |>
+  add_labels(mask = mask, fmt = "{label}\n{sm}") |>
+  add_layout(dir="tb", lheight=.8,
+             varspace=c(root=1, Class=1,Sex=1,Survived=4)) |>
+  # legend = FALSE: not even column names on the margin
+  plot(legend = FALSE)
 ```
 
 ![](vtree2_files/figure-html/layouts4-1.png)

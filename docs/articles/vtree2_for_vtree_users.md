@@ -328,8 +328,8 @@ character with a space:
 vtree(FakeData, Severity, Sex) |>
   # add default labels
   add_labels() |>
-  # apply the fmt expression to the labels
-  add_labels(fmt = gsub("\n", " ", label)) |>
+  # apply the expression to the labels
+  add_labels(expr = gsub("\n", " ", label)) |>
   plot(lwidth = .9)
 ```
 
@@ -388,16 +388,17 @@ One of several ways of doing that is this: you find the nodes that are
 below the node “Group:A”, and then substitute M with Male and F with
 Female for these nodes only. You can use
 [`add_labels()`](https://january3.github.io/vtree2/reference/add_labels.md)
-with the `fmt` argument:
+with the `fmt` argument and the `mask` argument specifying to apply the
+new labels only to Group A:
 
 ``` r
 vtree(FakeData, Group, Sex) |>
   add_labels() |>
   mark(path == "Group:A", follow_only = TRUE) |>
-  add_labels(fmt = ifelse(mark,
+  add_labels(expr = ifelse(mark,
                         gsub("^F", "Female", label),
                         label)) |>
-  add_labels(fmt = ifelse(mark,
+  add_labels(expr = ifelse(mark,
                         gsub("^M", "Male", label),
                         label)) |>
   plot()
@@ -419,7 +420,7 @@ the node. In vtree2, you manipulate the labels with an expression.
 vtree(FakeData, Group, Severity) |>
   add_labels() |>
   mark(Severity == "Mild") |>
-  add_labels(fmt = ifelse(mark,
+  add_labels(expr = ifelse(mark,
                         paste0(label, "\n*Excluding\nnew diagnoses*"),
                         label)) |>
   plot(dir = "tb",
@@ -510,7 +511,7 @@ sum_labs <- summarize_by_node(FakeData, vt, Score) |>
 
 # add standard labels
 vt |> add_labels() |>
-  mutate(label = paste0(label, "\n", sum_labs)) |>
+  add_labels(fmt = "{label}\n{sum_labs}") |>
   plot(dir = "tb", lwidth=.8)
 ```
 
@@ -559,12 +560,12 @@ library(dplyr)
 library(purrr)
 
 # this gives us, in the levels column, the counts
-smvt <- summarize_by_node(FakeData, vt, Category) |>
+sm <- summarize_by_node(FakeData, vt, Category) |>
   fmt_label(fmt = sprintf("Category=single: %d (%.0f%%)",
                          single, 100 * single_freq))
 
 vt |> add_labels() |>
-  add_labels(fmt = paste0(label, "\n", smvt)) |>
+  add_labels(fmt = "{label}\n{sm}") |>
   plot(dir = "tb")
 ```
 
@@ -591,11 +592,11 @@ vtree mini-language are replaced directly by R expressions.
 ## vtree(FakeData,"Severity",summary="Score \nmean score\n%mean%",sameline=TRUE,horiz=FALSE)
 
 vt <- vtree(FakeData, Severity)
-smvt <- summarize_by_node(FakeData, vt, Score) |>
+sm <- summarize_by_node(FakeData, vt, Score) |>
   fmt_label(fmt = sprintf("mean score\n%.1f", mean))
 
 vt |> add_labels() |>
-  mutate(label = paste0(label, "\n", smvt)) |>
+  add_labels(fmt = "{label}\n{sm}") |>
   plot(dir = "tb")
 ```
 
@@ -614,7 +615,7 @@ smvt <- summarize_by_node(FakeData, vt, Score) |>
                     glue("mean score\n{round(mean, 1)}")))
 
 vt |> add_labels() |>
-  add_labels(fmt = paste0(label, "\n", smvt)) |>
+  add_labels(fmt = "{label}\n{sm}") |>
   plot(dir = "tb")
 ```
 
@@ -633,7 +634,7 @@ library(glue)
 
 vt <- vtree(FakeData, Severity, Category)
 
-smvt <- FakeData |>
+sm <- FakeData |>
   mutate(RelDiff = (Post - Pre)/Pre) |>
   summarize_by_node(vt, RelDiff) |>
   fmt_label(fmt = ifelse(missing > 0,
@@ -641,9 +642,9 @@ smvt <- FakeData |>
                     glue("mean(RD) = {round(mean, 1)}")))
 
 vt |> 
-  add_labels(fmt = glue("{node_val} {n} ({round(100 * freq)}%)")) |>
+  add_labels(fmt = "{node_val}: {n} (pct}%)") |>
   #mutate(label = gsub("\n",  ", ", label)) |>
-  add_labels(fmt = paste0(label, "\n", smvt)) |>
+  add_labels(fmt = "{label}\n{sm}") |> 
   plot(dir = "tb")
 ```
 
@@ -847,9 +848,7 @@ vt <- vtree(FakeRCT, eligible, randomized, group, followup, analyzed)
 vt |>
   retain(followup == "Followed up") |>
   add_labels() |>
-  add_labels(fmt = ifelse(path == "root",
-                        paste0("Assessed for\neligibility\n", label),
-                        label)) |>
+  add_labels(fmt_root = "Assessed for\neligibility\n{label}") |>
   mutate(fill = pal[level + 2]) |>
   plot(dir = "tb", legend = FALSE, lwidth=.8, lheight=.7)
 ```
@@ -860,14 +859,13 @@ vt |>
 # vtree(FakeRCT,"eligible randomized group followup analyzed",plain=TRUE,
 #   follow=list(eligible="Eligible",randomized="Randomized",followup="Followed up"),
 #   horiz=FALSE,showvarnames=FALSE,title="Assessed for eligibility")
+vt <- vtree(FakeRCT, eligible, randomized, group, followup, analyzed) 
 vt |>
   prune(followup != "Followed up" |
         randomized != "Randomized" |
         eligible != "Eligible", follow_only = TRUE) |>
   add_labels() |>
-  add_labels(fmt = ifelse(path == "root",
-                        paste0("Assessed for\neligibility\n", label),
-                        label)) |>
+  add_labels(fmt_root = "Assessed for\neligibility\n{label}") |>
   mutate(fill = pal[level + 2]) |>
   plot(dir = "tb", legend = FALSE, lwidth=.8, lheight=.7)
 ```
@@ -880,29 +878,33 @@ vt |>
 #   horiz=FALSE,showvarnames=FALSE,title="Assessed for eligibility",
 #   summary="id \nid: %list% %noroot%")
 
-# vtree:vtree() minilanguage allows to insert lists of identifiers
-# we can do that manually
-sumfnc <- function(df) {
-  ret <- paste("id:", paste(df$id, collapse = ", "))
+# #vtree:vtree() minilanguage allows to insert lists of identifiers
+# #we can do that manually e.g. with that code:
+#
+# sumfnc <- function(df) {
+#   ret <- paste("id:", paste(df$id, collapse = ", "))
+#
+#   # vtree::vtree() wraps text automatically, we do it explicitly
+#   ret <- strwrap(ret, 20)
+#
+#   ret <- paste(ret, collapse = "\n")
+#   ret
+# }
+#
+# ids <- vtree_apply(FakeRCT, vt, sumfnc) |>
+#                unlist()
+# #but there is a built-in function for that:
 
-  # vtree::vtree() wraps text automatically, we do it explicitly
-  ret <- strwrap(ret, 20)
-
-  ret <- paste(ret, collapse = "\n")
-  ret
-}
-
-ids_summary <- vtree_apply(FakeRCT, vt, sumfnc) |>
-               unlist()
+ids <- label_var_levels(FakeRCT, vt, id)
 
 vt |>
   prune(followup != "Followed up" |
         randomized != "Randomized" |
         eligible != "Eligible", follow_only = TRUE) |>
   add_labels() |>
-  add_labels(fmt = ifelse(path == "root",
-                        paste0("Assessed for\neligibility\n", label),
-                   paste0(label, "\n", ids_summary[node_key]))) |>
+  add_labels(
+    fmt = "{node_val}\n{ids[node_key]}",
+    fmt_root = "Assessed for\neligibility\n{label}") |>
   mutate(fill = pal[level + 2]) |>
   plot(dir = "tb", legend = FALSE, lwidth=.8, lheight=.7)
 ```
@@ -931,18 +933,15 @@ ncases <- summarize_by_node(ESOPH, vt, ncases) |>
                   fmt_label(fmt=sprintf("cases=%d", n))
 ncntrls <- summarize_by_node(ESOPH, vt, ncontrols) |>
                   fmt_label(fmt=sprintf("controls=%d", n))
-suffix <- paste(ncases, ncntrls)
+sm <- paste(ncases, ncntrls)
 
 vt <- vt |>
   add_labels(template = "sameline") |>
-  mutate(label = ifelse(path == "root", n,
-                        paste0(label, "\n", suffix))) |>
+  add_labels(fmt = "{label}\n{sm}", fmt_root = "{n}") |>
   # shrink relative size of the root nodes
-  add_layout(varspace = c(root=1, agegp=4), lwidth=.8)
-plot(vt)
+  add_layout(varspace = c(root=1, agegp=4), lwidth=.8) |>
+  plot()
 ```
-
-![](vtree2_for_vtree_users_files/figure-html/esoph-1.png)
 
 ``` r
 # hec <- crosstabToCases(HairEyeColor)
@@ -974,7 +973,7 @@ smt <- summarize_by_node(mt, vt, hp) |>
   fmt_label(fmt=sprintf("mean (SD) %.1f (%.1f)",
                        mean, sd))
 vt |> add_labels() |>
-  add_labels(fmt=sprintf("%s\n%s", label, smt)) |>
+  add_labels(fmt="{label}\n{smt}") |>
   plot(lwidth=.8)
 ```
 
@@ -1005,14 +1004,13 @@ idlist <- vtree_apply(mt, vt, \(df) {
                         ret <- paste(ret, collapse = "\n")
   })
 
+idlist <- label_var_levels(mt, vt, name)
+
 vt |>
   add_labels(template = "sameline") |>
-  add_labels(fmt = ifelse(path == "root", n,
-                          sprintf("%s\n%s", label, idlist))) |>
+  add_labels(fmt = "{label}\n{idlist}", fmt_root="{n}") |>
   add_layout(lwidth=.9, varspace = c(root=1, gear=4, carb=2)) |>
-  plot(lwidth=.9, fontsizes = list(nodes="adaptive"))
-#> Warning: ℹ vtree already has a layout; ignoring lwidth and
-#> lheight
+  plot(fontsizes = list(nodes="adaptive"))
 ```
 
 ![](vtree2_for_vtree_users_files/figure-html/mtcars2-1.png)

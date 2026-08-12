@@ -96,7 +96,7 @@ vt <- vtree(cases, Class, Sex, Survived)
 csm_txt <- cases |> summarize_by_node(vt, Age) |>
   fmt_label()
 vt |> add_labels(fmt = csm_txt) |> plot()
-
+#> Error: All unnamed arguments must be length 1
 
 # some random values
 cases$Random <- rnorm(nrow(cases)) + (cases$Sex == "Male")
@@ -106,7 +106,7 @@ csm_txt <- cases |> summarize_by_node(vt, Random) |>
 vt |> add_labels(fmt = csm_txt) |>
   retain(path == "Class:1st") |>
   plot(lwidth=.9)
-
+#> Error: All unnamed arguments must be length 1
 
 # make some default labels
 vt <- vt |> add_labels()
@@ -117,7 +117,7 @@ csm_txt <- cases |>
 vt |>
   add_labels(fmt = paste0(label, "\n", csm_txt)) |>
   plot()
-
+#> Error: object 'label' not found
 
 # now the same but only for the leafs
 # leaf is a column in the nodes data frame, TRUE or FALSE

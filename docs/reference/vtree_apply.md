@@ -82,4 +82,5 @@ vt |> add_labels() |>
   add_layout(varspace = c(root=1, Class=1, Sex=3),
              dir="tb", lheight=.8) |>
   plot(dir="tb", legend=FALSE)
+#> Error: object 'label' not found
 ```

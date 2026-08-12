@@ -84,7 +84,7 @@ summary_at_var(vt3, "Class")
 #>  294  258  633  793  223 
 
 # summaries differ if you prune the tree!
-vt_p <- prune(vt, freq < .15) 
+vt_p <- prune(vt, freq < .15)
 summary_at_var(vt_p, "Class", as_df = TRUE)
 #> # A tibble: 5 × 6
 #>   node_col node_val count  freq denom label          

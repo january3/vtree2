@@ -86,4 +86,5 @@ vt |>
              suffix = ids) |>
   add_layout(varspace=c(root=1, cyl=1, gear=1, carb=3), lwidth=.8) |>
   plot(fontsizes = list(nodes="adaptive"))
+#> Error in add_labels(vt, template = "sameline", root_label = "All cars"): unused argument (root_label = "All cars")
 ```

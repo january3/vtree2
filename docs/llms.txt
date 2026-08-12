@@ -35,9 +35,10 @@ pak::pak("january3/vtree2")
     of the vtree object.
     [`find_nodes()`](https://january3.github.io/vtree2/reference/prune.md)
     and `prune(..., mark_only = TRUE)` can be used to select nodes for
-    coloring or labeling. The `summary_vt()` function can be used to
-    produce additional per-node summaries which can be used for labeling
-    or coloring.
+    coloring or labeling. The
+    [`summarize_by_node()`](https://january3.github.io/vtree2/reference/summarize_by_node.md)
+    function can be used to produce additional per-node summaries which
+    can be used for labeling or coloring.
 5.  plot the tree with
     [`plot()`](https://rdrr.io/r/graphics/plot.default.html).
 
@@ -164,7 +165,9 @@ example with
 ``` r
 vt <- vtree(tdf, Class, Sex, Survived)
                                          
-sm_txt <- summary_vt(tdf, vt, Age)
+sm_txt <- summarize_by_node(tdf, vt, Age) |>
+  as_label()
+
 vt |> 
   add_labels() |>
   # only for the leaf nodes. leaf is a column in the vt nodes data frame
@@ -178,11 +181,13 @@ vt |>
 
 ![](reference/figures/README-example_summary-1.png)
 
-**There is more:** `summary_vt()` can be used to calculate any summary
-of categorical or continuous variables as a character vector which can
-be then used as labels for the nodes. `summary_vt_df()` produces a data
-frame with per-node summary statistics (different for categorical and
-continuous variables) which can be used for further analysis.
+**There is more:**
+[`summarize_by_node()`](https://january3.github.io/vtree2/reference/summarize_by_node.md)
+can be used to calculate any summary of categorical or continuous
+variables as a character vector which can be then used as labels for the
+nodes. It produces a data frame with per-node summary statistics
+(different for categorical and continuous variables) which can be used
+for further analysis.
 
 ## AI disclosure
 
