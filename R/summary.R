@@ -341,6 +341,9 @@ fmt_label <- function(x, fmt = NULL, expr = NULL, digits = 2) {
   }
 
   ret <- glue_data(x, fmt)
+  if(length(ret) == 1L) {
+    ret <- rep(ret, nrow(x))
+  }
   ret
 }
 
