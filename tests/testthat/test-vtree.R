@@ -203,9 +203,24 @@ test_that("errors are raised", {
                "tried to modify following immutable column")
   expect_no_error(mutate(vt, tot_n = 99, .check = FALSE))
 
+  vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived)
+  attr(vt, "vp") <- NULL
+  expect_error(as_vtree(vt), "VTree object lacks vp attribute")
+  vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived)
+  expect_error(mutate(vt, "node_col" = "foo"),
+               "you tried to modify following immutable")
+  vt <- as_tbl_graph(vt)
+  vt <- vt |> mutate(node_col = NA)
+  expect_error(as_vtree(vt), "The node_col column must not contain NA values")
+
+
 })
 
 test_that("column names are checked", {
+  foo <- as.data.frame(Titanic) |> dplyr::select(Freq)
+  expect_error(cases_from_freqtable(foo),
+               "No usable columns found in the data frame")
+
   cases <- cases_from_freqtable(Titanic)
   colnames(cases)[2] <- "freq"
   expect_error(vtree(cases, Class, `freq`, Survived),

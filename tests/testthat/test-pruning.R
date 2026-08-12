@@ -186,6 +186,16 @@ test_that("marking works", {
   expect_all_true(grepl("Class:3rd", n3$path[n3$mark]))
   expect_all_true(!grepl("Class:3rd/", n3$path[!n3$mark]))
   expect_true(!n3$mark[n3$path == "Class:3rd"])
+
+  vt4 <- prune(vt, freq < .12, mark_only = TRUE)
+  nd <- as_tibble(vt4)
+  expect_in("mark", names(nd))
+  expect_equal(sum(nd$mark), 15)
+
+  vt5 <- retain(vt, freq < .12, mark_only = TRUE)
+  nd <- as_tibble(vt5)
+  expect_in("mark", names(nd))
+  expect_equal(sum(nd$mark), 25)
 })
 
 
