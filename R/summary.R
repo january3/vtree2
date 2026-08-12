@@ -597,6 +597,7 @@ label_var_levels <- function(cases, vtree, var,
 #'        number of counts, frequency, denominator and label.
 #' @export
 #' @importFrom purrr map map_lgl map_dbl map_int
+#' @importFrom stats setNames
 summary_at_var <- function(vtree, var, as_char = FALSE,
                            as_df = FALSE) {
   ensure(vtree, "vtree")

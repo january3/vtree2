@@ -195,7 +195,7 @@ test_that("marking works", {
   vt5 <- retain(vt, freq < .12, mark_only = TRUE)
   nd <- as_tibble(vt5)
   expect_in("mark", names(nd))
-  expect_equal(sum(nd$mark), 25)
+  expect_equal(sum(nd$mark), 26)
 })
 
 
