@@ -128,9 +128,7 @@ vtree_palette <- function(vtree,
                           palettes = c("Reds", "Blues", "Greens",
                                        "Oranges", "Purples")) {
 
-  if(!inherits(vtree, "vtree")) {
-    cli_abort(c(x = "vtree_palette() requires a vtree object"))
-  }
+  ensure_vtree(vtree)
 
   levs <- levels(vtree)
   levs <- map(levs, \(x) x[ !is.na(x)])
@@ -166,6 +164,7 @@ var_palette <- function(var_levels, pal) {
   ifelse(is.na(node_val), na, candidates)
 }
 
+# get a contrast palette for the given palette.
 get_contrast_pal <- function(pal) {
 
   ret <- imap(pal, \(varpal, var) {
@@ -188,6 +187,7 @@ add_palette <- function(vtree,
                              var_colors = NULL,
                              what = "fill") {
 
+  ensure_vtree(vtree)
   what <- match.arg(what, c("fill", "text"))
 
   if(what == "fill") {

@@ -185,6 +185,8 @@ as_vtree <- function(x) {
 vtree <- function(cases, ..., .vp = TRUE,
                   .cv_sep = ':', .path_sep = '/') {
 
+  ensure(cases, "data.frame")
+
   if(length(colnames(cases)) < 1L) {
     cli_abort(c(x = "No columns in the data frame cases"))
   }
@@ -227,7 +229,7 @@ vtree <- function(cases, ..., .vp = TRUE,
   vtree <- as_vtree(vtree)
 
   summaries <- map_dfr(set_names(names(levels)), \(var) {
-                     summary_at_var(vtree, var, as_df=TRUE)
+                     summary_at_var(vtree, all_of(var), as_df=TRUE)
   })
 
   attr(vtree, "source_summary") <- summaries

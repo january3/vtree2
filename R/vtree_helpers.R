@@ -1,5 +1,4 @@
 ## helper functions for constructing vtrees
-
 .get_levels <- function(x, cnms) {
   if(!all(cnms %in% names(x))) {
     missing <- setdiff(cnms, names(x))

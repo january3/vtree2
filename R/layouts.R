@@ -639,6 +639,7 @@ add_layout <- function(vtree,
                    varsize = NULL,
                    show_root=TRUE) {
 
+  ensure_vtree(vtree)
   if(!is.null(layout_func)) {
     layout <- "custom"
   } else {
@@ -699,6 +700,7 @@ add_layout <- function(vtree,
 ## @rdname add_layout
 ## @export
 as_vtree_layout <- function(layout, dir, show_root) {
+  ensure_vtree(layout)
   attr(layout, "dir") <- dir
   attr(layout, "show_root") <- show_root
   class(layout) <- c("vtree_layout", class(layout))

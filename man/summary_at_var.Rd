@@ -33,7 +33,8 @@ also includes the count and percentage of missing values.
 }
 \details{
 Note that if a tree was pruned, these summaries will differ from the
-summaries shown by \code{summary(vtree)}
+summaries shown by \code{summary(vtree)}. That is also the true purpose of
+the function.
 
 If the tree
 was constructed using valid percentages (\code{attr(vtree, "vp")} is TRUE),

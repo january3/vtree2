@@ -199,8 +199,8 @@
 #' @export
 summarize_by_node <- function(cases, vtree, col, vp=is_vp(vtree)) {
 
-  ensure_data_frame(cases)
-  ensure_vtree(vtree)
+  ensure(cases, "data.frame")
+  ensure(vtree, "vtree")
 
   col <- enquo(col)
   col <- tidyselect::eval_select(col, data = cases)
@@ -223,14 +223,6 @@ summarize_by_node <- function(cases, vtree, col, vp=is_vp(vtree)) {
       x = "Some columns in the vtree are not found in the cases data frame",
       i = "All columns from the vtree must be present in the cases data frame",
       i = "Missing columns: {missing_cols}",
-      i = "Columns in cases: {colnames(cases)}"
-    ))
-  }
-
-  if(!col %in% colnames(cases)) {
-    cli_abort(c(
-      x = "The column to summarize is not found in the cases data frame",
-      i = "You provided column: {col}",
       i = "Columns in cases: {colnames(cases)}"
     ))
   }
@@ -316,7 +308,7 @@ fmt_df_numeric <- function(x, digits=2) {
 #' @rdname summarize_by_node
 #' @export
 fmt_label <- function(x, fmt = NULL, expr = NULL, digits = 2) {
-  ensure_data_frame(x)
+  ensure(x, "data.frame")
 
   expr <- enquo(expr)
 
@@ -412,8 +404,8 @@ fmt_label <- function(x, fmt = NULL, expr = NULL, digits = 2) {
 vtree_apply <- function(cases, vtree, FUN, ...,
                         .mask=NULL, .args="cases") {
 
-  ensure_data_frame(cases)
-  ensure_vtree(vtree)
+  ensure(cases, "data.frame")
+  ensure(vtree, "vtree")
   ensure(FUN, "function")
 
   allowed <- c("cases", "nodes", "sel")
@@ -563,7 +555,8 @@ label_var_levels <- function(cases, vtree, var,
 #' also includes the count and percentage of missing values.
 #'
 #' Note that if a tree was pruned, these summaries will differ from the
-#' summaries shown by `summary(vtree)`
+#' summaries shown by `summary(vtree)`. That is also the true purpose of
+#' the function.
 #'
 #' If the tree
 #' was constructed using valid percentages (`attr(vtree, "vp")` is TRUE),
@@ -607,9 +600,7 @@ label_var_levels <- function(cases, vtree, var,
 #' @importFrom purrr map map_lgl map_dbl map_int
 summary_at_var <- function(vtree, var, as_char = FALSE,
                            as_df = FALSE) {
-  if(!inherits(vtree, "vtree")) {
-    cli_abort(c(x = "summary_at_var() requires a vtree object"))
-  }
+  ensure(vtree, "vtree")
 
   if(as_df) {
     as_char = TRUE

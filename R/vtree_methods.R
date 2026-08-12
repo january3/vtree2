@@ -50,13 +50,8 @@ names.vtree <- function(x) {
 #'         otherwise.
 #' @export
 is_vp <- function(x) {
-  if(!inherits(x, "vtree") & !inherits(x, "vtree_pattern")) {
-    cli_abort(c(x = 
-                "x must be a vtree or vtree_pattern object"))
-  }
-
+  ensure_vtree(x)
   attr(x, "vp")
-
 }
 
 
@@ -217,9 +212,7 @@ summary.vtree <- function(object, ...) {
 
 
 has_layout <- function(x) {
-  if(!inherits(x, "vtree")) {
-    cli_abort(c(x = "x must be a vtree object"))
-  }
+  ensure_vtree(x)
 
   node_names <- igraph::vertex_attr_names(x)
   edge_names <- igraph::edge_attr_names(x)

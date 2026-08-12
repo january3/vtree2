@@ -87,9 +87,7 @@ print.vtree_pattern <- function(x, ...) {
 #' plot(pat)
 #' @export
 pattern <- function(vtree) {
-  if(!inherits(vtree, "vtree")) {
-    cli_abort(c(x = "pattern() requires a vtree object"))
-  }
+  ensure(vtree, "vtree")
 
   nodes <- as_tibble(vtree)
 
@@ -129,9 +127,7 @@ pattern <- function(vtree) {
 # create a vtree from a pattern for plotting purposes.
 #' @importFrom dplyr last row_number
 vtree_from_pattern <- function(pat) {
-  if(!inherits(pat, "vtree_pattern")) {
-    cli_abort(c(x = "Input must be a vtree_pattern object"))
-  }
+  ensure(pat, "vtree_pattern")
 
   cnms <- attr(pat, "cols")
   levels <- attr(pat, "levels")

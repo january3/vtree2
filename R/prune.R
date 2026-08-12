@@ -362,6 +362,8 @@ prune <- function(vtree, condition, follow_only = FALSE,
                   mark_only = FALSE,
                   keep_na_sisters = is_vp(vtree)) {
 
+  ensure(vtree, "vtree")
+
   if(missing(condition)) {
     condition <- expr(FALSE)
   }
@@ -391,6 +393,7 @@ retain <- function(vtree, condition,
 #' @rdname prune
 #' @export
 mark <- function(vtree, condition, follow_only=FALSE) {
+  ensure(vtree, "vtree")
 
   condition <- enquo(condition)
   mask <- .get_mask(vtree, condition)
@@ -404,6 +407,7 @@ mark <- function(vtree, condition, follow_only=FALSE) {
 #' @rdname prune
 #' @export
 find_nodes <- function(vtree, condition, follow_only = FALSE) {
+  ensure(vtree, "vtree")
   condition <- enquo(condition)
 
   mask <- .get_mask(vtree, condition)
@@ -441,6 +445,8 @@ find_nodes <- function(vtree, condition, follow_only = FALSE) {
 #' @return A logical vector indicating which nodes follow or precede the nodes
 #' @export
 find_children <- function(vtree, mask) {
+  ensure(vtree, "vtree")
+  ensure(mask, "logical")
 
   follow <- vtree |>
     mutate(.mask = mask) |>
@@ -458,6 +464,8 @@ find_children <- function(vtree, mask) {
 #' @importFrom tidygraph map_bfs_back_lgl
 #' @export
 find_parents <- function(vtree, mask) {
+  ensure(vtree, "vtree")
+  ensure(mask, "logical")
 
   precede <- vtree |>
     mutate(.mask = mask) |>

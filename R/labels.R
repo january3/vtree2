@@ -228,6 +228,7 @@ add_labels <- function(vtree,
                        expr = NULL,
                        digits = 0) {
 
+  ensure_vtree(vtree)
   template <- match.arg(template, c("simple", "sameline", "long"))
 
   dflt <- .def_formats(template, fmt, fmt_na, fmt_root)
@@ -329,6 +330,7 @@ add_labels <- function(vtree,
 #' an attribute of the vtree object.
 #' @export
 add_aliases <- function(vtree, val_alias = NULL, col_alias = NULL) {
+  ensure_vtree(vtree)
 
   val_alias_n <- .normalize_val_alias(val_alias, vtree)
   col_alias_n <- .normalize_col_alias(col_alias, vtree)

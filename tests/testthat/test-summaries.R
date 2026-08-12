@@ -2,7 +2,7 @@ test_that("summarize_by_node works", {
 
   cases <- cases_from_freqtable(Titanic)
   vt <- vtree(cases, Class, Sex, Survived)
-  nodes <- vt |> activate("nodes") |> as_tibble()
+  nodes <- as_tibble(vt)
 
   stxt <- fmt_label(summarize_by_node(cases, vt, Survived))
   expect_equal(length(stxt), nrow(nodes))
@@ -45,6 +45,21 @@ test_that("summarize_by_node works", {
   s1txt <- fmt_label(s1)
   expect_equal(length(s1txt), nrow(nodes))
   expect_snapshot(s1txt)
+
+  # check that the vp argument works
+  vt1 <- vtree(titanicNA, Class, Survived)
+  s1 <- summarize_by_node(titanicNA, vt1, Sex)
+  expect_all_true(s1$Male_freq == s1$Male / s1$valid)
+  expect_all_true(abs(s1$Male_freq + s1$Female_freq - 1) < 1e-6)
+  expect_all_true(s1$valid == s1$denom)
+  expect_all_true(!c("NAs", "NAs_freq") %in% colnames(s1))
+
+  vt1 <- vtree(titanicNA, Class, Survived, .vp = FALSE)
+  s1 <- summarize_by_node(titanicNA, vt1, Sex)
+  expect_all_true(s1$Male_freq == s1$Male / s1$n)
+  expect_all_true(abs(s1$Male_freq + s1$Female_freq + s1$NAs_freq - 1) < 1e-6)
+  expect_all_true(s1$denom == s1$n)
+  expect_all_true(c("NAs", "NAs_freq") %in% colnames(s1))
 })
 
 test_that("numeric summaries work", {
@@ -81,18 +96,18 @@ test_that("errors are raised", {
   vt <- vtree(cases, Class, Sex, Survived)
 
   expect_error(summarize_by_node(vt, cases, Survived),
-               "cases must be a data frame")
+               "is not a data frame")
   expect_error(summarize_by_node(cases, vt, all_of(c("Survived", "Sex"))),
                "Only one column can be summarized at a time")
   expect_error(summarize_by_node(cases, as_tibble(vt), Survived),
-               "vtree must be a vtree object")
+               "is not a vtree object")
   expect_error(summarize_by_node(cases, vt, Foooo),
                "Can't select columns that don't exist.")
   cases$foo <- rnorm(nrow(cases))
   expect_error(vtree_apply(vt, vt, \(x) mean(x$foo)),
-               "requires a data frame")
+               "is not a data frame")
   expect_error(vtree_apply(cases, cases, \(x) mean(x$foo)),
-               "requires a vtree object")
+               "is not a vtree object")
   expect_error(vtree_apply(cases, vt, \(x) mean(x$foo),
                            .mask=c(TRUE, FALSE)),
                "length of .mask must be equal to the number of nodes")
@@ -111,7 +126,7 @@ test_that("summary_at_var works", {
   vt <- vtree(titanicNA, Class, Sex, Survived)
 
   expect_error(summary_at_var(titanicNA, "Class", as_char=FALSE),
-               "summary_at_var\\(\\) requires a vtree object")
+               "is not a vtree object")
 
   sm1 <- summary_at_var(vt, "Class", as_char=TRUE)
   expect_snapshot(sm1)

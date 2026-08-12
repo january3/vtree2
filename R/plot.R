@@ -379,6 +379,7 @@ plot_vtree <- function(x,
                       lwd = 1,
                       dir = NA) {
 
+  ensure_vtree(x)
   dir <- .normalize_dir(dir, x)
   #dir <- match.arg(dir, c("lr", "rl", "bt", "tb"))
 

@@ -1,3 +1,63 @@
+ensure <- function(x, what) {
+
+  arg <- rlang::caller_arg(x)
+
+  if(what == "list") {
+    check <- is.list(x)
+  } else if(what == "character") {
+    check <- is.character(x)
+    what <- "character vector"
+  } else if(what == "function") {
+    check <- is.function(x)
+  } else if(what == "data.frame") {
+    check <- is.data.frame(x)
+    what <- "data frame"
+  } else if(what == "numeric") {
+    check <- is.numeric(x)
+    what <- "number"
+  } else if(what == "integer") {
+    check <- is.integer(x)
+    what <- "vector of integer numbers"
+  } else if(what == "logical") {
+    check <- is.logical(x)
+    what <- "logical vector"
+  } else if(what == "factor") {
+    check <- is.factor(x)
+    what <- "factor"
+  } else {
+    check <- inherits(x, what)
+    what <- paste(what, "object")
+  }
+
+  if(!check) {
+    cli_abort(c(x = "Argument `{arg}` is not a {what}",
+      i = "You provided an object of class {class(x)}"),
+          call = rlang::caller_env())
+  }
+  x
+}
+
+ensure_vtree <- function(x) {
+  arg <- rlang::caller_arg(x)
+  if(!inherits(x, "vtree")) {
+    cli_abort(c(x = "Argument `{arg}` is not a vtree object",
+      i = "You provided an object of class {class(x)}"),
+          call = rlang::caller_env())
+  }
+  x
+}
+
+ensure_data_frame <- function(x) {
+  arg <- rlang::caller_arg(x)
+
+  if(!is.data.frame(x)) {
+    cli_abort(c(x = "Argument `{arg}` is not a data frame",
+      i = "You provided an object of class {class(x)}"
+    ))
+  }
+  x
+}
+
 #' @importFrom cli cli_abort
 die <- function(message = "Unspecified error.",
                 call = .envir, .envir = parent.frame()) {
