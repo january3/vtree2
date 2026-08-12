@@ -76,6 +76,12 @@ test_that("add_labels works", {
   expect_equal(sum(is.na(as_tibble(vt2)$label)), 0)
   expect_snapshot(as_tibble(vt2)$label)
 
+  vt2b <- add_labels(vt, template = "sameline")
+  expect_s3_class(vt2b, "vtree")
+  expect_true("label" %in% colnames(as_tibble(vt2b)))
+  expect_equal(sum(is.na(as_tibble(vt2b)$label)), 0)
+  expect_snapshot(as_tibble(vt2b)$label)
+
   vt3 <- add_labels(vt, fmt = "foo", fmt_na = "bar")
   expect_s3_class(vt3, "vtree")
   expect_true("label" %in% colnames(as_tibble(vt3)))
@@ -93,6 +99,7 @@ test_that("add_labels works", {
   expect_true("label" %in% colnames(as_tibble(vt5)))
   expect_equal(sum(is.na(as_tibble(vt5)$label)), 0)
   expect_setequal(as_tibble(vt5)$label, c("foo", "bar"))
+
 
 })
 

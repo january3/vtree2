@@ -133,10 +133,13 @@
 #' @param cases A data frame of cases, with one row per observation.
 #' @param x data frame, result of `summarize_by_node()`
 #' @param vp whether frequencies should be calculated using valid percentages
-#' @param fmt An expression for customized formatting. See Examples.
+#' @param fmt An glue format string for customized formatting. See Examples.
+#' @param expr An R expression for customized formatting. See Examples.
+#' @param digits For `fmt` strings, the number of digits to round numeric values
+#'        to.
 #' @param col The column variable to summarize. This should be a single
-#'            column name, quoted or not. It uses tidyselect evaluation, so
-#'            you can do `all_of("Survived")`.
+#'        column name, quoted or not. It uses tidyselect evaluation, so
+#'        you can do `all_of("Survived")`.
 #' @importFrom rlang ensym as_name
 #' @return A tibble with one row per node of the vtree, and columns for the
 #' summary statistics of the specified variable for the cases that match

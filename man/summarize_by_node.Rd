@@ -22,7 +22,12 @@ you can do \code{all_of("Survived")}.}
 
 \item{x}{data frame, result of \code{summarize_by_node()}}
 
-\item{fmt}{An expression for customized formatting. See Examples.}
+\item{fmt}{An glue format string for customized formatting. See Examples.}
+
+\item{expr}{An R expression for customized formatting. See Examples.}
+
+\item{digits}{For \code{fmt} strings, the number of digits to round numeric values
+to.}
 }
 \value{
 A tibble with one row per node of the vtree, and columns for the
