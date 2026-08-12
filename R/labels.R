@@ -228,7 +228,9 @@ add_labels <- function(vtree,
                        expr = NULL,
                        digits = 0) {
 
-  ensure_vtree(vtree)
+  ensure(vtree, "vtree")
+  ensure(mask, "logical")
+
   template <- match.arg(template, c("simple", "sameline", "long"))
 
   dflt <- .def_formats(template, fmt, fmt_na, fmt_root)
@@ -273,7 +275,7 @@ add_labels <- function(vtree,
   if(length(mask) == 1L) {
     mask <- rep(mask, nrow(nodes))
   } else if(length(mask) != nrow(nodes)) {
-    cli_abort(c(x= "Parameter mask should have a length of {nrow(nodes)}"))
+    cli_abort(c(x= "Parameter mask should have a length of {nrow(nodes)} or 1"))
   }
 
   vtree <- vtree |>
