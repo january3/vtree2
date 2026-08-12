@@ -2,14 +2,14 @@
 % Please edit documentation in R/summary.R
 \name{summary_at_var}
 \alias{summary_at_var}
-\title{Summarize a variable at a given node of a vtree}
+\title{Summarize a variable at all nodes of a vtree}
 \usage{
-summary_at_var(vtree, varname, as_char = FALSE, as_df = FALSE)
+summary_at_var(vtree, var, as_char = FALSE, as_df = FALSE)
 }
 \arguments{
 \item{vtree}{A vtree object}
 
-\item{varname}{The name of the variable to summarize}
+\item{var}{The variable to summarize (tidy-select)}
 
 \item{as_char}{If TRUE (default), return a formatted character string
 with the counts and percentages of each level of the variable at
@@ -26,7 +26,7 @@ is FALSE (default), a named integer vector with the counts of each
 level of the variable at that node.
 }
 \description{
-Summarizes a variable at a given node of a vtree. It
+Summarizes a variable at all nodes of a vtree. It
 returns a character string with the counts and percentages of each level
 of the variable at that node. If the variable has missing values, it
 also includes the count and percentage of missing values.

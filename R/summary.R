@@ -198,19 +198,9 @@
 #'
 #' @export
 summarize_by_node <- function(cases, vtree, col, vp=is_vp(vtree)) {
-  if(!is.data.frame(cases)) {
-    cli_abort(c(
-      x = "cases must be a data frame",
-      i = "You provided an object of class {class(cases)}"
-    ))
-  }
 
-  if(!inherits(vtree, "vtree")) {
-    cli_abort(c(
-      x = "vtree must be a vtree object",
-      i = "You provided an object of class {class(vtree)}"
-    ))
-  }
+  ensure_data_frame(cases)
+  ensure_vtree(vtree)
 
   col <- enquo(col)
   col <- tidyselect::eval_select(col, data = cases)
@@ -326,6 +316,7 @@ fmt_df_numeric <- function(x, digits=2) {
 #' @rdname summarize_by_node
 #' @export
 fmt_label <- function(x, fmt = NULL, expr = NULL, digits = 2) {
+  ensure_data_frame(x)
 
   expr <- enquo(expr)
 
@@ -421,13 +412,9 @@ fmt_label <- function(x, fmt = NULL, expr = NULL, digits = 2) {
 vtree_apply <- function(cases, vtree, FUN, ...,
                         .mask=NULL, .args="cases") {
 
-  if(!inherits(vtree, "vtree")) {
-    cli_abort(c(x = "vtree_apply() requires a vtree object"))
-  }
-
-  if(!is.data.frame(cases)) {
-    cli_abort(c(x = "vtree_apply() requires a data frame for cases"))
-  }
+  ensure_data_frame(cases)
+  ensure_vtree(vtree)
+  ensure(FUN, "function")
 
   allowed <- c("cases", "nodes", "sel")
   if(any(!.args %in% allowed)) {
@@ -531,13 +518,8 @@ label_var_levels <- function(cases, vtree, var,
                           sort=TRUE,
                           sep=", ") {
 
-  if(!inherits(vtree, "vtree")) {
-    cli_abort(c(x = "vtree_apply() requires a vtree object"))
-  }
-
-  if(!is.data.frame(cases)) {
-    cli_abort(c(x = "vtree_apply() requires a data frame for cases"))
-  }
+  ensure(cases, "data.frame")
+  ensure(vtree, "vtree")
 
   var <- enquo(var)
   var <- tidyselect::eval_select(var, data = cases)
@@ -573,9 +555,9 @@ label_var_levels <- function(cases, vtree, var,
   unlist(ret)
 }
 
-#' Summarize a variable at a given node of a vtree
+#' Summarize a variable at all nodes of a vtree
 #'
-#' Summarizes a variable at a given node of a vtree. It
+#' Summarizes a variable at all nodes of a vtree. It
 #' returns a character string with the counts and percentages of each level
 #' of the variable at that node. If the variable has missing values, it
 #' also includes the count and percentage of missing values.
@@ -614,7 +596,7 @@ label_var_levels <- function(cases, vtree, var,
 #' # compare with:
 #' summary(vt_p)
 #' @param vtree A vtree object
-#' @param varname The name of the variable to summarize
+#' @param var The variable to summarize (tidy-select)
 #' @param as_char If TRUE (default), return a formatted character string
 #'        with the counts and percentages of each level of the variable at
 #'        that node. If FALSE, return a named integer vector with the
@@ -623,7 +605,7 @@ label_var_levels <- function(cases, vtree, var,
 #'        number of counts, frequency, denominator and label.
 #' @export
 #' @importFrom purrr map map_lgl map_dbl map_int
-summary_at_var <- function(vtree, varname, as_char = FALSE,
+summary_at_var <- function(vtree, var, as_char = FALSE,
                            as_df = FALSE) {
   if(!inherits(vtree, "vtree")) {
     cli_abort(c(x = "summary_at_var() requires a vtree object"))
@@ -633,7 +615,16 @@ summary_at_var <- function(vtree, varname, as_char = FALSE,
     as_char = TRUE
   }
 
-  nodes <- as_tibble(vtree)
+  # create a mock data frame with column names corresponding to
+  # names(vtree) 
+  mock <- tibble::as_tibble(setNames(replicate(length(names(vtree)),
+                                               logical(0), simplify = FALSE),
+                              names(vtree)))
+
+  var <- enquo(var)
+  var <- tidyselect::eval_select(var, data = mock)
+  varname <- names(var)
+
   vp <- attr(vtree, "vp")
 
   levels <- levels(vtree)[[varname]] %||%
@@ -646,6 +637,7 @@ summary_at_var <- function(vtree, varname, as_char = FALSE,
     levels <- c(levels, NA)
   }
 
+  nodes <- as_tibble(vtree)
   # which nodes are variable splits for our variable?
   sel <- map_lgl(nodes[["path_l"]], \(p) {
     if(is.null(names(p))) {
