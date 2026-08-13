@@ -5,6 +5,15 @@ package](https://github.com/nbarrowman/vtree) by Nick Barrowman.
 
 ## Gallery
 
+``` R
+#> [1] "images/500px-Blue_Flag,_Ottawa.jpg"
+#> [1] "/tmp/Rtmpomm4by/temp_libpath1e877354b34c67/vtree2/images/500px-Blue_Flag,_Ottawa.jpg"
+#> [1] "images/500px-Irissetosa1.jpg"
+#> [1] "/tmp/Rtmpomm4by/temp_libpath1e877354b34c67/vtree2/images/500px-Irissetosa1.jpg"
+#> [1] "images/500px-Iris_virginica_2.jpg"
+#> [1] "/tmp/Rtmpomm4by/temp_libpath1e877354b34c67/vtree2/images/500px-Iris_virginica_2.jpg"
+```
+
 ![](reference/figures/README-unnamed-chunk-2-1.png)
 
 ## Installation
@@ -208,18 +217,22 @@ More docs available [here](https://january3.github.io/vtree2/).
 
 ## TODO/PROBLEMS
 
-- write a manual in the main vignette \[——\| \] 85% complete
-- summaries_vt and summaries_vt_df - that is clunky, maybe as_df option
-  or smth?
+- write a manual in the main vignette \[——-\| \] 90% complete
+- allow adjusting grob layouts in grob nodes
+- check the graphic summary example. if dir is tb, it looks ok (fonts
+  maybe slightly too large). But turn it around and the fonts on the
+  grob nodes are unreadable. Why?
 - the nodes of the diagrammer are adjusted to the size of the labels. We
   could do that, actually. I think it doesn’t look so good, but OK.
 - vtree constructors take only character or factor variables: ~~build in
   checking for column type~~ maybe add functions to convert numeric to
   factor? or some automation controlled with a param?
-- ~~easier formatting of labels using glue syntax~~
 - add_layout should not modify shape if present
 - faster processing of cases into trees
 - why is plotting patterns so slow?
+- ~~easier formatting of labels using glue syntax~~
+- ~~summaries_vt and summaries_vt_df - that is clunky, maybe as_df
+  option or smth? -\> rewrote it completely~~
 - ~~better support in add_palette for 1/ variable driven palettes
   (i.e. one color for one tree level / variable of the tree,
   deterministic such that colors don’t change if we prune a tree) 2/

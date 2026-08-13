@@ -1195,19 +1195,21 @@ corresponding images.
 library(dplyr)
 library(purrr)
 
-iris_urls <- list(
-versicolor="https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/Blue_Flag%2C_Ottawa.jpg/500px-Blue_Flag%2C_Ottawa.jpg",
-setosa="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Irissetosa1.jpg/500px-Irissetosa1.jpg",
-virginica="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/Iris_virginica_2.jpg/500px-Iris_virginica_2.jpg")
+# images are included with the package
+iris_imgs <- list(
+versicolor="images/500px-Blue_Flag,_Ottawa.jpg",
+setosa="images/500px-Irissetosa1.jpg",
+virginica="images/500px-Iris_virginica_2.jpg")
 
-get_grob <- function(url) {
-  tf <- tempfile(fileext = ".jpg")
-  download.file(url, tf, mode="wb")
+get_grob <- function(img) {
+  print(img)
+  tf <- system.file(img, package="vtree2")
+  print(tf)
   img <- jpeg::readJPEG(tf)
   grid::rasterGrob(img)
 }
 
-iris_grobs <- lapply(iris_urls, get_grob)
+iris_grobs <- lapply(iris_imgs, get_grob)
 
 vt <- iris |>
   mutate(Long_Petals = as.character(Petal.Length > 4)) |>
