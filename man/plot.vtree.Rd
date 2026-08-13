@@ -17,6 +17,7 @@ plot_vtree(
   margins = NULL,
   fontsizes = NULL,
   richtext = FALSE,
+  padding = 0.2,
   lwidth = NA,
   lheight = NA,
   lwd = 1,
@@ -60,6 +61,11 @@ each label will be fit separately.}
 \item{richtext}{If TRUE, use \code{\link[gridtext:richtext_grob]{gridtext::richtext_grob()}} for node
 labels, which is much slower, but allows fine control over text
 formatting. Default is FALSE.}
+
+\item{padding}{padding, in fraction of min(width, height) for all
+legend and labels. This actual value depends strongly on the size
+and geometry of the device, so this parameter is more of a
+guideline than a strict value.}
 
 \item{lwidth}{Label width relative to available space}
 

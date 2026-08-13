@@ -310,6 +310,10 @@ normalize_layout <- function(layout) {
 #'        "adaptive"; "fixed" means that all objects within the group will
 #'        have the same automatically adjusted font, and "adaptive" that
 #'        each label will be fit separately.
+#' @param padding padding, in fraction of min(width, height) for all
+#'        legend and labels. This actual value depends strongly on the size
+#'        and geometry of the device, so this parameter is more of a
+#'        guideline than a strict value.
 #' @param lwd line width for use with plotting
 #' @param na_fill The color to use for NA values. Default is "white".
 #' @param legend If "tiny" (default), only minimal legend with variable
@@ -375,6 +379,7 @@ plot_vtree <- function(x,
                       margins = NULL,
                       fontsizes = NULL,
                       richtext = FALSE,
+                      padding = .2,
                       lwidth = NA, lheight = NA,
                       lwd = 1,
                       dir = NA) {
@@ -410,6 +415,7 @@ plot_vtree <- function(x,
 
   params <- list(
     mar = margins,
+    padding = padding,
     fontsizes = fontsizes,
     richtext = richtext,
     lwd = lwd,

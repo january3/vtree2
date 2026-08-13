@@ -7,6 +7,36 @@ lwd_npc <- function(frac) {
   )
 }
 
+# we want to have the same vertical and horizontal padding in terms of
+# screen unit, but expressed as npc units. Since the screen might be
+# rectangular and not square, the width padding and height padding might
+# differ.
+recalculate_padding <- function(df, p_frac) {
+
+  #message("p_frac:", p_frac)
+  # recalculate in terms of npc units by looking at the minimum
+  # widths and minimum heights
+
+  p_w <- p_frac * max(df$width)
+  p_h <- p_frac * max(df$height)
+
+  #message("p_w:", p_w, " p_h:", p_h)
+  # convert the p_w and p_h to screen units
+
+  pp_w <- convertWidth(unit(p_w, "npc"), "points", valueOnly = TRUE)
+  pp_h <- convertHeight(unit(p_h, "npc"), "points", valueOnly = TRUE)
+
+  #message("pp_w:", pp_w, " pp_h:", pp_h)
+  ppmin <- min(pp_w, pp_h)
+
+  p_w <- convertWidth(unit(ppmin, "points"), "npc", valueOnly = TRUE)
+  p_h <- convertHeight(unit(ppmin, "points"), "npc", valueOnly = TRUE)
+  #message("new p_w:", p_w, " new p_h:", p_h)
+
+  return(list(w = p_w, h = p_h))
+}
+
+# depending on the option, returns a single textGrob or a richtext_grob
 .mk_text <- function(x, y, label, name,
                      color, fs, richtext = FALSE) {
   if(richtext) {
@@ -27,12 +57,22 @@ lwd_npc <- function(frac) {
 }
 
 # given a single grob, adapt the fontsize to fit a given w x h
+#' @importFrom grid convertWidth grobWidth
+#' @importFrom grid convertHeight grobHeight
 .adapt_fontsize_single_full <- function(grob, width, height,
                                         label, name, color,
                                         richtext = FALSE,
-                                        size_fct = 1) {
-  mins <- 5
+                                        p = list(w = 0.1 * width,
+                                                 h = 0.1 * height)
+                                        #size_fct = 1
+                                        ) {
+
+  if(p$w > width) { p$w <- 0.2 * width }
+  if(p$h > height) { p$h <- 0.2 * height }
+
+  mins <- 2.5
   maxs <- 150
+
   while(maxs - mins > 1) {
     fs <- (maxs + mins)/2
 
@@ -40,7 +80,8 @@ lwd_npc <- function(frac) {
     lw <- convertWidth(grobWidth(grob), "npc", valueOnly = TRUE)
     lh <-  convertHeight(grobHeight(grob), "npc", valueOnly = TRUE)
 
-    if(lw > size_fct * width || lh > size_fct * height) {
+    #if(lw > size_fct * width || lh > size_fct * height) {
+    if(lw > width - p$w || lh > height - p$h) {
       maxs <- fs
     } else {
       mins <- fs
@@ -52,13 +93,11 @@ lwd_npc <- function(frac) {
 }
 
 # adapt the font size of each grob separately
-#' @importFrom grid convertWidth grobWidth
-#' @importFrom grid convertHeight grobHeight
 adapt_fontsize_df <- function(grobs, df,
                            padding = .2,
                            richtext = FALSE,
                            ret_min = FALSE) {
-  .size_fct <- 1 - padding
+  #.size_fct <- 1 - padding
 
   ret <- map_dbl(seq_along(grobs), \(i)
                .adapt_fontsize_single_full(grobs[[i]],
@@ -68,7 +107,8 @@ adapt_fontsize_df <- function(grobs, df,
                  name = grobs[[i]]$name,
                  color = df$color[[i]],
                  richtext = richtext,
-                 .size_fct))
+                 p = padding))
+                 #.size_fct))
   if(ret_min) {
     return(min(ret))
   } else {
@@ -102,7 +142,8 @@ set_fontsize_df <- function(df, fs, richtext=FALSE) {
   ret
 }
 
-adjust_linewidth <- function(x, path, lwd, nokids = FALSE) {
+# set the line widths for a bunch of grobs in a path
+set_linewidth <- function(x, path, lwd, nokids = FALSE) {
   path <- gPath(path)
 
   mutter <- getGrob(x, gPath = path)
@@ -136,6 +177,10 @@ adjust_fontsize_df <- function(x, spec) {
   richtext <- spec$richtext %||% FALSE
 
   padding <- padding %||% .1
+
+  #message("adjust_fontsize_df padding:", padding)
+  pad <- recalculate_padding(df, padding)
+
   path <- gPath(path)
 
   mutter <- getGrob(x, gPath = path)
@@ -146,11 +191,11 @@ adjust_fontsize_df <- function(x, spec) {
   } else if(font == "fixed") {
     fs <- fixed_fontsize_df(kinder, df,
                             richtext = richtext,
-                            padding = padding)
+                            padding = pad)
   } else if(font == "adaptive") {
     fs <- adapt_fontsize_df(kinder, df,
                             richtext = richtext,
-                            padding = padding)
+                            padding = pad)
   } else {
     cli_abort(c(x = "Unsupported fontsize mode: {font}"))
   }
@@ -185,7 +230,7 @@ makeContent.vtree_plot <- function(x) {
   lwd <- lwd_npc(0.001 * x$params$lwd)
   for(i in seq_along(spec$lwd)) {
     s <- spec$lwd[[i]]
-    x <- adjust_linewidth(x, s$path,
+    x <- set_linewidth(x, s$path,
                           lwd = x$params$lwd, s$nokids %||% FALSE)
   }
 
@@ -343,6 +388,7 @@ makeContent.vtree_plot <- function(x) {
   lwd       <- params$lwd
   fontsizes <- params$fontsizes
   richtext  <- params$richtext
+  padding   <- params$padding %||% .2
 
   spec      <- list()
   spec$lwd <- list()
@@ -358,6 +404,7 @@ makeContent.vtree_plot <- function(x) {
                               lwd = lwd, richtext = richtext))
     spec$fs$legend_levels <- list(path = c("legend", "levels", "text"),
                                df = legend$levels,
+                               padding = padding,
                                fs = fontsizes$legend_labels,
                                richtext = richtext,
                                widths = legend$levels$width,
@@ -380,7 +427,7 @@ makeContent.vtree_plot <- function(x) {
                              richtext = richtext,
                              widths = legend$titles$width,
                              heights = legend$titles$height,
-                             padding = .2)
+                             padding = padding)
 
   legend <- gTree(gp=gpar(), children = do.call(gList, kinder),
                   name = "legend")
@@ -424,8 +471,9 @@ makeContent.vtree_plot <- function(x) {
   kinder <- list()
 
   # padding
-  pad <- min(c(nodes$width * .1,
-               nodes$height * .1))
+  p <- params$padding %||% .1
+  pad <- min(c(nodes$width * p,
+               nodes$height * p))
 
   fl <- 1/5  # fraction for the label
 
@@ -465,6 +513,7 @@ makeContent.vtree_plot <- function(x) {
   labels <- .get_labels(nodes, fs = 9, richtext = richtext)
   spec$fs$plots <- list(path = c("plots", "text"),
                         df = nodes,
+                        padding = 0,
                         richtext = richtext,
                         fs = "adaptive",
                         widths = nodes$width,
@@ -492,8 +541,9 @@ makeContent.vtree_plot <- function(x) {
   legend    <- params$legend
   lwd       <- params$lwd
   fontsizes <- params$fontsizes
-  params$richtext <- params$richtext %||% TRUE
+  #params$richtext <- params$richtext %||% TRUE
   richtext  <- params$richtext
+  padding   <- params$padding %||% .1
 
   spec <- list()
   spec$lwd <- list()
@@ -543,7 +593,7 @@ makeContent.vtree_plot <- function(x) {
                       fs = fontsizes$nodes,
                       widths = nodes$width,
                       heights = nodes$height,
-                      padding = .15)
+                      padding = padding)
   spec$lwd$nodes <- list(path = c("nodes", "rect"))
 
 
