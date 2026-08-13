@@ -1124,6 +1124,13 @@ optimal font size is calculated for all objects within the group, and then
 the minimal font size is used for all objects. When "adaptive" is used, then each
 object is fit separately, and the font sizes can be different for each object.
 
+**`padding`**: you can try to tweak this parameter if the padding of the
+label nodes or legend is not to your liking. `vtree2` attempts to
+dynamically fit the text inside of the nodes, but that does not always
+works. The parameter is interpreted as the desired fraction of the
+width/height of the label to be used as padding, but the effective padding
+depends on the actual device size and geometry.
+
 **`lwd`** line width for use with plotting. Unfortunately, the default line
 width is not relative to the device size, but is fixed to an absolute
 value; therefore, for small devices the lines may appeary too thick.
@@ -1239,7 +1246,7 @@ with `ggplot2::ggplotGrob()`. The `grob` column is a list-column, so we need to
 manipulate it carefully. Also, we need to set an NA value for the non-leaf
 nodes.
 
-```{r insets2,fig.width=10,fig.height=4}
+```{r insets2,fig.width=12,fig.height=4}
 # first, a tree with simplified labels on the leaf nodes
 cases <- cases_from_freqtable(Titanic)
 vt <- vtree(cases, Sex, Survived)

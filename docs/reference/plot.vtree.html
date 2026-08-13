@@ -63,6 +63,7 @@
 <span>  margins <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  fontsizes <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  richtext <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  padding <span class="op">=</span> <span class="fl">0.2</span>,</span>
 <span>  lwidth <span class="op">=</span> <span class="cn">NA</span>,</span>
 <span>  lheight <span class="op">=</span> <span class="cn">NA</span>,</span>
 <span>  lwd <span class="op">=</span> <span class="fl">1</span>,</span>
@@ -129,6 +130,13 @@ each label will be fit separately.</p></dd>
 <dd><p>If TRUE, use <code><a href="https://wilkelab.org/gridtext/reference/richtext_grob.html" class="external-link">gridtext::richtext_grob()</a></code> for node
 labels, which is much slower, but allows fine control over text
 formatting. Default is FALSE.</p></dd>
+
+
+<dt id="arg-padding">padding<a class="anchor" aria-label="anchor" href="#arg-padding"></a></dt>
+<dd><p>padding, in fraction of min(width, height) for all
+legend and labels. This actual value depends strongly on the size
+and geometry of the device, so this parameter is more of a
+guideline than a strict value.</p></dd>
 
 
 <dt id="arg-lwidth">lwidth<a class="anchor" aria-label="anchor" href="#arg-lwidth"></a></dt>

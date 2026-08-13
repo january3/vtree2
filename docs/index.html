@@ -69,19 +69,13 @@
 <div class="section level2">
 <h2 id="gallery">Gallery<a class="anchor" aria-label="anchor" href="#gallery"></a>
 </h2>
-<div class="sourceCode" id="cb1"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="co">#&gt; [1] "images/500px-Blue_Flag,_Ottawa.jpg"</span></span>
-<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="co">#&gt; [1] "/tmp/Rtmpomm4by/temp_libpath1e877354b34c67/vtree2/images/500px-Blue_Flag,_Ottawa.jpg"</span></span>
-<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="co">#&gt; [1] "images/500px-Irissetosa1.jpg"</span></span>
-<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="co">#&gt; [1] "/tmp/Rtmpomm4by/temp_libpath1e877354b34c67/vtree2/images/500px-Irissetosa1.jpg"</span></span>
-<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a><span class="co">#&gt; [1] "images/500px-Iris_virginica_2.jpg"</span></span>
-<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a><span class="co">#&gt; [1] "/tmp/Rtmpomm4by/temp_libpath1e877354b34c67/vtree2/images/500px-Iris_virginica_2.jpg"</span></span></code></pre></div>
 <p><img src="reference/figures/README-unnamed-chunk-2-1.png" alt="" width="100%"></p>
 </div>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
 <p>You can install the development version of vtree2 like so:</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html" class="external-link">pak</a></span><span class="op">(</span><span class="st">"january3/vtree2"</span><span class="op">)</span></span></code></pre></div>
 <div class="section level3">
 <h3 id="vtree2-workflow">vtree2 workflow<a class="anchor" aria-label="anchor" href="#vtree2-workflow"></a>
@@ -103,7 +97,7 @@
 <li>a data frame with one row per combination of factor levels, and a frequency column (frequency table)</li>
 </ul>
 <p>While the former ones are common in the wild, the builtin R examples are often the latter. The following example shows how to construct a vtree from a frequency table and plot it with <code>vtree2</code>.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://january3.github.io/vtree2/">vtree2</a></span><span class="op">)</span></span>
 <span><span class="va">tdf</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/cases_from_freqtable.html">cases_from_freqtable</a></span><span class="op">(</span><span class="va">Titanic</span><span class="op">)</span></span>
 <span><span class="va">vt</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/vtree.html">vtree</a></span><span class="op">(</span><span class="va">tdf</span>, <span class="va">Class</span>, <span class="va">Sex</span>, <span class="va">Survived</span><span class="op">)</span></span>
@@ -136,7 +130,7 @@
 <span><span class="co">#&gt; 19│Class:2nd/Sex:Male/Survived:Yes  │   25│0.140│  179│      0│  179</span></span>
 <span><span class="co">#&gt; 20│Class:2nd/Sex:Female/Survived:No │   13│0.123│  106│      0│  106</span></span></code></pre></div>
 <p><code>vt</code> is now an object of class <code>vtree</code>, which is basically <code>tidygraph</code>’s <code>tbl_graph</code> with some extra attributes. You can plot it with <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code>:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">vt</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">vt</span>, layout <span class="op">=</span> <span class="st">"proportional"</span>, legend<span class="op">=</span><span class="cn">TRUE</span>, show_root<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
 <p><img src="reference/figures/README-example_plot-1.png" alt="" width="100%"></p>
@@ -146,7 +140,7 @@
 <h3 id="vtree-pruning">Vtree pruning<a class="anchor" aria-label="anchor" href="#vtree-pruning"></a>
 </h3>
 <p>With the <code><a href="reference/prune.html">prune()</a></code> function, you can find nodes which fullfill a certain condition and remove them (along with their children) from the vtree:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ucb</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/cases_from_freqtable.html">cases_from_freqtable</a></span><span class="op">(</span><span class="va">UCBAdmissions</span><span class="op">)</span></span>
 <span><span class="va">vt</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/vtree.html">vtree</a></span><span class="op">(</span><span class="va">ucb</span>, <span class="va">Dept</span>, <span class="va">Gender</span>, <span class="va">Admit</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="reference/prune.html">prune</a></span><span class="op">(</span><span class="va">n</span> <span class="op">&lt;</span> <span class="fl">150</span> <span class="op">|</span> <span class="va">freq</span> <span class="op">&lt;</span> <span class="fl">.15</span><span class="op">)</span></span>
@@ -158,7 +152,7 @@
 <h3 id="labelling-and-colors">Labelling and colors<a class="anchor" aria-label="anchor" href="#labelling-and-colors"></a>
 </h3>
 <p>While colors and labels can be generated automatically, it is possible to customize them by modifying the <code>label</code> and <code>fill</code> columns of the vtree object:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">vt</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/vtree.html">vtree</a></span><span class="op">(</span><span class="va">tdf</span>, <span class="va">Class</span>, <span class="va">Survived</span><span class="op">)</span></span>
 <span><span class="va">vt</span> <span class="op">&lt;-</span> <span class="va">vt</span> <span class="op">|&gt;</span> <span class="fu"><a href="reference/add_labels.html">add_labels</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="co"># add default labels</span></span>
 <span>  <span class="fu"><a href="reference/vtree_palette.html">add_palette</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -174,7 +168,7 @@
 <h3 id="summaries">Summaries<a class="anchor" aria-label="anchor" href="#summaries"></a>
 </h3>
 <p>The tree can be used to produce per-node summaries of any data. For example, if you have an additional variable for your cases, you can add summary of the values as labels to the nodes. We select here only one node (1st Class), just to zoom in on that part of the graph. You can also select the nodes for which you want to manipulate the label, for example with <code><a href="reference/prune.html">mark()</a></code>:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">vt</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/vtree.html">vtree</a></span><span class="op">(</span><span class="va">tdf</span>, <span class="va">Class</span>, <span class="va">Sex</span>, <span class="va">Survived</span><span class="op">)</span></span>
 <span>                                         </span>
 <span><span class="va">sm_txt</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/summarize_by_node.html">summarize_by_node</a></span><span class="op">(</span><span class="va">tdf</span>, <span class="va">vt</span>, <span class="va">Age</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -214,7 +208,6 @@
 <ul>
 <li>write a manual in the main vignette [——-| ] 90% complete</li>
 <li>allow adjusting grob layouts in grob nodes</li>
-<li>check the graphic summary example. if dir is tb, it looks ok (fonts maybe slightly too large). But turn it around and the fonts on the grob nodes are unreadable. Why?</li>
 <li>the nodes of the diagrammer are adjusted to the size of the labels. We could do that, actually. I think it doesn’t look so good, but OK.</li>
 <li>vtree constructors take only character or factor variables: <del>build in checking for column type</del> maybe add functions to convert numeric to factor? or some automation controlled with a param?</li>
 <li>add_layout should not modify shape if present</li>
@@ -269,6 +262,7 @@
 </h2>
 <ul>
 <li>legend titles sometimes overlap with the legend</li>
+<li><del>check the graphic summary example. if dir is tb, it looks ok (fonts maybe slightly too large). But turn it around and the fonts on the grob nodes are unreadable. Why?</del></li>
 <li><del>aliases are ignored for the legend. Maybe aliases should behave like palettes, i.e. also set an attribute to be used by legend?</del></li>
 <li><del>“Missing” is missing from the legend on the user guide example for adding aliases</del></li>
 <li><del>if some variables disappear from the plot, the legend throws an error</del></li>

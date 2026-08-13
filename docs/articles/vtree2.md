@@ -1359,6 +1359,13 @@ and then the minimal font size is used for all objects. When “adaptive”
 is used, then each object is fit separately, and the font sizes can be
 different for each object.
 
+**`padding`**: you can try to tweak this parameter if the padding of the
+label nodes or legend is not to your liking. `vtree2` attempts to
+dynamically fit the text inside of the nodes, but that does not always
+works. The parameter is interpreted as the desired fraction of the
+width/height of the label to be used as padding, but the effective
+padding depends on the actual device size and geometry.
+
 **`lwd`** line width for use with plotting. Unfortunately, the default
 line width is not relative to the device size, but is fixed to an
 absolute value; therefore, for small devices the lines may appeary too
@@ -1451,11 +1458,11 @@ get_grob <- function(img) {
 
 iris_grobs <- lapply(iris_imgs, get_grob)
 #> [1] "images/500px-Blue_Flag,_Ottawa.jpg"
-#> [1] "/tmp/Rtmpomm4by/temp_libpath1e87737fa7fe80/vtree2/images/500px-Blue_Flag,_Ottawa.jpg"
+#> [1] "/tmp/Rtmpomm4by/temp_libpath1e8773baffacd/vtree2/images/500px-Blue_Flag,_Ottawa.jpg"
 #> [1] "images/500px-Irissetosa1.jpg"
-#> [1] "/tmp/Rtmpomm4by/temp_libpath1e87737fa7fe80/vtree2/images/500px-Irissetosa1.jpg"
+#> [1] "/tmp/Rtmpomm4by/temp_libpath1e8773baffacd/vtree2/images/500px-Irissetosa1.jpg"
 #> [1] "images/500px-Iris_virginica_2.jpg"
-#> [1] "/tmp/Rtmpomm4by/temp_libpath1e87737fa7fe80/vtree2/images/500px-Iris_virginica_2.jpg"
+#> [1] "/tmp/Rtmpomm4by/temp_libpath1e8773baffacd/vtree2/images/500px-Iris_virginica_2.jpg"
 
 vt <- iris |>
   mutate(Long_Petals = as.character(Petal.Length > 4)) |>

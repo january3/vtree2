@@ -18,6 +18,7 @@ plot_vtree(
   margins = NULL,
   fontsizes = NULL,
   richtext = FALSE,
+  padding = 0.2,
   lwidth = NA,
   lheight = NA,
   lwd = 1,
@@ -85,6 +86,12 @@ plot_vtree(
   [`gridtext::richtext_grob()`](https://wilkelab.org/gridtext/reference/richtext_grob.html)
   for node labels, which is much slower, but allows fine control over
   text formatting. Default is FALSE.
+
+- padding:
+
+  padding, in fraction of min(width, height) for all legend and labels.
+  This actual value depends strongly on the size and geometry of the
+  device, so this parameter is more of a guideline than a strict value.
 
 - lwidth:
 

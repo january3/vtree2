@@ -1321,6 +1321,13 @@ used, then optimal font size is calculated for all objects within the
 group, and then the minimal font size is used for all objects. When
 “adaptive” is used, then each object is fit separately, and the font
 sizes can be different for each object.</p>
+<p><strong><code>padding</code></strong>: you can try to tweak this
+parameter if the padding of the label nodes or legend is not to your
+liking. <code>vtree2</code> attempts to dynamically fit the text inside
+of the nodes, but that does not always works. The parameter is
+interpreted as the desired fraction of the width/height of the label to
+be used as padding, but the effective padding depends on the actual
+device size and geometry.</p>
 <p><strong><code>lwd</code></strong> line width for use with plotting.
 Unfortunately, the default line width is not relative to the device
 size, but is fixed to an absolute value; therefore, for small devices
@@ -1408,11 +1415,11 @@ with the corresponding images.</p>
 <span></span>
 <span><span class="va">iris_grobs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">iris_imgs</span>, <span class="va">get_grob</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "images/500px-Blue_Flag,_Ottawa.jpg"</span></span>
-<span><span class="co">#&gt; [1] "/tmp/Rtmpomm4by/temp_libpath1e87737fa7fe80/vtree2/images/500px-Blue_Flag,_Ottawa.jpg"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/Rtmpomm4by/temp_libpath1e8773baffacd/vtree2/images/500px-Blue_Flag,_Ottawa.jpg"</span></span>
 <span><span class="co">#&gt; [1] "images/500px-Irissetosa1.jpg"</span></span>
-<span><span class="co">#&gt; [1] "/tmp/Rtmpomm4by/temp_libpath1e87737fa7fe80/vtree2/images/500px-Irissetosa1.jpg"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/Rtmpomm4by/temp_libpath1e8773baffacd/vtree2/images/500px-Irissetosa1.jpg"</span></span>
 <span><span class="co">#&gt; [1] "images/500px-Iris_virginica_2.jpg"</span></span>
-<span><span class="co">#&gt; [1] "/tmp/Rtmpomm4by/temp_libpath1e87737fa7fe80/vtree2/images/500px-Iris_virginica_2.jpg"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/Rtmpomm4by/temp_libpath1e8773baffacd/vtree2/images/500px-Iris_virginica_2.jpg"</span></span>
 <span></span>
 <span><span class="va">vt</span> <span class="op">&lt;-</span> <span class="va">iris</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>Long_Petals <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">Petal.Length</span> <span class="op">&gt;</span> <span class="fl">4</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -1477,7 +1484,7 @@ carefully. Also, we need to set an NA value for the non-leaf nodes.</p>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>shape <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">leaf</span>, <span class="st">"rectangle"</span>, <span class="st">"roundrectangle"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>grob <span class="op">=</span> <span class="va">grobs</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">vt</span><span class="op">)</span></span></code></pre></div>
-<p><img src="vtree2_files/figure-html/insets2-1.png" class="r-plt" alt="" width="960"></p>
+<p><img src="vtree2_files/figure-html/insets2-1.png" class="r-plt" alt="" width="1152"></p>
 <p>There is one issue with such plots: unlike <code>vtree2</code>,
 <code>ggplot2</code> does not fit font sizes automatically to the
 available space. If your image is too small, bad things will happen:</p>
