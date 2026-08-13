@@ -423,7 +423,10 @@ makeContent.vtree_plot <- function(x) {
   spec$lwd <- list()
   kinder <- list()
 
-  pad <- nodes$width * .05 # padding
+  # padding
+  pad <- min(c(nodes$width * .1,
+               nodes$height * .1))
+
   fl <- 1/5  # fraction for the label
 
   rects <- .get_node_rects(nodes, lwd = lwd)
@@ -431,13 +434,15 @@ makeContent.vtree_plot <- function(x) {
   nodes <- nodes |>
     mutate(empty = is.na(.data[["label"]]) | .data[["label"]] == "") |>
     mutate(frac_l = ifelse(.data[["empty"]], 0, fl)) |>
-    mutate(width = .data[["width"]] - 2 * pad)
+    mutate(width = .data[["width"]] - 2 * pad) |>
+    mutate(t_height = .data[["height"]]) |>
+    mutate(g_height = (.data[["height"]] - 3 * pad) * (1 - .data[["frac_l"]])) |>
+    mutate(l_height = (.data[["height"]] - 3 * pad) * .data[["frac_l"]]) |>
+    mutate(y0 = .data[["y"]] - .data[["height"]] / 2 + pad)
 
   gnodes <- nodes |>
-    mutate(y = .data[["y"]] - .data[["height"]] / 2 + pad) |> # set to bottom
-                                        # plust pad
-    mutate(height = .data[["height"]] * (1 - .data[["frac_l"]]) - 1.5 * pad) |>
-    mutate(y = .data[["y"]] + .data[["height"]] / 2)
+    mutate(y = .data[["y0"]] + .data[["g_height"]] / 2) |>
+    mutate(height = .data[["g_height"]])
 
   grobs <- map(seq_along(gnodes$x), \(i) {
                  g <- grobs[[i]]
@@ -452,9 +457,10 @@ makeContent.vtree_plot <- function(x) {
                  children = do.call(gList, grobs),
                  name = "plot_obj")
 
-  nodes <- mutate(nodes, y = .data[["y"]] + .data[["height"]]/2 - pad) |>
-    mutate(height = .data[["frac_l"]] * .data[["height"]] - 1.5 * pad) |>
-    mutate(y = .data[["y"]] - .data[["height"]] / 2)
+  nodes <- nodes |>
+    mutate(y = .data[["y0"]] + .data[["g_height"]] + pad +
+               .data[["l_height"]] / 2) |>
+    mutate(height = .data[["l_height"]])
 
   labels <- .get_labels(nodes, fs = 9, richtext = richtext)
   spec$fs$plots <- list(path = c("plots", "text"),
@@ -467,7 +473,6 @@ makeContent.vtree_plot <- function(x) {
   ret <- gTree(gp = gpar(),
         children = gList(rects=rects, grobs = grobs, text=labels),
         name = "plots")
-
 
   list(ret = ret, spec = spec)
 }
