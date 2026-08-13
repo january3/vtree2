@@ -472,6 +472,7 @@ makeContent.vtree_plot <- function(x) {
 
   # padding
   p <- params$padding %||% .1
+  p <- p / 2
   pad <- min(c(nodes$width * p,
                nodes$height * p))
 
