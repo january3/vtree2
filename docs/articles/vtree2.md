@@ -798,7 +798,7 @@ vt <- vtree(tg, supp, dose)
 
 library(glue)
 sm <- summarize_by_node(tg, vt, len) |>
-  fmt_label() #fmt = sprintf("mean: %.1f sd: %.1f", mean, sd))
+  fmt_label()
 
 vt |>
   add_aliases(col_alias = c(supp = "Supplement",
@@ -824,7 +824,7 @@ summaries:
 It is also possible to include graphical summaries; see the section
 “Inset plots” for more details.
 
-### Summaries with `summarize_by_node()` and `fmt_label()`.
+### Summaries with `summarize_by_node()`
 
 Each row of the data frame returned by `summarize_by_node` corresponds
 to one row of the nodes data frame in the vtree, hence the name of the
@@ -922,6 +922,38 @@ head(sm)
 
 The denominator above is equal to column `n`, total number of cases per
 node.
+
+### Formatting statistics with `fmt_label()`
+
+The function takes the output from
+[`summarize_by_node()`](https://january3.github.io/vtree2/reference/summarize_by_node.md)
+and converts it to a character vector of labels. By default, the
+function looks into the `type` column of the data frame to determine
+whether the summarized variable is categorical or numeric, and serves
+either a categorical or numerical summary of the data.
+
+The output can be customized either with glue format strings (argument
+`fmt`) or R expressions (argument `expr`). The following are equivalent:
+
+``` r
+vt <- vtree(titanicNA, Class, Survived)
+
+sm <- summarize_by_node(titanicNA, vt, Sex, vp=FALSE)
+
+txt1 <- fmt_label(sm, fmt="{missing} {n} {Male_freq}", digits=2)
+txt2 <- fmt_label(sm, expr=glue("{missing} {n} {round(Male_freq, digits=2)}"))
+
+all(txt1 == txt2)
+#> [1] TRUE
+```
+
+There are two differences between `fmt` and `expr`:
+
+- `fmt` uses rounded versions of numeric columns. Each numeric column is
+  rounded with the specified number of digits (argument `digits`).
+- `expr` allows any kind of R expression, including conditional
+  expressions with `ifelse`, `if_else` and `case_when`, and string
+  formatting with `sprintf`, `glue` etc.
 
 ### Custom statistics with `vtree_apply()`
 
@@ -1296,7 +1328,7 @@ p3 <- plot(vt, legend = TRUE) # or legend = "full"
 plot_grid(p1, p2, p3, nrow = 1)
 ```
 
-![](vtree2_files/figure-html/unnamed-chunk-4-1.png)
+![](vtree2_files/figure-html/unnamed-chunk-5-1.png)
 
 **`dir`** direction of the tree. One of “lr” (left to right), “rl”
 (right to left), “tb” (top to bottom), “bt” (bottom to top). Default is
@@ -1310,7 +1342,7 @@ p4 <- plot(vt, dir = "rl")
 plot_grid(p1, p2, p3, p4, nrow = 1)
 ```
 
-![](vtree2_files/figure-html/unnamed-chunk-5-1.png)
+![](vtree2_files/figure-html/unnamed-chunk-6-1.png)
 
 **`fontsizes`** Font sizes for the various labels are automatically fit
 to the available space, but sometimes you might manually adjust them.
@@ -1381,6 +1413,8 @@ plot(vt, richtext = TRUE, legend = TRUE)
 
 ## Inset plots
 
+### Images and other graphical objects
+
 It is possible to add any kind of “grob” - graphical object - to the
 nodes description. This includes not only bitmap images, but also
 `ggplot2` plots, which can be easily converted to a grob with the
@@ -1432,6 +1466,8 @@ layout |>
 ```
 
 ![](vtree2_files/figure-html/inset1-1.png)
+
+### Inserting ggplot2 objects
 
 Here, we choose only the “Sex” and “Survived” nodes for the construction
 of the vtree. However, we make a ggplot object for each of the leaf
@@ -1492,4 +1528,153 @@ too small, bad things will happen:
 plot(vt)
 ```
 
-![](vtree2_files/figure-html/unnamed-chunk-6-1.png)
+![](vtree2_files/figure-html/unnamed-chunk-7-1.png)
+
+### Graphical summary example
+
+Below, we will create a graphical summary for a data set. We will use
+the `ToothGrowth` data set, which contains two categorical variables
+(supplement type and dosage) and the resulting length of odontoblasts in
+guinea pigs. The vtree will be created using the supplement type and
+dosage as variables, and we will make a graphical summary for the third
+variable, length.
+
+``` r
+# first, some recoding
+tg <- ToothGrowth |>
+  mutate(dose = paste("Dose", dose))
+
+vt <- vtree(tg, supp, dose) |>
+  add_aliases(col_alias = c(supp = "Supplement type",
+                            dose = "Dosage"))
+plot(vt)
+```
+
+![](vtree2_files/figure-html/gsum-1.png)
+
+The graphical summary should be on leaf nodes only. It should show how
+the data in that particular node compares to the remaining nodes.
+
+For this, we need a modified `tg` data frame - one which assigns a leaf
+node id to each of the samples. We can do that with the `vtree_apply`,
+combined with `purrr`’s `imap_dfr` (you could also use `Reduce` and
+friends). `vtree_apply` calls the provided function once per node with
+the subset of the data frame that corresponds to that node; we will use
+it to partition the data.
+
+In addition, we will call vtree_apply only for the leaf nodes. That will
+ensure that each sample is shown only once in the resulting data set.
+
+``` r
+mask <- find_nodes(vt, leaf)
+chunks <- vtree_apply(tg, vt, \(x) x, .mask = mask)
+
+# the chunks correspond to the nodes
+names(chunks)
+#> [1] "node_4" "node_5" "node_6" "node_7" "node_8" "node_9"
+as_tibble(vt)$node_key[mask] # same!
+#> [1] "node_4" "node_5" "node_6" "node_7" "node_8" "node_9"
+
+# the modified tg data frame
+tg_mod <- imap_dfr(chunks, \(ch, nm) {
+                     ch[["node_key"]] <- nm
+                     ch })
+```
+
+Now that we have the input data frame for ggplot2, we can proceed with
+constructing the plots. First draft shows how the plot should look like:
+
+``` r
+library(ggplot2)
+# let us select one node to mark on the plot
+df <- tg_mod |>
+  mutate(selected = ifelse(node_key == "node_4", "yes", "no"))
+
+ggplot(df, aes(x = node_key, y = len, fill=selected)) +
+  geom_violin() +
+  geom_boxplot(width=.1, fill="white") +
+  scale_fill_manual(values = c(yes="red", no="grey")) +
+  theme_void() +
+  theme(legend.position = "none")
+```
+
+![](vtree2_files/figure-html/gsum3-1.png)
+
+The void theme and removing the legend make the graphic better readable
+when it is squeezed into a tree node.
+
+We just need to generate this plot for each leaf node, converting it to
+a grob.
+
+``` r
+plotfunc <- function(node, tg_mod) {
+  df <- tg_mod |>
+    mutate(node_key = factor(node_key, levels = names(chunks))) |>
+    mutate(selected = ifelse(node_key == node, "yes", "no"))
+
+  p <- ggplot(df, aes(x = node_key, y = len, fill=selected)) +
+    geom_violin() +
+    geom_boxplot(width=.1, fill="white") +
+    scale_fill_manual(values = c(yes="red", no="grey")) +
+    theme_void() +
+    theme(legend.position = "none")
+  ggplotGrob(p)
+}
+
+grobs <- map(names(chunks), plotfunc, tg_mod)
+names(grobs) <- names(chunks)
+```
+
+All that remains to do is 1) assign the grobs to the vtree object, 2)
+figure out how to best configure the layout.
+
+``` r
+vt |>
+  add_palette(palettes = c("Purples", "Blues")) |>
+  add_labels(fmt = "{node_val}", fmt_root = "{n}") |>
+  add_layout(dir = "tb", varspace = c(root = 1, supp=1, dose=2),
+             varsize = c(root = .4, supp=.4, dose=.9),
+             lwidth = 1,
+             lheight=.9) |>
+  mutate(grob = ifelse(leaf, grobs[node_key], NA)) |>
+  plot(legend=FALSE)
+```
+
+![](vtree2_files/figure-html/gsum5-1.png)
+
+An alternative representation where we first split the tree by dosage
+and then by supplement type allows to better compare the effects of the
+supplement types:
+
+``` r
+vt <- vtree(tg, dose, supp) |>
+  add_aliases(col_alias = c(supp = "Supplement type",
+                            dose = "Dosage"))
+mask <- find_nodes(vt, leaf)
+chunks <- vtree_apply(tg, vt, \(x) x, .mask = mask)
+
+# the chunks correspond to the nodes
+names(chunks)
+#> [1] "node_5"  "node_6"  "node_7"  "node_8"  "node_9"  "node_10"
+as_tibble(vt)$node_key[mask] # same!
+#> [1] "node_5"  "node_6"  "node_7"  "node_8"  "node_9"  "node_10"
+
+# the modified tg data frame
+tg_mod <- imap_dfr(chunks, \(ch, nm) {
+                     ch[["node_key"]] <- nm
+                     ch })
+grobs <- map(names(chunks), plotfunc, tg_mod)
+names(grobs) <- names(chunks)
+
+vt |>
+  add_palette(palettes = c("Purples", "Blues")) |>
+  add_labels(fmt = "{node_val}", fmt_root = "{n}") |>
+  add_layout(dir = "tb", varspace = c(root = 1, supp=2, dose=1),
+             varsize = c(root = .4, supp=.9, dose=.4),
+             lwidth = 1,
+             lheight=.9) |>
+  mutate(grob = ifelse(leaf, grobs[node_key], NA)) |>
+  plot(legend=FALSE)
+```
+
+![](vtree2_files/figure-html/gsum6-1.png)

@@ -39,7 +39,15 @@ fmt_label(x, fmt = NULL, expr = NULL, digits = 2)
 
 - fmt:
 
-  An expression for customized formatting. See Examples.
+  An glue format string for customized formatting. See Examples.
+
+- expr:
+
+  An R expression for customized formatting. See Examples.
+
+- digits:
+
+  For `fmt` strings, the number of digits to round numeric values to.
 
 ## Value
 

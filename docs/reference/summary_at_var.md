@@ -1,6 +1,6 @@
-# Summarize a variable at a given node of a vtree
+# Summarize a variable at all nodes of a vtree
 
-Summarizes a variable at a given node of a vtree. It returns a character
+Summarizes a variable at all nodes of a vtree. It returns a character
 string with the counts and percentages of each level of the variable at
 that node. If the variable has missing values, it also includes the
 count and percentage of missing values.
@@ -8,7 +8,7 @@ count and percentage of missing values.
 ## Usage
 
 ``` r
-summary_at_var(vtree, varname, as_char = FALSE, as_df = FALSE)
+summary_at_var(vtree, var, as_char = FALSE, as_df = FALSE)
 ```
 
 ## Arguments
@@ -17,9 +17,9 @@ summary_at_var(vtree, varname, as_char = FALSE, as_df = FALSE)
 
   A vtree object
 
-- varname:
+- var:
 
-  The name of the variable to summarize
+  The variable to summarize (tidy-select)
 
 - as_char:
 
@@ -43,7 +43,8 @@ variable at that node.
 ## Details
 
 Note that if a tree was pruned, these summaries will differ from the
-summaries shown by `summary(vtree)`
+summaries shown by `summary(vtree)`. That is also the true purpose of
+the function.
 
 If the tree was constructed using valid percentages (`attr(vtree, "vp")`
 is TRUE), the percentages are calculated based on the valid (non-NA)
