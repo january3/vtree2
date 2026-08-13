@@ -25,7 +25,7 @@ Nick Barrowman.
 ## Gallery
 
 
-```{r echo=FALSE,message=FALSE,warning=FALSE,fig.width=12,fig.height=16}
+```{r echo=FALSE,message=FALSE,warning=FALSE,fig.width=14,fig.height=16}
 library(cowplot)
 library(vtree2)
 
@@ -61,24 +61,24 @@ p3 <- vtree(titanicNA, Class, Sex, Survived) |>
   mutate(color = ifelse(mark, "white", color)) |>
   # plotting with legend and custom margins
   plot(legend = TRUE,
+       lwidth = .45,
        margins = c(0.05, 0.05, 0.25, 0.05))
 
 library(dplyr)
 library(purrr)
 
-iris_urls <- list(
-versicolor="https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/Blue_Flag%2C_Ottawa.jpg/500px-Blue_Flag%2C_Ottawa.jpg",
-setosa="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Irissetosa1.jpg/500px-Irissetosa1.jpg",
-virginica="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/Iris_virginica_2.jpg/500px-Iris_virginica_2.jpg")
+iris_imgs <- list(
+versicolor="images/500px-Blue_Flag,_Ottawa.jpg",
+setosa="images/500px-Irissetosa1.jpg",
+virginica="images/500px-Iris_virginica_2.jpg")
 
-get_grob <- function(url) {
-  tf <- tempfile(fileext = ".jpg")
-  download.file(url, tf, mode="wb")
+get_grob <- function(img) {
+  tf <- system.file(img, package="vtree2")
   img <- jpeg::readJPEG(tf)
   grid::rasterGrob(img)
 }
 
-iris_grobs <- lapply(iris_urls, get_grob)
+iris_grobs <- lapply(iris_imgs, get_grob)
 
 vt <- iris |>
   mutate(Long_Petals = as.character(Petal.Length > 4)) |>
@@ -295,9 +295,6 @@ More docs available [here](https://january3.github.io/vtree2/).
 
  * write a manual in the main vignette [-------| ] 90% complete
  * allow adjusting grob layouts in grob nodes
- * check the graphic summary example. if dir is tb, it looks ok (fonts
-   maybe slightly too large). But turn it around and the fonts on the grob
-   nodes are unreadable. Why?
  * the nodes of the diagrammer are adjusted to the size of the labels. We
    could do that, actually. I think it doesn't look so good, but OK.
  * vtree constructors take only character or factor variables: ~~build in
@@ -361,6 +358,9 @@ More docs available [here](https://january3.github.io/vtree2/).
 ## BUGS
 
  * legend titles sometimes overlap with the legend
+ * ~~check the graphic summary example. if dir is tb, it looks ok (fonts
+   maybe slightly too large). But turn it around and the fonts on the grob
+   nodes are unreadable. Why?~~
  * ~~aliases are ignored for the legend. Maybe aliases should behave like
    palettes, i.e. also set an attribute to be used by legend?~~
  * ~~"Missing" is missing from the legend on the user guide example for

@@ -194,9 +194,6 @@ More docs available [here](https://january3.github.io/vtree2/).
 
 - write a manual in the main vignette \[——-\| \] 90% complete
 - allow adjusting grob layouts in grob nodes
-- check the graphic summary example. if dir is tb, it looks ok (fonts
-  maybe slightly too large). But turn it around and the fonts on the
-  grob nodes are unreadable. Why?
 - the nodes of the diagrammer are adjusted to the size of the labels. We
   could do that, actually. I think it doesn’t look so good, but OK.
 - vtree constructors take only character or factor variables: ~~build in
@@ -264,6 +261,9 @@ More docs available [here](https://january3.github.io/vtree2/).
 ## BUGS
 
 - legend titles sometimes overlap with the legend
+- ~~check the graphic summary example. if dir is tb, it looks ok (fonts
+  maybe slightly too large). But turn it around and the fonts on the
+  grob nodes are unreadable. Why?~~
 - ~~aliases are ignored for the legend. Maybe aliases should behave like
   palettes, i.e. also set an attribute to be used by legend?~~
 - ~~“Missing” is missing from the legend on the user guide example for
