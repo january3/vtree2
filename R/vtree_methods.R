@@ -220,5 +220,5 @@ has_layout <- function(x) {
   has_cols <- all(c("x", "y", "width", "height") %in% node_names) &&
               all(c("x1", "x2", "y1", "y2") %in% edge_names)
 
-  has_cols || inherits(vtree, "vtree_layout")
+  has_cols || inherits(x, "vtree_layout")
 }
