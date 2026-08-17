@@ -1,6 +1,6 @@
 # we check that the layout is correct and has the required columns
 # for some columns, we make sure that there are no NAs
-normalize_layout <- function(layout) {
+ensure_layout <- function(layout) {
 
   nodes <- as_tibble(layout)
   edges <- activate(layout, "edges") |> as_tibble()
@@ -400,9 +400,8 @@ plot_vtree <- function(x,
 
   layout <- .normalize_layout(x, layout_arg, lwidth, lheight, show_root, dir)
 
-
   layout <- .fit_margins(layout, margins)
-  layout <- normalize_layout(layout)
+  layout <- ensure_layout(layout)
 
 
   if(legend == "full") {
