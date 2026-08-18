@@ -293,10 +293,14 @@ More docs available [here](https://january3.github.io/vtree2/).
 
 ## TODO/PROBLEMS
 
- * write a manual in the main vignette [-------| ] 90% complete
- * allow adjusting grob layouts in grob nodes
- * the nodes of the diagrammer are adjusted to the size of the labels. We
-   could do that, actually. I think it doesn't look so good, but OK.
+ * write a manual in the main vignette [--------|] 95% complete
+ * adding grobs explicitly with `add_grobs()`; grobs should have layout
+   parameters.
+ * `add_gs()` for graphical summaries - tiny plots
+ * ~~allow adjusting grob layouts in grob nodes~~ - only fine adjusting
+ * ~~the nodes of the diagrammer are adjusted to the size of the labels. We
+   could do that, actually. I think it doesn't look so good, but OK.~~ -
+   now "tight" layouts
  * vtree constructors take only character or factor variables: ~~build in
    checking for column type~~ maybe add functions to convert numeric to
    factor? or some automation controlled with a param?
@@ -357,6 +361,9 @@ More docs available [here](https://january3.github.io/vtree2/).
 
 ## BUGS
 
+ * weird: compare `plot_vtree(vt2, layout="tight", lwidth=1, lheight=1,
+   padding=.10, dir="bt")` with `plot_vtree(vt2, layout="tight", lwidth=1,
+   padding=.10, dir="bt")` - why are fonts on the second one smaller?
  * legend titles sometimes overlap with the legend
  * ~~check the graphic summary example. if dir is tb, it looks ok (fonts
    maybe slightly too large). But turn it around and the fonts on the grob

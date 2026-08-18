@@ -148,3 +148,16 @@ scale_add <- function(scale, mapping) {
   ret <- unlist(ret)
   ret
 }
+
+
+# calculate the max nchar width of a vector of strings
+chr_size <- function(labels) {
+  spl <- strsplit(labels, "\n")
+  vapply(spl, \(x) max(nchar(x)), integer(1))
+}
+
+# number of lines
+nlines <- function(labels) {
+  nwlines <- gsub("[^\n]+", "", labels)
+  nchar(nwlines) + 1
+}

@@ -245,8 +245,9 @@
 
   foo <- layout |>
     as_tibble() |>
-    group_by(level) |>
-    summarize(maxw = max(full_w), node_col = first(node_col))
+    group_by(.data[["level"]]) |>
+    summarize(maxw = max(.data[["full_w"]]),
+              node_col = first(.data[["node_col"]]))
 
   varspace <- set_names(foo[["maxw"]], foo[["node_col"]])
 

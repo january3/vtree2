@@ -369,7 +369,7 @@ plot.vtree <- function(x, ...) {
 #' @rdname plot.vtree
 #' @export
 plot_vtree <- function(x,
-                      layout = c("regular", "proportional",
+                      layout = c("regular", "proportional", "tight",
                                  "flushed_left", "flushed_right"),
                       palettes = c("Reds", "Blues", "Greens",
                                    "Oranges", "Purples"),

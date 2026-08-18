@@ -6,7 +6,7 @@
 \usage{
 add_layout(
   vtree,
-  layout = c("regular", "proportional", "flushed_left", "flushed_right"),
+  layout = c("regular", "proportional", "tight", "flushed_left", "flushed_right"),
   layout_func = NULL,
   dir = "lr",
   lwidth = NA,
@@ -19,7 +19,8 @@ add_layout(
 \arguments{
 \item{vtree}{A vtree object}
 
-\item{layout}{The layout type, either "regular" or "proportional"}
+\item{layout}{The layout type, "regular", "tight", "flushed_left",
+"flushed_right" or "proportional"}
 
 \item{layout_func}{A custom layout function.}
 
