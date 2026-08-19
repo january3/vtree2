@@ -534,24 +534,18 @@ makeContent.vtree_plot <- function(x) {
 # the graphics depending on the grob layout
 .calc_grob_row <- function(nodes, grob, pad) {
 
-  x <- nodes$x
-  y <- nodes$y
-  label <- nodes$label
-  width <- nodes$width
-  height <- nodes$height
-
   side <- grob$side
   frac <- grob$frac
   horiz <- side %in% c("l", "r")
   graphics_first <- side %in% c("l", "b")
 
-  if(is.na(label) || label == "") { frac <- 1 }
+  if(is.na(nodes$label) || nodes$label == "") { frac <- 1 }
 
   inner <- list(
-    x0 = x - width/2 + pad$w,
-    y0 = y - height/2 + pad$h,
-    width = width - 2 * pad$w,
-    height = height - 2 * pad$h
+    x0 = nodes$x - nodes$width/2 + pad$w,
+    y0 = nodes$y - nodes$height/2 + pad$h,
+    width = nodes$width - 2 * pad$w,
+    height = nodes$height - 2 * pad$h
   )
 
   if(side %in% c("l", "r")) {
@@ -648,6 +642,10 @@ makeContent.vtree_plot <- function(x) {
   richtext  <- params$richtext
   padding   <- params$padding %||% .1
 
+  if(richtext) {
+    nodes[["label"]] <- gsub("\n", "<br>", nodes[["label"]])
+  }
+
   spec <- list()
   spec$lwd <- list()
   spec$fs  <- list()
@@ -682,22 +680,21 @@ makeContent.vtree_plot <- function(x) {
     }
   }
 
-  if(richtext) {
-    nodes[["label"]] <- gsub("\n", "<br>", nodes[["label"]])
+
+  if(nrow(nodes) > 0) {
+    nodes_gt <- .get_nodes(nodes, fs = 9, lwd = lwd, richtext = richtext)
+    children <- c(children, list(nodes=nodes_gt))
+
+    # spec contains infor4mation necessary to adjust the font sizes
+    spec$fs$labels <- list(path = c("nodes", "text"),
+                        df = nodes,
+                        richtext = richtext,
+                        fs = fontsizes$nodes,
+                        widths = nodes$width,
+                        heights = nodes$height,
+                        padding = padding)
+    spec$lwd$nodes <- list(path = c("nodes", "rect"))
   }
-
-  nodes_gt <- .get_nodes(nodes, fs = 9, lwd = lwd, richtext = richtext)
-  children <- c(children, list(nodes=nodes_gt))
-
-  # spec contains infor4mation necessary to adjust the font sizes
-  spec$fs$labels <- list(path = c("nodes", "text"),
-                      df = nodes,
-                      richtext = richtext,
-                      fs = fontsizes$nodes,
-                      widths = nodes$width,
-                      heights = nodes$height,
-                      padding = padding)
-  spec$lwd$nodes <- list(path = c("nodes", "rect"))
 
 
   if(!is.null(legend)) {
