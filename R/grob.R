@@ -642,6 +642,7 @@ makeContent.vtree_plot <- function(x) {
   richtext  <- params$richtext
   padding   <- params$padding %||% .1
 
+  nodes <- as_tibble(layout)
   if(richtext) {
     nodes[["label"]] <- gsub("\n", "<br>", nodes[["label"]])
   }
@@ -650,7 +651,6 @@ makeContent.vtree_plot <- function(x) {
   spec$lwd <- list()
   spec$fs  <- list()
 
-  nodes <- as_tibble(layout)
   sel <- !is.na(nodes$x) & !is.na(nodes$y) &
     !is.na(nodes$width) & !is.na(nodes$height)
 
