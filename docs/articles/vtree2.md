@@ -1429,10 +1429,11 @@ function
 [`ggplot2::ggplotGrob()`](https://ggplot2.tidyverse.org/reference/ggplotGrob.html).
 
 The important thing to remember is that the inset graphics (1) must be a
-grob and (2) must be stored in a list-column of the vtree object called
-“grob”.
+grid package graphical object (“grob”) (2) you should use the
+[`add_graphics()`](https://january3.github.io/vtree2/reference/add_graphics.md)
+function to add it to the vtree.
 
-In the following example, we will download three images from Wikipedia
+In the following example, we will use three images from Wikipedia
 corresponding to the three species of iris flowers from the famous
 Fisher data set. We will show on the vtree how many of each of the
 species have long petals, and we will illustrate the Species nodes with
@@ -1453,34 +1454,54 @@ get_grob <- function(img) {
   tf <- system.file(img, package="vtree2")
   print(tf)
   img <- jpeg::readJPEG(tf)
+  # this function converts a bitmap
+  # to a grid::grob object
   grid::rasterGrob(img)
 }
 
 iris_grobs <- lapply(iris_imgs, get_grob)
 #> [1] "images/500px-Blue_Flag,_Ottawa.jpg"
-#> [1] "/tmp/Rtmpomm4by/temp_libpath1e8773baffacd/vtree2/images/500px-Blue_Flag,_Ottawa.jpg"
+#> [1] "/tmp/Rtmpomm4by/temp_libpath1e87733bc1933/vtree2/images/500px-Blue_Flag,_Ottawa.jpg"
 #> [1] "images/500px-Irissetosa1.jpg"
-#> [1] "/tmp/Rtmpomm4by/temp_libpath1e8773baffacd/vtree2/images/500px-Irissetosa1.jpg"
+#> [1] "/tmp/Rtmpomm4by/temp_libpath1e87733bc1933/vtree2/images/500px-Irissetosa1.jpg"
 #> [1] "images/500px-Iris_virginica_2.jpg"
-#> [1] "/tmp/Rtmpomm4by/temp_libpath1e8773baffacd/vtree2/images/500px-Iris_virginica_2.jpg"
+#> [1] "/tmp/Rtmpomm4by/temp_libpath1e87733bc1933/vtree2/images/500px-Iris_virginica_2.jpg"
 
 vt <- iris |>
   mutate(Long_Petals = as.character(Petal.Length > 4)) |>
   vtree(Species, Long_Petals) |>
   add_labels() |>
-  mutate(label = ifelse(leaf, label, paste0("Iris\n", node_val)))
-vt <- vt |>
-  mutate(grob = map(pull(vt, "node_val"), ~ iris_grobs[[.x]]))
-
-layout <- vt |>
+  mutate(label = ifelse(leaf, label, paste0("Iris\n", node_val))) |>
   add_palette(palettes = c("Greens", "Blues")) |>
   add_layout(dir="tb", show_root=FALSE, lwidth=.9, lheight=.8,
              varspace=c(Species=4,Long_Petals=1))
-layout |>
+
+# this makes the grob list match the node list
+iris_grobs <- iris_grobs[ pull(vt, "node_val") ]
+
+vt |>
+  add_graphics(iris_grobs) |>
   plot(margins=c(.05, .05, .05, .2))
 ```
 
 ![](vtree2_files/figure-html/inset1-1.png)
+
+The
+[`add_graphics()`](https://january3.github.io/vtree2/reference/add_graphics.md)
+function has parameters which control the layout of the node: `side`
+determines the side of the node where the graphics is shown (`l` for
+left, `t` for top etc.), and `frac` determines the fraction of space
+(vertically or horizontally) which is occupied by the graphics:
+
+``` r
+vt |>
+  add_layout(dir="tb", show_root=FALSE, lwidth=.9, lheight=.4,
+             varspace=c(Species=2,Long_Petals=1)) |>
+  add_graphics(iris_grobs, side="l", frac=.5) |>
+  plot(margins=c(.05, .05, .05, .2))
+```
+
+![](vtree2_files/figure-html/inset1b-1.png)
 
 ### Inserting ggplot2 objects
 
@@ -1519,8 +1540,8 @@ clasplot <- function(df) {
 
 # use vtree_apply to produce plots
 plots <- vtree_apply(cases, vt, FUN = clasplot)
+# convert them to grid::grob
 grobs <- lapply(plots, ggplot2::ggplotGrob)
-grobs[!pull(vt, leaf)] <- NA # plots only for the leaf nodes
 
 # we add layout manually, so we can control it better
 # this varspace arg means: reserve 4x as much space for the Survived nodes
@@ -1529,11 +1550,20 @@ vt <- vt |>
   add_layout(dir="tb", show_root=FALSE, lheight=.8,
              varspace=c(Sex=1,Survived=3)) |>
   mutate(shape = ifelse(leaf, "rectangle", "roundrectangle")) |>
-  mutate(grob = grobs)
+  add_graphics(grobs, condition = leaf)
+
 plot(vt)
 ```
 
 ![](vtree2_files/figure-html/insets2-1.png)
+
+The `condition` parameter of
+[`add_graphics()`](https://january3.github.io/vtree2/reference/add_graphics.md)
+is evaluated in the context of the nodes data frame, and one column in
+that data frame is `leaf`, which contains a TRUE value if the node is a
+leaf. Therefore `condition = leaf` means: include the grobs only for the
+nodes that are leafs. You can also use the `mask` parameter for this
+purpose.
 
 There is one issue with such plots: unlike `vtree2`, `ggplot2` does not
 fit font sizes automatically to the available space. If your image is
@@ -1644,6 +1674,9 @@ All that remains to do is 1) assign the grobs to the vtree object, 2)
 figure out how to best configure the layout.
 
 ``` r
+grobs <- grobs[ pull(vt, node_key) ]
+
+
 vt |>
   add_palette(palettes = c("Purples", "Blues")) |>
   add_labels(fmt = "{node_val}", fmt_root = "{n}") |>
@@ -1651,7 +1684,7 @@ vt |>
              varsize = c(root = .4, supp=.4, dose=.9),
              lwidth = 1,
              lheight=.9) |>
-  mutate(grob = ifelse(leaf, grobs[node_key], NA)) |>
+  add_graphics(grobs) |>
   plot(legend=FALSE)
 ```
 
@@ -1680,15 +1713,16 @@ tg_mod <- imap_dfr(chunks, \(ch, nm) {
                      ch })
 grobs <- map(names(chunks), plotfunc, tg_mod)
 names(grobs) <- names(chunks)
+grobs <- grobs[ pull(vt, node_key) ]
 
 vt |>
   add_palette(palettes = c("Purples", "Blues")) |>
   add_labels(fmt = "{node_val}", fmt_root = "{n}") |>
   add_layout(dir = "tb", varspace = c(root = 1, supp=2, dose=1),
-             varsize = c(root = .4, supp=.9, dose=.4),
+             varsize = c(root = .6, supp=.9, dose=.6),
              lwidth = 1,
              lheight=.9) |>
-  mutate(grob = ifelse(leaf, grobs[node_key], NA)) |>
+  add_graphics(grobs) |>
   plot(legend=FALSE)
 ```
 

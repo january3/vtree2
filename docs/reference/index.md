@@ -77,6 +77,8 @@
   [`var_palette()`](https://january3.github.io/vtree2/reference/vtree_palette.md)
   [`add_palette()`](https://january3.github.io/vtree2/reference/vtree_palette.md)
   : Color palettes for a variable levels
+- [`add_graphics()`](https://january3.github.io/vtree2/reference/add_graphics.md)
+  : Add graphics to a vtree
 - [`contrast_color()`](https://january3.github.io/vtree2/reference/contrast_color.md)
   : Get a contrasting color
 - [`makeContent(`*`<vtree_plot>`*`)`](https://january3.github.io/vtree2/reference/makeContent.vtree_plot.md)

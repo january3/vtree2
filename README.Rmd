@@ -84,15 +84,16 @@ vt <- iris |>
   mutate(Long_Petals = as.character(Petal.Length > 4)) |>
   vtree(Species, Long_Petals) |>
   add_labels() |>
-  mutate(label = ifelse(leaf, label, paste0("Iris\n", node_val)))
-vt <- vt |>
-  mutate(grob = map(pull(vt, "node_val"), ~ iris_grobs[[.x]]))
-
-layout <- vt |>
+  mutate(label = ifelse(leaf, label, paste0("Iris\n", node_val))) |>
   add_palette(palettes = c("Greens", "Blues")) |>
-  add_layout(dir="tb", show_root=FALSE, lwidth=.9, lheight=.7,
-             varspace=c(Species=2,Long_Petals=1))
-p4 <- layout |>
+  add_layout(dir="tb", show_root=FALSE, lwidth=.9, lheight=.8,
+             varspace=c(Species=4,Long_Petals=1))
+
+# this makes the grob list match the node list
+iris_grobs <- iris_grobs[ pull(vt, "node_val") ]
+
+p4 <- vt |>
+  add_graphics(iris_grobs) |>
   plot(margins=c(.05, .05, .05, .2))
 
 p1234 <- cowplot::plot_grid(p1, p2, p3, p4, ncol=2)
@@ -121,7 +122,6 @@ clasplot <- function(df) {
 # use vtree_apply to produce plots
 plots <- vtree_apply(cases, vt, FUN = clasplot)
 grobs <- lapply(plots, ggplot2::ggplotGrob)
-grobs[!pull(vt, leaf)] <- NA # plots only for the leaf nodes
 
 # we add layout manually, so we can control it better
 # this varspace arg means: reserve 4x as much space for the Survived nodes
@@ -130,7 +130,9 @@ vt <- vt |>
   add_layout(dir="tb", show_root=FALSE, lheight=.8,
              varspace=c(Sex=1,Survived=3)) |>
   mutate(shape = ifelse(leaf, "rectangle", "roundrectangle")) |>
-  mutate(grob = grobs)
+  
+  add_graphics(grobs, condition = leaf)
+
 p5 <- plot(vt)
 
 plot_grid(p1234, p5, ncol=1, rel_heights = c(2, 1))
@@ -294,8 +296,9 @@ More docs available [here](https://january3.github.io/vtree2/).
 ## TODO/PROBLEMS
 
  * write a manual in the main vignette [--------|] 95% complete
- * adding grobs explicitly with `add_grobs()`; grobs should have layout
-   parameters.
+ * ~~adding grobs explicitly with `add_grobs()`; grobs should have layout
+   parameters.~~
+ * add background and line color
  * `add_gs()` for graphical summaries - tiny plots
  * ~~allow adjusting grob layouts in grob nodes~~ - only fine adjusting
  * ~~the nodes of the diagrammer are adjusted to the size of the labels. We
@@ -333,8 +336,9 @@ More docs available [here](https://january3.github.io/vtree2/).
       useful for debugging
     * ~~unexport find_parents / find_children~~ -> nah, they might be useful
     * ~~remove the na.rm tag~~
- * the arrows should be attached dynamically in grob.R rather than in
-   layout?
+ * ~~the arrows should be attached dynamically in grob.R rather than in
+   layout? -> nah, let us keep low-level graphics and high-level layouts
+   separate while we can~~
  * ~~add prefix and suffix parameters to add_labels, to make the handling
    easier~~ - nah, you can just paste() it.
  * ~~how is vtree actually handling the palettes?~~
@@ -361,9 +365,10 @@ More docs available [here](https://january3.github.io/vtree2/).
 
 ## BUGS
 
- * weird: compare `plot_vtree(vt2, layout="tight", lwidth=1, lheight=1,
+ * ~~weird: compare `plot_vtree(vt2, layout="tight", lwidth=1, lheight=1,
    padding=.10, dir="bt")` with `plot_vtree(vt2, layout="tight", lwidth=1,
-   padding=.10, dir="bt")` - why are fonts on the second one smaller?
+   padding=.10, dir="bt")` - why are fonts on the second one smaller? -
+   problem with padding, it increases when nodes increase~~
  * legend titles sometimes overlap with the legend
  * ~~check the graphic summary example. if dir is tb, it looks ok (fonts
    maybe slightly too large). But turn it around and the fonts on the grob
