@@ -403,7 +403,6 @@ plot_vtree <- function(x,
   layout <- .fit_margins(layout, margins)
   layout <- ensure_layout(layout)
 
-
   if(legend == "full") {
     legend <- layout_legend(layout, margins)
   } else if(legend == "tiny") {

@@ -475,6 +475,7 @@ makeContent.vtree_plot <- function(x) {
   grobs
 }
 
+#' @importFrom purrr map_dbl map_lgl map_int
 .make_grobs <- function(nodes, grobs, params) {
 
   lwd       <- params$lwd
@@ -487,30 +488,56 @@ makeContent.vtree_plot <- function(x) {
   kinder <- list()
 
   # padding
-  p <- params$padding %||% .1
-  p <- p / 2
-  pad <- min(c(nodes$width * p,
-               nodes$height * p))
+  pad <- recalculate_padding(nodes, params$padding)
+  pad$w <- pad$w/2
+  pad$h <- pad$h/2
 
   fl <- 1/5  # fraction for the label
 
   rects <- .get_node_rects(nodes, lwd = lwd)
 
   nodes <- nodes |>
-    mutate(empty = is.na(.data[["label"]]) | .data[["label"]] == "") |>
-    mutate(frac_l = ifelse(.data[["empty"]], 0, fl)) |>
-    mutate(width = .data[["width"]] - 2 * pad) |>
-    mutate(t_height = .data[["height"]]) |>
-    mutate(g_height = (.data[["height"]] - 3 * pad) * (1 - .data[["frac_l"]])) |>
-    mutate(l_height = (.data[["height"]] - 3 * pad) * .data[["frac_l"]]) |>
-    mutate(y0 = .data[["y"]] - .data[["height"]] / 2 + pad)
+    mutate(.frac_l = map_dbl(grobs, \(x) 1 - x$frac)) |>
+    # is it a vertical alignment
+    mutate(.vert = map_lgl(grobs, \(x) x$side %in% c("b", "t"))) |>
+    mutate(.horiz = !.data[[".vert"]]) |>
+    # graphics first
+    mutate(.g_first = map_lgl(grobs, \(x) x$side %in% c("b", "l"))) |>
+    mutate(.g_second = !.data[[".g_first"]]) |>
+    mutate(.empty = is.na(.data[["label"]]) | .data[["label"]] == "") |>
+    # empty labels get no space
+    mutate(.frac_l = ifelse(.data[[".empty"]], 0, .data[[".frac_l"]])) |>
+    # vertical and horizontal label fraction
+    mutate(.frac_lv = ifelse(.vert, .data[[".frac_l"]], 1)) |>
+    mutate(.frac_lh = ifelse(!.vert, .data[[".frac_l"]], 1)) |>
+    mutate(.frac_gv = ifelse(.vert, 1 - .data[[".frac_l"]], 1)) |>
+    mutate(.frac_gh = ifelse(!.vert, 1 - .data[[".frac_l"]], 1)) |>
+    # available w/h (total w/h minus outside padding)
+    mutate(width = .data[["width"]] - 2 * pad$w) |>
+    mutate(height = .data[["height"]] - 2 * pad$h) |>
+    mutate(x0 = .data[["x"]] - .data[["width"]] / 2) |>
+    mutate(y0 = .data[["y"]] - .data[["height"]] / 2) |>
+    mutate(g_width = .data[[".frac_gh"]] * .data[["width"]] -
+                   .data[[".horiz"]] * pad$w/2) |>
+    mutate(g_height = .data[[".frac_gv"]] * .data[["height"]] -
+                   .data[[".vert"]] * pad$h/2) |>
+    mutate(l_width = .data[[".frac_lh"]] * .data[["width"]] -
+                   .data[[".horiz"]] * pad$w/2) |>
+    mutate(l_height = .data[[".frac_lv"]] * .data[["height"]] -
+                   .data[[".vert"]] * pad$h/2)
 
   gnodes <- nodes |>
-    mutate(y = .data[["y0"]] + .data[["g_height"]] / 2) |>
-    mutate(height = .data[["g_height"]])
+    mutate(height = .data[["g_height"]],
+           width  = .data[["g_width"]]) |>
+    mutate(x = .data[["x0"]] + .data[["width"]]/2 +
+               .data[[".horiz"]] * .data[[".g_second"]] * 
+               (pad$w + .data[["l_width"]])) |>
+    mutate(y = .data[["y0"]] + .data[["height"]] / 2 +
+               .data[[".vert"]] * .data[[".g_second"]] * 
+               (pad$w + .data[["l_height"]]))
 
   grobs <- map(seq_along(gnodes$x), \(i) {
-                 g <- grobs[[i]]
+                 g <- grobs[[i]]$grob
                  g$vp <- grid::viewport(x = gnodes$x[i],
                                         y = gnodes$y[i],
                                         width = gnodes$width[i],
@@ -523,9 +550,14 @@ makeContent.vtree_plot <- function(x) {
                  name = "plot_obj")
 
   nodes <- nodes |>
-    mutate(y = .data[["y0"]] + .data[["g_height"]] + pad +
-               .data[["l_height"]] / 2) |>
-    mutate(height = .data[["l_height"]])
+    mutate(height = .data[["l_height"]],
+           width  = .data[["l_width"]]) |>
+    mutate(x = .data[["x0"]] + .data[["width"]]/2 +
+               .data[[".horiz"]] * .data[[".g_first"]] * 
+               (pad$w + .data[["g_width"]])) |>
+    mutate(y = .data[["y0"]] + .data[["height"]] / 2 +
+               .data[[".vert"]] * .data[[".g_first"]] * 
+               (pad$w + .data[["g_height"]]))
 
   labels <- .get_labels(nodes, fs = 9, richtext = richtext)
   spec$fs$plots <- list(path = c("plots", "text"),
