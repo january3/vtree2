@@ -304,6 +304,12 @@ add_layout <- function(vtree,
   grobs <- extract_grobs(vtree)
   vtree <- remove_grobs(vtree)
 
+  if(layout == "tight" && !"label" %in% nodecols(vtree)) {
+    cli_abort(c(x=
+        "tight layout requires labels.",
+      i = "Use `add_labels()` to add labels to the vtree."))
+  }
+
   varspace <- .normalize_varspace(varspace, vtree, show_root)
   varsize  <- .normalize_varsize(varsize, varspace, vtree)
 
