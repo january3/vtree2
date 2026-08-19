@@ -475,6 +475,93 @@ makeContent.vtree_plot <- function(x) {
   grobs
 }
 
+# arrange label and graphics vertically
+.split_horizontal <- function(inner, gfirst, gfrac, gap) {
+
+  gwidth <- gfrac * inner$width - gap/2
+  lwidth <- (1 - gfrac) * inner$width - gap/2
+
+  lheight <- gheight <- inner$height
+
+  gx <- inner$x + gwidth / 2 
+  lx <- inner$x + lwidth / 2
+
+  if(gfirst) {
+    lx <- lx + gwidth + gap
+  } else {
+    gx <- gx + lwidth + gap
+  }
+
+  gy <- ly <- inner$y + inner$height / 2
+
+  list(
+       graphics=list(x = gx, y = gy,
+                     width = gwidth, height = gheight),
+       label=list(x = lx, y = ly,
+                     width = lwidth, height = lheight)
+  )
+}
+
+
+# arrange the label and the graphics vertically
+.split_vertical <- function(inner, gfirst, gfrac, gap) {
+
+  gheight <- gfrac * inner$height - gap/2
+  lheight <- (1-gfrac) * inner$height - gap/2
+
+  gwidth <- lwidth <- inner$width
+
+  gx <- lx <- inner$x + inner$width/2
+
+  gy <- inner$y + gheight / 2
+  ly <- inner$y + lheight / 2
+
+  if(gfirst) {
+    ly <- ly + gheight + gap
+  } else {
+    gy <- gy + lheight + gap
+  }
+
+  list(
+       graphics=list(x = gx, y = gy,
+                     width = gwidth, height = gheight),
+       label=list(x = lx, y = ly,
+                     width = lwidth, height = lheight)
+  )
+}
+
+# process a row from the nodes, preparing the coordinates for the label and
+# the graphics depending on the grob layout
+.calc_grob_row <- function(nodes, grob, pad) {
+
+  x <- nodes$x
+  y <- nodes$y
+  label <- nodes$label
+  width <- nodes$width
+  height <- nodes$height
+
+  side <- grob$side
+  frac <- grob$frac
+  horiz <- side %in% c("l", "r")
+  graphics_first <- side %in% c("l", "b")
+
+  if(is.na(label) || label == "") { frac <- 1 }
+
+  inner <- list(
+    x0 = x - width/2 + pad$w,
+    y0 = y - height/2 + pad$h,
+    width = width - 2 * pad$w,
+    height = height - 2 * pad$h
+  )
+
+  if(side %in% c("l", "r")) {
+    .split_horizontal(inner, graphics_first, frac, gap=pad$w)
+  } else {
+    .split_vertical(inner, graphics_first, frac, gap=pad$h)
+  }
+
+}
+
 #' @importFrom purrr map_dbl map_lgl map_int
 .make_grobs <- function(nodes, grobs, params) {
 
@@ -496,46 +583,14 @@ makeContent.vtree_plot <- function(x) {
 
   rects <- .get_node_rects(nodes, lwd = lwd)
 
-  nodes <- nodes |>
-    mutate(.frac_l = map_dbl(grobs, \(x) 1 - x$frac)) |>
-    # is it a vertical alignment
-    mutate(.vert = map_lgl(grobs, \(x) x$side %in% c("b", "t"))) |>
-    mutate(.horiz = !.data[[".vert"]]) |>
-    # graphics first
-    mutate(.g_first = map_lgl(grobs, \(x) x$side %in% c("b", "l"))) |>
-    mutate(.g_second = !.data[[".g_first"]]) |>
-    mutate(.empty = is.na(.data[["label"]]) | .data[["label"]] == "") |>
-    # empty labels get no space
-    mutate(.frac_l = ifelse(.data[[".empty"]], 0, .data[[".frac_l"]])) |>
-    # vertical and horizontal label fraction
-    mutate(.frac_lv = ifelse(.vert, .data[[".frac_l"]], 1)) |>
-    mutate(.frac_lh = ifelse(!.vert, .data[[".frac_l"]], 1)) |>
-    mutate(.frac_gv = ifelse(.vert, 1 - .data[[".frac_l"]], 1)) |>
-    mutate(.frac_gh = ifelse(!.vert, 1 - .data[[".frac_l"]], 1)) |>
-    # available w/h (total w/h minus outside padding)
-    mutate(width = .data[["width"]] - 2 * pad$w) |>
-    mutate(height = .data[["height"]] - 2 * pad$h) |>
-    mutate(x0 = .data[["x"]] - .data[["width"]] / 2) |>
-    mutate(y0 = .data[["y"]] - .data[["height"]] / 2) |>
-    mutate(g_width = .data[[".frac_gh"]] * .data[["width"]] -
-                   .data[[".horiz"]] * pad$w/2) |>
-    mutate(g_height = .data[[".frac_gv"]] * .data[["height"]] -
-                   .data[[".vert"]] * pad$h/2) |>
-    mutate(l_width = .data[[".frac_lh"]] * .data[["width"]] -
-                   .data[[".horiz"]] * pad$w/2) |>
-    mutate(l_height = .data[[".frac_lv"]] * .data[["height"]] -
-                   .data[[".vert"]] * pad$h/2)
+  gdata <- map(seq(1:nrow(nodes)), \(i) {
 
-  gnodes <- nodes |>
-    mutate(height = .data[["g_height"]],
-           width  = .data[["g_width"]]) |>
-    mutate(x = .data[["x0"]] + .data[["width"]]/2 +
-               .data[[".horiz"]] * .data[[".g_second"]] * 
-               (pad$w + .data[["l_width"]])) |>
-    mutate(y = .data[["y0"]] + .data[["height"]] / 2 +
-               .data[[".vert"]] * .data[[".g_second"]] * 
-               (pad$w + .data[["l_height"]]))
+    .calc_grob_row(nodes[i, ], grobs[[i]], pad)
 
+  })
+
+  gnodes <- map_dfr(gdata, \(x) x$graphics)
+ 
   grobs <- map(seq_along(gnodes$x), \(i) {
                  g <- grobs[[i]]$grob
                  g$vp <- grid::viewport(x = gnodes$x[i],
@@ -549,15 +604,14 @@ makeContent.vtree_plot <- function(x) {
                  children = do.call(gList, grobs),
                  name = "plot_obj")
 
-  nodes <- nodes |>
-    mutate(height = .data[["l_height"]],
-           width  = .data[["l_width"]]) |>
-    mutate(x = .data[["x0"]] + .data[["width"]]/2 +
-               .data[[".horiz"]] * .data[[".g_first"]] * 
-               (pad$w + .data[["g_width"]])) |>
-    mutate(y = .data[["y0"]] + .data[["height"]] / 2 +
-               .data[[".vert"]] * .data[[".g_first"]] * 
-               (pad$w + .data[["g_height"]]))
+  # for labels, we need all the different meta-data like node_key and color
+  # information
+  nd2 <- map_dfr(gdata, \(x) x$label)
+
+  nodes$x <- nd2$x
+  nodes$y <- nd2$y
+  nodes$width <- nd2$width
+  nodes$height <- nd2$height
 
   labels <- .get_labels(nodes, fs = 9, richtext = richtext)
   spec$fs$plots <- list(path = c("plots", "text"),
