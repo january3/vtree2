@@ -16,9 +16,11 @@ recalculate_padding <- function(df, p_frac) {
   #message("p_frac:", p_frac)
   # recalculate in terms of npc units by looking at the minimum
   # widths and minimum heights
+  #message("max width: ", max(df$width))
+  #message("max height: ", max(df$height))
 
-  p_w <- p_frac * max(df$width)
-  p_h <- p_frac * max(df$height)
+  p_w <- p_frac * min(df$width)
+  p_h <- p_frac * min(df$height)
 
   #message("p_w:", p_w, " p_h:", p_h)
   # convert the p_w and p_h to screen units
@@ -67,11 +69,12 @@ recalculate_padding <- function(df, p_frac) {
                                         #size_fct = 1
                                         ) {
 
-  if(p$w > width) { p$w <- 0.2 * width }
-  if(p$h > height) { p$h <- 0.2 * height }
+  #if(p$w > width) { p$w <- 0.2 * width }
+  #if(p$h > height) { p$h <- 0.2 * height }
 
   mins <- 2.5
   maxs <- 150
+  f <- \(x) format(x, digits=2)
 
   while(maxs - mins > 1) {
     fs <- (maxs + mins)/2
@@ -87,7 +90,12 @@ recalculate_padding <- function(df, p_frac) {
       mins <- fs
     }
 
+    #message("width: ", f(width - p$w), " lw: ", f(lw))
+    #message("height: ", f(height - p$h), " lh: ", f(lh))
+    #message("fs: ", f(fs), " maxs: ", f(maxs), " mins: ", f(mins))
+
   }
+  #message("----------------------------------")
 
   mins
 }
@@ -109,6 +117,13 @@ adapt_fontsize_df <- function(grobs, df,
                  richtext = richtext,
                  p = padding))
                  #.size_fct))
+
+  #message("adapt_fontsize_df, df:")
+  #print(cbind(df, ret, mret = ret == min(ret)) |>
+  #  select(path, width, height, ret, mret))
+  #message("ret_min: ", min(ret))
+  #print(str(padding))
+
   if(ret_min) {
     return(min(ret))
   } else {
@@ -180,6 +195,7 @@ adjust_fontsize_df <- function(x, spec) {
 
   #message("adjust_fontsize_df padding:", padding)
   pad <- recalculate_padding(df, padding)
+  #print(pad)
 
   path <- gPath(path)
 
