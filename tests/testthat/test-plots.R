@@ -224,16 +224,55 @@ test_that("grob injection works", {
 
 
   #grid.draw(box)
+  vt <- vtree_from_freqtable(Titanic, Class, Sex) |>
+    add_graphics(grob = list(box), condition = path == "Class:1st/Sex:Female")
+  expect_in("grob", nodecols(vt))
+  nd <- as_tibble(vt)
+  expect_all_true(
+    purrr::map_lgl(nd$grob[ nd$path != "Class:1st/Sex:Female" ], is.na))
+
+  expect_all_true(
+    purrr::map_lgl(nd$grob[ nd$path == "Class:1st/Sex:Female" ],
+                  \(x) is(x, "list")))
+  expect_all_true(
+    purrr::map_lgl(nd$grob[ nd$path == "Class:1st/Sex:Female" ],
+                  \(x) inherits(x$grob, "gTree")))
 
   vt <- vtree_from_freqtable(Titanic, Class, Sex) |>
-    mutate(grob = NA) |>
-    mark(path == "Class:1st/Sex:Female") |>
-    mutate(grob = ifelse(mark, list(box), grob))
+    add_graphics(grob = list(box), side="t",
+                 condition = path == "Class:1st/Sex:Female")
+  nd <- as_tibble(vt)
+  expect_all_true(
+    purrr::map_lgl(nd$grob[ nd$path == "Class:1st/Sex:Female" ],
+                  \(x) x$side == "t"))
 
-  p <- plot(vt)
+  vt <- vtree_from_freqtable(Titanic, Class, Sex) |>
+    add_graphics(grob = list(box), mask = FALSE)
+  expect_in("grob", nodecols(vt))
+  nd <- as_tibble(vt)
+  expect_all_true(
+    purrr::map_lgl(nd$grob, is.na))
+})
+
+
+test_that("grob plotting works", {
+
+  box <- grid::gTree(name = "test_box",
+                     children = gList(
+    grid::rectGrob(name = "test_rect",
+                   x = .5, y = .5, width = 1, height = 1,
+                   gp = grid::gpar(fill = "steelblue", col = NA)),
+    grid::textGrob("Hello", name = "test_text", x = .5, y = .5,
+                   gp = grid::gpar(col = "white", fontsize = 32))
+  ))
+
+
+  vt <- vtree_from_freqtable(Titanic, Class, Sex) |>
+    add_graphics(grob = list(box), condition = path == "Class:1st/Sex:Female")
 
   tempfile <- tempfile(fileext = ".pdf")
   dev.new <- grDevices::pdf(tempfile, width=5, height=5)
+  p <- plot(vt)
   expect_no_error(grid.draw(p))
   expect_no_error(print(p))
   dev.off()
@@ -247,13 +286,10 @@ test_that("grob injection works", {
   expect_equal(tb$children$test_text$label, "Hello")
 
   vt <- vtree_from_freqtable(Titanic, Class, Sex) |>
-    mutate(grob = NA) |>
-    mark(leaf) |>
-    mutate(grob = ifelse(mark, list(box), grob))
-
-  p <- plot(vt)
+    add_graphics(grob = list(box), condition = leaf)
 
   tempfile <- tempfile(fileext = ".pdf")
+  p <- plot(vt)
   dev.new <- grDevices::pdf(tempfile, width=5, height=5)
   expect_no_error(grid.draw(p))
   expect_no_error(print(p))
@@ -267,4 +303,16 @@ test_that("grob injection works", {
   tb <- plots$children$plot_obj$children$grob_node_6
   expect_in(c("test_rect", "test_text"), names(tb$children))
   expect_equal(tb$children$test_text$label, "Hello")
+
+  # smoke tests
+  vt <- vtree_from_freqtable(Titanic, Class, Sex)
+  gl <- list(box)
+  dev.new <- grDevices::pdf(tempfile, width=5, height=5)
+  expect_no_error(add_graphics(vt, gl, condition = leaf) |> plot())
+  expect_no_error(add_graphics(vt, gl) |> plot())
+  expect_no_error(add_graphics(vt, gl, side="t") |> plot())
+  expect_no_error(add_graphics(vt, gl, side="b") |> plot())
+  expect_no_error(add_graphics(vt, gl, side="l") |> plot())
+  expect_no_error(add_graphics(vt, gl, side="r") |> plot())
+  dev.off()
 })
