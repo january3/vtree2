@@ -74,6 +74,9 @@ add_graphics <- function(vtree, grobs,
       grob = map(1:.n, \(i) "foo"))
   }
 
+  # make sure the grobs are ther
+  mask <- mask & !purrr::map_lgl(grobs, is.null)
+
   vtree <- vtree |>
     mutate(grob = lapply(1:.n, \(i) {
                          if(mask[i]) {
