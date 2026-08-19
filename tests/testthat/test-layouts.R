@@ -19,6 +19,8 @@ test_that("layout functions work", {
   expect_equal(at$dir, "tb")
 
   vtl <- add_layout(vt, show_root = FALSE)
+  expect_in(c("x", "y", "full_w", "full_h", "width", "height"),
+            nodecols(vtl))
 
   vtl <- add_layout(vt, layout = "proportional")
   expect_in(c("x", "y", "full_w", "full_h", "width", "height"),
@@ -29,6 +31,11 @@ test_that("layout functions work", {
             nodecols(vtl))
 
   vtl <- add_layout(vt, layout = "flushed_right")
+  expect_in(c("x", "y", "full_w", "full_h", "width", "height"),
+            nodecols(vtl))
+
+  expect_error(add_layout(vt, layout = "tight"), "tight layout requires labels")
+  vtl <- add_labels(vt) |> add_layout(layout = "tight")
   expect_in(c("x", "y", "full_w", "full_h", "width", "height"),
             nodecols(vtl))
 
