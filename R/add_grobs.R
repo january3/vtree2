@@ -40,7 +40,7 @@ add_graphics <- function(vtree, grobs,
   side <- match.arg(side, c("l", "r", "t", "b"))
 
   nodes <- as_tibble(vtree)
-  .n <- nrow(nodes)
+  nn <- nrow(nodes)
 
   if(frac < 0 || frac > 1) {
     cli_abort(c(x=
@@ -49,17 +49,17 @@ add_graphics <- function(vtree, grobs,
   }
 
   if(length(grobs) == 1L) {
-    grobs <- lapply(1:.n, \(i) grobs[[1]])
-  } else if(length(grobs) != .n) {
+    grobs <- lapply(1:nn, \(i) grobs[[1]])
+  } else if(length(grobs) != nn) {
     cli_abort(c(x =
-      "Incorrect grob list length: {length(grobs)} != {.n}"))
+      "Incorrect grob list length: {length(grobs)} != {nn}"))
   }
 
   if(length(mask) == 1L) {
-    mask <- rep(mask, .n)
-  } else if(length(mask) != .n) {
+    mask <- rep(mask, nn)
+  } else if(length(mask) != nn) {
     cli_abort(c(x =
-      "Incorrect mask length: {length(mask)} != {.n}"))
+      "Incorrect mask length: {length(mask)} != {nn}"))
   }
 
   condition <- enquo(condition)
@@ -71,14 +71,14 @@ add_graphics <- function(vtree, grobs,
 
   if(!"grob" %in% names(nodes)) {
     vtree <- mutate(vtree,
-      grob = map(1:.n, \(i) "foo"))
+      grob = map(1:nn, \(i) "foo"))
   }
 
   # make sure the grobs are ther
   mask <- mask & !purrr::map_lgl(grobs, is.null)
 
   vtree <- vtree |>
-    mutate(grob = lapply(1:.n, \(i) {
+    mutate(grob = lapply(1:nn, \(i) {
                          if(mask[i]) {
                            list(grob=grobs[[i]],
                                 side=side,

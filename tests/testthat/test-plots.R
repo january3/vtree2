@@ -252,6 +252,15 @@ test_that("grob injection works", {
   nd <- as_tibble(vt)
   expect_all_true(
     purrr::map_lgl(nd$grob, is.na))
+
+  vt <- vtree_from_freqtable(Titanic, Class, Sex)
+
+  expect_error(add_graphics(vt, grob = list(box), frac=42),
+               "Incorrect frac parameter")
+  expect_error(add_graphics(vt, grob = c(list(box), list(box))),
+               "Incorrect grob list length")
+  expect_error(add_graphics(vt, list(box), mask = c(TRUE, FALSE)),
+               "Incorrect mask length")
 })
 
 
