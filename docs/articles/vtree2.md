@@ -1170,6 +1170,29 @@ additional columns `x`, `y`, `width` and `height` for the nodes and
 `x1`, `y1`, `x2`, `y2` for the edges. You can then modify these columns
 directly.
 
+### Sankey layouts
+
+A special type of layout is “Sankey”:
+
+``` r
+vt <- vtree_from_freqtable(Titanic, Class, Survived)
+plot(vt, layout="sankey")
+```
+
+![](vtree2_files/figure-html/layouts_sankey-1.png)
+
+There are two things of note with Sankey layouts. First, note that the
+percentages on the plot above did not change from the regular layout,
+but that the *position* of the nodes changed. The percentage “75%” for
+the Survived variable refers to the relative percentage within the
+parent node, i.e. among the passengers of the 3rd class.
+
+Second, the layout requires a palette / fill column to be displayed
+correctly. Following code will result in connectors between the nodes to
+be white: `add_layout(vt) |> plot()`. Use
+[`add_palette()`](https://january3.github.io/vtree2/reference/vtree_palette.md)
+to first add the colors to the layout.
+
 ### Directly modifying the layout
 
 In the following example we will modify a layout with pruned nodes. We
@@ -1461,11 +1484,11 @@ get_grob <- function(img) {
 
 iris_grobs <- lapply(iris_imgs, get_grob)
 #> [1] "images/500px-Blue_Flag,_Ottawa.jpg"
-#> [1] "/tmp/Rtmpomm4by/temp_libpath1e87733bc1933/vtree2/images/500px-Blue_Flag,_Ottawa.jpg"
+#> [1] "/tmp/Rtmpomm4by/temp_libpath1e877358d2670d/vtree2/images/500px-Blue_Flag,_Ottawa.jpg"
 #> [1] "images/500px-Irissetosa1.jpg"
-#> [1] "/tmp/Rtmpomm4by/temp_libpath1e87733bc1933/vtree2/images/500px-Irissetosa1.jpg"
+#> [1] "/tmp/Rtmpomm4by/temp_libpath1e877358d2670d/vtree2/images/500px-Irissetosa1.jpg"
 #> [1] "images/500px-Iris_virginica_2.jpg"
-#> [1] "/tmp/Rtmpomm4by/temp_libpath1e87733bc1933/vtree2/images/500px-Iris_virginica_2.jpg"
+#> [1] "/tmp/Rtmpomm4by/temp_libpath1e877358d2670d/vtree2/images/500px-Iris_virginica_2.jpg"
 
 vt <- iris |>
   mutate(Long_Petals = as.character(Petal.Length > 4)) |>

@@ -206,9 +206,15 @@
 <h2 id="todoproblems">TODO/PROBLEMS<a class="anchor" aria-label="anchor" href="#todoproblems"></a>
 </h2>
 <ul>
-<li>write a manual in the main vignette [——-| ] 90% complete</li>
-<li>allow adjusting grob layouts in grob nodes</li>
-<li>the nodes of the diagrammer are adjusted to the size of the labels. We could do that, actually. I think it doesn’t look so good, but OK.</li>
+<li>write a manual in the main vignette [——–|] 95% complete</li>
+<li><del>adding grobs explicitly with <code>add_grobs()</code>; grobs should have layout parameters.</del></li>
+<li>add background and line color</li>
+<li>
+<code>add_gs()</code> for graphical summaries - tiny plots</li>
+<li>
+<del>allow adjusting grob layouts in grob nodes</del> - only fine adjusting</li>
+<li>
+<del>the nodes of the diagrammer are adjusted to the size of the labels. We could do that, actually. I think it doesn’t look so good, but OK.</del> - now “tight” layouts</li>
 <li>vtree constructors take only character or factor variables: <del>build in checking for column type</del> maybe add functions to convert numeric to factor? or some automation controlled with a param?</li>
 <li>add_layout should not modify shape if present</li>
 <li>faster processing of cases into trees</li>
@@ -234,7 +240,7 @@
 <li><del>remove the na.rm tag</del></li>
 </ul>
 </li>
-<li>the arrows should be attached dynamically in grob.R rather than in layout?</li>
+<li><del>the arrows should be attached dynamically in grob.R rather than in layout? -&gt; nah, let us keep low-level graphics and high-level layouts separate while we can</del></li>
 <li>
 <del>add prefix and suffix parameters to add_labels, to make the handling easier</del> - nah, you can just paste() it.</li>
 <li><del>how is vtree actually handling the palettes?</del></li>
@@ -261,6 +267,8 @@
 <h2 id="bugs">BUGS<a class="anchor" aria-label="anchor" href="#bugs"></a>
 </h2>
 <ul>
+<li><del>padding doesn’t work for adaptive fonts (layout=“prop”) (cannot reproduce)</del></li>
+<li><del>weird: compare <code>plot_vtree(vt2, layout="tight", lwidth=1, lheight=1, padding=.10, dir="bt")</code> with <code>plot_vtree(vt2, layout="tight", lwidth=1, padding=.10, dir="bt")</code> - why are fonts on the second one smaller? - problem with padding, it increases when nodes increase</del></li>
 <li>legend titles sometimes overlap with the legend</li>
 <li><del>check the graphic summary example. if dir is tb, it looks ok (fonts maybe slightly too large). But turn it around and the fonts on the grob nodes are unreadable. Why?</del></li>
 <li><del>aliases are ignored for the legend. Maybe aliases should behave like palettes, i.e. also set an attribute to be used by legend?</del></li>

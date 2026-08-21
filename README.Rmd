@@ -25,7 +25,7 @@ Nick Barrowman.
 ## Gallery
 
 
-```{r echo=FALSE,message=FALSE,warning=FALSE,fig.width=14,fig.height=16}
+```{r echo=FALSE,message=FALSE,warning=FALSE,fig.width=18,fig.height=16}
 library(cowplot)
 library(vtree2)
 
@@ -135,7 +135,11 @@ vt <- vt |>
 
 p5 <- plot(vt)
 
-plot_grid(p1234, p5, ncol=1, rel_heights = c(2, 1))
+vt <- vtree_from_freqtable(Titanic, Class, Survived)
+p6 <- plot(vt, layout="sankey")
+
+#plot_grid(p1234, p5, ncol=1, rel_heights = c(2, 1))
+plot_grid(p1, p2, p3, p4, p5, p6, ncol=2)
 ```
 
 
@@ -365,6 +369,8 @@ More docs available [here](https://january3.github.io/vtree2/).
 
 ## BUGS
 
+ * ~~padding doesn't work for adaptive fonts (layout="prop") (cannot
+   reproduce)~~
  * ~~weird: compare `plot_vtree(vt2, layout="tight", lwidth=1, lheight=1,
    padding=.10, dir="bt")` with `plot_vtree(vt2, layout="tight", lwidth=1,
    padding=.10, dir="bt")` - why are fonts on the second one smaller? -

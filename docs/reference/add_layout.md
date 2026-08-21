@@ -9,7 +9,8 @@ edges in the plot.
 ``` r
 add_layout(
   vtree,
-  layout = c("regular", "proportional", "tight", "flushed_left", "flushed_right"),
+  layout = c("regular", "proportional", "tight", "flushed_left", "flushed_right",
+    "sankey"),
   layout_func = NULL,
   dir = "lr",
   lwidth = NA,

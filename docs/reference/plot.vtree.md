@@ -10,7 +10,8 @@ plot(x, ...)
 
 plot_vtree(
   x,
-  layout = c("regular", "proportional", "tight", "flushed_left", "flushed_right"),
+  layout = c("regular", "proportional", "tight", "flushed_left", "flushed_right",
+    "sankey"),
   palettes = c("Reds", "Blues", "Greens", "Oranges", "Purples"),
   na_fill = "white",
   show_root = TRUE,

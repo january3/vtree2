@@ -266,6 +266,8 @@ More docs available [here](https://january3.github.io/vtree2/).
 
 ## BUGS
 
+- ~~padding doesn’t work for adaptive fonts (layout=“prop”) (cannot
+  reproduce)~~
 - ~~weird: compare
   `plot_vtree(vt2, layout="tight", lwidth=1, lheight=1, padding=.10, dir="bt")`
   with
