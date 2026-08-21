@@ -411,6 +411,8 @@ plot_vtree <- function(x,
     legend <- NULL
   }
 
+  layout_arg <- attr(layout, "layout_arg")
+
   if(layout_arg == "sankey") {
     edge_style <- "sankey"
   } else {
