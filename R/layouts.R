@@ -327,21 +327,20 @@ add_layout <- function(vtree,
     lheight <- .t
   }
 
-  if(layout == "regular") {
-    layout_func <- layout_regular
-  } else if(layout == "proportional") {
-    layout_func <- layout_by_freq
-  } else if(layout == "tight") {
-    layout_func <- layout_tight
-  } else if(layout == "flushed_left") {
-    layout_func <- layout_flushed_left
-  } else if(layout == "flushed_right") {
-    layout_func <- layout_flushed_right
-  } else if(layout == "sankey") {
-    layout_func <- layout_sankey
+  layout_methods <- list(
+    regular = layout_regular,
+    proportional = layout_by_freq,
+    tight = layout_tight,
+    flushed_left = layout_flushed_left,
+    flushed_right = layout_flushed_right,
+    sankey = layout_sankey
+  )
+
+  if(is.null(layout_func)) {
+    layout_func <- layout_methods[[layout]]
   }
 
-  layout_arg <- layout
+  layout_arg  <- layout
 
   layout <- layout_func(vtree, dir=dir,
                            lwidth=lwidth, lheight=lheight,
