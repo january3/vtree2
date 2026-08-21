@@ -49,6 +49,7 @@ layout_sankey <- function(vtree, dir="lr",
     mutate(y = (.data[["offset"]] + .data[["n"]]/2) / totn) |>
     mutate(height = .data[["n"]] / totn) |>
     ungroup() |>
+    mutate(po = 1:n()) |> # plotting order
     arrange(.data[["order"]])
 
   # this rather complicated bit is cutting off empty space to the left and
@@ -80,26 +81,37 @@ layout_sankey <- function(vtree, dir="lr",
                   full_w = nodes$full_w,
                   full_h = nodes$full_h)
 
-  edges <- activate(layout, "edges") |> as_tibble()
-  nsel <- select(nodes, any_of(c("order", "path", "x", "y",
+  edges <- activate(layout, "edges") |> as_tibble() |>
+           mutate(ord = 1:n())
+  nsel <- select(nodes, any_of(c("node_col", "node_val", "order", "po", "x",
                                  "height", "width", "level", "node_level")))
 
   edges <- left_join(edges, nsel, by=join_by("from" == "order")) |>
            left_join(nsel, by=join_by("to" == "order"),
-                     suffix=c(".from", ".to")) |>
-           mutate(x1 = .data[["x.from"]] + .data[["width.from"]]/2,
-                  x2 = .data[["x.to"]] - .data[["width.to"]]/2,
-                  y1 = .data[["y.from"]] - .data[["height.from"]]/2,
-                  y2 = .data[["y.to"]]) |>
-           mutate(order = 1:n()) |>
-           group_by(.data[["path.from"]]) |>
-           arrange(desc(.data[["to"]])) |>
-           mutate(dy = cumsum(lag(.data[["height.to"]], default=0)) +
-                       .data[["height.to"]] / 2) |>
-           ungroup() |>
-           mutate(y1 = .data[["y1"]] + .data[["dy"]]) |>
-           mutate(height = .data[["height.to"]]) |>
-           arrange(.data[["order"]])
+                     suffix=c(".from", ".to"))
+
+  if(!"height" %in% colnames(edges)) {
+    if("n" %in% colnames(edges)) {
+      edges$height <- edges[["n"]]/totn
+    } else {
+      edges$height <- edges[["height.to"]]
+    }
+  }
+
+  edges <- edges |>
+    mutate(x1 = .data[["x.from"]] + .data[["width.from"]]/2,
+           x2 = .data[["x.to"]] - .data[["width.to"]]/2) |>
+    group_by(.data[["level.from"]]) |>
+    arrange(.data[["po.from"]], .data[["po.to"]]) |>
+    mutate(y1 = cumsum(lag(.data[["height"]], default=0)) +
+           .data[["height"]] / 2) |>
+    ungroup() |>
+    group_by(.data[["level.to"]]) |>
+    arrange(.data[["po.to"]], .data[["po.from"]]) |>
+    mutate(y2 = cumsum(lag(.data[["height"]], default=0)) +
+           .data[["height"]] / 2) |>
+    ungroup() |>
+    arrange(.data[["ord"]])
 
   layout <- layout |>
     mutate(x1 = edges$x1,
@@ -107,7 +119,7 @@ layout_sankey <- function(vtree, dir="lr",
            y1 = edges$y1,
            y2 = edges$y2,
            height = edges$height,
-           width = edges$width.from, .edges=TRUE)
+           width = NA, .edges=TRUE)
 
   layout
 }
@@ -272,7 +284,10 @@ sankey_poly <- function(x1, x2, y1, y2, size,
 
 .get_sankey_polygon <- function(x1, y1, x2, y2, size,
                                 name, fill1, fill2, alpha=.8,
-                                vertical=FALSE) {
+                                dir = "lr", col = "black") {
+
+  vertical <- dir %in% c("tb", "bt")
+
   h <- size/2
   p <- sankey_poly(x1 = x1, x2 = x2,
                    y1 = y1, y2 = y2, size = size,
@@ -284,16 +299,30 @@ sankey_poly <- function(x1, x2, y1, y2, size,
   c1 <- adjustcolor(fill1, alpha.f = alpha)
   c2 <- adjustcolor(fill2, alpha.f = alpha)
 
-  fill <- linearGradient(colours = c(c1, c2),
-                         x1 = 0, x2 = 1,
-                         y1 = y1, y2 = y2)
+  if(vertical) {
+    gx1 <- x1 ; gx2 <- x1
+    gy1 <- 0 ; gy2 <- 1
+  } else {
+    gx1 <- 0 ; gx2 <- 1
+    gy1 <- y1 ; gy2 <- y1
+  }
+
+  icol <- c(2, 1)
+
+  if(dir %in% c("bt", "lr")) {
+    icol <- rev(icol)
+  }
+
+  fill <- linearGradient(colours = c(c1, c2)[icol],
+                         y1 = gy1, y2 = gy2,
+                         x1 = gx1, x2 = gx2)
 
   polygonGrob(x = p[,1],
               y = p[,2],
               name = name,
               gp = gpar(
                         fill=fill,
-                        col="black"))
+                        col=col))
 }
 
 # create the arrows between the nodes
@@ -301,6 +330,7 @@ sankey_poly <- function(x1, x2, y1, y2, size,
 #' @importFrom grDevices adjustcolor
 .get_connectors <- function(layout, vertical=FALSE) {
 
+  dir <- attr(layout, "dir")
   edges <- activate(layout, "edges") |> as_tibble()
   edges <- edges[nrow(edges):1, ]
 
@@ -311,13 +341,17 @@ sankey_poly <- function(x1, x2, y1, y2, size,
   edges$fill.from[is.na(edges$fill.from)] <- "grey"
   edges$fill.to[is.na(edges$fill.to)] <- "grey"
 
+  if(!"color" %in% colnames(edges)) {
+    edges$color <- "black"
+  }
+
   ret <- lapply(1:nrow(edges), \(i) {
     .df <- edges[i, ]
     .get_sankey_polygon(.df$x1, .df$y1, .df$x2, .df$y2,
                         ifelse(vertical, .df$width, .df$height),
                         paste0("con_", .df$from, "_", .df$to),
                         .df$fill.from, .df$fill.to,
-                        vertical=vertical)
+                        dir=dir, col=.df$color %||% NA)
 
                })
 
@@ -344,6 +378,27 @@ sankey_poly <- function(x1, x2, y1, y2, size,
 # multiple parents, a "parent_id" column does not make sense. Therefore,
 # vtree methods that rely on parent_id will not work. We might need to
 # create add_labels generic and then add_labels.sankey_tree.
+
+#' Create a Sankey tree from a vtree object
+#'
+#' Sankey trees can be used to visualize data without the conditional
+#' frequencies that are used in a standard vtree.
+#'
+#' Unlike the using sankey layout for regular vtrees, this function does
+#' not preserve the conditional frequencies of the vtree. The node
+#' visualization shows the marginal frequencies of the variable levels -
+#' that is, the overall frequencies of levels for each variable, equivalent
+#' to the values produced in vtree plots with `legend=TRUE`.
+#' @param vtree,x A vtree object.
+#' @param ... Additional arguments passed to `plot_vtree()`.
+#' @examples
+#' vt <- vtree_from_freqtable(Titanic, Class, Sex, Age, Survived)
+#' sankey(vt) |> plot()
+#' @return A sankey_tree object, which is also a vtree object.
+#' `plot.sankey_tree()` can be used to plot the object and returns
+#' a `grid::gTree` object.
+#' @export
+#' @importFrom dplyr cur_group_id
 sankey <- function(vtree) {
 
   ensure_vtree(vtree)
@@ -352,12 +407,12 @@ sankey <- function(vtree) {
   vp <- attr(vtree, "vp")
 
   nd <- as_tibble(vtree) |>
-    rename(oldid = node_id) |>
+    rename(oldid = .data[["node_id"]]) |>
     group_by(.data[["node_col"]], .data[["node_val"]]) |>
     mutate(node_id = cur_group_id()) |>
     ungroup() |>
-    mutate(node_id = match(node_id, unique(node_id))) |>
-    rename(old_parent_id = parent_id) |>
+    mutate(node_id = match(.data[["node_id"]], unique(.data[["node_id"]]))) |>
+    rename(old_parent_id = .data[["parent_id"]]) |>
     mutate(parent_id = .data[["node_id"]][match(.data[["old_parent_id"]],
                                                 .data[["oldid"]])]) |>
     mutate(node_key = paste0("node_", .data[["node_id"]]))
@@ -365,7 +420,9 @@ sankey <- function(vtree) {
   eg <- nd |>
     filter(!is.na(.data[["parent_id"]])) |>
     select(from = .data[["parent_id"]], to = .data[["node_id"]],
-           all_of("n"))
+           all_of("n")) |>
+    group_by(.data[["from"]], .data[["to"]]) |>
+    summarize(n = sum(.data[["n"]]), .groups = "drop")
 
   selcols <- c("node_id", "node_key", "node_col", "node_val", "level",
                "val_alias", "col_alias", "fill", "color", "grob")
@@ -374,8 +431,8 @@ sankey <- function(vtree) {
     summarize(across(any_of(selcols), \(x) x[1]),
               n = sum(.data[["n"]]),
               .groups = "drop") |>
-    arrange(node_id) |>
-    group_by(level) |>
+    arrange(.data[["node_id"]]) |>
+    group_by(.data[["level"]]) |>
     mutate(tot_n = sum(.data[["n"]])) |>
     mutate(missing = sum(.data[["n"]][ is.na(.data[["node_val"]])])) |>
     mutate(denom = ifelse(vp, .data[["tot_n"]] - .data[["missing"]],
@@ -391,7 +448,6 @@ sankey <- function(vtree) {
                      directed = TRUE, node_key = "node_key") |>
             activate("nodes")
 
-
   class(sankey) <- c("sankey_tree", "vtree", class(sankey))
   for(a in c("vp", "levels", "cols", "N", "source_summary", "sep", "pruned",
              "palette", "alias", "grob")) {
@@ -399,4 +455,13 @@ sankey <- function(vtree) {
   }
 
   sankey
+}
+
+
+
+#' @rdname sankey
+#' @export
+plot.sankey_tree <- function(x, ...) {
+  ensure_vtree(x)
+  plot_vtree(x, layout="sankey", ...)
 }
