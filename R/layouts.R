@@ -216,6 +216,38 @@ layout_flushed_right <- function(vtree, dir="lr",
 
 }
 
+.ensure_layout_cols <- function(layout) {
+
+  if(!all(c("x", "y", "width", "height") %in% nodecols(layout))) {
+    cli_abort(c(x = "layout is missing required node columns"))
+  }
+
+  if(!all(c("x1", "y1", "x2", "y2") %in% edgecols(layout))) {
+    cli_abort(c(x = "layout is missing required edge columns"))
+  }
+
+  if(!"full_w" %in% nodecols(layout)) {
+    layout <- mutate(layout, full_w = .data[["width"]])
+  }
+
+  if(!"full_h" %in% nodecols(layout)) {
+    layout <- mutate(layout, full_h = .data[["height"]])
+  }
+
+  if(!"shape" %in% nodecols(layout)) {
+    layout <- mutate(layout, shape = "roundrectangle")
+  }
+
+  if(!"height" %in% edgecols(layout)) {
+    layout <- mutate(layout, height = NA, .edges=TRUE)
+  }
+
+  if(!"width" %in% edgecols(layout)) {
+    layout <- mutate(layout, width = NA, .edges=TRUE)
+  }
+
+  layout
+}
 
 #' Prepare a layout for plotting a vtree
 #'
@@ -342,6 +374,7 @@ add_layout <- function(vtree,
                            varspace = varspace,
                            varsize = varsize,
                            show_root=show_root)
+  layout <- .ensure_layout_cols(layout)
 
   if(dir == "rl") {
     layout <- .flip_horiz(layout)
@@ -355,6 +388,7 @@ add_layout <- function(vtree,
   if(dir == "tb") {
     layout <- .flip_vert(layout)
   }
+
 
   layout <- insert_grobs(layout, grobs)
 

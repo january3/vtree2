@@ -371,12 +371,12 @@ makeContent.vtree_plot <- function(x) {
                        lwd = 2))
 }
 
-.get_edges <- function(edges, style = "arrows") {
+.get_edges <- function(edges, vertical=FALSE, style = "arrows") {
 
   if(style == "arrows") {
     .get_arrows(edges)
   } else if(style == "sankey") {
-    .get_connectors(edges)
+    .get_connectors(edges, vertical = vertical)
   }
 }
 
@@ -643,6 +643,8 @@ makeContent.vtree_plot <- function(x) {
   #params$richtext <- params$richtext %||% TRUE
   richtext  <- params$richtext
   padding   <- params$padding %||% .1
+  dir       <- attr(layout, "dir") %||% "lr"
+  vertical  <- dir %in% c("tb", "bt")
 
   nodes <- as_tibble(layout)
   if(richtext) {
@@ -664,7 +666,7 @@ makeContent.vtree_plot <- function(x) {
 
   edges <- activate(layout, "edges") |> as_tibble()
 
-  arrows   <- .get_edges(edges, style=params$edge_style)
+  arrows   <- .get_edges(edges, vertical=vertical, style=params$edge_style)
   spec$lwd$edges <- list(path = c("edges"), nokids = TRUE)
   children <- list(arrows=arrows)
 

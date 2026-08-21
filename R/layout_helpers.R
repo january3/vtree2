@@ -29,19 +29,14 @@
 }
 
 # transpose a layout
+#' @importFrom dplyr rename
 .transpose <- function(layout) {
-    mutate(layout, yy = .data[["y"]],
-           y = .data[["x"]], x = .data[["yy"]]) |>
-    mutate(yy = .data[["width"]],
-           width = .data[["height"]],
-           height = .data[["yy"]]) |>
-    mutate(yy = .data[["full_w"]],
-           full_w = .data[["full_h"]],
-           full_h = .data[["yy"]]) |>
-    mutate(yy = .data[["y1"]], y1 = .data[["x1"]],
-           x1 = .data[["yy"]],
-           yy = .data[["y2"]], y2 = .data[["x2"]],
-           x2 = .data[["yy"]], .edges=TRUE)
+  rename(layout, "x"="y", "y"="x") |>
+  rename("width"="height", "height"="width") |>
+  rename("full_w"="full_h", "full_h"="full_w") |>
+  rename("x1"="y1", "y1"="x1", .edges=TRUE) |>
+  rename("x2"="y2", "y2"="x2", .edges=TRUE) |>
+  rename("width"="height", "height"="width", .edges=TRUE)
 }
 
 # scale the layout. I know I am supposed to use the viewport for that, but
@@ -59,7 +54,8 @@
          y1 = y0 + sy * .data[["y1"]],
          y2 = y0 + sy * .data[["y2"]],
          .edges=TRUE) |>
-  mutate(across(any_of("height"), \(x) x * sy), .edges=TRUE)
+  mutate(across(any_of("height"), \(x) x * sy), .edges=TRUE) |>
+  mutate(across(any_of("width"), \(x) x * sx), .edges=TRUE)
 
   # sankey layout requires to scale the height column
   ret

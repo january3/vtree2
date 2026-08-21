@@ -128,43 +128,7 @@ layout_sankey <- function(vtree, dir="lr",
   layout
 }
 
-bezier <- function(p0, p1, p2, p3, n = 30) {
-  t <- seq(0, 1, length.out = n)
 
-  (1 - t)^3 %o% p0 +
-    3 * (1 - t)^2 * t %o% p1 +
-    3 * (1 - t) * t^2 %o% p2 +
-    t^3 %o% p3
-}
-
-sankey_poly <- function(x1, x2,
-                        y1a, y1b,
-                        y2a, y2b,
-                        n = 30,
-                        curvature = 0.5) {
-
-  dx <- x2 - x1
-
-  # upper boundary
-  top <- bezier(
-    c(x1, y1a),
-    c(x1 + curvature * dx, y1a),
-    c(x2 - curvature * dx, y2a),
-    c(x2, y2a),
-    n
-  )
-
-  # lower boundary, backwards
-  bottom <- bezier(
-    c(x2, y2b),
-    c(x2 - curvature * dx, y2b),
-    c(x1 + curvature * dx, y1b),
-    c(x1, y1b),
-    n
-  )
-
-  rbind(top, bottom)
-}
 
 bezier_ribbon <- function(p0, p1, p2, p3, width, n = 100) {
 
@@ -252,15 +216,86 @@ sankey_ribbon <- function(x1, y1, x2, y2, height, n=100) {
 
 }
 
-.get_sankey_polygon <- function(x1, y1, x2, y2, height,
-                                name, fill1, fill2, alpha=.8) {
+bezier <- function(p0, p1, p2, p3, n = 30) {
+  t <- seq(0, 1, length.out = n)
 
-  h <- height/2
+  (1 - t)^3 %o% p0 +
+    3 * (1 - t)^2 * t %o% p1 +
+    3 * (1 - t) * t^2 %o% p2 +
+    t^3 %o% p3
+}
+
+sankey_poly <- function(x1, x2, y1, y2, size,
+                        n = 30,
+                        curvature = 0.5, vertical=FALSE) {
+
+  if(vertical) {
+    dy <- y2 - y1
+    x1a <- x1 - size/2
+    x1b <- x1 + size/2
+    x2a <- x2 - size/2
+    x2b <- x2 + size/2
+
+    # upper boundary
+    top <- bezier(
+      c(x1a, y1),
+      c(x1a, y1 + curvature * dy),
+      c(x2a, y2 - curvature * dy),
+      c(x2a, y2),
+      n
+    )
+
+    # lower boundary, backwards
+    bottom <- bezier(
+      c(x2b, y2),
+      c(x2b, y2 - curvature * dy),
+      c(x1b, y1 + curvature * dy),
+      c(x1b, y1),
+      n
+    )
+
+
+  } else {
+
+    y1a <- y1 - size/2
+    y1b <- y1 + size/2
+    y2a <- y2 - size/2
+    y2b <- y2 + size/2
+
+    dx <- x2 - x1
+
+    # upper boundary
+    top <- bezier(
+      c(x1, y1a),
+      c(x1 + curvature * dx, y1a),
+      c(x2 - curvature * dx, y2a),
+      c(x2, y2a),
+      n
+    )
+
+    # lower boundary, backwards
+    bottom <- bezier(
+      c(x2, y2b),
+      c(x2 - curvature * dx, y2b),
+      c(x1 + curvature * dx, y1b),
+      c(x1, y1b),
+      n
+    )
+  }
+
+  rbind(top, bottom)
+}
+
+.get_sankey_polygon <- function(x1, y1, x2, y2, size,
+                                name, fill1, fill2, alpha=.8,
+                                vertical=FALSE) {
+  h <- size/2
   p <- sankey_poly(x1 = x1, x2 = x2,
-                  y1a = y1 - h, y1b = y1 + h,
-                  y2a = y2 - h, y2b = y2 + h)
+                   y1 = y1, y2 = y2, size = size,
+                  vertical = vertical)
+
 # following looks like crap
-#  p <- sankey_ribbon(x1, y1, x2, y2, height)
+#  p <- sankey_ribbon(x1, y1, x2, y2, size)
 
   c1 <- adjustcolor(fill1, alpha.f = alpha)
   c2 <- adjustcolor(fill2, alpha.f = alpha)
@@ -280,15 +315,16 @@ sankey_ribbon <- function(x1, y1, x2, y2, height, n=100) {
 # create the arrows between the nodes
 #' @importFrom grid polygonGrob linearGradient
 #' @importFrom grDevices adjustcolor
-.get_connectors <- function(edges) {
+.get_connectors <- function(edges, vertical=FALSE) {
   edges <- edges[nrow(edges):1, ]
 
   ret <- lapply(1:nrow(edges), \(i) {
     .df <- edges[i, ]
     .get_sankey_polygon(.df$x1, .df$y1, .df$x2, .df$y2,
-                        .df$height, 
+                        ifelse(vertical, .df$width, .df$height),
                         paste0("con_", .df$from, "_", .df$to),
-                        .df$fill.from, .df$fill.to)
+                        .df$fill.from, .df$fill.to,
+                        vertical=vertical)
 
                })
 
@@ -299,4 +335,45 @@ sankey_ribbon <- function(x1, y1, x2, y2, height, n=100) {
   }
 
   ret
+}
+
+
+# here we create a new kind of tree - a Sankey tree. The levels of a
+# variable are represented by just one node, but with multiple edges, and
+# edges have a size (n), indicating how many samples from a parent node
+# pass to the child node. So for example, if we had a node "Survived:No
+# 122(38%)" attached to "Class:1st", then there will be an edge between
+# "Class:1st" and "Survived:No" with a size of 122.
+# Thus, a node may have multiple incoming edges and no single parent.
+# this is not a plotting function, it returns an object of class both
+# sankey_tree and vtree which allows to use add_labels and such.
+# Note: we will need to handle the types carefully. Since sankey nodes have
+# multiple parents, a "parent_id" column does not make sense. Therefore,
+# vtree methods that rely on parent_id will not work. We might need to
+# create add_labels generic and then add_labels.sankey_tree.
+sankey <- function(vtree) {
+
+  ensure_vtree(vtree)
+
+  nd <- as_tibble(vtree)
+  eg <- as_tibble(activate(vtree, "edges"))
+  sep <- attr(vtree, "sep")
+
+  newnd <- nd |>
+    group_by(.data[["node_col"]], .data[["node_val"]]) |>
+    summarize(n = sum(.data[["n"]]),
+              oldids = list(.data[["node_id"]]),
+              level = unique(level),
+              .groups = "drop") |>
+    arrange(level) |>
+    mutate(node_id = 1:n(),
+           node_key = paste0("node_", .data[["node_id"]]))
+
+
+
+
+
+
+
+
 }
