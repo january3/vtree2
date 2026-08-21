@@ -1,3 +1,12 @@
+v <- function(x, lab=FALSE) {
+  n <- as_tibble(x)
+  if(!lab) {
+    n$label <- NULL
+  }
+  n
+}
+
+
 ensure <- function(x, what) {
 
   arg <- rlang::caller_arg(x)
