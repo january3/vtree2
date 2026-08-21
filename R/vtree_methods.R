@@ -176,7 +176,7 @@ levels.vtree <- function(x) {
 #' nodecols(vt)
 #' @export
 nodecols <- function(x) {
-  colnames(as_tibble(x))
+  igraph::vertex_attr_names(x)
 }
 
 #' Get the column names of a vtree object edges

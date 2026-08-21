@@ -26,13 +26,13 @@ ensure_layout <- function(layout) {
 # make sure that the vtree is ready for plotting. Fill in the missing
 # color, label, fill etc. information.
 .normalize_vtree_for_plotting <- function(x, palettes, na_fill) {
-  nodes <- as_tibble(x)
+  ncols <- nodecols(x)
 
-  if(! "fill" %in% colnames(nodes)) {
+  if(! "fill" %in% ncols) {
     x <- add_palette(x, palettes = palettes, na = na_fill)
   }
 
-  if(! "color" %in% colnames(nodes)) {
+  if(! "color" %in% ncols) {
     x <- mutate(x, color = contrast_color(.data[["fill"]]))
   }
 
@@ -40,11 +40,11 @@ ensure_layout <- function(layout) {
     x <- add_aliases(x)
   }
 
-  if(! "label" %in% colnames(nodes)) {
+  if(! "label" %in% ncols) {
     x <- add_labels(x)
   }
 
-  if(! "shape" %in% colnames(nodes)) {
+  if(! "shape" %in% ncols) {
     x <- mutate(x, shape = "roundrectangle")
   }
 
