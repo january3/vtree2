@@ -392,7 +392,6 @@ plot_vtree <- function(x,
 
   legend <- .normalize_legend(legend)
   margins    <- .normalize_margins(margins, dir, legend)
-  fontsizes  <- .normalize_fontsizes(fontsizes, layout_arg)
 
   grobs <- extract_grobs(x)
   x <- remove_grobs(x)
@@ -412,6 +411,7 @@ plot_vtree <- function(x,
   }
 
   layout_arg <- attr(layout, "layout_arg")
+  fontsizes  <- .normalize_fontsizes(fontsizes, layout_arg)
 
   if(layout_arg == "sankey") {
     edge_style <- "sankey"

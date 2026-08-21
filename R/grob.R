@@ -371,12 +371,13 @@ makeContent.vtree_plot <- function(x) {
                        lwd = 2))
 }
 
-.get_edges <- function(edges, vertical=FALSE, style = "arrows") {
+.get_edges <- function(layout, vertical=FALSE, style = "arrows") {
 
   if(style == "arrows") {
+    edges <- activate(layout, "edges") |> as_tibble()
     .get_arrows(edges)
   } else if(style == "sankey") {
-    .get_connectors(edges, vertical = vertical)
+    .get_connectors(layout, vertical = vertical)
   }
 }
 
@@ -664,9 +665,8 @@ makeContent.vtree_plot <- function(x) {
   # basic grobs: nodes and edges, always shown
   nodes <- nodes |> filter(sel)
 
-  edges <- activate(layout, "edges") |> as_tibble()
 
-  arrows   <- .get_edges(edges, vertical=vertical, style=params$edge_style)
+  arrows   <- .get_edges(layout, vertical=vertical, style=params$edge_style)
   spec$lwd$edges <- list(path = c("edges"), nokids = TRUE)
   children <- list(arrows=arrows)
 

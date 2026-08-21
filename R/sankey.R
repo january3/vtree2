@@ -20,11 +20,6 @@ layout_sankey <- function(vtree, dir="lr",
                            varsize=NULL,
                            show_root=TRUE) {
 
-  if(!"fill" %in% nodecols(vtree)) {
-    cli_warn(c(x = "Argument `vtree` for Sankey layout does not have a fill column",
-      i = "For correct display, please add a coloring first with `add_palette()`"))
-  }
-
   totn <- attr(vtree, "N") #
 
   if(is.na(lwidth)) {
@@ -86,7 +81,7 @@ layout_sankey <- function(vtree, dir="lr",
                   full_h = nodes$full_h)
 
   edges <- activate(layout, "edges") |> as_tibble()
-  nsel <- select(nodes, any_of(c("order", "path", "x", "y", "fill",
+  nsel <- select(nodes, any_of(c("order", "path", "x", "y",
                                  "height", "width", "level", "node_level")))
 
   edges <- left_join(edges, nsel, by=join_by("from" == "order")) |>
@@ -113,17 +108,6 @@ layout_sankey <- function(vtree, dir="lr",
            y2 = edges$y2,
            height = edges$height,
            width = edges$width.from, .edges=TRUE)
-
-  if("fill" %in% nodecols(layout)) {
-    layout <- layout |>
-      mutate(fill.from = edges$fill.from,
-             fill.to = edges$fill.to, .edges=TRUE)
-  } else {
-    layout <- layout |>
-      mutate(fill.from = NA_character_,
-             fill.to = NA_character_, .edges=TRUE)
-  }
-
 
   layout
 }
@@ -315,8 +299,17 @@ sankey_poly <- function(x1, x2, y1, y2, size,
 # create the arrows between the nodes
 #' @importFrom grid polygonGrob linearGradient
 #' @importFrom grDevices adjustcolor
-.get_connectors <- function(edges, vertical=FALSE) {
+.get_connectors <- function(layout, vertical=FALSE) {
+
+  edges <- activate(layout, "edges") |> as_tibble()
   edges <- edges[nrow(edges):1, ]
+
+  nodes <- as_tibble(layout)
+  edges$fill.from <- nodes$fill[match(edges$from, nodes$node_id)]
+  edges$fill.to <- nodes$fill[match(edges$to, nodes$node_id)]
+
+  edges$fill.from[is.na(edges$fill.from)] <- "grey"
+  edges$fill.to[is.na(edges$fill.to)] <- "grey"
 
   ret <- lapply(1:nrow(edges), \(i) {
     .df <- edges[i, ]
@@ -355,25 +348,55 @@ sankey <- function(vtree) {
 
   ensure_vtree(vtree)
 
-  nd <- as_tibble(vtree)
-  eg <- as_tibble(activate(vtree, "edges"))
   sep <- attr(vtree, "sep")
+  vp <- attr(vtree, "vp")
 
+  nd <- as_tibble(vtree) |>
+    rename(oldid = node_id) |>
+    group_by(.data[["node_col"]], .data[["node_val"]]) |>
+    mutate(node_id = cur_group_id()) |>
+    ungroup() |>
+    mutate(node_id = match(node_id, unique(node_id))) |>
+    rename(old_parent_id = parent_id) |>
+    mutate(parent_id = .data[["node_id"]][match(.data[["old_parent_id"]],
+                                                .data[["oldid"]])]) |>
+    mutate(node_key = paste0("node_", .data[["node_id"]]))
+
+  eg <- nd |>
+    filter(!is.na(.data[["parent_id"]])) |>
+    select(from = .data[["parent_id"]], to = .data[["node_id"]],
+           all_of("n"))
+
+  selcols <- c("node_id", "node_key", "node_col", "node_val", "level",
+               "val_alias", "col_alias", "fill", "color", "grob")
   newnd <- nd |>
     group_by(.data[["node_col"]], .data[["node_val"]]) |>
-    summarize(n = sum(.data[["n"]]),
-              oldids = list(.data[["node_id"]]),
-              level = unique(level),
+    summarize(across(any_of(selcols), \(x) x[1]),
+              n = sum(.data[["n"]]),
               .groups = "drop") |>
-    arrange(level) |>
-    mutate(node_id = 1:n(),
-           node_key = paste0("node_", .data[["node_id"]]))
+    arrange(node_id) |>
+    group_by(level) |>
+    mutate(tot_n = sum(.data[["n"]])) |>
+    mutate(missing = sum(.data[["n"]][ is.na(.data[["node_val"]])])) |>
+    mutate(denom = ifelse(vp, .data[["tot_n"]] - .data[["missing"]],
+                              .data[["tot_n"]])) |>
+    mutate(freq = .data[["n"]] / .data[["denom"]]) |>
+    ungroup() |>
+    mutate(parent_id = NA_integer_) |>
+    mutate(path = NA_character_) |>
+    mutate(path_l = NA_character_) |>
+    mutate(parent = NA_character_)
+
+  sankey <- tbl_graph(nodes = newnd, edges = eg,
+                     directed = TRUE, node_key = "node_key") |>
+            activate("nodes")
 
 
+  class(sankey) <- c("sankey_tree", "vtree", class(sankey))
+  for(a in c("vp", "levels", "cols", "N", "source_summary", "sep", "pruned",
+             "palette", "alias", "grob")) {
+    attr(sankey, a) <- attr(vtree, a)
+  }
 
-
-
-
-
-
+  sankey
 }
