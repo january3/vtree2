@@ -46,9 +46,10 @@
 
 # scale the layout. I know I am supposed to use the viewport for that, but
 # right now this is better for debugging.
+#' @importFrom dplyr any_of
 .scale <- function(layout, x0, y0, sx, sy) {
 
-  mutate(layout,
+  ret <- mutate(layout,
          x = x0 + sx * .data[["x"]],
          y = y0 + sy * .data[["y"]],
          width = sx * .data[["width"]],
@@ -57,7 +58,11 @@
          x2 = x0 + sx * .data[["x2"]],
          y1 = y0 + sy * .data[["y1"]],
          y2 = y0 + sy * .data[["y2"]],
-         .edges=TRUE)
+         .edges=TRUE) |>
+  mutate(across(any_of("height"), \(x) x * sy), .edges=TRUE)
+
+  # sankey layout requires to scale the height column
+  ret
 }
 
 # for each node, calculate the number of leafs and store in nleafs

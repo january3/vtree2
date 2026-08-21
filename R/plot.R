@@ -108,7 +108,7 @@ ensure_layout <- function(layout) {
 .normalize_fontsizes <- function(fontsizes, layout) {
 
   # fields: nodes, var_labels, legend_labels
-  nodes <- ifelse(layout == "proportional",
+  nodes <- ifelse(layout %in% c("proportional", "sankey"),
                        "adaptive", "fixed")
 
   ret <- list(nodes = nodes,
@@ -370,7 +370,7 @@ plot.vtree <- function(x, ...) {
 #' @export
 plot_vtree <- function(x,
                       layout = c("regular", "proportional", "tight",
-                                 "flushed_left", "flushed_right"),
+                                 "flushed_left", "flushed_right", "sankey"),
                       palettes = c("Reds", "Blues", "Greens",
                                    "Oranges", "Purples"),
                       na_fill = "white",
@@ -411,11 +411,18 @@ plot_vtree <- function(x,
     legend <- NULL
   }
 
+  if(layout_arg == "sankey") {
+    edge_style <- "sankey"
+  } else {
+    edge_style <- "arrows"
+  }
+
   params <- list(
     mar = margins,
     padding = padding,
     fontsizes = fontsizes,
     richtext = richtext,
+    edge_style = edge_style,
     lwd = lwd,
     legend = legend,
     layout_type = layout_arg)

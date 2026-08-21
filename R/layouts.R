@@ -5,8 +5,6 @@ layout_by_freq <- function(vtree, dir="lr",
                            varsize=NULL,
                            show_root=TRUE) {
 
-  sr <- as.integer(show_root)
-
   layout <- .calc_offsets(vtree)
   nodes <- as_tibble(layout)
 
@@ -286,7 +284,7 @@ layout_flushed_right <- function(vtree, dir="lr",
 #' @export
 add_layout <- function(vtree,
                    layout = c("regular", "proportional", "tight",
-                              "flushed_left", "flushed_right"),
+                              "flushed_left", "flushed_right", "sankey"),
                    layout_func = NULL,
                    dir="lr",
                    lwidth=NA, lheight=NA,
@@ -329,6 +327,8 @@ add_layout <- function(vtree,
     layout_func <- layout_flushed_left
   } else if(layout == "flushed_right") {
     layout_func <- layout_flushed_right
+  } else if(layout == "sankey") {
+    layout_func <- layout_sankey
   }
 
   if(is.null(layout_func)) {

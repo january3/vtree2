@@ -118,12 +118,6 @@ adapt_fontsize_df <- function(grobs, df,
                  p = padding))
                  #.size_fct))
 
-  #message("adapt_fontsize_df, df:")
-  #print(cbind(df, ret, mret = ret == min(ret)) |>
-  #  select(path, width, height, ret, mret))
-  #message("ret_min: ", min(ret))
-  #print(str(padding))
-
   if(ret_min) {
     return(min(ret))
   } else {
@@ -195,7 +189,6 @@ adjust_fontsize_df <- function(x, spec) {
 
   #message("adjust_fontsize_df padding:", padding)
   pad <- recalculate_padding(df, padding)
-  #print(pad)
 
   path <- gPath(path)
 
@@ -376,6 +369,15 @@ makeContent.vtree_plot <- function(x) {
                gp=gpar(color = "black",
                        fill="black",
                        lwd = 2))
+}
+
+.get_edges <- function(edges, style = "arrows") {
+
+  if(style == "arrows") {
+    .get_arrows(edges)
+  } else if(style == "sankey") {
+    .get_connectors(edges)
+  }
 }
 
 # given a data frame with the node positions, grob column, and label
@@ -662,7 +664,7 @@ makeContent.vtree_plot <- function(x) {
 
   edges <- activate(layout, "edges") |> as_tibble()
 
-  arrows   <- .get_arrows(edges)
+  arrows   <- .get_edges(edges, style=params$edge_style)
   spec$lwd$edges <- list(path = c("edges"), nokids = TRUE)
   children <- list(arrows=arrows)
 
