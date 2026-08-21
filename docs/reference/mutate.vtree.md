@@ -1,14 +1,19 @@
-# Create, modify, and delete node columns
+# Create, modify, rename and delete node columns
 
-This is a wrapper around the regular
+These are the wrappers around the regular
 [`dplyr::mutate()`](https://dplyr.tidyverse.org/reference/mutate.html)
-function which preserves the vtree class.
+and
+[`dplyr::rename()`](https://dplyr.tidyverse.org/reference/rename.html)
+functions which preserve the vtree class.
 
 ## Usage
 
 ``` r
 # S3 method for class 'vtree'
 mutate(.data, ..., .edges = FALSE, .check = TRUE)
+
+# S3 method for class 'vtree'
+rename(.data, ..., .edges = FALSE, .check = TRUE)
 ```
 
 ## Arguments

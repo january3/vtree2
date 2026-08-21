@@ -6,7 +6,8 @@ to see their documentation.
 - dplyr:
 
   [`mutate()`](https://dplyr.tidyverse.org/reference/mutate.html),
-  [`pull()`](https://dplyr.tidyverse.org/reference/pull.html)
+  [`pull()`](https://dplyr.tidyverse.org/reference/pull.html),
+  [`rename()`](https://dplyr.tidyverse.org/reference/rename.html)
 
 - tidygraph:
 

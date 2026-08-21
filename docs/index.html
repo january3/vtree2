@@ -65,7 +65,7 @@
 </h1></div>
 <!-- badges: start -->
 <!-- badges: end -->
-<p>Tree diagrams for categorical data, based on the <a href="https://github.com/nbarrowman/vtree" class="external-link">original vtree package</a> by Nick Barrowman.</p>
+<p>Conditional frequencies, tree diagrams and Sankey plots for categorical data, inspired by the <a href="https://github.com/nbarrowman/vtree" class="external-link">original vtree package</a> by Nick Barrowman.</p>
 <div class="section level2">
 <h2 id="gallery">Gallery<a class="anchor" aria-label="anchor" href="#gallery"></a>
 </h2>
@@ -207,30 +207,39 @@
 </h2>
 <ul>
 <li>write a manual in the main vignette [——–|] 95% complete</li>
-<li><del>adding grobs explicitly with <code>add_grobs()</code>; grobs should have layout parameters.</del></li>
+<li><del>proper Sankey plots</del></li>
+<li>✔ <del>adding grobs explicitly with <code>add_grobs()</code>; grobs should have layout parameters.</del>
+</li>
 <li>add background and line color</li>
 <li>
 <code>add_gs()</code> for graphical summaries - tiny plots</li>
-<li>
-<del>allow adjusting grob layouts in grob nodes</del> - only fine adjusting</li>
-<li>
-<del>the nodes of the diagrammer are adjusted to the size of the labels. We could do that, actually. I think it doesn’t look so good, but OK.</del> - now “tight” layouts</li>
+<li>✔ <del>allow adjusting grob layouts in grob nodes</del> - only fine adjusting</li>
+<li>✔ <del>the nodes of the diagrammer are adjusted to the size of the labels. We could do that, actually. I think it doesn’t look so good, but OK.</del> - now “tight” layouts</li>
 <li>vtree constructors take only character or factor variables: <del>build in checking for column type</del> maybe add functions to convert numeric to factor? or some automation controlled with a param?</li>
 <li>add_layout should not modify shape if present</li>
 <li>faster processing of cases into trees</li>
 <li>why is plotting patterns so slow?</li>
-<li><del>easier formatting of labels using glue syntax</del></li>
-<li><del>summaries_vt and summaries_vt_df - that is clunky, maybe as_df option or smth? -&gt; rewrote it completely</del></li>
-<li><del>better support in add_palette for 1/ variable driven palettes (i.e. one color for one tree level / variable of the tree, deterministic such that colors don’t change if we prune a tree) 2/ fully customized palettes</del></li>
-<li><del>original vtree tries to keep sister NA nodes of the retained nodes. This behavior is reproduced by the keep_na_sisters parameter, which adds NA nodes to the retained nodes. However, if we target an NA node with is.na(), then the behavior results in the NA node being kept.</del></li>
-<li><del>sameline template for add_labels()</del></li>
-<li><del>fix the mess around legend param</del></li>
-<li><del>vtree constructors should check for presence of ‘/’ and ‘:’ in variable names</del></li>
-<li><del>vtree constructors should check that all columns are factors or characters</del></li>
-<li><del>vtree constructors should test for the presence of structural columns in the data. e.g. if the data has already a column called “n” or “freq”, we will have a clash when pruning and virtual columns are created.</del></li>
-<li><del>print.vtree should show the status of added layouts / colors / etc etc</del></li>
-<li>
-<del>pruning:</del>
+<li>✔ <del>easier formatting of labels using glue syntax</del>
+</li>
+<li>✔ <del>summaries_vt and summaries_vt_df - that is clunky, maybe as_df option or smth? -&gt; rewrote it completely</del>
+</li>
+<li>✔ <del>better support in add_palette for 1/ variable driven palettes (i.e. one color for one tree level / variable of the tree, deterministic such that colors don’t change if we prune a tree) 2/ fully customized palettes</del>
+</li>
+<li>✔ <del>original vtree tries to keep sister NA nodes of the retained nodes. This behavior is reproduced by the keep_na_sisters parameter, which adds NA nodes to the retained nodes. However, if we target an NA node with is.na(), then the behavior results in the NA node being kept.</del>
+</li>
+<li>✔ <del>sameline template for add_labels()</del>
+</li>
+<li>✔ <del>fix the mess around legend param</del>
+</li>
+<li>✔ <del>vtree constructors should check for presence of ‘/’ and ‘:’ in variable names</del>
+</li>
+<li>✔ <del>vtree constructors should check that all columns are factors or characters</del>
+</li>
+<li>✔ <del>vtree constructors should test for the presence of structural columns in the data. e.g. if the data has already a column called “n” or “freq”, we will have a clash when pruning and virtual columns are created.</del>
+</li>
+<li>✔ <del>print.vtree should show the status of added layouts / colors / etc etc</del>
+</li>
+<li>✔ <del>pruning:</del>
 <ul>
 <li><del>streamline and clean up pruning / selecting nodes</del></li>
 <li>
@@ -240,21 +249,26 @@
 <li><del>remove the na.rm tag</del></li>
 </ul>
 </li>
-<li><del>the arrows should be attached dynamically in grob.R rather than in layout? -&gt; nah, let us keep low-level graphics and high-level layouts separate while we can</del></li>
-<li>
-<del>add prefix and suffix parameters to add_labels, to make the handling easier</del> - nah, you can just paste() it.</li>
-<li><del>how is vtree actually handling the palettes?</del></li>
-<li><del>root node should not show percentages on default labels</del></li>
-<li><del>make sure that node_name is used for displaying variable names</del></li>
-<li><del>plotting function for patterns</del></li>
-<li><del>varspace and varsize should work with layouts other than regular</del></li>
-<li>
-<del>add the keep_children parameter to the keep() function</del>, <del>and also keep_na. - this is harder; because not all the NA nodes are kept, but only these which are on the same level as a node that is kept. Generally make keep behave the same as in vtree.</del>
+<li>✔ <del>the arrows should be attached dynamically in grob.R rather than in layout? -&gt; nah, let us keep low-level graphics and high-level layouts separate while we can</del>
 </li>
-<li><del>legends</del></li>
-<li>
-<del>should the vtree() function take cases or samples? Maybe instead of vtree_from_freqtable, we can just use vtree(…, .freq_col=“Freq”) or something like this.</del> nah, better make it explicit.</li>
-<li><del>maybe gridtext for the labels so we can use some basic formatting</del></li>
+<li>✔ <del>add prefix and suffix parameters to add_labels, to make the handling easier</del> - nah, you can just paste() it.</li>
+<li>✔ <del>how is vtree actually handling the palettes?</del>
+</li>
+<li>✔ <del>root node should not show percentages on default labels</del>
+</li>
+<li>✔ <del>make sure that node_name is used for displaying variable names</del>
+</li>
+<li>✔ <del>plotting function for patterns</del>
+</li>
+<li>✔ <del>varspace and varsize should work with layouts other than regular</del>
+</li>
+<li>✔ <del>add the keep_children parameter to the keep() function</del>, <del>and also keep_na. - this is harder; because not all the NA nodes are kept, but only these which are on the same level as a node that is kept. Generally make keep behave the same as in vtree.</del>
+</li>
+<li>✔ <del>legends</del>
+</li>
+<li>✔ <del>should the vtree() function take cases or samples? Maybe instead of vtree_from_freqtable, we can just use vtree(…, .freq_col=“Freq”) or something like this.</del> nah, better make it explicit.</li>
+<li>✔ <del>maybe gridtext for the labels so we can use some basic formatting</del>
+</li>
 <li>questions to N:
 <ul>
 <li>which NA nodes are kept when vp=TRUE, only the sisters or all on the same level?</li>
@@ -267,17 +281,29 @@
 <h2 id="bugs">BUGS<a class="anchor" aria-label="anchor" href="#bugs"></a>
 </h2>
 <ul>
-<li><del>padding doesn’t work for adaptive fonts (layout=“prop”) (cannot reproduce)</del></li>
-<li><del>weird: compare <code>plot_vtree(vt2, layout="tight", lwidth=1, lheight=1, padding=.10, dir="bt")</code> with <code>plot_vtree(vt2, layout="tight", lwidth=1, padding=.10, dir="bt")</code> - why are fonts on the second one smaller? - problem with padding, it increases when nodes increase</del></li>
+<li>✔ <del>vertical layouts do not work with Sankey connectors</del>
+</li>
+<li>✔ <del>padding doesn’t work for adaptive fonts (layout=“prop”) (cannot reproduce)</del>
+</li>
+<li>✔ <del>weird: compare <code>plot_vtree(vt2, layout="tight", lwidth=1, lheight=1, padding=.10, dir="bt")</code> with <code>plot_vtree(vt2, layout="tight", lwidth=1, padding=.10, dir="bt")</code> - why are fonts on the second one smaller? - problem with padding, it increases when nodes increase</del>
+</li>
 <li>legend titles sometimes overlap with the legend</li>
-<li><del>check the graphic summary example. if dir is tb, it looks ok (fonts maybe slightly too large). But turn it around and the fonts on the grob nodes are unreadable. Why?</del></li>
-<li><del>aliases are ignored for the legend. Maybe aliases should behave like palettes, i.e. also set an attribute to be used by legend?</del></li>
-<li><del>“Missing” is missing from the legend on the user guide example for adding aliases</del></li>
-<li><del>if some variables disappear from the plot, the legend throws an error</del></li>
-<li><del>prune(!Severity %in% c(“Mild”, “Moderate”), follow_only = TRUE) does not work</del></li>
-<li><del>na.rm handling in prune() is not consistent, at least not with vtree’s behavior</del></li>
-<li><del>layout=“proportional” stopped working</del></li>
-<li><del>with precomputed layout, plot doesn’t know that the direction is vertical and the legends suck -&gt; should the legends be computed by the layout function? naaaah. layout should store the attributes via an exported function. Should we make an S3 class? vtree_layout?</del></li>
+<li>✔ <del>check the graphic summary example. if dir is tb, it looks ok (fonts maybe slightly too large). But turn it around and the fonts on the grob nodes are unreadable. Why?</del>
+</li>
+<li>✔ <del>aliases are ignored for the legend. Maybe aliases should behave like palettes, i.e. also set an attribute to be used by legend?</del>
+</li>
+<li>✔ <del>“Missing” is missing from the legend on the user guide example for adding aliases</del>
+</li>
+<li>✔ <del>if some variables disappear from the plot, the legend throws an error</del>
+</li>
+<li>✔ <del>prune(!Severity %in% c(“Mild”, “Moderate”), follow_only = TRUE) does not work</del>
+</li>
+<li>✔ <del>na.rm handling in prune() is not consistent, at least not with vtree’s behavior</del>
+</li>
+<li>✔ <del>layout=“proportional” stopped working</del>
+</li>
+<li>✔ <del>with precomputed layout, plot doesn’t know that the direction is vertical and the legends suck -&gt; should the legends be computed by the layout function? naaaah. layout should store the attributes via an exported function. Should we make an S3 class? vtree_layout?</del>
+</li>
 </ul>
 </div>
 </div>

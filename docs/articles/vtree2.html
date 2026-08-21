@@ -558,7 +558,7 @@ logical vector indicating which nodes match a certain condition or
 </div>
 </div>
 <div class="section level2">
-<h2 id="adding-column-and-value-aliases">Adding column and value aliases<a class="anchor" aria-label="anchor" href="#adding-column-and-value-aliases"></a>
+<h2 id="column-and-value-aliases-with-add_aliases">Column and value aliases with <code>add_aliases()</code><a class="anchor" aria-label="anchor" href="#column-and-value-aliases-with-add_aliases"></a>
 </h2>
 <p>If you prefer to see a different name for the variable or its values
 on the plot, there are basically two approaches.</p>
@@ -616,7 +616,7 @@ used by <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="exte
 </ul>
 </div>
 <div class="section level2">
-<h2 id="adding-and-modifying-labels">Adding and modifying labels<a class="anchor" aria-label="anchor" href="#adding-and-modifying-labels"></a>
+<h2 id="labels-with-add_labels">Labels with <code>add_labels()</code><a class="anchor" aria-label="anchor" href="#labels-with-add_labels"></a>
 </h2>
 <p>Labels to be plotted are taken from the <code>label</code> column of
 the vtree object. If this column is missing, <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> calls
@@ -1158,16 +1158,11 @@ the edges. You can then modify these columns directly.</p>
 <code class="sourceCode R"><span><span class="va">vt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/vtree.html">vtree_from_freqtable</a></span><span class="op">(</span><span class="va">Titanic</span>, <span class="va">Class</span>, <span class="va">Survived</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">vt</span>, layout<span class="op">=</span><span class="st">"sankey"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="vtree2_files/figure-html/layouts_sankey-1.png" class="r-plt" alt="" width="960"></p>
-<p>There are two things of note with Sankey layouts. First, note that
-the percentages on the plot above did not change from the regular
-layout, but that the <em>position</em> of the nodes changed. The
-percentage “75%” for the Survived variable refers to the relative
-percentage within the parent node, i.e. among the passengers of the 3rd
-class.</p>
-<p>Second, the layout requires a palette / fill column to be displayed
-correctly. Following code will result in connectors between the nodes to
-be white: <code>add_layout(vt) |&gt; plot()</code>. Use
-<code><a href="../reference/vtree_palette.html">add_palette()</a></code> to first add the colors to the layout.</p>
+<p>There is one thing of note with Sankey layouts. The percentages on
+the plot above did not change from the regular layout, but that the
+<em>position</em> of the nodes changed. The percentage “75%” for the
+Survived variable refers to the relative percentage within the parent
+node, i.e. among the passengers of the 3rd class.</p>
 </div>
 <div class="section level3">
 <h3 id="directly-modifying-the-layout">Directly modifying the layout<a class="anchor" aria-label="anchor" href="#directly-modifying-the-layout"></a>
@@ -1436,11 +1431,11 @@ the corresponding images.</p>
 <span></span>
 <span><span class="va">iris_grobs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">iris_imgs</span>, <span class="va">get_grob</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "images/500px-Blue_Flag,_Ottawa.jpg"</span></span>
-<span><span class="co">#&gt; [1] "/tmp/Rtmpomm4by/temp_libpath1e877358d2670d/vtree2/images/500px-Blue_Flag,_Ottawa.jpg"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/Rtmpomm4by/temp_libpath1e877378c6ae70/vtree2/images/500px-Blue_Flag,_Ottawa.jpg"</span></span>
 <span><span class="co">#&gt; [1] "images/500px-Irissetosa1.jpg"</span></span>
-<span><span class="co">#&gt; [1] "/tmp/Rtmpomm4by/temp_libpath1e877358d2670d/vtree2/images/500px-Irissetosa1.jpg"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/Rtmpomm4by/temp_libpath1e877378c6ae70/vtree2/images/500px-Irissetosa1.jpg"</span></span>
 <span><span class="co">#&gt; [1] "images/500px-Iris_virginica_2.jpg"</span></span>
-<span><span class="co">#&gt; [1] "/tmp/Rtmpomm4by/temp_libpath1e877358d2670d/vtree2/images/500px-Iris_virginica_2.jpg"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/Rtmpomm4by/temp_libpath1e877378c6ae70/vtree2/images/500px-Iris_virginica_2.jpg"</span></span>
 <span></span>
 <span><span class="va">vt</span> <span class="op">&lt;-</span> <span class="va">iris</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>Long_Petals <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">Petal.Length</span> <span class="op">&gt;</span> <span class="fl">4</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -1668,6 +1663,30 @@ supplement types:</p>
 <span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span>legend<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
 <p><img src="vtree2_files/figure-html/gsum6-1.png" class="r-plt" alt="" width="1152"></p>
 </div>
+</div>
+<div class="section level2">
+<h2 id="sankey-plots">Sankey plots<a class="anchor" aria-label="anchor" href="#sankey-plots"></a>
+</h2>
+<p>The Sankey plots are a simplified version of the sankey layout (see
+above). While a sankey layout for vtrees preserves the conditional
+frequencies in the data, a Sankey plot simply shows the overal
+frequencies for each variable:</p>
+<div class="sourceCode" id="cb54"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">vt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/vtree.html">vtree_from_freqtable</a></span><span class="op">(</span><span class="va">Titanic</span>, <span class="va">Class</span>, <span class="va">Sex</span>, <span class="va">Survived</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># vtree with a sankey layout</span></span>
+<span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">vt</span>, layout<span class="op">=</span><span class="st">"sankey"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">sk</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sankey.html">sankey</a></span><span class="op">(</span><span class="va">vt</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Sankey plot</span></span>
+<span><span class="va">p2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">sk</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/plot_grid.html" class="external-link">plot_grid</a></span><span class="op">(</span><span class="va">p1</span>, <span class="va">p2</span>, ncol<span class="op">=</span><span class="fl">1</span><span class="op">)</span></span></code></pre></div>
+<p><img src="vtree2_files/figure-html/unnamed-chunk-8-1.png" class="r-plt" alt="" width="960"></p>
+<p>The first plot is a vtree plot with conditional frequencies and a
+Sankey-like layout. The second plot below is a Sankey plot with marginal
+frequencies.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

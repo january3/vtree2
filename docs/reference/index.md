@@ -12,7 +12,8 @@
 - [`as_vtree()`](https://january3.github.io/vtree2/reference/as_vtree.md)
   : Convert a tbl_graph to a vtree
 - [`mutate(`*`<vtree>`*`)`](https://january3.github.io/vtree2/reference/mutate.vtree.md)
-  : Create, modify, and delete node columns
+  [`rename(`*`<vtree>`*`)`](https://january3.github.io/vtree2/reference/mutate.vtree.md)
+  : Create, modify, rename and delete node columns
 - [`is_vp()`](https://january3.github.io/vtree2/reference/is_vp.md) : Is
   the vtree based on valid percentages?
 - [`levels(`*`<vtree>`*`)`](https://january3.github.io/vtree2/reference/levels.vtree.md)
@@ -21,6 +22,8 @@
   : Get the variable names of a vtree object
 - [`nodecols()`](https://january3.github.io/vtree2/reference/nodecols.md)
   : Get the column names of a vtree object
+- [`edgecols()`](https://january3.github.io/vtree2/reference/edgecols.md)
+  : Get the column names of a vtree object edges
 - [`print(`*`<vtree>`*`)`](https://january3.github.io/vtree2/reference/print.vtree.md)
   : Print a vtree object
 - [`summary(`*`<vtree>`*`)`](https://january3.github.io/vtree2/reference/summary.vtree.md)
@@ -71,6 +74,9 @@
 - [`plot(`*`<vtree>`*`)`](https://january3.github.io/vtree2/reference/plot.vtree.md)
   [`plot_vtree()`](https://january3.github.io/vtree2/reference/plot.vtree.md)
   : Plot a vtree
+- [`sankey()`](https://january3.github.io/vtree2/reference/sankey.md)
+  [`plot(`*`<sankey_tree>`*`)`](https://january3.github.io/vtree2/reference/sankey.md)
+  : Create a Sankey tree from a vtree object
 - [`add_layout()`](https://january3.github.io/vtree2/reference/add_layout.md)
   : Prepare a layout for plotting a vtree
 - [`vtree_palette()`](https://january3.github.io/vtree2/reference/vtree_palette.md)

@@ -23,6 +23,7 @@ reference:
       - levels.vtree
       - names.vtree
       - nodecols
+      - edgecols
       - print.vtree
       - summary.vtree
   - title: Patterns
@@ -52,6 +53,7 @@ reference:
   - title: Layouts, colors, plotting
     contents:
       - has_concept("plotting")
+      - sankey
       - add_layout
       - add_palette
       - add_graphics

@@ -520,7 +520,7 @@ vt |> mark(freq < .2) |>
 
 ![](vtree2_files/figure-html/unnamed-chunk-3-1.png)
 
-## Adding column and value aliases
+## Column and value aliases with `add_aliases()`
 
 If you prefer to see a different name for the variable or its values on
 the plot, there are basically two approaches.
@@ -587,7 +587,7 @@ Unnecessary gory details:
   [`plot()`](https://rdrr.io/r/graphics/plot.default.html) to create the
   legend.
 
-## Adding and modifying labels
+## Labels with `add_labels()`
 
 Labels to be plotted are taken from the `label` column of the vtree
 object. If this column is missing,
@@ -1181,17 +1181,11 @@ plot(vt, layout="sankey")
 
 ![](vtree2_files/figure-html/layouts_sankey-1.png)
 
-There are two things of note with Sankey layouts. First, note that the
-percentages on the plot above did not change from the regular layout,
-but that the *position* of the nodes changed. The percentage “75%” for
-the Survived variable refers to the relative percentage within the
-parent node, i.e. among the passengers of the 3rd class.
-
-Second, the layout requires a palette / fill column to be displayed
-correctly. Following code will result in connectors between the nodes to
-be white: `add_layout(vt) |> plot()`. Use
-[`add_palette()`](https://january3.github.io/vtree2/reference/vtree_palette.md)
-to first add the colors to the layout.
+There is one thing of note with Sankey layouts. The percentages on the
+plot above did not change from the regular layout, but that the
+*position* of the nodes changed. The percentage “75%” for the Survived
+variable refers to the relative percentage within the parent node,
+i.e. among the passengers of the 3rd class.
 
 ### Directly modifying the layout
 
@@ -1484,11 +1478,11 @@ get_grob <- function(img) {
 
 iris_grobs <- lapply(iris_imgs, get_grob)
 #> [1] "images/500px-Blue_Flag,_Ottawa.jpg"
-#> [1] "/tmp/Rtmpomm4by/temp_libpath1e877358d2670d/vtree2/images/500px-Blue_Flag,_Ottawa.jpg"
+#> [1] "/tmp/Rtmpomm4by/temp_libpath1e877378c6ae70/vtree2/images/500px-Blue_Flag,_Ottawa.jpg"
 #> [1] "images/500px-Irissetosa1.jpg"
-#> [1] "/tmp/Rtmpomm4by/temp_libpath1e877358d2670d/vtree2/images/500px-Irissetosa1.jpg"
+#> [1] "/tmp/Rtmpomm4by/temp_libpath1e877378c6ae70/vtree2/images/500px-Irissetosa1.jpg"
 #> [1] "images/500px-Iris_virginica_2.jpg"
-#> [1] "/tmp/Rtmpomm4by/temp_libpath1e877358d2670d/vtree2/images/500px-Iris_virginica_2.jpg"
+#> [1] "/tmp/Rtmpomm4by/temp_libpath1e877378c6ae70/vtree2/images/500px-Iris_virginica_2.jpg"
 
 vt <- iris |>
   mutate(Long_Petals = as.character(Petal.Length > 4)) |>
@@ -1750,3 +1744,30 @@ vt |>
 ```
 
 ![](vtree2_files/figure-html/gsum6-1.png)
+
+## Sankey plots
+
+The Sankey plots are a simplified version of the sankey layout (see
+above). While a sankey layout for vtrees preserves the conditional
+frequencies in the data, a Sankey plot simply shows the overal
+frequencies for each variable:
+
+``` r
+vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived)
+
+# vtree with a sankey layout
+p1 <- plot(vt, layout="sankey")
+
+sk <- sankey(vt)
+
+# Sankey plot
+p2 <- plot(sk)
+
+plot_grid(p1, p2, ncol=1)
+```
+
+![](vtree2_files/figure-html/unnamed-chunk-8-1.png)
+
+The first plot is a vtree plot with conditional frequencies and a
+Sankey-like layout. The second plot below is a Sankey plot with marginal
+frequencies.

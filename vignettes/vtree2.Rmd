@@ -439,7 +439,7 @@ vt |> mark(freq < .2) |>
 
 
 
-# Adding column and value aliases
+# Column and value aliases with `add_aliases()`
 
 If you prefer to see a different name for the variable or its values on the
 plot, there are basically two approaches.
@@ -497,7 +497,7 @@ Unnecessary gory details:
    attribute of the vtree object, which is subsequently used
    by `plot()` to create the legend.
 
-# Adding and modifying labels
+# Labels with `add_labels()`
 
 Labels to be plotted are taken from the `label` column of the vtree object.
 If this column is missing, `plot()` calls `add_labels()` to add default
@@ -977,16 +977,11 @@ vt <- vtree_from_freqtable(Titanic, Class, Survived)
 plot(vt, layout="sankey")
 ```
 
-There are two things of note with Sankey layouts. First, note that the
+There is one thing of note with Sankey layouts. The
 percentages on the plot above did not change from the regular layout, but
 that the *position* of the nodes changed. The percentage "75%" for the
 Survived variable refers to the relative percentage within the parent node,
 i.e. among the passengers of the 3rd class.
-
-Second, the layout requires a palette / fill column to be displayed
-correctly. Following code will result in connectors between the nodes to be
-white: `add_layout(vt) |> plot()`. Use `add_palette()` to first add the
-colors to the layout.
 
 
 ## Directly modifying the layout
@@ -1488,6 +1483,28 @@ vt |>
 ```
 
 
+# Sankey plots
+
+The Sankey plots are a simplified version of the sankey layout (see above).
+While a sankey layout for vtrees preserves the conditional frequencies in
+the data, a Sankey plot simply shows the overal frequencies for each
+variable:
 
 
+```{r fig.width=10,fig.height=10}
+vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived)
 
+# vtree with a sankey layout
+p1 <- plot(vt, layout="sankey")
+
+sk <- sankey(vt)
+
+# Sankey plot
+p2 <- plot(sk)
+
+plot_grid(p1, p2, ncol=1)
+```
+
+The first plot is a vtree plot with conditional frequencies and a
+Sankey-like layout. The second plot below is a Sankey plot with marginal
+frequencies.
