@@ -68,8 +68,8 @@ By default, \code{add_labels()} produces simple node labels containing the
 associated variable value, number of cases and percentage within the
 parent node. This can be customized by one of the following:
 \itemize{
-\item choose a different \code{template} parameter: \code{short} (default),
-\code{sameline} (same as short, but on one line) or \code{long} (with variable
+\item choose a different \code{template} parameter: \code{simple} (default),
+\code{sameline} (same as simple, but on one line) or \code{long} (with variable
 names). The templates all reasonably handle NA nodes and root node.
 \item use a \code{\link[glue:glue]{glue::glue()}} syntax for the parameters \code{fmt}, \code{fmt_na} and
 \code{fmt_root}, where variable names are put in curly

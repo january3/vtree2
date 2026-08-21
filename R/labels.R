@@ -99,8 +99,8 @@
 #' associated variable value, number of cases and percentage within the
 #' parent node. This can be customized by one of the following:
 #'
-#'  * choose a different `template` parameter: `short` (default),
-#'  `sameline` (same as short, but on one line) or `long` (with variable
+#'  * choose a different `template` parameter: `simple` (default),
+#'  `sameline` (same as simple, but on one line) or `long` (with variable
 #'  names). The templates all reasonably handle NA nodes and root node.
 #'  * use a [glue::glue()] syntax for the parameters `fmt`, `fmt_na` and
 #'  `fmt_root`, where variable names are put in curly
