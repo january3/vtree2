@@ -201,7 +201,14 @@ test_that("errors are raised", {
 
   expect_error(mutate(vt, tot_n = 99),
                "tried to modify following immutable column")
+  expect_error(mutate(vt, tot_n = NULL),
+               "tried to remove following immutable column")
   expect_no_error(mutate(vt, tot_n = 99, .check = FALSE))
+  expect_no_error(mutate(vt, foo = 99))
+
+  expect_error(rename(vt, foo = tot_n),
+               "tried to remove following immutable column")
+  expect_no_error(rename(add_labels(vt), foo = label))
 
   vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived)
   attr(vt, "vp") <- NULL

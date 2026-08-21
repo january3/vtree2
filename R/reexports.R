@@ -6,6 +6,12 @@ dplyr::mutate
 
 #' Re-exported functions
 #'
+#' @importFrom dplyr rename
+#' @export
+dplyr::rename
+
+#' Re-exported functions
+#'
 #' @importFrom dplyr pull
 #' @export
 dplyr::pull

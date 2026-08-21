@@ -2,9 +2,12 @@
 % Please edit documentation in R/vtree_methods.R
 \name{mutate.vtree}
 \alias{mutate.vtree}
-\title{Create, modify, and delete node columns}
+\alias{rename.vtree}
+\title{Create, modify, rename and delete node columns}
 \usage{
 \method{mutate}{vtree}(.data, ..., .edges = FALSE, .check = TRUE)
+
+\method{rename}{vtree}(.data, ..., .edges = FALSE, .check = TRUE)
 }
 \arguments{
 \item{.data}{A vtree object.}
@@ -23,8 +26,8 @@ change}
 An object of class vtree
 }
 \description{
-This is a wrapper around the regular \code{\link[dplyr:mutate]{dplyr::mutate()}}
-function which preserves the vtree class.
+These are the wrappers around the regular \code{\link[dplyr:mutate]{dplyr::mutate()}}
+and \code{\link[dplyr:rename]{dplyr::rename()}} functions which preserve the vtree class.
 }
 \details{
 Immutable columns: some columns of the vtree are immutable. Changing

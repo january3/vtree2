@@ -4,6 +4,7 @@
 \name{reexports}
 \alias{reexports}
 \alias{mutate}
+\alias{rename}
 \alias{pull}
 \alias{as_tbl_graph}
 \title{Re-exported functions}
@@ -13,7 +14,7 @@ These objects are imported from other packages. Follow the links
 below to see their documentation.
 
 \describe{
-  \item{dplyr}{\code{\link[dplyr:mutate]{mutate()}}, \code{\link[dplyr:pull]{pull()}}}
+  \item{dplyr}{\code{\link[dplyr:mutate]{mutate()}}, \code{\link[dplyr:pull]{pull()}}, \code{\link[dplyr:rename]{rename()}}}
 
   \item{tidygraph}{\code{\link[tidygraph:as_tbl_graph]{as_tbl_graph()}}}
 }}

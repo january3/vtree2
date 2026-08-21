@@ -54,11 +54,44 @@ is_vp <- function(x) {
   attr(x, "vp")
 }
 
+.check_immutable <- function(.data, ret, .edges) {
 
-#' Create, modify, and delete node columns
+  if(.edges) {
+    immutable <- c("from", "to")
+  } else {
+    immutable <- c("node_col", "node_id", "path", "freq", "n",
+                 "denom", "node_key", "tot_n")
+  }
+
+  retnodes <- as_tibble(ret)
+  datanodes <- as_tibble(.data)
+  all_present <- all(immutable %in% colnames(retnodes))
+
+  if(!all_present) {
+    missing <- immutable[!immutable %in% colnames(retnodes)]
+    cli_abort(c(x = 
+     "you tried to remove following immutable column(s) of a vtree object:",
+     "{missing}"),
+     call = rlang::caller_env())
+  }
+
+  all_good <- purrr::map_lgl(set_names(immutable), \(col) {
+                   all(retnodes[[col]] == datanodes[[col]])
+                 })
+
+  if(!all(all_good)) {
+    changed <- immutable[!all_good]
+    cli_abort(c(x = 
+     "you tried to modify following immutable column(s) of a vtree object:",
+     "{changed}"),
+     call = rlang::caller_env())
+  }
+}
+
+#' Create, modify, rename and delete node columns
 #'
-#' This is a wrapper around the regular [dplyr::mutate()]
-#' function which preserves the vtree class.
+#' These are the wrappers around the regular [dplyr::mutate()]
+#' and [dplyr::rename()] functions which preserve the vtree class.
 #'
 #' Immutable columns: some columns of the vtree are immutable. Changing
 #' them can result in very bad things happening, starting with plots that
@@ -89,28 +122,33 @@ mutate.vtree <- function(.data, ..., .edges = FALSE, .check = TRUE) {
   }
 
   class(.data) <- setdiff(class(.data), "vtree")
-  ret <- .data |> mutate(...) |> activate("nodes") |> as_vtree()
+  ret <- .data |> mutate(...)
   if(!.check) {
-    return(ret)
+    return(ret |> activate("nodes") |> as_vtree())
   }
 
-  immutable <- c("node_col", "node_id", "path", "freq", "count",
-                 "denom", "node_key", "tot_n", "vp")
-
-  retnodes <- as_tibble(ret)
-  datanodes <- as_tibble(.data)
-  all_good <- purrr::map_lgl(set_names(immutable), \(col) {
-                   all(retnodes[[col]] == datanodes[[col]])
-                 })
-  if(!all(all_good)) {
-    changed <- immutable[!all_good]
-    cli_abort(c(x = 
-     "you tried to modify following immutable column(s) of a vtree object:",
-     "{changed}"))
-  }
-  ret
+  .check_immutable(.data, ret, .edges)
+  ret |> activate("nodes") |> as_vtree()
 }
 
+#' @rdname mutate.vtree
+#' @export
+rename.vtree <- function(.data, ..., .edges = FALSE, .check = TRUE) {
+  if(.edges) {
+    .data <- .data |> activate("edges")
+  } else {
+    .data <- .data |> activate("nodes")
+  }
+
+  class(.data) <- setdiff(class(.data), "vtree")
+  ret <- .data |> rename(...)
+  if(!.check) {
+    return(ret |> activate("nodes") |> as_vtree())
+  }
+
+  .check_immutable(.data, ret, .edges)
+  ret |> activate("nodes") |> as_vtree()
+}
 
 #' Get the levels of a vtree object
 #' 
@@ -137,6 +175,19 @@ levels.vtree <- function(x) {
 #' @export
 nodecols <- function(x) {
   colnames(as_tibble(x))
+}
+
+#' Get the column names of a vtree object edges
+#'
+#' Returns the column names of the edges data frame of a vtree object.
+#' @param x A vtree object.
+#' @return A character vector of column names
+#' @examples
+#' vt <- vtree(titanicNA, Class, Sex, Survived)
+#' edgecols(vt)
+#' @export
+edgecols <- function(x) {
+  colnames(as_tibble(activate(x, "edges")))
 }
 
 
