@@ -13,12 +13,17 @@
 }
 
 #' @importFrom dplyr desc join_by left_join slice arrange
+#' @importFrom cli cli_warn
 layout_sankey <- function(vtree, dir="lr",
                           lwidth=.4, lheight=NA,
                            varspace=NULL,
                            varsize=NULL,
                            show_root=TRUE) {
 
+  if(!"fill" %in% nodecols(vtree)) {
+    cli_warn(c(x = "Argument `vtree` for Sankey layout does not have a fill column",
+      i = "For correct display, please add a coloring first with `add_palette()`"))
+  }
 
   totn <- attr(vtree, "N") #
 
@@ -81,7 +86,7 @@ layout_sankey <- function(vtree, dir="lr",
                   full_h = nodes$full_h)
 
   edges <- activate(layout, "edges") |> as_tibble()
-  nsel <- select(nodes, all_of(c("order", "path", "x", "y", "fill",
+  nsel <- select(nodes, any_of(c("order", "path", "x", "y", "fill",
                                  "height", "width", "level", "node_level")))
 
   edges <- left_join(edges, nsel, by=join_by("from" == "order")) |>
@@ -107,10 +112,17 @@ layout_sankey <- function(vtree, dir="lr",
            y1 = edges$y1,
            y2 = edges$y2,
            height = edges$height,
-           width = edges$width.from,
-           fill.from = edges$fill.from,
-           fill.to = edges$fill.to,
-           .edges = TRUE)
+           width = edges$width.from, .edges=TRUE)
+
+  if("fill" %in% nodecols(layout)) {
+    layout <- layout |>
+      mutate(fill.from = edges$fill.from,
+             fill.to = edges$fill.to, .edges=TRUE)
+  } else {
+    layout <- layout |>
+      mutate(fill.from = NA_character_,
+             fill.to = NA_character_, .edges=TRUE)
+  }
 
 
   layout
