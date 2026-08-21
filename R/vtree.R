@@ -19,10 +19,9 @@ as_vtree <- function(x) {
   # this columns are usually created but not critical:
 
   if(!all(req_cols %in% colnames(nodes))) {
-    stop(sprintf("Columns %s not in colnames(nodes)",
-                 paste(req_cols[ !req_cols %in% colnames(nodes) ],
-                       collapse=", ")
-                 ))
+    missing <- req_cols[ !req_cols %in% colnames(nodes) ]
+    cli_abort(c(x = 
+       "Required columns {missing} are missing from the nodes data frame"))
   }
 
   x <- x |> activate("nodes") |>

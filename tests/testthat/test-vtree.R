@@ -165,6 +165,15 @@ test_that("methods work", {
   expect_setequal(names(lv), c("Class", "Sex", "Survived"))
   expect_setequal(lv$Class, c("1st", "2nd", "3rd", "Crew"))
 
+  expect_true(is_vp(vt))
+
+  vt <- vtree_from_freqtable(Titanic, Class, Sex, .vp = FALSE)
+  expect_false(is_vp(vt))
+
+  expect_false(has_fill(vt))
+  vt <- add_palette(vt)
+  expect_true(has_fill(vt))
+
 })
 
 test_that("errors are raised", {
@@ -175,7 +184,7 @@ test_that("errors are raised", {
   expect_error(as_vtree(cases), "x must be a tbl_graph object")
 
   tbl <- as_tbl_graph(vt) |> select(-node_id)
-  expect_error(as_vtree(tbl), "Columns node_id not in colnames")
+  expect_error(as_vtree(tbl), "Required columns node_id are missing")
 
   tbl <- as_tbl_graph(vt) |> dplyr::slice(1)
   expect_error(as_vtree(tbl),
@@ -206,9 +215,11 @@ test_that("errors are raised", {
   expect_no_error(mutate(vt, tot_n = 99, .check = FALSE))
   expect_no_error(mutate(vt, foo = 99))
 
-  expect_error(rename(vt, foo = tot_n),
+  expect_error(rename(vt, foo = n),
                "tried to remove following immutable column")
   expect_no_error(rename(add_labels(vt), foo = label))
+  expect_error(rename(vt, foo = n, .check = FALSE),
+               "Required columns.* are missing from the nodes data frame")
 
   vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived)
   attr(vt, "vp") <- NULL

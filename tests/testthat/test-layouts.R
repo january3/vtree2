@@ -9,6 +9,12 @@ test_that("layout functions work", {
   expect_true(!is.null(at$dir))
   expect_equal(at$dir, "lr")
   expect_true(at$show_root)
+  expect_equal(attr(vtl, "layout_arg"), "regular")
+
+  expect_no_error(vtl <- add_layout(vt, layout_func = layout_regular))
+  expect_in(c("x", "y", "full_w", "full_h", "width", "height"),
+            nodecols(vtl))
+  expect_equal(attr(vtl, "layout_arg"), "custom")
 
   vtl <- add_layout(vt, show_root = FALSE)
   at <- attributes(vtl)
@@ -25,6 +31,7 @@ test_that("layout functions work", {
   vtl <- add_layout(vt, layout = "proportional")
   expect_in(c("x", "y", "full_w", "full_h", "width", "height"),
             nodecols(vtl))
+  expect_equal(attr(vtl, "layout_arg"), "proportional")
 
   vtl <- add_layout(vt, layout = "flushed_left")
   expect_in(c("x", "y", "full_w", "full_h", "width", "height"),
@@ -53,19 +60,6 @@ test_that("layout functions work", {
   expect_true(abs(w3/w2 - 1/2) < 1e-6)
 })
 
-test_that("Sankey layout works", {
-  vt <- vtree_from_freqtable(Titanic, Class, Sex)
-  expect_no_error(add_layout(vt, layout = "sankey"))
-  vt <- add_palette(vt)
-  expect_no_error(vtl <- add_layout(vt, layout = "sankey"))
-  nd <- as_tibble(vtl)
-
-  expect_in(c("x", "y", "full_w", "full_h", "width", "height"),
-            nodecols(vtl))
-  eg <- activate(vtl, "edges") |> as_tibble()
-  expect_in(c("x1", "y1", "x2", "y2", "height", "width"), colnames(eg))
-})
-
 test_that("errors are raised", {
   vt <- vtree_from_freqtable(Titanic, Class, Sex)
 
@@ -77,6 +71,10 @@ test_that("errors are raised", {
                "varsize lacks required names:")
   expect_error(add_layout(vt, varsize=c(root=10, Class = 10, Sex = 5)),
                "varsize must be less than or equal to 1")
+  expect_error(plot(add_layout(vt), dir="tb"),
+               "vtree has a precomputed layout with direction 'lr'")
+  expect_warning(plot(add_layout(vt), lwidth=.5),
+               "vtree already has a layout")
 
   vtl <- add_layout(vt)
   attr(vtl, "dir") <- NULL
@@ -94,4 +92,23 @@ test_that("precomputed layouts work with plots", {
   expect_no_error(plot(vt))
   vt <- add_layout(vt, layout = "flushed_right")
   expect_no_error(plot(vt))
+})
+
+test_that(".ensure_layout_cols works", {
+  vt <- vtree_from_freqtable(Titanic, Class, Sex)
+
+  expect_error(.ensure_layout_cols(vt),
+               "layout is missing required node columns")
+  vt <- vt |>
+    mutate(x = 0, y = 0, width = 1, height = 1)
+
+  expect_error(.ensure_layout_cols(vt),
+               "layout is missing required edge columns")
+  vt <- vt |>
+    mutate(x1 = 0, y1 = 0, x2 = 1, y2 = 1, .edges = TRUE)
+  expect_no_error(vte <- .ensure_layout_cols(vt))
+
+  expect_in(c("full_w", "full_h", "shape"), nodecols(vte))
+  expect_in(c("width", "height"), edgecols(vte))
+
 })

@@ -72,15 +72,6 @@ layout_regular <- function(vtree,
     lwidth <- .35
   }
 
-  if(is.null(varspace)) {
-    die("varspace is NULL")
-  }
-
-  if(nlevel != length(varspace)) {
-    message(nlevel, "!=", length(varspace))
-    die("nlevel" != length(varspace))
-  }
-
   # calculate the x positions and label widths
   layout <- .apply_varspace(layout, varspace, varsize, lwidth)
 
@@ -141,20 +132,7 @@ layout_tight <- function(vtree, dir="lr",
 
   if(is.na(lwidth)) { lwidth <- .35 }
 
-  if(is.null(varspace)) {
-    die("varspace is NULL")
-  }
-
-  if(nlevel != length(varspace)) {
-    message(nlevel, "!=", length(varspace))
-    die("nlevel" != length(varspace))
-  }
-
-
-
   layout <- .calc_full_hw_from_label(layout, dir)
-
-
   layout <- .calc_offsets_from_sizes(layout, .var = "full_h")
   layout <- .calc_xpos_from_fullw(layout)
   # calculate the x positions and label widths
@@ -364,10 +342,6 @@ add_layout <- function(vtree,
   }
 
   layout_arg <- layout
-
-  if(is.null(layout_func)) {
-    cli_abort(c(x = "layout_func must be provided for custom layout"))
-  }
 
   layout <- layout_func(vtree, dir=dir,
                            lwidth=lwidth, lheight=lheight,

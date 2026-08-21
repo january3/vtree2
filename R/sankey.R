@@ -407,20 +407,19 @@ sankey <- function(vtree) {
   vp <- attr(vtree, "vp")
 
   nd <- as_tibble(vtree) |>
-    rename(oldid = .data[["node_id"]]) |>
+    rename("oldid" = "node_id") |>
     group_by(.data[["node_col"]], .data[["node_val"]]) |>
     mutate(node_id = cur_group_id()) |>
     ungroup() |>
     mutate(node_id = match(.data[["node_id"]], unique(.data[["node_id"]]))) |>
-    rename(old_parent_id = .data[["parent_id"]]) |>
+    rename("old_parent_id" = "parent_id") |>
     mutate(parent_id = .data[["node_id"]][match(.data[["old_parent_id"]],
                                                 .data[["oldid"]])]) |>
     mutate(node_key = paste0("node_", .data[["node_id"]]))
 
   eg <- nd |>
     filter(!is.na(.data[["parent_id"]])) |>
-    select(from = .data[["parent_id"]], to = .data[["node_id"]],
-           all_of("n")) |>
+    select(from = "parent_id", to = "node_id", all_of("n")) |>
     group_by(.data[["from"]], .data[["to"]]) |>
     summarize(n = sum(.data[["n"]]), .groups = "drop")
 

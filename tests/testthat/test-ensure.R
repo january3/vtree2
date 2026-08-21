@@ -33,6 +33,7 @@ test_that("high level ensure funcs work", {
   vt <- vt |> mutate(fill = "foo")
   expect_no_error(ensure_fill(vt))
   expect_error(ensure_fill(vt, color=TRUE), "does not have a color column")
+  expect_error(ensure_fill(1L), "is not a vtree object")
 
 })
 

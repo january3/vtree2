@@ -26,10 +26,6 @@ ensure_layout <- function(layout) {
 # make sure that the vtree is ready for plotting. Fill in the missing
 # color, label, fill etc. information.
 .normalize_vtree_for_plotting <- function(x, palettes, na_fill) {
-  if(!inherits(x, "vtree")) {
-    cli_abort(c(x = "normalize_vtree() requires a vtree object"))
-  }
-
   nodes <- as_tibble(x)
 
   if(! "fill" %in% colnames(nodes)) {
@@ -200,7 +196,8 @@ ensure_layout <- function(layout) {
   if(!is.na(dir)) {
     if(!is.null(dir_tree) && dir != dir_tree) {
     cli_abort(
-      c(x = "vtree has a precomputed layout with direction '{dir_tree}', but you specified dir = '{dir}'"))
+      c(x = "vtree has a precomputed layout with direction '{dir_tree}'.",
+        i = "However, you specified dir = '{dir}'"))
     } else {
       return(dir)
     }

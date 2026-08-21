@@ -8,6 +8,10 @@ test_that("masking works", {
   m <- find_nodes(vt, Class == "1st")
   expect_equal(sum(m, na.rm=TRUE), 1)
 
+  m <- find_nodes(vt, Class == "1st", follow_only = TRUE)
+  nd <- as_tibble(vt)
+  expect_all_true(grepl("Class:1st", nd$path[m]))
+
   m <- find_nodes(vt, freq < .12)
   expect_equal(sum(m), 7)
 
