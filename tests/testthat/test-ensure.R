@@ -25,7 +25,16 @@ test_that("ensure works", {
 
 })
 
+test_that("high level ensure funcs work", {
 
+  vt <- vtree(titanicNA, Class, Sex)
+
+  expect_error(ensure_fill(vt), "does not have a fill column")
+  vt <- vt |> mutate(fill = "foo")
+  expect_no_error(ensure_fill(vt))
+  expect_error(ensure_fill(vt, color=TRUE), "does not have a color column")
+
+})
 
 
 
@@ -44,5 +53,4 @@ test_that("methods throw errors for non-vtree objects", {
   expect_error(vtree_apply(1, 1, 1), "is not a data frame")
   expect_error(vtree_apply(mtcars, 1, 1), "is not a vtree object")
   expect_error(fmt_label(1), "is not a data frame")
-
 })

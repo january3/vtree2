@@ -56,14 +56,35 @@ ensure_vtree <- function(x) {
   x
 }
 
+ensure_fill <- function(x, color=FALSE) {
+  arg <- rlang::caller_arg(x)
+
+  if(!inherits(x, "vtree")) {
+    cli_abort(c(x = "Argument `{arg}` is not a vtree object",
+      i = "You provided an object of class {class(x)}"),
+          call = rlang::caller_env())
+  }
+
+  if(!"fill" %in% nodecols(x)) {
+    cli_abort(c(x = "Argument `{arg}` does not have a fill column",
+      i = "You provided a vtree object with node columns: {nodecols(x)}"),
+          call = rlang::caller_env())
+  }
+
+  if(color & !"color" %in% nodecols(x)) {
+    cli_abort(c(x = "Argument `{arg}` does not have a color column",
+      i = "You provided a vtree object with node columns: {nodecols(x)}"),
+          call = rlang::caller_env())
+  }
+
+  x
+}
+
 #' @importFrom cli cli_abort
 die <- function(message = "Unspecified error.",
                 call = .envir, .envir = parent.frame()) {
   cli_abort(c(x = message), call = call)
 }
-
-
-
 
 # if grobs are in the vtree, extract them and return as a list
 extract_grobs <- function(vtree) {
