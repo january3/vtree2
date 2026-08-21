@@ -331,6 +331,8 @@ add_layout <- function(vtree,
     layout_func <- layout_sankey
   }
 
+  layout_arg <- layout
+
   if(is.null(layout_func)) {
     cli_abort(c(x = "layout_func must be provided for custom layout"))
   }
@@ -356,15 +358,16 @@ add_layout <- function(vtree,
 
   layout <- insert_grobs(layout, grobs)
 
-  as_vtree_layout(layout, dir, show_root)
+  as_vtree_layout(layout, dir, show_root, layout_arg)
 }
 
 ## not exported right now
 ## @rdname add_layout
 ## @export
-as_vtree_layout <- function(layout, dir, show_root) {
+as_vtree_layout <- function(layout, dir, show_root, layout_arg) {
   ensure_vtree(layout)
   attr(layout, "dir") <- dir
+  attr(layout, "layout_arg") <- layout_arg
   attr(layout, "show_root") <- show_root
   class(layout) <- c("vtree_layout", class(layout))
 
