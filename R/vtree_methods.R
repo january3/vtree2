@@ -216,7 +216,7 @@ print.vtree <- function(x, ...) {
     cat("Object has a layout\n")
   }
 
-  cols2check <- c("label", "color", "fill", "col_alias", "var_alias")
+  cols2check <- c("label", "color", "fill", "col_alias", "val_alias")
   cols2check <- cols2check[ cols2check %in% nodecols(x) ]
   if(length(cols2check) > 0L) {
     cat("Properties present: ")

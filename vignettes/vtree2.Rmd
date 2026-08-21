@@ -578,7 +578,7 @@ including:
  * `n`, number of samples of a node
  * `col_alias`, the alias for the column/variable associated with a node
    (default same as node_col, but can be modified
-   by providing a `var_alias` column in the vtree)
+   by providing a `col_alias` column in the vtree)
  * `val_alias`, the alias for the value of the variable associated with a node
    (default same as node_val, but can be modified 
    by providing a `val_alias` column in the vtree)

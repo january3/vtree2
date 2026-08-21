@@ -90,7 +90,7 @@ including:
 \item \code{n}, number of samples of a node
 \item \code{col_alias}, the alias for the column/variable associated with a node
 (default same as node_col, but can be modified
-by providing a \code{var_alias} column in the vtree)
+by providing a \code{col_alias} column in the vtree)
 \item \code{val_alias}, the alias for the value of the variable associated with a node
 (default same as node_val, but can be modified
 by providing a \code{val_alias} column in the vtree)

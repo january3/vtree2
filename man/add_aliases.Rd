@@ -26,8 +26,8 @@ of the list is a column/variable name (one of the values of
 \code{names(vtree)}) and the value is the alias to be used for that
 variable when constructing labels. If a name is missing from the
 list, the original column name is used. The aliases are then used
-to construct the labels and also stored in the column 'var_alias'
-of the nodes data frame. If a \code{var_alias} column is present, it
+to construct the labels and also stored in the column 'col_alias'
+of the nodes data frame. If a \code{col_alias} column is present, it
 will be overwritten.}
 }
 \value{

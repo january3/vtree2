@@ -120,7 +120,7 @@
 #'  * `n`, number of samples of a node
 #'  * `col_alias`, the alias for the column/variable associated with a node
 #'    (default same as node_col, but can be modified
-#'    by providing a `var_alias` column in the vtree)
+#'    by providing a `col_alias` column in the vtree)
 #'  * `val_alias`, the alias for the value of the variable associated with a node
 #'    (default same as node_val, but can be modified
 #'    by providing a `val_alias` column in the vtree)
@@ -306,8 +306,8 @@ add_labels <- function(vtree,
 #'        `names(vtree)`) and the value is the alias to be used for that
 #'        variable when constructing labels. If a name is missing from the
 #'        list, the original column name is used. The aliases are then used
-#'        to construct the labels and also stored in the column 'var_alias'
-#'        of the nodes data frame. If a `var_alias` column is present, it
+#'        to construct the labels and also stored in the column 'col_alias'
+#'        of the nodes data frame. If a `col_alias` column is present, it
 #'        will be overwritten.
 #' @param val_alias A list specifying aliases for the levels of the
 #'       variables. Each element of the list should be a named character
