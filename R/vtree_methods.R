@@ -117,25 +117,17 @@ is_vp <- function(x) {
 #'   mutate(label = ifelse(is.na(node_val), "Missing", label))
 #' @export
 mutate.vtree <- function(.data, ..., .edges = FALSE, .check = TRUE) {
-  if(.edges) {
-    .data <- .data |> activate("edges")
-  } else {
-    .data <- .data |> activate("nodes")
-  }
-
-  class(.data) <- setdiff(class(.data), "vtree")
-  ret <- .data |> mutate(...)
-  if(!.check) {
-    return(ret |> activate("nodes") |> as_vtree())
-  }
-
-  .check_immutable(.data, ret, .edges)
-  ret |> activate("nodes") |> as_vtree()
+  .modify_vtree(.data, .edges = .edges, .check = .check, .f = mutate, ...)
 }
 
 #' @rdname mutate.vtree
 #' @export
 rename.vtree <- function(.data, ..., .edges = FALSE, .check = TRUE) {
+  .modify_vtree(.data, .edges = .edges, .check = .check,
+                .f = rename, ...)
+}
+
+.modify_vtree <- function(.data, .edges = FALSE, .check = TRUE, .f, ...) {
   if(.edges) {
     .data <- .data |> activate("edges")
   } else {
@@ -143,7 +135,7 @@ rename.vtree <- function(.data, ..., .edges = FALSE, .check = TRUE) {
   }
 
   class(.data) <- setdiff(class(.data), "vtree")
-  ret <- .data |> rename(...)
+  ret <- .f(.data, ...)
   if(!.check) {
     return(ret |> activate("nodes") |> as_vtree())
   }

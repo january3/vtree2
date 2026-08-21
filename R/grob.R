@@ -478,7 +478,7 @@ makeContent.vtree_plot <- function(x) {
   grobs
 }
 
-# arrange label and graphics vertically
+# arrange label and graphics horizontally
 .split_horizontal <- function(inner, gfirst, gfrac, gap) {
 
   gwidth <- gfrac * inner$width - gap/2
@@ -576,14 +576,10 @@ makeContent.vtree_plot <- function(x) {
   pad$w <- pad$w/2
   pad$h <- pad$h/2
 
-  fl <- 1/5  # fraction for the label
-
   rects <- .get_node_rects(nodes, lwd = lwd)
 
-  gdata <- map(seq(1:nrow(nodes)), \(i) {
-
+  gdata <- map(seq_len(nrow(nodes)), \(i) {
     .calc_grob_row(nodes[i, ], grobs[[i]], pad)
-
   })
 
   gnodes <- map_dfr(gdata, \(x) x$graphics)
