@@ -222,3 +222,8 @@ has_layout <- function(x) {
 
   has_cols || inherits(x, "vtree_layout")
 }
+
+has_fill <- function(x) {
+  ensure_vtree(x)
+  "fill" %in% nodecols(x)
+}
