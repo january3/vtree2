@@ -1,4 +1,3 @@
-
 vt <- vtree_from_freqtable(Titanic, "Class", "Sex", "Survived")
 vt_na <- vtree(titanicNA, Class, Sex, Survived)
 
@@ -84,6 +83,7 @@ test_that("plotting works (smoke tests)", {
   expect_no_error(plot(vt, layout = "flushed_left", dir = "bt"))
   expect_no_error(plot(vt, layout = "flushed_left", dir = "tb"))
   expect_no_error(plot(vt, layout = "flushed_left", dir = "rl"))
+  expect_no_error(plot(vt, layout = "sankey"))
   expect_no_error(plot(vt, lheight = .1))
   expect_no_error(plot(vt, lwidth = .1))
   expect_no_error(plot(vt, lwidth = .1, layout = "proportional"))

@@ -53,6 +53,21 @@ test_that("layout functions work", {
   expect_true(abs(w3/w2 - 1/2) < 1e-6)
 })
 
+test_that("Sankey layout works", {
+  vt <- vtree_from_freqtable(Titanic, Class, Sex)
+  expect_warning(add_layout(vt, layout = "sankey"),
+                 "does not have a fill column")
+  vt <- add_palette(vt)
+  expect_no_error(vtl <- add_layout(vt, layout = "sankey"))
+  nd <- as_tibble(vtl)
+
+  expect_in(c("x", "y", "full_w", "full_h", "width", "height"),
+            nodecols(vtl))
+  eg <- activate(vtl, "edges") |> as_tibble()
+  expect_in(c("x1", "y1", "x2", "y2", "height",
+              "fill.from", "fill.to"), colnames(eg))
+})
+
 test_that("errors are raised", {
   vt <- vtree_from_freqtable(Titanic, Class, Sex)
 
