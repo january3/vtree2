@@ -59,7 +59,7 @@ is_vp <- function(x) {
   if(.edges) {
     immutable <- c("from", "to")
   } else {
-    immutable <- c("node_col", "node_id", "path", "freq", "n",
+    immutable <- c("node_col", "node_id", "path", "path_l", "freq", "n",
                  "denom", "node_key", "tot_n")
   }
 
@@ -76,6 +76,8 @@ is_vp <- function(x) {
   }
 
   all_good <- purrr::map_lgl(set_names(immutable), \(col) {
+                               identical(retnodes[[col]], datanodes[[col]]) ||
+                   (all(is.na(retnodes[[col]])) && all(is.na(datanodes[[col]]))) ||
                    all(retnodes[[col]] == datanodes[[col]])
                  })
 
