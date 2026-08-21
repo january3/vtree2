@@ -1,3 +1,11 @@
+ve <- function(x, lab=FALSE) {
+  n <- as_tibble(activate(x, "edges"))
+  if(!lab) {
+    n$label <- NULL
+  }
+  n
+}
+
 v <- function(x, lab=FALSE) {
   n <- as_tibble(x)
   if(!lab) {
