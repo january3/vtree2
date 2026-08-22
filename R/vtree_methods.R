@@ -54,6 +54,21 @@ is_vp <- function(x) {
   attr(x, "vp")
 }
 
+.same_values <- function(a, b) {
+  if(length(a) != length(b)) return(FALSE)
+  if(identical(a, b)) return(TRUE)
+
+  if(is.list(a) || is.list(b)) {
+    return(all(mapply(identical, a, b)))
+  }
+
+  same <- a == b
+  same[is.na(a) & is.na(b)] <- TRUE
+  same[is.na(same)] <- FALSE
+
+  all(same)
+}
+
 .check_immutable <- function(.data, ret, .edges) {
 
   if(.edges) {
@@ -69,21 +84,19 @@ is_vp <- function(x) {
 
   if(!all_present) {
     missing <- immutable[!immutable %in% colnames(retnodes)]
-    cli_abort(c(x = 
+    cli_abort(c(x =
      "you tried to remove following immutable column(s) of a vtree object:",
      "{missing}"),
      call = rlang::caller_env())
   }
 
-  all_good <- purrr::map_lgl(set_names(immutable), \(col) {
-                               identical(retnodes[[col]], datanodes[[col]]) ||
-                   (all(is.na(retnodes[[col]])) && all(is.na(datanodes[[col]]))) ||
-                   all(retnodes[[col]] == datanodes[[col]])
-                 })
+  all_good <- vapply(set_names(immutable), \(col)
+                      .same_values(retnodes[[col]], datanodes[[col]]),
+              logical(1))
 
   if(!all(all_good)) {
     changed <- immutable[!all_good]
-    cli_abort(c(x = 
+    cli_abort(c(x =
      "you tried to modify following immutable column(s) of a vtree object:",
      "{changed}"),
      call = rlang::caller_env())
@@ -145,7 +158,7 @@ rename.vtree <- function(.data, ..., .edges = FALSE, .check = TRUE) {
 }
 
 #' Get the levels of a vtree object
-#' 
+#'
 #' Returns a list of character vectors, one for each variable split in the tree,
 #' with each ordered vector containing the levels of that variable.
 #' @param x A vtree object.
