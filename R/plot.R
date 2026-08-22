@@ -1,13 +1,12 @@
 # make sure that the vtree is ready for plotting. Fill in the missing
 # color, label, fill etc. information.
 .normalize_vtree_for_plotting <- function(x, palettes, na_fill) {
-  ncols <- nodecols(x)
 
-  if(! "fill" %in% ncols) {
+  if(! "fill" %in% nodecols(x)) {
     x <- add_palette(x, palettes = palettes, na = na_fill)
   }
 
-  if(! "color" %in% ncols) {
+  if(! "color" %in% nodecols(x)) {
     x <- mutate(x, color = contrast_color(.data[["fill"]]))
   }
 
@@ -15,11 +14,11 @@
     x <- add_aliases(x)
   }
 
-  if(! "label" %in% ncols) {
+  if(! "label" %in% nodecols(x)) {
     x <- add_labels(x)
   }
 
-  if(! "shape" %in% ncols) {
+  if(! "shape" %in% nodecols(x)) {
     x <- mutate(x, shape = "roundrectangle")
   }
 
