@@ -56,7 +56,7 @@ vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived) |>
                     col_alias = list(Sex = "Gender"))
 plot(vt)
 #> Warning: There was 1 warning in `mutate()`.
-#> ℹ In argument: `nleafs = map_bfs_back_int(...)`.
+#> ℹ In argument: `size = tidygraph::map_bfs_back_dbl(...)`.
 #> Caused by warning:
 #> ! The `father` argument of `bfs()` is deprecated as of igraph 2.2.0.
 #> ℹ Please use the `parent` argument instead.

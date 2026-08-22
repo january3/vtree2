@@ -111,6 +111,8 @@ and <code><a href="../reference/summarize_by_node.html">fmt_label()</a></code>.<
 <code><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate()</a></code>.</li>
 <li>(Optional) Add or modify colors with <code><a href="../reference/vtree_palette.html">add_palette()</a></code> and
 <code><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate()</a></code>.</li>
+<li>(Optional) Add or modify layout with <code><a href="../reference/add_layout.html">add_layout()</a></code> and
+<code><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate()</a></code>.</li>
 <li>Plot the vtree with <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code>.</li>
 </ul>
 <p>Here is an example demonstrating all these steps based on the
@@ -697,8 +699,8 @@ the tree:</p>
 <span><span class="va">vt</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/add_labels.html">add_labels</a></span><span class="op">(</span>template <span class="op">=</span> <span class="st">"sameline"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/add_labels.html">add_labels</a></span><span class="op">(</span>mask <span class="op">=</span> <span class="va">mask</span>, template <span class="op">=</span> <span class="st">"long"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p><img src="vtree2_files/figure-html/labels2b-1.png" alt="" width="384"></p>
+<span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span>lwidth<span class="op">=</span><span class="fl">.8</span><span class="op">)</span></span></code></pre></div>
+<p><img src="vtree2_files/figure-html/labels2b-1.png" alt="" width="576"></p>
 </div>
 </div>
 <div class="section level3" number="6.2">
@@ -1497,11 +1499,11 @@ the corresponding images.</p>
 <span></span>
 <span><span class="va">iris_grobs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">iris_imgs</span>, <span class="va">get_grob</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "images/500px-Blue_Flag,_Ottawa.jpg"</span></span>
-<span><span class="co">#&gt; [1] "/tmp/Rtmpomm4by/temp_libpath1e87737261da39/vtree2/images/500px-Blue_Flag,_Ottawa.jpg"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/Rtmpomm4by/temp_libpath1e87733e4a4710/vtree2/images/500px-Blue_Flag,_Ottawa.jpg"</span></span>
 <span><span class="co">#&gt; [1] "images/500px-Irissetosa1.jpg"</span></span>
-<span><span class="co">#&gt; [1] "/tmp/Rtmpomm4by/temp_libpath1e87737261da39/vtree2/images/500px-Irissetosa1.jpg"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/Rtmpomm4by/temp_libpath1e87733e4a4710/vtree2/images/500px-Irissetosa1.jpg"</span></span>
 <span><span class="co">#&gt; [1] "images/500px-Iris_virginica_2.jpg"</span></span>
-<span><span class="co">#&gt; [1] "/tmp/Rtmpomm4by/temp_libpath1e87737261da39/vtree2/images/500px-Iris_virginica_2.jpg"</span></span>
+<span><span class="co">#&gt; [1] "/tmp/Rtmpomm4by/temp_libpath1e87733e4a4710/vtree2/images/500px-Iris_virginica_2.jpg"</span></span>
 <span></span>
 <span><span class="va">vt</span> <span class="op">&lt;-</span> <span class="va">iris</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>Long_Petals <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">Petal.Length</span> <span class="op">&gt;</span> <span class="fl">4</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>

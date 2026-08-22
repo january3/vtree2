@@ -151,7 +151,9 @@ plot(vt)
 [`add_labels()`](https://january3.github.io/vtree2/reference/add_labels.md)
 is highly customizable and you can produce complex labels with a simple
 R expression using [`sprintf()`](https://rdrr.io/r/base/sprintf.html) or
-`glue()`.
+`glue()`. You can also add display names (aliases) for variables and
+their values with
+[`add_aliases()`](https://january3.github.io/vtree2/reference/add_aliases.md).
 
 ### Summaries
 

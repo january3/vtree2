@@ -73,6 +73,7 @@ In `vtree2`, the workflow is split into several steps:
  * (Optional) Add aliases for variable names and values with `add_aliases()`.
  * (Optional) Add or modify labels with `add_labels()` and `mutate()`.
  * (Optional) Add or modify colors with `add_palette()` and `mutate()`.
+ * (Optional) Add or modify layout with `add_layout()` and `mutate()`.
  * Plot the vtree with `plot()`.
 
 Here is an example demonstrating all these steps based on the `titanicNA`
@@ -545,14 +546,14 @@ It is quite normal to call `add_labels()` multiple times, for example to
 conditionally add labels. The following makes simple default labels and
 adds a more informative label only to the leafs on the tree:
 
-```{r labels2b,fig.width=4,fig.height=7}
+```{r labels2b,fig.width=6,fig.height=7}
 vt <- vtree(titanicNA, Class, Survived)
 mask <- pull(vt, leaf) # leaf is a logical vector
                        # indicating whether a node is a leaf node
 vt |>
   add_labels(template = "sameline") |>
   add_labels(mask = mask, template = "long") |>
-  plot()
+  plot(lwidth=.8)
 ```
 
 ## Using custom formatting

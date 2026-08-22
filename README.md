@@ -138,7 +138,8 @@ plot(vt)
 
 **There is more:** `add_labels()` is highly customizable and you can
 produce complex labels with a simple R expression using `sprintf()` or
-`glue()`.
+`glue()`. You can also add display names (aliases) for variables and
+their values with `add_aliases()`.
 
 ### Summaries
 

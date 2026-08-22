@@ -130,7 +130,7 @@ add_layout(vt, layout = "regular", dir = "lr") |> tibble::as_tibble()
 #> 10 Class…      10 node_10  Class…         4 <named list>     2 Sex      "Male"  
 #> # ℹ 19 more rows
 #> # ℹ 16 more variables: n <int>, tot_n <int>, missing <int>, freq <dbl>,
-#> #   denom <int>, leaf <lgl>, nleafs <int>, offset <int>, offset_tot <int>,
+#> #   denom <int>, leaf <lgl>, size <dbl>, offset <dbl>, offset_tot <dbl>,
 #> #   full_w <dbl>, width <dbl>, x <dbl>, height <dbl>, full_h <dbl>, y <dbl>,
 #> #   shape <chr>
 # the layout parameter from plot() is passed on to add_layout()

@@ -139,7 +139,7 @@ vt <- vtree_from_freqtable(Titanic, Class, Survived)
 p6 <- plot(vt, layout="sankey")
 
 #plot_grid(p1234, p5, ncol=1, rel_heights = c(2, 1))
-plot_grid(p1, p2, p3, p4, p5, p6, ncol=2)
+plot_grid(p1, p3, p4, p5, p2, p6, ncol=2)
 ```
 
 
@@ -244,7 +244,8 @@ plot(vt)
 
 **There is more:** `add_labels()` is highly customizable and you can
 produce complex labels with a simple R expression using `sprintf()` or
-`glue()`.
+`glue()`. You can also add display names (aliases) for variables and their
+values with `add_aliases()`.
 
 
 ### Summaries

@@ -46,6 +46,9 @@ In `vtree2`, the workflow is split into several steps:
 - (Optional) Add or modify colors with
   [`add_palette()`](https://january3.github.io/vtree2/reference/vtree_palette.md)
   and [`mutate()`](https://dplyr.tidyverse.org/reference/mutate.html).
+- (Optional) Add or modify layout with
+  [`add_layout()`](https://january3.github.io/vtree2/reference/add_layout.md)
+  and [`mutate()`](https://dplyr.tidyverse.org/reference/mutate.html).
 - Plot the vtree with
   [`plot()`](https://rdrr.io/r/graphics/plot.default.html).
 
@@ -655,7 +658,7 @@ mask <- pull(vt, leaf) # leaf is a logical vector
 vt |>
   add_labels(template = "sameline") |>
   add_labels(mask = mask, template = "long") |>
-  plot()
+  plot(lwidth=.8)
 ```
 
 ![](vtree2_files/figure-html/labels2b-1.png)
@@ -1478,11 +1481,11 @@ get_grob <- function(img) {
 
 iris_grobs <- lapply(iris_imgs, get_grob)
 #> [1] "images/500px-Blue_Flag,_Ottawa.jpg"
-#> [1] "/tmp/Rtmpomm4by/temp_libpath1e87737261da39/vtree2/images/500px-Blue_Flag,_Ottawa.jpg"
+#> [1] "/tmp/Rtmpomm4by/temp_libpath1e87733e4a4710/vtree2/images/500px-Blue_Flag,_Ottawa.jpg"
 #> [1] "images/500px-Irissetosa1.jpg"
-#> [1] "/tmp/Rtmpomm4by/temp_libpath1e87737261da39/vtree2/images/500px-Irissetosa1.jpg"
+#> [1] "/tmp/Rtmpomm4by/temp_libpath1e87733e4a4710/vtree2/images/500px-Irissetosa1.jpg"
 #> [1] "images/500px-Iris_virginica_2.jpg"
-#> [1] "/tmp/Rtmpomm4by/temp_libpath1e87737261da39/vtree2/images/500px-Iris_virginica_2.jpg"
+#> [1] "/tmp/Rtmpomm4by/temp_libpath1e87733e4a4710/vtree2/images/500px-Iris_virginica_2.jpg"
 
 vt <- iris |>
   mutate(Long_Petals = as.character(Petal.Length > 4)) |>
