@@ -69,8 +69,9 @@ the attribute "palette", which is used when showing the legend. If you
 modify the \code{fill} and \code{color} columns manually (without using
 \code{add_palette()}, you will not change the color code.
 
-If the parameter \code{what} is \code{fill} (default), then instead of generating a fill
-color from the palettes, the function generates a text color and chooses
+If the parameter \code{what} is \code{text} instead of the default \code{fill}, then
+instead of generating a fill color from the palettes, the function
+generates a text color and chooses
 a contrast fill color automatically.
 
 The following arguments determine the hierarchy of the color-control on
