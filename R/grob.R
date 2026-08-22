@@ -518,7 +518,6 @@ makeContent.vtree_plot <- function(x) {
 
   side <- grob$side
   frac <- grob$frac
-  horiz <- side %in% c("l", "r")
   graphics_first <- side %in% c("l", "b")
 
   if(is.na(nodes$label) || nodes$label == "") { frac <- 1 }
