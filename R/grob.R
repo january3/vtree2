@@ -142,7 +142,7 @@ set_fontsize_df <- function(df, fs, richtext=FALSE) {
     die("incorrect length of fontsize")
   }
 
-  ret <- map(1:nrow(df), \(i)
+  ret <- map(seq_len(nrow(df)), \(i)
     .mk_text(x=df$x[i], y=df$y[i], label=df$label[i],
              name=df$node_key[i], color=df$color[i],
              fs = fs[i], richtext = richtext)
@@ -255,7 +255,7 @@ makeContent.vtree_plot <- function(x) {
   req_cols <- c("x", "y", "label")
   ensure_colnames(nodes, req_cols)
 
-  labels <- map(1:nrow(nodes), \(i) {
+  labels <- map(seq_len(nrow(nodes)), \(i) {
     .mk_text(nodes$x[i], nodes$y[i],
              label=nodes$label[i], name=nodes$node_key[i],
              color=nodes$color[i] %||% color, fs = fs,
@@ -318,7 +318,7 @@ makeContent.vtree_plot <- function(x) {
     cli_abort(c(x = "NA values in the shape column"))
   }
 
-  rects <- map(1:nrow(nodes), \(i) {
+  rects <- map(seq_len(nrow(nodes)), \(i) {
     .get_rect(grobname = nodes$shape[i],
               x = nodes$x[i],
               y = nodes$y[i],
