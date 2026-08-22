@@ -600,6 +600,13 @@ makeContent.vtree_plot <- function(x) {
   list(ret = ret, spec = spec)
 }
 
+# little helper to dtrmine whether g is a grob
+.has_graphics <- function(g) {
+  if(is.null(g)) return(FALSE)
+  if(length(g) == 1L && is.na(g)) return(FALSE)
+  is.list(g) && !is.null(g$grob)
+}
+
 # create the grobs associated with the plot. This is the main function that
 # actually creates the plot.
 #' @importFrom grid gTree gpar gList setChildren
@@ -639,16 +646,12 @@ makeContent.vtree_plot <- function(x) {
   # basic grobs: nodes and edges, always shown
   nodes <- nodes |> filter(sel)
 
-
   arrows   <- .get_edges(layout, vertical=vertical, style=params$edge_style)
   spec$lwd$edges <- list(path = c("edges"), nokids = TRUE)
   children <- list(arrows=arrows)
 
   if(!is.null(grobs)) {
-    grobnodes <- map_lgl(grobs,
-                         \(g) {
-                           !any(is.na(g)) & !is.null(g) & length(g) > 0
-                         })
+    grobnodes <- map_lgl(grobs, .has_graphics)
     if(sum(grobnodes) > 0) {
       gn <- .make_grobs(nodes[grobnodes, ], grobs[grobnodes], params)
       children <- c(children, list(plots = gn$ret))
