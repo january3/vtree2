@@ -1122,6 +1122,8 @@ vt |> add_labels(suffix = smt) |>
 - frequency plots: where nodes are scaled by the number of observations
 - inserting other graphical objects into nodes: images or ggplot2’s
 - pruning or keeping nodes takes any logical expression
+- formatting of labels with glue expressions
+- Sankey plots and layouts
 
 #### Missing functionality
 
