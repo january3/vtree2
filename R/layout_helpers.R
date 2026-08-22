@@ -181,6 +181,27 @@
   layout
 }
 
+# horiz=TRUE is for proportional layout
+.add_edge_positions <- function(layout, horiz=FALSE) {
+
+  nodes <- as_tibble(layout)
+
+  layout <- layout |>
+    mutate(x1 = nodes$x[.data[["from"]]],
+           x2 = nodes$x[.data[["to"]]] - nodes$width[.data[["to"]]]/2,
+           y1 = nodes$y[.data[["from"]]],
+           y2 = nodes$y[.data[["to"]]],
+           .edges = TRUE)
+
+  if(horiz) {
+    layout <- layout |>
+      mutate(y1 = nodes$y[.data[["to"]]],
+           .edges = TRUE)
+  }
+
+  layout
+}
+
 # calculate the actual sizes for the variables
 .normalize_varsize <- function(varsize, varspace, layout) {
   vars <- unique(as_tibble(layout)$node_col)

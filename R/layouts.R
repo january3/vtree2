@@ -34,13 +34,7 @@ layout_by_freq <- function(vtree, dir="lr",
   }
 
   nodes <- as_tibble(layout)
-
-  layout <- layout |>
-    mutate(x1 = nodes$x[.data[["from"]]],
-           x2 = nodes$x[.data[["to"]]] - nodes$width[.data[["to"]]]/2,
-           y1 = nodes$y[.data[["to"]]],
-           y2 = nodes$y[.data[["to"]]],
-           .edges = TRUE)
+  layout <- .add_edge_positions(layout, horiz=TRUE)
 
   layout
 }
@@ -98,17 +92,8 @@ layout_regular <- function(vtree,
              y = ifelse(.data[["level"]] == 0, NA, .data[["y"]]))
   }
 
-  nodes <- as_tibble(layout)
-
-  layout <- layout |>
-    mutate(x1 = nodes$x[.data[["from"]]],# + dx/2,
-           x2 = nodes$x[.data[["to"]]] - nodes$width[.data[["to"]]]/2,
-           y1 = nodes$y[.data[["from"]]],
-           y2 = nodes$y[.data[["to"]]],
-           .edges = TRUE)
-
-
-   layout
+  layout <- .add_edge_positions(layout)
+  layout
 }
 
 # the tight layout
@@ -152,17 +137,8 @@ layout_tight <- function(vtree, dir="lr",
              y = ifelse(.data[["level"]] == 0, NA, .data[["y"]]))
   }
 
-  nodes <- as_tibble(layout)
-
-  layout <- layout |>
-    mutate(x1 = nodes$x[.data[["from"]]],# + dx/2,
-           x2 = nodes$x[.data[["to"]]] - nodes$width[.data[["to"]]]/2,
-           y1 = nodes$y[.data[["from"]]],
-           y2 = nodes$y[.data[["to"]]],
-           .edges = TRUE)
-
-
-   layout
+  layout <- .add_edge_positions(layout)
+  layout
 }
 
 layout_flushed_left <- function(vtree, dir="lr",
