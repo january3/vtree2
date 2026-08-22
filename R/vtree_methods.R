@@ -181,7 +181,7 @@ nodecols <- function(x) {
 #' edgecols(vt)
 #' @export
 edgecols <- function(x) {
-  colnames(as_tibble(activate(x, "edges")))
+  c("from", "to", igraph::edge_attr_names(x))
 }
 
 
