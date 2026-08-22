@@ -1,6 +1,10 @@
 ---
 title: "Vtree2 User Guide"
-output: rmarkdown::html_vignette
+output:
+  rmarkdown::html_document:
+    number_sections: true
+pkgdown:
+  as_is: true
 vignette: >
   %\VignetteIndexEntry{Vtree2 User Guide}
   %\VignetteEngine{knitr::rmarkdown}

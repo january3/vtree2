@@ -92,9 +92,9 @@ By default, `add_labels()` produces simple node labels containing the
 associated variable value, number of cases and percentage within the
 parent node. This can be customized by one of the following:
 
-- choose a different `template` parameter: `short` (default), `sameline`
-  (same as short, but on one line) or `long` (with variable names). The
-  templates all reasonably handle NA nodes and root node.
+- choose a different `template` parameter: `simple` (default),
+  `sameline` (same as simple, but on one line) or `long` (with variable
+  names). The templates all reasonably handle NA nodes and root node.
 
 - use a [`glue::glue()`](https://glue.tidyverse.org/reference/glue.html)
   syntax for the parameters `fmt`, `fmt_na` and `fmt_root`, where
@@ -118,7 +118,7 @@ including:
 
 - `col_alias`, the alias for the column/variable associated with a node
   (default same as node_col, but can be modified by providing a
-  `var_alias` column in the vtree)
+  `col_alias` column in the vtree)
 
 - `val_alias`, the alias for the value of the variable associated with a
   node (default same as node_val, but can be modified by providing a

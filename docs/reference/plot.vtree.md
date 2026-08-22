@@ -84,7 +84,7 @@ plot_vtree(
 - richtext:
 
   If TRUE, use
-  [`gridtext::richtext_grob()`](https://wilkelab.org/gridtext/reference/richtext_grob.html)
+  [`gridtext::richtext_grob()`](https://rdrr.io/pkg/gridtext/man/richtext_grob.html)
   for node labels, which is much slower, but allows fine control over
   text formatting. Default is FALSE.
 

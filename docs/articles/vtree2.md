@@ -1,6 +1,6 @@
 # Vtree2 User Guide
 
-## Quick start
+## 1 Quick start
 
 ``` r
 library(vtree2)
@@ -22,7 +22,7 @@ For more information what the vtrees are and how to use them, see the
 Vtrees?](https://january3.github.io/vtree2/articles/what_are_vtrees.md)
 vignette. Read on for the full user manual.
 
-## Vtree workflow
+## 2 Vtree workflow
 
 In `vtree2`, the workflow is split into several steps:
 
@@ -85,9 +85,9 @@ vtree(titanicNA, Class, Sex, Survived) |>
 
 ![](vtree2_files/figure-html/workflow_example1-1.png)
 
-## Building vtree objects
+## 3 Building vtree objects
 
-### Case data
+### 3.1 Case data
 
 Vtrees are primarly built from *case data*: matrices or data frames in
 which each row corresponds to a single sample. Each column is a data
@@ -162,7 +162,7 @@ vt <- vtree(titanicNA, all_of(vars))
 That is one way to construct vtrees. The other is to use frequency
 tables.
 
-### Frequency data
+### 3.2 Frequency data
 
 Often the data is already summarized in a frequency table, where each
 row corresponds to a combination of levels of the selected variables,
@@ -199,7 +199,7 @@ vt <- vtree(cases, Class, Survived)
 vt <- vtree_from_freqtable(Titanic, Class, Survived)
 ```
 
-### Data preparation
+### 3.3 Data preparation
 
 The vtree object constructors
 ([`vtree()`](https://january3.github.io/vtree2/reference/vtree.md) and
@@ -212,7 +212,7 @@ categorical data.
 Also, converting numerical or logical values to factors or character
 vectors is easy. It is best done with regular R code.
 
-### Valid percentages
+### 3.4 Valid percentages
 
 One of the important concepts to know about are the *valid percentages*.
 In short, a valid percentage is the number of samples with a given value
@@ -236,7 +236,7 @@ Once the vtree has been constructed, this cannot change. Any operations
 downstream (like selecting and pruning nodes and modifying their labels)
 will not change the calculated percentages.
 
-### Vtree objects
+### 3.5 Vtree objects
 
 You can inspect the vtree object with a number of methods.
 
@@ -335,7 +335,7 @@ as_tibble(vt)
 #> #   denom <int>, leaf <lgl>
 ```
 
-### Vtree objects as graphs
+### 3.6 Vtree objects as graphs
 
 The `vtree` class is a wrapper around the `tbl_graph` class from package
 `tidygraph`. It is a directed graph, where each node corresponds to a
@@ -361,7 +361,7 @@ plot(vt_tbl)
 
 ![](vtree2_files/figure-html/vtree9-1.png)
 
-### Tidy selection of variables
+### 3.7 Tidy selection of variables
 
 The selection of columns in
 [`vtree()`](https://january3.github.io/vtree2/reference/vtree.md) and
@@ -378,9 +378,9 @@ vtree(titanicNA, Class:Age)
 vtree(titanicNA, all_of(c("Class", "Sex", "Age")))
 ```
 
-## Pruning, retain and selecting
+## 4 Pruning, retain and selecting
 
-### Pruning and keeping
+### 4.1 Pruning and keeping
 
 Quite often, we don’t want to show the whole tree, but only selected
 nodes. For this, you can use the functions
@@ -483,7 +483,7 @@ This is on purpose: the stat summaries in the legend correspond to the
 whole data set on which the tree was built, and not only the portion
 that is shown in the tree.
 
-### Finding and marking
+### 4.2 Finding and marking
 
 Sometimes rather than change the visibility of selected nodes by pruning
 or retaining, you might want to change their color or label instead. For
@@ -520,7 +520,7 @@ vt |> mark(freq < .2) |>
 
 ![](vtree2_files/figure-html/unnamed-chunk-3-1.png)
 
-## Column and value aliases with `add_aliases()`
+## 5 Column and value aliases with `add_aliases()`
 
 If you prefer to see a different name for the variable or its values on
 the plot, there are basically two approaches.
@@ -587,7 +587,7 @@ Unnecessary gory details:
   [`plot()`](https://rdrr.io/r/graphics/plot.default.html) to create the
   legend.
 
-## Labels with `add_labels()`
+## 6 Labels with `add_labels()`
 
 Labels to be plotted are taken from the `label` column of the vtree
 object. If this column is missing,
@@ -605,7 +605,7 @@ to add default labels. For custom labels there are three routes:
   then modify the label column with
   [`mutate()`](https://dplyr.tidyverse.org/reference/mutate.html)
 
-### Directly creating a label column with `mutate()`
+### 6.1 Directly creating a label column with `mutate()`
 
 Since the
 [`mutate()`](https://dplyr.tidyverse.org/reference/mutate.html) function
@@ -621,7 +621,7 @@ vtree(titanicNA, Class, Survived) |>
 
 ![](vtree2_files/figure-html/labels1-1.png)
 
-#### Using `add_labels()` to add default or custom labels
+#### 6.1.1 Using `add_labels()` to add default or custom labels
 
 The
 [`add_labels()`](https://january3.github.io/vtree2/reference/add_labels.md)
@@ -660,7 +660,7 @@ vt |>
 
 ![](vtree2_files/figure-html/labels2b-1.png)
 
-### Using custom formatting
+### 6.2 Using custom formatting
 
 By default,
 [`add_labels()`](https://january3.github.io/vtree2/reference/add_labels.md)
@@ -688,7 +688,7 @@ including:
 - `n`, number of samples of a node
 - `col_alias`, the alias for the column/variable associated with a node
   (default same as node_col, but can be modified by providing a
-  `var_alias` column in the vtree)
+  `col_alias` column in the vtree)
 - `val_alias`, the alias for the value of the variable associated with a
   node (default same as node_val, but can be modified by providing a
   `val_alias` column in the vtree)
@@ -720,7 +720,7 @@ plot(vt, legend = FALSE)
 
 ![](vtree2_files/figure-html/labels3-1.png)
 
-### Using the `expr` parameter
+### 6.3 Using the `expr` parameter
 
 If you need even finer control, you can use the `expr` parameter which
 takes any R expression and evaluates it with `[rlang::eval_tidy()]` in
@@ -747,7 +747,7 @@ plot(vt, legend = FALSE)
 
 ![](vtree2_files/figure-html/labels_expr-1.png)
 
-### Using a mask
+### 6.4 Using a mask
 
 You can specify a mask with
 [`add_labels()`](https://january3.github.io/vtree2/reference/add_labels.md) -
@@ -767,7 +767,7 @@ add_labels(vt, mask = mask, template = "long") |>
 
 ![](vtree2_files/figure-html/labels_mask-1.png)
 
-### Parameter precedence with `add_labels()`
+### 6.5 Parameter precedence with `add_labels()`
 
 If `expr` is not NULL, it will be used for all labels chosen by the
 mask.
@@ -780,7 +780,7 @@ defined, otherwise the template.
 `fmt_na` is used for NA values only if `is_vp(vtree)` is `TRUE`; this is
 because for a vp tree the NA value percentages are meaningless.
 
-## Creating summaries
+## 7 Creating summaries
 
 One of the more useful aspects of using vtrees is that you can partition
 the data using a set of variables and then show summary information *for
@@ -824,7 +824,7 @@ summaries:
 It is also possible to include graphical summaries; see the section
 “Inset plots” for more details.
 
-### Summaries with `summarize_by_node()`
+### 7.1 Summaries with `summarize_by_node()`
 
 Each row of the data frame returned by `summarize_by_node` corresponds
 to one row of the nodes data frame in the vtree, hence the name of the
@@ -889,7 +889,7 @@ for a variable in the above summary (e.g. the frequency of females among
 1st Class passengers), we can choose whether we use valid percentages or
 not. That is, we have to decide whether we calculate the fraction as the
 fraction of *valid* samples, or the fraction of *total* samples at this
-node. In the above, the total fraction is $`0.458 = 120/262`$ - we see
+node. In the above, the total fraction is \\0.458 = 120/262\\ - we see
 that by looking at the `denom` (denominator) column of the table above.
 
 By default,
@@ -923,7 +923,7 @@ head(sm)
 The denominator above is equal to column `n`, total number of cases per
 node.
 
-### Formatting statistics with `fmt_label()`
+### 7.2 Formatting statistics with `fmt_label()`
 
 The function takes the output from
 [`summarize_by_node()`](https://january3.github.io/vtree2/reference/summarize_by_node.md)
@@ -955,7 +955,7 @@ There are two differences between `fmt` and `expr`:
   expressions with `ifelse`, `if_else` and `case_when`, and string
   formatting with `sprintf`, `glue` etc.
 
-### Custom statistics with `vtree_apply()`
+### 7.3 Custom statistics with `vtree_apply()`
 
 Sometimes you need to calculate some per-node statistics which goes
 beyond simple descriptive statistics.
@@ -1023,7 +1023,7 @@ vt |> add_labels(suffix = sm) |>
 
 ![](vtree2_files/figure-html/vtreapply1-1.png)
 
-## Adding and modifying colors
+## 8 Adding and modifying colors
 
 There are basically three ways of modifying colors shown on the plot and
 ont the legend:
@@ -1055,7 +1055,7 @@ to assign fill colors automatically. If `color` is missing, but `fill`
 is present, then white or black will be chosen automatically depending
 on the contrast with the fill color.
 
-### Modifying colors with `mutate()`
+### 8.1 Modifying colors with `mutate()`
 
 It is not necessary to call
 [`add_palette()`](https://january3.github.io/vtree2/reference/vtree_palette.md)
@@ -1089,7 +1089,7 @@ you can override it with the `palettes` argument of
 [`plot()`](https://rdrr.io/r/graphics/plot.default.html) or
 [`add_palette()`](https://january3.github.io/vtree2/reference/vtree_palette.md).
 
-### Adding palettes with `add_palette()`
+### 8.2 Adding palettes with `add_palette()`
 
 The
 [`add_palette()`](https://january3.github.io/vtree2/reference/vtree_palette.md)
@@ -1098,9 +1098,9 @@ the palette in the attribute `palette` of the vtree object. This palette
 in turn is used to create color keys on the legend. If that attribute is
 missing, the legend will be black and white.
 
-## Adding layout with `add_layout()`
+## 9 Adding layout with `add_layout()`
 
-### Basic layout configuration with `plot()`
+### 9.1 Basic layout configuration with `plot()`
 
 Layouts are added with the
 [`add_layout()`](https://january3.github.io/vtree2/reference/add_layout.md)
@@ -1170,7 +1170,7 @@ additional columns `x`, `y`, `width` and `height` for the nodes and
 `x1`, `y1`, `x2`, `y2` for the edges. You can then modify these columns
 directly.
 
-### Sankey layouts
+### 9.2 Sankey layouts
 
 A special type of layout is “Sankey”:
 
@@ -1187,7 +1187,7 @@ plot above did not change from the regular layout, but that the
 variable refers to the relative percentage within the parent node,
 i.e. among the passengers of the 3rd class.
 
-### Directly modifying the layout
+### 9.3 Directly modifying the layout
 
 In the following example we will modify a layout with pruned nodes. We
 will move the nodes on the right (leafs) hand up a bit upwards.
@@ -1217,7 +1217,7 @@ activated “node” or “edge” mode. In `vtree2`, the object is always in
 “node” mode (because it is more practical), but on the rare occassion
 that you need to access the edges, you can.
 
-### Fine control with `add_layout(varspace = ..., varsize = ...)`
+### 9.4 Fine control with `add_layout(varspace = ..., varsize = ...)`
 
 The
 [`add_layout()`](https://january3.github.io/vtree2/reference/add_layout.md)
@@ -1255,7 +1255,7 @@ the axis of the plot. That is, for horizontal layouts, they control the
 width of the nodes; for vertical layouts, they control the height of the
 nodes.
 
-## Plotting
+## 10 Plotting
 
 Objects of type vtree can be directly plotted with the
 [`plot()`](https://rdrr.io/r/graphics/plot.default.html) method. If the
@@ -1265,16 +1265,16 @@ defaults by running (essentially)
 Some of the arguments for these functions can be passed directly to the
 [`plot()`](https://rdrr.io/r/graphics/plot.default.html) function.
 
-### Layouts
+### 10.1 Layouts
 
 Parameters `layout`, `dir`, `show_root`, `lwidth`, `lheight` are passed
 to
 [`add_layout()`](https://january3.github.io/vtree2/reference/add_layout.md)
 to control the layout of the tree. See above for details.
 
-### Colors, fill colors and labels
+### 10.2 Colors, fill colors and labels
 
-### Legends with summaries
+### 10.3 Legends with summaries
 
 The legend shows a summary for each variable underneath or next to the
 part of the tree which corresponds to this variable. Variable summaries
@@ -1314,7 +1314,7 @@ plot_grid(p1, p2, nrow = 1)
 
 ![](vtree2_files/figure-html/plot_summaries2-1.png)
 
-### Other `plot()` arguments
+### 10.4 Other `plot()` arguments
 
 **`lwidth`, `lheight`** - label width and height relative to available
 space. The layout functions calculate the available space for each node,
@@ -1388,7 +1388,7 @@ line width is not relative to the device size, but is fixed to an
 absolute value; therefore, for small devices the lines may appeary too
 thick.
 
-### Rich text labels
+### 10.5 Rich text labels
 
 It is possible to use simple HTML or markdown formatting in the labels
 and then use `richtext=TRUE` in the
@@ -1433,11 +1433,11 @@ plot(vt, richtext = TRUE, legend = TRUE)
 
 ![](vtree2_files/figure-html/richtext2-1.png)
 
-## Patterns
+## 11 Patterns
 
-## Inset plots
+## 12 Inset plots
 
-### Images and other graphical objects
+### 12.1 Images and other graphical objects
 
 It is possible to add any kind of “grob” - graphical object - to the
 nodes description. This includes not only bitmap images, but also
@@ -1478,11 +1478,11 @@ get_grob <- function(img) {
 
 iris_grobs <- lapply(iris_imgs, get_grob)
 #> [1] "images/500px-Blue_Flag,_Ottawa.jpg"
-#> [1] "/tmp/Rtmpomm4by/temp_libpath1e877378c6ae70/vtree2/images/500px-Blue_Flag,_Ottawa.jpg"
+#> [1] "/tmp/Rtmpomm4by/temp_libpath1e87737261da39/vtree2/images/500px-Blue_Flag,_Ottawa.jpg"
 #> [1] "images/500px-Irissetosa1.jpg"
-#> [1] "/tmp/Rtmpomm4by/temp_libpath1e877378c6ae70/vtree2/images/500px-Irissetosa1.jpg"
+#> [1] "/tmp/Rtmpomm4by/temp_libpath1e87737261da39/vtree2/images/500px-Irissetosa1.jpg"
 #> [1] "images/500px-Iris_virginica_2.jpg"
-#> [1] "/tmp/Rtmpomm4by/temp_libpath1e877378c6ae70/vtree2/images/500px-Iris_virginica_2.jpg"
+#> [1] "/tmp/Rtmpomm4by/temp_libpath1e87737261da39/vtree2/images/500px-Iris_virginica_2.jpg"
 
 vt <- iris |>
   mutate(Long_Petals = as.character(Petal.Length > 4)) |>
@@ -1520,7 +1520,7 @@ vt |>
 
 ![](vtree2_files/figure-html/inset1b-1.png)
 
-### Inserting ggplot2 objects
+### 12.2 Inserting ggplot2 objects
 
 Here, we choose only the “Sex” and “Survived” nodes for the construction
 of the vtree. However, we make a ggplot object for each of the leaf
@@ -1592,7 +1592,7 @@ plot(vt)
 
 ![](vtree2_files/figure-html/unnamed-chunk-7-1.png)
 
-### Graphical summary example
+### 12.3 Graphical summary example
 
 Below, we will create a graphical summary for a data set. We will use
 the `ToothGrowth` data set, which contains two categorical variables
@@ -1745,7 +1745,7 @@ vt |>
 
 ![](vtree2_files/figure-html/gsum6-1.png)
 
-## Sankey plots
+## 13 Sankey plots
 
 The Sankey plots are a simplified version of the sankey layout (see
 above). While a sankey layout for vtrees preserves the conditional

@@ -141,8 +141,8 @@ the formatted frequency column <code>f</code>, since f = pct/100.</p></dd>
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>By default, <code>add_labels()</code> produces simple node labels containing the
 associated variable value, number of cases and percentage within the
-parent node. This can be customized by one of the following:</p><ul><li><p>choose a different <code>template</code> parameter: <code>short</code> (default),
-<code>sameline</code> (same as short, but on one line) or <code>long</code> (with variable
+parent node. This can be customized by one of the following:</p><ul><li><p>choose a different <code>template</code> parameter: <code>simple</code> (default),
+<code>sameline</code> (same as simple, but on one line) or <code>long</code> (with variable
 names). The templates all reasonably handle NA nodes and root node.</p></li>
 <li><p>use a <code><a href="https://glue.tidyverse.org/reference/glue.html" class="external-link">glue::glue()</a></code> syntax for the parameters <code>fmt</code>, <code>fmt_na</code> and
 <code>fmt_root</code>, where variable names are put in curly
@@ -159,7 +159,7 @@ including:</p><ul><li><p><code>freq</code>, the frequency for a node</p></li>
 <li><p><code>n</code>, number of samples of a node</p></li>
 <li><p><code>col_alias</code>, the alias for the column/variable associated with a node
 (default same as node_col, but can be modified
-by providing a <code>var_alias</code> column in the vtree)</p></li>
+by providing a <code>col_alias</code> column in the vtree)</p></li>
 <li><p><code>val_alias</code>, the alias for the value of the variable associated with a node
 (default same as node_val, but can be modified
 by providing a <code>val_alias</code> column in the vtree)</p></li>

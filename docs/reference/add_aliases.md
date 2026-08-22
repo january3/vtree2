@@ -36,8 +36,8 @@ add_aliases(vtree, val_alias = NULL, col_alias = NULL)
   `names(vtree)`) and the value is the alias to be used for that
   variable when constructing labels. If a name is missing from the list,
   the original column name is used. The aliases are then used to
-  construct the labels and also stored in the column 'var_alias' of the
-  nodes data frame. If a `var_alias` column is present, it will be
+  construct the labels and also stored in the column 'col_alias' of the
+  nodes data frame. If a `col_alias` column is present, it will be
   overwritten.
 
 ## Value
