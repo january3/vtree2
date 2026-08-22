@@ -35,9 +35,14 @@ test_that("high level ensure funcs work", {
   expect_error(ensure_fill(vt, color=TRUE), "does not have a color column")
   expect_error(ensure_fill(1L), "is not a vtree object")
 
+  expect_error(ensure_node_cols(vt, "foo"),
+               "Argument `vt` is missing required node columns: foo")
+  expect_no_error(ensure_node_cols(vt, "n"))
+  expect_error(ensure_edge_cols(vt, "foo"),
+               "Argument `vt` is missing required edge columns: foo")
+  expect_no_error(ensure_edge_cols(vt, "from"))
+
 })
-
-
 
 test_that("methods throw errors for non-vtree objects", {
   expect_error(vtree(1), "is not a data frame")

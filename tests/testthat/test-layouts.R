@@ -98,12 +98,12 @@ test_that(".ensure_layout_cols works", {
   vt <- vtree_from_freqtable(Titanic, Class, Sex)
 
   expect_error(.ensure_layout_cols(vt),
-               "layout is missing required node columns")
+               "Argument `layout` is missing required node columns")
   vt <- vt |>
     mutate(x = 0, y = 0, width = 1, height = 1)
 
   expect_error(.ensure_layout_cols(vt),
-               "layout is missing required edge columns")
+               "Argument `layout` is missing required edge columns")
   vt <- vt |>
     mutate(x1 = 0, y1 = 0, x2 = 1, y2 = 1, .edges = TRUE)
   expect_no_error(vte <- .ensure_layout_cols(vt))
