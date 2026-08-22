@@ -253,13 +253,7 @@ makeContent.vtree_plot <- function(x) {
                         color = "black", richtext = FALSE) {
 
   req_cols <- c("x", "y", "label")
-
-  if(!all(req_cols %in% colnames(nodes))) {
-    missing <- req_cols[!req_cols %in% colnames(nodes)]
-    cli_abort(
-     c(
-     x = "Missing required columns in nodes data frame: {.val {missing}}"))
-  }
+  ensure_colnames(nodes, req_cols)
 
   labels <- map(1:nrow(nodes), \(i) {
     .mk_text(nodes$x[i], nodes$y[i],
@@ -310,13 +304,7 @@ makeContent.vtree_plot <- function(x) {
 #' @importFrom grid rectGrob roundrectGrob
 .get_node_rects <- function(nodes, lwd=1) {
   req_cols <- c("x", "y", "width", "height", "shape", "fill")
-
-  if(!all(req_cols %in% colnames(nodes))) {
-    missing <- req_cols[!req_cols %in% colnames(nodes)]
-    cli_abort(
-     c(
-     x = "Missing required columns in nodes data frame: {.val {missing}}"))
-  }
+  ensure_colnames(nodes, req_cols)
 
   nodes <- nodes |>
     filter(!is.na(.data[["x"]]) & !is.na(.data[["y"]])) |>
@@ -325,10 +313,6 @@ makeContent.vtree_plot <- function(x) {
   if(nrow(nodes) < 1L) {
     return(NULL)
   }
-
- #if(!is.na(rgrob)) {
- #  nodes <- mutate(nodes, grob = rgrob)
- #}
 
   if(any(is.na(nodes$shape))) {
     cli_abort(c(x = "NA values in the shape column"))
@@ -387,12 +371,7 @@ makeContent.vtree_plot <- function(x) {
                        name = "nodes", richtext = FALSE) {
 
   req_cols <- c("x", "y", "width", "height", "shape", "fill", "label")
-
-  if(!all(req_cols %in% colnames(nodes))) {
-    missing <- req_cols[!req_cols %in% colnames(nodes)]
-    cli_abort(
-     c(x = "Missing required columns in nodes data frame: {.val {missing}}"))
-  }
+  ensure_colnames(nodes, req_cols)
 
   rects <- .get_node_rects(nodes, lwd = lwd)
 

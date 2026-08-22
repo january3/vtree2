@@ -5,7 +5,7 @@ layout_by_freq <- function(vtree, dir="lr",
                            varsize=NULL,
                            show_root=TRUE) {
 
-  layout <- .calc_offsets(vtree)
+  layout <- .calc_offsets_from_sizes(vtree, .var="n")
   nodes <- as_tibble(layout)
 
   totn <- attr(vtree, "N") #
@@ -50,12 +50,12 @@ layout_regular <- function(vtree,
 
   sr <- as.integer(show_root)
 
-  layout <- .calc_nleafs(vtree)
+  layout <- .calc_offsets_from_sizes(vtree)
   nodes  <- as_tibble(layout)
 
   nlevel <- max(nodes$level) + sr
   #totleafs <- sum(nodes$nleafs[nodes$level == 1])
-  totleafs <- nodes$nleafs[nodes$node_id == 1]
+  totleafs <- nodes$size[nodes$node_id == 1]
   if(is.na(lheight)) {
     lheight <- .8 / totleafs
   } else {
@@ -80,10 +80,10 @@ layout_regular <- function(vtree,
       layout <- mutate(layout, y = .data[["y"]] - lheight/2)
     } else if(flushed == "right") {
       layout <- mutate(layout, y = .data[["y"]] -
-                       .data[["nleafs"]] / totleafs + lheight/2)
+                       .data[["size"]] / totleafs + lheight/2)
     }
   } else {
-    layout <- mutate(layout, y = .data[["y"]] - .data[["nleafs"]] / 2 / totleafs)
+    layout <- mutate(layout, y = .data[["y"]] - .data[["size"]] / 2 / totleafs)
   }
 
   if(!show_root) {
@@ -105,11 +105,11 @@ layout_tight <- function(vtree, dir="lr",
 
   sr <- as.integer(show_root)
 
-  layout <- .calc_nleafs(vtree)
+  layout <- .calc_offsets_from_sizes(vtree)
   nodes  <- as_tibble(layout)
 
   nlevel <- max(nodes$level) + sr
-  totleafs <- nodes$nleafs[nodes$node_id == 1]
+  totleafs <- nodes$size[nodes$node_id == 1]
 
   if(is.na(lheight)) {
     lheight <- .9
@@ -172,13 +172,8 @@ layout_flushed_right <- function(vtree, dir="lr",
 
 .ensure_layout_cols <- function(layout) {
 
-  if(!all(c("x", "y", "width", "height") %in% nodecols(layout))) {
-    cli_abort(c(x = "layout is missing required node columns"))
-  }
-
-  if(!all(c("x1", "y1", "x2", "y2") %in% edgecols(layout))) {
-    cli_abort(c(x = "layout is missing required edge columns"))
-  }
+  ensure_node_cols(layout, c("x", "y", "width", "height"))
+  ensure_edge_cols(layout, c("x1", "y1", "x2", "y2"))
 
   if(!"full_w" %in% nodecols(layout)) {
     layout <- mutate(layout, full_w = .data[["width"]])

@@ -88,6 +88,50 @@ ensure_fill <- function(x, color=FALSE) {
   x
 }
 
+ensure_colnames <- function(x, cols) {
+  arg <- rlang::caller_arg(x)
+
+  missing <- cols[ !cols %in% colnames(x) ]
+
+  if(length(missing) > 0) {
+    cli_abort(c(x = "Argument `{arg}` is missing required columns: {missing}",
+      i = "You provided an object with columns: {colnames(x)}"),
+          call = rlang::caller_env())
+  }
+
+  x
+}
+
+ensure_node_cols <- function(x, cols) {
+  arg <- rlang::caller_arg(x)
+  ensure_vtree(x)
+
+  missing <- cols[ !cols %in% nodecols(x) ]
+
+  if(length(missing) > 0) {
+    cli_abort(c(x = "Argument `{arg}` is missing required node columns: {missing}",
+      i = "You provided a vtree object with node columns: {nodecols(x)}"),
+          call = rlang::caller_env())
+  }
+
+  x
+}
+
+ensure_edge_cols <- function(x, cols) {
+  arg <- rlang::caller_arg(x)
+  ensure_vtree(x)
+
+  missing <- cols[ !cols %in% edgecols(x) ]
+
+  if(length(missing) > 0) {
+    cli_abort(c(x = "Argument `{arg}` is missing required edge columns: {missing}",
+      i = "You provided a vtree object with edge columns: {edgecols(x)}"),
+          call = rlang::caller_env())
+  }
+
+  x
+}
+
 #' @importFrom cli cli_abort
 die <- function(message = "Unspecified error.",
                 call = .envir, .envir = parent.frame()) {

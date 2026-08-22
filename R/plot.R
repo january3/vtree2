@@ -1,28 +1,3 @@
-# we check that the layout is correct and has the required columns
-# for some columns, we make sure that there are no NAs
-ensure_layout <- function(layout) {
-
-  nodes <- as_tibble(layout)
-  edges <- activate(layout, "edges") |> as_tibble()
-
-  req_cols <- c("x", "y", "width", "height", "color", "fill", "label")
-
-  if(!all(req_cols %in% colnames(nodes))) {
-    missing <- setdiff(req_cols, colnames(nodes))
-    cli_abort(c(x = "layout is missing required columns: {missing}"))
-  }
-
-  # check edges; required are x1, x2, y1, y2
-  req_cols_edges <- c("x1", "x2", "y1", "y2")
-  if(!all(req_cols_edges %in% colnames(edges))) {
-    missing <- setdiff(req_cols_edges, colnames(edges))
-    cli_abort(c(x =
-      "layout edges are missing required columns: {missing}"))
-  }
-
-  layout
-}
-
 # make sure that the vtree is ready for plotting. Fill in the missing
 # color, label, fill etc. information.
 .normalize_vtree_for_plotting <- function(x, palettes, na_fill) {
@@ -395,9 +370,7 @@ plot_vtree <- function(x,
   x <- .normalize_vtree_for_plotting(x, palettes, na_fill)
 
   layout <- .normalize_layout(x, layout_arg, lwidth, lheight, show_root, dir)
-
   layout <- .fit_margins(layout, margins)
-  layout <- ensure_layout(layout)
 
   if(legend == "full") {
     legend <- layout_legend(layout, margins)

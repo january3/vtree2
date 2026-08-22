@@ -61,31 +61,12 @@
   ret
 }
 
-# for each node, calculate the number of leafs and store in nleafs
-.calc_nleafs <- function(vtree) {
+.calc_offset_tot <- function(vtree) {
   rt <- which(as_tibble(vtree)$node_id == 1)
-
-  vtree <- vtree |>
-    mutate(nleafs = map_bfs_back_int(
-      root = rt,
-      mode = "out",
-      .f = \(node, path, ...) {
-        if(nrow(path) == 0) {
-          return(1L)
-        } else {
-          if(sum(unlist(path$result)) == 0) {
-            return(1L)
-          }
-          return(sum(unlist(path$result)))
-        }
-    })) |>
-    group_by(.data[["parent_id"]]) |>
-    mutate(offset = lag(cumsum(.data[["nleafs"]]), default = 0)) |>
-    ungroup()
 
   nodes <- as_tibble(vtree)
   vtree |>
-    mutate(offset_tot = map_bfs_int(
+    mutate(offset_tot = tidygraph::map_bfs_dbl(
       root = rt,
       mode = "out",
       .f = \(node, path, ...) {
@@ -94,11 +75,18 @@
 }
 
 # for each node, calculate the size of the follow up nodes and the offsets
-# size = variable .var
-.calc_offsets_from_sizes <- function(vtree, .var) {
+# size = variable .var. If .var is NA then it is equivalent to calculating
+# the number of leafs.
+.calc_offsets_from_sizes <- function(vtree, .var=NA) {
   rt <- which(as_tibble(vtree)$node_id == 1)
 
   nodes <- as_tibble(vtree)
+
+  if(is.na(.var)) {
+    nodes$.var <- 1
+    .var <- ".var"
+  }
+
   vtree <- vtree |>
     mutate(size = tidygraph::map_bfs_back_dbl(
       root = rt,
@@ -117,35 +105,20 @@
     mutate(offset = lag(cumsum(.data[["size"]]), default = 0)) |>
     ungroup()
 
-  nodes <- as_tibble(vtree)
-  vtree |>
-    mutate(offset_tot = tidygraph::map_bfs_dbl(
-      root = rt,
-      mode = "out",
-      .f = \(node, path, ...) {
-        nodes$offset[node] + sum(nodes$offset[path$node])
-    }))
+  .calc_offset_tot(vtree)
 }
 
 # calculate the offsets for proportional layout
-.calc_offsets <- function(vtree, .var="n") {
-  rt <- which(as_tibble(vtree)$node_id == 1)
-
-  vtree <- vtree |>
-    group_by(.data[["parent"]]) |>
-    mutate(offset = lag(cumsum(.data[[.var]]), default = 0)) |>
-    ungroup()
-
-  nodes <- as_tibble(vtree)
-
-  vtree |>
-    mutate(offset_tot = tidygraph::map_bfs_dbl(
-      root = rt,
-      mode = "out",
-      .f = \(node, path, ...) {
-        nodes$offset[node] + sum(nodes$offset[path$node])
-    }))
-}
+# .calc_offsets <- function(vtree, .var="n") {
+#   rt <- which(as_tibble(vtree)$node_id == 1)
+#
+#   vtree <- vtree |>
+#     group_by(.data[["parent"]]) |>
+#     mutate(offset = lag(cumsum(.data[[.var]]), default = 0)) |>
+#     ungroup()
+#
+#   .calc_offset_tot(vtree)
+# }
 
 # use the aliases associated with the layout to replace the labels in the
 # legend titles.
