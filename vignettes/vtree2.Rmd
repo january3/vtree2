@@ -1230,9 +1230,7 @@ setosa="images/500px-Irissetosa1.jpg",
 virginica="images/500px-Iris_virginica_2.jpg")
 
 get_grob <- function(img) {
-  print(img)
   tf <- system.file(img, package="vtree2")
-  print(tf)
   img <- jpeg::readJPEG(tf)
   # this function converts a bitmap
   # to a grid::grob object

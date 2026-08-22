@@ -175,6 +175,17 @@ shows that despite the test being very specific and sensitive, when a
 person has a positive test result, there is more than a 50% chance that
 the person is actually healthy.
 
+A proportional plot with the negative node pruned will hammer this
+point:
+
+``` r
+vt3 <- vt2 |> prune(Test == "Negative")
+plot(vt3, layout="proportional", show_root = FALSE,
+    padding=.7, margins=c(.05, .05, .2, .05))
+```
+
+![](what_are_vtrees_files/figure-html/fpnpv3-1.png)
+
 [^1]: [`vtree()`](https://january3.github.io/vtree2/reference/vtree.md)
     works with cases data frames, where each row is a single
     observation. Here we have a frequency table, in which each row is a

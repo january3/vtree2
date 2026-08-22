@@ -204,6 +204,16 @@ test and it shows that despite the test being very specific and sensitive,
 when a person has a positive test result, there is more than a
 `r format(100 * (1 - ppv))`% chance that the person is actually healthy.
 
+A proportional plot with the negative node pruned will hammer this point:
+
+
+```{r fpnpv3,fig.width=10,fig.height=4}
+vt3 <- vt2 |> prune(Test == "Negative")
+plot(vt3, layout="proportional", show_root = FALSE,
+    padding=.7, margins=c(.05, .05, .2, .05))
+```
+
+
 
 
 

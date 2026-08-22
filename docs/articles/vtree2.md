@@ -1470,9 +1470,7 @@ setosa="images/500px-Irissetosa1.jpg",
 virginica="images/500px-Iris_virginica_2.jpg")
 
 get_grob <- function(img) {
-  print(img)
   tf <- system.file(img, package="vtree2")
-  print(tf)
   img <- jpeg::readJPEG(tf)
   # this function converts a bitmap
   # to a grid::grob object
@@ -1480,12 +1478,6 @@ get_grob <- function(img) {
 }
 
 iris_grobs <- lapply(iris_imgs, get_grob)
-#> [1] "images/500px-Blue_Flag,_Ottawa.jpg"
-#> [1] "/tmp/Rtmpomm4by/temp_libpath1e877371c18ff4/vtree2/images/500px-Blue_Flag,_Ottawa.jpg"
-#> [1] "images/500px-Irissetosa1.jpg"
-#> [1] "/tmp/Rtmpomm4by/temp_libpath1e877371c18ff4/vtree2/images/500px-Irissetosa1.jpg"
-#> [1] "images/500px-Iris_virginica_2.jpg"
-#> [1] "/tmp/Rtmpomm4by/temp_libpath1e877371c18ff4/vtree2/images/500px-Iris_virginica_2.jpg"
 
 vt <- iris |>
   mutate(Long_Petals = as.character(Petal.Length > 4)) |>

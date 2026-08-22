@@ -75,12 +75,12 @@
     
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://january3.github.io/vtree2/">vtree2</a></span><span class="op">)</span></span></code></pre></div>
-<div class="section level2">
-<h2 id="differences-between-vtree2-and-the-original-vtree">Differences between vtree2 and the original vtree<a class="anchor" aria-label="anchor" href="#differences-between-vtree2-and-the-original-vtree"></a>
-</h2>
 <div class="section level3">
-<h3 id="motivation">Motivation<a class="anchor" aria-label="anchor" href="#motivation"></a>
+<h3 id="differences-between-vtree2-and-the-original-vtree">Differences between vtree2 and the original vtree<a class="anchor" aria-label="anchor" href="#differences-between-vtree2-and-the-original-vtree"></a>
 </h3>
+<div class="section level4">
+<h4 id="motivation">Motivation<a class="anchor" aria-label="anchor" href="#motivation"></a>
+</h4>
 <p>The original vtree package implements most of its functionality in a
 single function <code><a href="../reference/vtree.html">vtree()</a></code> with more than a hundred options
 and producing a plot. The function implements its own mini-language for
@@ -98,20 +98,28 @@ comes at the cost of more verbose function calls.</p>
 of the box for most devices and can be used in connection with packages
 like <code>cowplot</code> or <code>patchwork</code> to produce complex
 figures.</li>
+<li>many operations in vtree use tidy selection; there are no limits on
+variable names (original vtree requires that variables do not have
+spaces)</li>
+<li>labels and summaries can be formatted with glue expressions (like
+<code>mean={mean}</code>), or using R expressions</li>
+<li>conditions for pruning are regular R expressions
+(e.g. <code>n &lt; 20</code> to prune all nodes that have fewer than 20
+samples)</li>
 <li>proportional plots allow to graphically represent the number of
 samples in the different levels.</li>
+<li>also, Sankey plots!</li>
 </ul>
 <p>Disadvantages of vtree2:</p>
 <ul>
-<li>No HTML-like formatting of the labels</li>
-<li>no RedCap integration</li>
+<li>more verbose code with more steps</li>
 <li>several of the straightforward vtree options require some thinking
 in vtree2</li>
 </ul>
 </div>
-<div class="section level3">
-<h3 id="quick-howto-for-vtree-users">Quick HOWTO for vtree users<a class="anchor" aria-label="anchor" href="#quick-howto-for-vtree-users"></a>
-</h3>
+<div class="section level4">
+<h4 id="quick-howto-for-vtree-users">Quick HOWTO for vtree users<a class="anchor" aria-label="anchor" href="#quick-howto-for-vtree-users"></a>
+</h4>
 <p>vtree2 is meant to be natural for tidyverse users. You split the
 operations by their domain - i.e, you don’t mix calculations, topology
 manipulation and plotting, but build the plot in stages: first prepare
@@ -137,7 +145,8 @@ replaced by NAs.</p>
 <span></span>
 <span><span class="va">vt</span> <span class="op">|&gt;</span></span>
 <span>  <span class="co"># prune returns a pruned vtree which we</span></span>
-<span>  <span class="co"># then pass down the pipeline</span></span>
+<span>  <span class="co"># then pass down the pipeline. We remove all nodes with frequency lower</span></span>
+<span>  <span class="co"># than 20%</span></span>
 <span>  <span class="fu"><a href="../reference/prune.html">prune</a></span><span class="op">(</span><span class="va">freq</span> <span class="op">&lt;</span> <span class="fl">.2</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="co"># adds labels, returns a vtree</span></span>
 <span>  <span class="fu"><a href="../reference/add_labels.html">add_labels</a></span><span class="op">(</span>template <span class="op">=</span> <span class="st">"long"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -149,22 +158,25 @@ replaced by NAs.</p>
 <span>                        <span class="va">label</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="co"># adds palettes, returns a vtree</span></span>
 <span>  <span class="fu"><a href="../reference/vtree_palette.html">add_palette</a></span><span class="op">(</span>palettes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Oranges"</span>, <span class="st">"Greys"</span>, <span class="st">"BuGn"</span>, <span class="st">"Purples"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="co"># and, finally, a plot</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span>lwidth <span class="op">=</span> <span class="fl">.7</span><span class="op">)</span></span></code></pre></div>
+<span></span>
+<span>  <span class="co"># and, finally, a plot: don't show root, make labels wider</span></span>
+<span>  <span class="co"># and show a full legend</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span>lwidth <span class="op">=</span> <span class="fl">.7</span>, legend <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>       show_root <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
 <p><img src="vtree2_for_vtree_users_files/figure-html/unnamed-chunk-3-1.png" class="r-plt" alt="" width="864"></p>
 </div>
-<div class="section level3">
-<h3 id="how-do-you">How do you…<a class="anchor" aria-label="anchor" href="#how-do-you"></a>
-</h3>
 <div class="section level4">
-<h4 id="data-pre-processing">Data pre-processing<a class="anchor" aria-label="anchor" href="#data-pre-processing"></a>
+<h4 id="how-do-you">How do you…<a class="anchor" aria-label="anchor" href="#how-do-you"></a>
 </h4>
+<div class="section level5">
+<h5 id="data-pre-processing">Data pre-processing<a class="anchor" aria-label="anchor" href="#data-pre-processing"></a>
+</h5>
 <p>Several options of the original vtree are actually for pre-processing
 of the data. For example, the variable specification ‘variable&gt;value’
 in the vtree mini-language is used to split a numeric variable into two
 levels.</p>
-<p>I think that explicing splitting of the data before constructing the
-vtree is more fittin. It is easy, and for complex cases there are many
+<p>I think that explicit splitting of the data before constructing the
+vtree is more fitting. It is easy, and for complex cases there are many
 specialized tools and packages dealing with that. For most cases, a
 simple <code><a href="https://rdrr.io/r/base/cut.html" class="external-link">cut()</a></code> or <code><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse()</a></code> is enough.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
@@ -215,9 +227,9 @@ Compare:</p>
 <span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p><img src="vtree2_for_vtree_users_files/figure-html/unnamed-chunk-6-1.png" class="r-plt" alt="" width="1344"></p>
 </div>
-<div class="section level4">
-<h4 id="pruning-keeping-finding-conditional-operations">Pruning, keeping, finding, conditional operations<a class="anchor" aria-label="anchor" href="#pruning-keeping-finding-conditional-operations"></a>
-</h4>
+<div class="section level5">
+<h5 id="pruning-keeping-finding-conditional-operations">Pruning, keeping, finding, conditional operations<a class="anchor" aria-label="anchor" href="#pruning-keeping-finding-conditional-operations"></a>
+</h5>
 <p><strong>Pruning.</strong> In vtree2, you can prune the tree with the
 <code><a href="../reference/prune.html">prune()</a></code> function. It takes a logical vector of length equal
 to the number of nodes in the vtree object. You can use the variables in
@@ -332,9 +344,9 @@ proportion, <code>denominator</code> etc etc.</p>
 <span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/plot_grid.html" class="external-link">plot_grid</a></span><span class="op">(</span><span class="va">p1</span>, <span class="va">p2</span><span class="op">)</span></span></code></pre></div>
 <p><img src="vtree2_for_vtree_users_files/figure-html/unnamed-chunk-13-1.png" class="r-plt" alt="" width="1344"></p>
 </div>
-<div class="section level4">
-<h4 id="formatting-labels">Formatting labels<a class="anchor" aria-label="anchor" href="#formatting-labels"></a>
-</h4>
+<div class="section level5">
+<h5 id="formatting-labels">Formatting labels<a class="anchor" aria-label="anchor" href="#formatting-labels"></a>
+</h5>
 <p>In vtree2, there are some functions that construct automatic labels,
 but for any more complex case you can use standard R functions to
 construct your own labels.</p>
@@ -437,9 +449,9 @@ with an expression.</p>
 <code>mark(path == "Group:B/Severity:Mild")</code> to target the node of
 your choice. See next section, “Targetting nodes”.</p>
 </div>
-<div class="section level4">
-<h4 id="targetting-nodes">Targetting nodes<a class="anchor" aria-label="anchor" href="#targetting-nodes"></a>
-</h4>
+<div class="section level5">
+<h5 id="targetting-nodes">Targetting nodes<a class="anchor" aria-label="anchor" href="#targetting-nodes"></a>
+</h5>
 <p>Prune / keep and labelling operation might want to target certain
 nodes by their path. This is achieved in vtree using
 <code>tlabelnode</code>. In vtree2, each node has an <code>path</code>,
@@ -475,9 +487,9 @@ color them in red.</p>
 <span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/plot_grid.html" class="external-link">plot_grid</a></span><span class="op">(</span><span class="va">p1</span>, <span class="va">p2</span><span class="op">)</span></span></code></pre></div>
 <p><img src="vtree2_for_vtree_users_files/figure-html/targetting2-1.png" class="r-plt" alt="" width="1152"></p>
 </div>
-<div class="section level4">
-<h4 id="summaries">Summaries<a class="anchor" aria-label="anchor" href="#summaries"></a>
-</h4>
+<div class="section level5">
+<h5 id="summaries">Summaries<a class="anchor" aria-label="anchor" href="#summaries"></a>
+</h5>
 <p>More complex summaries can be achieved with
 <code><a href="../reference/summarize_by_node.html">summarize_by_node()</a></code> and <code><a href="../reference/summarize_by_node.html">fmt_label()</a></code>. The first
 function takes a cases data frame and a vtree as an argument, and
@@ -622,9 +634,9 @@ explicitely:</p>
 <span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span>dir <span class="op">=</span> <span class="st">"tb"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="vtree2_for_vtree_users_files/figure-html/unnamed-chunk-22-1.png" class="r-plt" alt="" width="960"></p>
 </div>
-<div class="section level4">
-<h4 id="plotting">Plotting<a class="anchor" aria-label="anchor" href="#plotting"></a>
-</h4>
+<div class="section level5">
+<h5 id="plotting">Plotting<a class="anchor" aria-label="anchor" href="#plotting"></a>
+</h5>
 <p>The <strong><code>horiz=TRUE</code></strong> option in vtree directs
 whether the tree is plotted horizontally or vertically. In vtree2, you
 can specify the direction of the plot with the <code>dir</code>
@@ -673,9 +685,9 @@ plots:</p>
 <span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/plot_grid.html" class="external-link">plot_grid</a></span><span class="op">(</span><span class="va">p1</span>, <span class="va">p2</span><span class="op">)</span></span></code></pre></div>
 <p><img src="vtree2_for_vtree_users_files/figure-html/unnamed-chunk-26-1.png" class="r-plt" alt="" width="1440"></p>
 </div>
-<div class="section level4">
-<h4 id="patterns">Patterns<a class="anchor" aria-label="anchor" href="#patterns"></a>
-</h4>
+<div class="section level5">
+<h5 id="patterns">Patterns<a class="anchor" aria-label="anchor" href="#patterns"></a>
+</h5>
 <p>The <code>vtree</code> patterns show all combinations of variable
 levels in the data, one line at a time. They can be understood as all
 possible paths through the tree. They are sorted by their frequency.</p>
@@ -696,9 +708,9 @@ needs:</p>
 <span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span>palettes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Blues"</span>, <span class="st">"Greens"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="vtree2_for_vtree_users_files/figure-html/unnamed-chunk-28-1.png" class="r-plt" alt="" width="960"></p>
 </div>
-<div class="section level4">
-<h4 id="redcap-integration">REDCap integration<a class="anchor" aria-label="anchor" href="#redcap-integration"></a>
-</h4>
+<div class="section level5">
+<h5 id="redcap-integration">REDCap integration<a class="anchor" aria-label="anchor" href="#redcap-integration"></a>
+</h5>
 <p>In vtree, there is built-in functionality to read REDCap-encoded
 checkboxes. The problem is that REDCap checkboxes result in a flurry of
 variables with special attributes encoding levels.</p>
@@ -743,10 +755,10 @@ renames the variables based on the REDCap attributes:</p>
 etc.) can be handled in a similar way.</p>
 </div>
 </div>
-<div class="section level3">
-<h3 id="generating-cases-data-frames-with-build-data-frame">Generating cases data frames with
+<div class="section level4">
+<h4 id="generating-cases-data-frames-with-build-data-frame">Generating cases data frames with
 <code>build.data.frame()</code><a class="anchor" aria-label="anchor" href="#generating-cases-data-frames-with-build-data-frame"></a>
-</h3>
+</h4>
 <p>In general, in <code>vtree2</code> you use the
 <code><a href="../reference/cases_from_freqtable.html">cases_from_freqtable()</a></code> function to convert a frequency
 table to a cases table. The frequency table can be built with anything
@@ -783,9 +795,9 @@ dogs example in the vtree vignette, you can do this:</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> dog   Dalmation        various</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> dog   Dalmation        various</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 211 more rows</span></span></span></code></pre></div>
-<div class="section level4">
-<h4 id="the-fakerct-examples">The FakeRCT examples<a class="anchor" aria-label="anchor" href="#the-fakerct-examples"></a>
-</h4>
+<div class="section level5">
+<h5 id="the-fakerct-examples">The FakeRCT examples<a class="anchor" aria-label="anchor" href="#the-fakerct-examples"></a>
+</h5>
 <div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># vtree(FakeRCT,"eligible randomized group followup analyzed",plain=TRUE,</span></span>
 <span><span class="co">#   keep=list(eligible="Eligible",randomized="Randomized",followup="Followed up"),</span></span>
@@ -854,9 +866,9 @@ dogs example in the vtree vignette, you can do this:</p>
 <span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span>dir <span class="op">=</span> <span class="st">"tb"</span>, legend <span class="op">=</span> <span class="cn">FALSE</span>, lwidth<span class="op">=</span><span class="fl">.8</span>, lheight<span class="op">=</span><span class="fl">.7</span><span class="op">)</span></span></code></pre></div>
 <p><img src="vtree2_for_vtree_users_files/figure-html/unnamed-chunk-34-1.png" class="r-plt" alt="" width="1152"></p>
 </div>
-<div class="section level4">
-<h4 id="other-examples">Other examples<a class="anchor" aria-label="anchor" href="#other-examples"></a>
-</h4>
+<div class="section level5">
+<h5 id="other-examples">Other examples<a class="anchor" aria-label="anchor" href="#other-examples"></a>
+</h5>
 <div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># ESOPH &lt;- esoph</span></span>
 <span><span class="co"># levels(ESOPH$agegp)[levels(ESOPH$agegp)=="75+"] &lt;- "75plus"</span></span>
@@ -1034,10 +1046,15 @@ dogs example in the vtree vignette, you can do this:</p>
 <span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span>lwidth<span class="op">=</span><span class="fl">.8</span><span class="op">)</span></span></code></pre></div>
 <p><img src="vtree2_for_vtree_users_files/figure-html/unnamed-chunk-37-1.png" class="r-plt" alt="" width="700"></p>
 </div>
-<div class="section level4">
-<h4 id="new-functionality-in-vtree2-compared-to-vtree-killer-features">New functionality in vtree2 compared to vtree <del>Killer
+</div>
+</div>
+<div class="section level2">
+<h2 id="summary-of-differences-between-vtree-and-vtree2">Summary of differences between vtree and vtree2<a class="anchor" aria-label="anchor" href="#summary-of-differences-between-vtree-and-vtree2"></a>
+</h2>
+<div class="section level3">
+<h3 id="new-functionality-in-vtree2-compared-to-vtree-killer-features">New functionality in vtree2 compared to vtree <del>Killer
 features</del><a class="anchor" aria-label="anchor" href="#new-functionality-in-vtree2-compared-to-vtree-killer-features"></a>
-</h4>
+</h3>
 <ul>
 <li>frequency plots: where nodes are scaled by the number of
 observations</li>
@@ -1048,9 +1065,9 @@ ggplot2’s</li>
 <li>Sankey plots and layouts</li>
 </ul>
 </div>
-<div class="section level4">
-<h4 id="missing-functionality">Missing functionality<a class="anchor" aria-label="anchor" href="#missing-functionality"></a>
-</h4>
+<div class="section level3">
+<h3 id="missing-functionality">Missing functionality<a class="anchor" aria-label="anchor" href="#missing-functionality"></a>
+</h3>
 <p>The following are not yet implemented in vtree2:</p>
 <ul>
 <li>
@@ -1072,7 +1089,6 @@ powerful. While most of what can be done in <code>vtree</code> can also
 be achieved in <code>vtree2</code>, it requires a few more lines of
 code. Maybe some shortcuts are in order.</li>
 </ul>
-</div>
 </div>
 <div class="section level3">
 <h3 id="design-principles-for-vtree2">Design principles for vtree2<a class="anchor" aria-label="anchor" href="#design-principles-for-vtree2"></a>

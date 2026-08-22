@@ -42,13 +42,20 @@ Some other advantages of vtree2:
  * plotting produces a grid graphics object - that means it works out of
    the box for most devices and can be used in connection with packages
    like `cowplot` or `patchwork` to produce complex figures.
+ * many operations in vtree use tidy selection; there are no limits on
+   variable names (original vtree requires that variables do not have
+   spaces)
+ * labels and summaries can be formatted with glue expressions (like
+   `mean={mean}`), or using R expressions
+ * conditions for pruning are regular R expressions (e.g. `n < 20` to prune
+   all nodes that have fewer than 20 samples)
  * proportional plots allow to graphically represent the number of samples
    in the different levels.
+ * also, Sankey plots!
 
 Disadvantages of vtree2:
 
- * No HTML-like formatting of the labels
- * no RedCap integration
+ * more verbose code with more steps
  * several of the straightforward vtree options require some thinking in
    vtree2
 
@@ -82,7 +89,8 @@ stats <- summarize_by_node(titanicNA, vt, Age) |>
 
 vt |>
   # prune returns a pruned vtree which we
-  # then pass down the pipeline
+  # then pass down the pipeline. We remove all nodes with frequency lower
+  # than 20%
   prune(freq < .2) |>
   # adds labels, returns a vtree
   add_labels(template = "long") |>
@@ -94,8 +102,11 @@ vt |>
                         label)) |>
   # adds palettes, returns a vtree
   add_palette(palettes = c("Oranges", "Greys", "BuGn", "Purples")) |>
-  # and, finally, a plot
-  plot(lwidth = .7)
+
+  # and, finally, a plot: don't show root, make labels wider
+  # and show a full legend
+  plot(lwidth = .7, legend = TRUE,
+       show_root = FALSE)
 ```
 
 ```{r fig.width=9,fig.height=12,echo=FALSE,warning=FALSE,message=FALSE}
@@ -142,8 +153,8 @@ Several options of the original vtree are actually for pre-processing of
 the data. For example, the variable specification 'variable>value' in the
 vtree mini-language is used to split a numeric variable into two levels.
 
-I think that explicing splitting of the data before constructing the vtree
-is more fittin. It is easy, and for complex cases there are many
+I think that explicit splitting of the data before constructing the vtree
+is more fitting. It is easy, and for complex cases there are many
 specialized tools and packages dealing with that. For most cases, a simple
 `cut()` or `ifelse()` is enough.
 
@@ -1073,9 +1084,9 @@ vt |> add_labels(suffix = smt) |>
 
 
 
+# Summary of differences between vtree and vtree2
 
-
-#### New functionality in vtree2 compared to vtree ~~Killer features~~
+## New functionality in vtree2 compared to vtree ~~Killer features~~
 
  * frequency plots: where nodes are scaled by the number of observations
  * inserting other graphical objects into nodes: images or ggplot2's
@@ -1083,7 +1094,7 @@ vt |> add_labels(suffix = smt) |>
  * formatting of labels with glue expressions
  * Sankey plots and layouts
 
-#### Missing functionality
+## Missing functionality
 
 The following are not yet implemented in vtree2:
 
@@ -1102,7 +1113,7 @@ The following are not yet implemented in vtree2:
    `vtree2`, it requires a few more lines of code. Maybe some shortcuts are
    in order.
 
-### Design principles for vtree2
+## Design principles for vtree2
 
  * separate frequency calculations, summary calculations, node selection and plotting
  * use graphical objects for plotting which are flexible
@@ -1111,8 +1122,7 @@ The following are not yet implemented in vtree2:
  * vtree object inherits from tidygraph's tbl_graph, so it can be used with
    a wide variety of plotting tools, including ggraph, ggplot2, and plotly
 
-### Practical differences
-
+## Practical differences
 
  * In vtree2, you first prepare the data with `vtree()` and then plot it with `plot()`. 
    This means one more function call, but a much more flexible plotting system.

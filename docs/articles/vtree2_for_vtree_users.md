@@ -4,9 +4,9 @@
 library(vtree2)
 ```
 
-## Differences between vtree2 and the original vtree
+### Differences between vtree2 and the original vtree
 
-### Motivation
+#### Motivation
 
 The original vtree package implements most of its functionality in a
 single function
@@ -28,17 +28,24 @@ Some other advantages of vtree2:
 - plotting produces a grid graphics object - that means it works out of
   the box for most devices and can be used in connection with packages
   like `cowplot` or `patchwork` to produce complex figures.
+- many operations in vtree use tidy selection; there are no limits on
+  variable names (original vtree requires that variables do not have
+  spaces)
+- labels and summaries can be formatted with glue expressions (like
+  `mean={mean}`), or using R expressions
+- conditions for pruning are regular R expressions (e.g. `n < 20` to
+  prune all nodes that have fewer than 20 samples)
 - proportional plots allow to graphically represent the number of
   samples in the different levels.
+- also, Sankey plots!
 
 Disadvantages of vtree2:
 
-- No HTML-like formatting of the labels
-- no RedCap integration
+- more verbose code with more steps
 - several of the straightforward vtree options require some thinking in
   vtree2
 
-### Quick HOWTO for vtree users
+#### Quick HOWTO for vtree users
 
 vtree2 is meant to be natural for tidyverse users. You split the
 operations by their domain - i.e, you don’t mix calculations, topology
@@ -67,7 +74,8 @@ stats <- summarize_by_node(titanicNA, vt, Age) |>
 
 vt |>
   # prune returns a pruned vtree which we
-  # then pass down the pipeline
+  # then pass down the pipeline. We remove all nodes with frequency lower
+  # than 20%
   prune(freq < .2) |>
   # adds labels, returns a vtree
   add_labels(template = "long") |>
@@ -79,23 +87,26 @@ vt |>
                         label)) |>
   # adds palettes, returns a vtree
   add_palette(palettes = c("Oranges", "Greys", "BuGn", "Purples")) |>
-  # and, finally, a plot
-  plot(lwidth = .7)
+
+  # and, finally, a plot: don't show root, make labels wider
+  # and show a full legend
+  plot(lwidth = .7, legend = TRUE,
+       show_root = FALSE)
 ```
 
 ![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-3-1.png)
 
-### How do you…
+#### How do you…
 
-#### Data pre-processing
+##### Data pre-processing
 
 Several options of the original vtree are actually for pre-processing of
 the data. For example, the variable specification ‘variable\>value’ in
 the vtree mini-language is used to split a numeric variable into two
 levels.
 
-I think that explicing splitting of the data before constructing the
-vtree is more fittin. It is easy, and for complex cases there are many
+I think that explicit splitting of the data before constructing the
+vtree is more fitting. It is easy, and for complex cases there are many
 specialized tools and packages dealing with that. For most cases, a
 simple [`cut()`](https://rdrr.io/r/base/cut.html) or
 [`ifelse()`](https://rdrr.io/r/base/ifelse.html) is enough.
@@ -156,7 +167,7 @@ vtree_from_freqtable(Titanic, Class, Sex, Survived) |>
 
 ![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-6-1.png)
 
-#### Pruning, keeping, finding, conditional operations
+##### Pruning, keeping, finding, conditional operations
 
 **Pruning.** In vtree2, you can prune the tree with the
 [`prune()`](https://january3.github.io/vtree2/reference/prune.md)
@@ -302,7 +313,7 @@ plot_grid(p1, p2)
 
 ![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-13-1.png)
 
-#### Formatting labels
+##### Formatting labels
 
 In vtree2, there are some functions that construct automatic labels, but
 for any more complex case you can use standard R functions to construct
@@ -434,7 +445,7 @@ vtree(FakeData, Group, Severity) |>
 `mark(path == "Group:B/Severity:Mild")` to target the node of your
 choice. See next section, “Targetting nodes”.
 
-#### Targetting nodes
+##### Targetting nodes
 
 Prune / keep and labelling operation might want to target certain nodes
 by their path. This is achieved in vtree using `tlabelnode`. In vtree2,
@@ -476,7 +487,7 @@ plot_grid(p1, p2)
 
 ![](vtree2_for_vtree_users_files/figure-html/targetting2-1.png)
 
-#### Summaries
+##### Summaries
 
 More complex summaries can be achieved with
 [`summarize_by_node()`](https://january3.github.io/vtree2/reference/summarize_by_node.md)
@@ -653,7 +664,7 @@ vt |>
 
 ![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-22-1.png)
 
-#### Plotting
+##### Plotting
 
 The **`horiz=TRUE`** option in vtree directs whether the tree is plotted
 horizontally or vertically. In vtree2, you can specify the direction of
@@ -716,7 +727,7 @@ plot_grid(p1, p2)
 
 ![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-26-1.png)
 
-#### Patterns
+##### Patterns
 
 The `vtree` patterns show all combinations of variable levels in the
 data, one line at a time. They can be understood as all possible paths
@@ -742,7 +753,7 @@ pattern(vt) |> arrange(Sex_n) |>
 
 ![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-28-1.png)
 
-#### REDCap integration
+##### REDCap integration
 
 In vtree, there is built-in functionality to read REDCap-encoded
 checkboxes. The problem is that REDCap checkboxes result in a flurry of
@@ -794,7 +805,7 @@ rewrite_redcap(dessert, "IceCream___") |>
 The various vtree prefixes (`rnone:`, `ri:` etc.) can be handled in a
 similar way.
 
-### Generating cases data frames with `build.data.frame()`
+#### Generating cases data frames with `build.data.frame()`
 
 In general, in `vtree2` you use the
 [`cases_from_freqtable()`](https://january3.github.io/vtree2/reference/cases_from_freqtable.md)
@@ -836,7 +847,7 @@ tibble::tribble(
 #> # ℹ 211 more rows
 ```
 
-#### The FakeRCT examples
+##### The FakeRCT examples
 
 ``` r
 # vtree(FakeRCT,"eligible randomized group followup analyzed",plain=TRUE,
@@ -914,7 +925,7 @@ vt |>
 
 ![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-34-1.png)
 
-#### Other examples
+##### Other examples
 
 ``` r
 # ESOPH <- esoph
@@ -1117,7 +1128,9 @@ vt |> add_labels(suffix = smt) |>
 
 ![](vtree2_for_vtree_users_files/figure-html/unnamed-chunk-37-1.png)
 
-#### New functionality in vtree2 compared to vtree ~~Killer features~~
+## Summary of differences between vtree and vtree2
+
+### New functionality in vtree2 compared to vtree ~~Killer features~~
 
 - frequency plots: where nodes are scaled by the number of observations
 - inserting other graphical objects into nodes: images or ggplot2’s
@@ -1125,7 +1138,7 @@ vt |> add_labels(suffix = smt) |>
 - formatting of labels with glue expressions
 - Sankey plots and layouts
 
-#### Missing functionality
+### Missing functionality
 
 The following are not yet implemented in vtree2:
 
