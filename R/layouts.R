@@ -28,9 +28,7 @@ layout_by_freq <- function(vtree, dir="lr",
     mutate(shape = "rectangle")
 
   if(!show_root) {
-    layout <- layout |>
-      mutate(x = ifelse(.data[["level"]] == 0, NA, .data[["x"]]),
-             y = ifelse(.data[["level"]] == 0, NA, .data[["y"]]))
+    layout <- .hide_root(layout)
   }
 
   nodes <- as_tibble(layout)
@@ -87,9 +85,7 @@ layout_regular <- function(vtree,
   }
 
   if(!show_root) {
-    layout <- layout |>
-      mutate(x = ifelse(.data[["level"]] == 0, NA, .data[["x"]]),
-             y = ifelse(.data[["level"]] == 0, NA, .data[["y"]]))
+    layout <- .hide_root(layout)
   }
 
   layout <- .add_edge_positions(layout)
@@ -132,9 +128,7 @@ layout_tight <- function(vtree, dir="lr",
 
 
   if(!show_root) {
-    layout <- layout |>
-      mutate(x = ifelse(.data[["level"]] == 0, NA, .data[["x"]]),
-             y = ifelse(.data[["level"]] == 0, NA, .data[["y"]]))
+    layout <- .hide_root(layout)
   }
 
   layout <- .add_edge_positions(layout)

@@ -175,6 +175,15 @@
   layout
 }
 
+.hide_root <- function(layout) {
+
+  layout <- layout |>
+    mutate(x = ifelse(.data[["level"]] == 0, NA, .data[["x"]]),
+           y = ifelse(.data[["level"]] == 0, NA, .data[["y"]]))
+
+  layout
+}
+
 # calculate the actual sizes for the variables
 .normalize_varsize <- function(varsize, varspace, layout) {
   vars <- unique(as_tibble(layout)$node_col)
