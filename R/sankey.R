@@ -35,14 +35,14 @@ layout_sankey <- function(vtree, dir="lr",
                                      levels(vtree))) |>
     mutate(order = 1:n()) |>
     arrange(.data[["node_level"]]) |>
-    mutate(fooord = 1:n()) |>
-    mutate(parent_fooord =
-            .data[["fooord"]][match(.data[["parent_id"]], .data[["node_id"]])]) |>
-    arrange(.data[["node_level"]], .data[["parent_fooord"]]) |>
-    mutate(fooord = 1:n()) |>
-    mutate(parent_fooord =
-            .data[["fooord"]][match(.data[["parent_id"]], .data[["node_id"]])]) |>
-    arrange(.data[["node_level"]], .data[["parent_fooord"]]) |>
+    mutate(lev_ord = 1:n()) |>
+    mutate(parent_lev_ord =
+            .data[["lev_ord"]][match(.data[["parent_id"]], .data[["node_id"]])]) |>
+    arrange(.data[["node_level"]], .data[["parent_lev_ord"]]) |>
+    mutate(lev_ord = 1:n()) |>
+    mutate(parent_lev_ord =
+            .data[["lev_ord"]][match(.data[["parent_id"]], .data[["node_id"]])]) |>
+    arrange(.data[["node_level"]], .data[["parent_lev_ord"]]) |>
     slice(n():1) |>
     group_by(.data[["level"]]) |>
     mutate(offset = cumsum(lag(.data[["n"]], default=0))) |>
@@ -78,8 +78,8 @@ layout_sankey <- function(vtree, dir="lr",
                   y = nodes$y,
                   width = nodes$width,
                   height = nodes$height,
-                  full_w = nodes$full_w,
-                  full_h = nodes$full_h)
+                  full_w = nodes$width,
+                  full_h = nodes$height)
 
   edges <- activate(layout, "edges") |> as_tibble() |>
            mutate(ord = 1:n())
@@ -124,94 +124,6 @@ layout_sankey <- function(vtree, dir="lr",
   layout
 }
 
-
-
-bezier_ribbon <- function(p0, p1, p2, p3, width, n = 100) {
-
-  t <- seq(0, 1, length.out = n)
-
-  # Bézier center line
-  p <-
-    (1 - t)^3 %o% p0 +
-    3 * (1 - t)^2 * t %o% p1 +
-    3 * (1 - t) * t^2 %o% p2 +
-    t^3 %o% p3
-
-  # derivative
-  dp <-
-    3 * (1 - t)^2 %o% (p1 - p0) +
-    6 * (1 - t) * t %o% (p2 - p1) +
-    3 * t^2 %o% (p3 - p2)
-
-  # unit normals
-  len <- sqrt(rowSums(dp^2))
-
-  normal <- cbind(
-    -dp[, 2] / len,
-     dp[, 1] / len
-  )
-
-  upper <- p + width / 2 * normal
-  lower <- p - width / 2 * normal
-
-  rbind(
-    upper,
-    lower[nrow(lower):1, ]
-  )
-}
-
-sankey_ribbon_foo <- function(x1, y1, x2, y2, height) {
-
-  dx <- (x2 - x1)/2
-  p0 <- c(x1, y1)
-  p1 <- c(x1 + dx, y1)
-  p2 <- c(x2 - dx, y2)
-  p3 <- c(x2, y2)
-
-  bezier_ribbon(p0, p1, p2, p3, height/200)
-}
-
-sankey_ribbon <- function(x1, y1, x2, y2, height, n=100) {
-
-  x1 <- .55
-  y1 <- .583333333
-  x2 <- .78333333333
-  y2 <- .25
-  height <- .166666666666
-  n <- 10
-
-  message("x1: ", x1, " y1: ", y1, " x2: ", x2, " y2: ", y2, " height: ", height)
-  xx <- seq(-pi/2, pi/2, length.out=n)
-  yy <- (sin(xx) + 1)/2
-  xx <- (xx + pi/2)/pi
-  xx <- x1 + xx * (x2 - x1)
-  yy <- y1 + yy * (y2 - y1)
-
-  normals <- cbind(-diff(yy), diff(xx))
-  normals <- normals / sqrt(rowSums(normals^2)) * height/2# normalize
-  #segments(xx[-n], yy[-n], xx[-n] + normals[,1], yy[-n] + normals[,2])
-
-  xx_mid <- xx[-length(xx)] + (xx[-1] - xx[-length(xx)])/2
-  yy_mid <- yy[-length(yy)] + (yy[-1] - yy[-length(yy)])/2
-  #points(xx_mid, yy_mid, col="blue")
-  #segments(xx_mid, yy_mid, xx_mid + normals[,1], yy_mid + normals[,2],
-  #         col="red")
-  mid <- cbind(xx_mid, yy_mid)
-
-  upper <- mid + normals * (height / 2)
-  upper <- rbind(upper, c(x2, y2 + height / 2))
-  lower <- mid - normals * (height / 2)
-  lower <- rbind(lower, c(x2, y2 - height / 2))
-
-  ret <- rbind(upper, mid[nrow(mid):1,])# lower[nrow(lower):1, ])
-  #plot(ret, xlim=c(.5, 1), ylim=c(.2, .8))
-  #points(upper, col="red")
-  #points(xx, yy, col="green")
-  #points(xx_mid - diff(yy), yy_mid + diff(xx), col="orange")
-  ret
-
-}
-
 bezier <- function(p0, p1, p2, p3, n = 30) {
   t <- seq(0, 1, length.out = n)
 
@@ -224,7 +136,6 @@ bezier <- function(p0, p1, p2, p3, n = 30) {
 sankey_poly <- function(x1, x2, y1, y2, size,
                         n = 30,
                         curvature = 0.5, vertical=FALSE) {
-
   if(vertical) {
     dy <- y2 - y1
     x1a <- x1 - size/2
@@ -249,8 +160,6 @@ sankey_poly <- function(x1, x2, y1, y2, size,
       c(x1b, y1),
       n
     )
-
-
   } else {
 
     y1a <- y1 - size/2
