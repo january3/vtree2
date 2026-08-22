@@ -229,7 +229,8 @@ test_that("grob injection works", {
   expect_in("grob", nodecols(vt))
   nd <- as_tibble(vt)
   expect_all_true(
-    purrr::map_lgl(nd$grob[ nd$path != "Class:1st/Sex:Female" ], is.na))
+    purrr::map_lgl(nd$grob[ nd$path != "Class:1st/Sex:Female" ],
+                   \(x) length(x) == 0L))
 
   expect_all_true(
     purrr::map_lgl(nd$grob[ nd$path == "Class:1st/Sex:Female" ],
@@ -251,7 +252,7 @@ test_that("grob injection works", {
   expect_in("grob", nodecols(vt))
   nd <- as_tibble(vt)
   expect_all_true(
-    purrr::map_lgl(nd$grob, is.na))
+    purrr::map_lgl(nd$grob, \(x) length(x) == 0L))
 
   vt <- vtree_from_freqtable(Titanic, Class, Sex)
 

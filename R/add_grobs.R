@@ -70,8 +70,9 @@ add_graphics <- function(vtree, grobs,
   }
 
   if(!"grob" %in% names(nodes)) {
-    vtree <- mutate(vtree,
-      grob = map(1:nn, \(i) "foo"))
+    old_grobs <- vector("list", nn)
+  } else {
+    old_grobs <- nodes$grob
   }
 
   # make sure the grobs are ther
@@ -85,7 +86,7 @@ add_graphics <- function(vtree, grobs,
                                 shape=shape,
                                 frac=frac)
                          } else {
-                           NA
+                           old_grobs[[i]]
                          }}))
 
 
