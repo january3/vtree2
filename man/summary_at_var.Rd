@@ -37,7 +37,7 @@ summaries shown by \code{summary(vtree)}. That is also the true purpose of
 the function.
 
 If the tree
-was constructed using valid percentages (\code{attr(vtree, "vp")} is TRUE),
+was constructed using valid percentages (\code{is_vp(vtree)} is TRUE),
 the percentages are calculated based on the valid (non-NA) counts. If
 the tree was constructed using total percentages, the percentages are
 calculated based on the total counts.

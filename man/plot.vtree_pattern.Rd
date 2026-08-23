@@ -7,6 +7,7 @@
 \method{plot}{vtree_pattern}(
   x,
   ...,
+  sort_by = freq,
   palettes = c("Reds", "Blues", "Greens", "Oranges", "Purples"),
   pattern_fill = "#fc9272",
   lwidth = 0.4,
@@ -19,9 +20,14 @@
 
 \item{...}{Additional arguments passed to plot.vtree()}
 
+\item{sort_by}{The variable to sort the nodes by. Can be "freq" (default),
+"n", or any of the variable names in the pattern object. If NA,
+the pattern will be plotted in the order of the rows in the pattern object.}
+
 \item{palettes}{A vector of color palettes to use for the nodes.}
 
-\item{pattern_fill}{The fill color for the pattern nodes.}
+\item{pattern_fill}{The fill color for the pattern nodes (the ones on
+the left side of the tree, showing how frequent each pattern is).}
 
 \item{lwidth, lheight}{The width and height of the nodes in the plot,
 relative to the maximum available space.}
