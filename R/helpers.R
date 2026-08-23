@@ -250,7 +250,7 @@ scale_add <- function(scale, mapping) {
 
 
 # get values from a 2-level mapping
-.get_vals <- function(key1, key2, mapping, na=NA) {
+get_vals <- function(key1, key2, mapping, na=NA) {
   if(is.null(mapping)) { return(NULL) }
 
   ret <- Map(\(nc, nv) {

@@ -91,7 +91,7 @@
   pals$vt <- NULL
   pals$vf <- NULL
 
-  if(is.null(pal)) {
+  if(length(pal) == 0 || is.null(pal)) {
     cli::cli_inform(c(i="palette attribute is NULL",
                "legend will be black and white"))
   } else {
@@ -129,10 +129,10 @@ layout_legend <- function(layout, margins) {
     mutate(pos = 1:n()) |>
     ungroup() |>
     filter(.data[["count"]] != 0) |>
-    mutate(fill = .get_vals(.data[["node_col"]],
+    mutate(fill = get_vals(.data[["node_col"]],
                             .data[["node_val"]],
                             pals$fill, pals$na_fill) %||% pals$na_fill) |>
-    mutate(color = .get_vals(.data[["node_col"]],
+    mutate(color = get_vals(.data[["node_col"]],
                              .data[["node_val"]],
                              pals$color, pals$na_text) %||% pals$na_text)
 
