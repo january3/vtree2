@@ -338,8 +338,23 @@ add_labels <- function(vtree,
 #' and `val_alias` in the node data frame. The aliases are also stored as
 #' an attribute of the vtree object.
 #' @export
-add_aliases <- function(vtree, val_alias = NULL, col_alias = NULL) {
-  ensure_vtree(vtree)
+add_aliases <- function(vtree, ...)
+  UseMethod("add_aliases")
+
+#' @rdname add_aliases
+#' @export
+add_aliases.vtree_pattern <- function(vtree, val_alias = NULL, col_alias = NULL) {
+
+  val_alias_n <- .normalize_val_alias(val_alias, vtree)
+  col_alias_n <- .normalize_col_alias(col_alias, vtree)
+
+  vtree <- set_aliases(vtree, col=col_alias_n, val=val_alias_n)
+  vtree
+}
+
+#' @rdname add_aliases
+#' @export
+add_aliases.vtree <- function(vtree, val_alias = NULL, col_alias = NULL) {
 
   val_alias_n <- .normalize_val_alias(val_alias, vtree)
   col_alias_n <- .normalize_col_alias(col_alias, vtree)

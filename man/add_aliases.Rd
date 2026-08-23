@@ -2,9 +2,15 @@
 % Please edit documentation in R/labels.R
 \name{add_aliases}
 \alias{add_aliases}
+\alias{add_aliases.vtree_pattern}
+\alias{add_aliases.vtree}
 \title{Add aliases columns to vtree}
 \usage{
-add_aliases(vtree, val_alias = NULL, col_alias = NULL)
+add_aliases(vtree, ...)
+
+\method{add_aliases}{vtree_pattern}(vtree, val_alias = NULL, col_alias = NULL)
+
+\method{add_aliases}{vtree}(vtree, val_alias = NULL, col_alias = NULL)
 }
 \arguments{
 \item{vtree}{an object of class vtree}

@@ -107,6 +107,8 @@ values:
 \item \code{f}, equal to pct / 100 (so if the percentage is rounded with 0
 digits after decimal point, \code{f} will have two digits after decimal
 point).
+\item \code{value}, \code{variable}: same as \code{val_alias} and \code{col_alias}, but easier
+to remember.
 }
 }
 \section{Parameter precedence}{
