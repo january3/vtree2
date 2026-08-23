@@ -36,23 +36,31 @@ contrast_color <- function(color) {
 #' It also sets the mapping between colors and variable levels, stored in
 #' the attribute "palette", which is used when showing the legend. If you
 #' modify the `fill` and `color` columns manually (without using
-#' `add_palette()`, you will not change the color code.
+#' `add_palette()`, you will not change the color code shown on the legend.
 #'
 #' If the parameter `what` is `text` instead of the default `fill`, then
 #' instead of generating a fill color from the palettes, the function
-#' generates a text color and chooses
-#' a contrast fill color automatically.
+#' generates a text color and chooses a contrast fill color automatically
+#' (but only if the `fill` column is not already present).
 #'
-#' The following arguments determine the hierarchy of the color-control on
+#' Additional arguments, `var_palette` and `var_colors`, allow for more
+#' fine-grained control of the colors of the nodes and the legend.
+#' `var_palette` allows to specify colors for specific variable levels,
+#' while `var_colors` allows to specify colors for the variable names in
+#' the legend. If some variable names are missing from `var_colors`, or
+#' some variable levels are missing from `var_palette`, the colors will be
+#' inferred from the `palettes` argument.
+#'
+#' In summary, the following arguments determine the hierarchy of the color-control on
 #' the resulting plot:
 #'
 #'  * `palettes` - determines both the palette for the legend and the
 #'  colors of the nodes
 #'  * `var_palette` - low level adjustment of colors. Does not have to
 #'  include all variable and all variable levels, and does not influence
-#'  the colors of the variable names shown on the legend, but it does
-#'  change the colors of the variable levels shown on the legend.
-#'  * `var_colors` - influences only the colors of the variable names shown
+#'  the colors of the variable *names* shown on the legend, but it does
+#'  change the colors of the variable *levels* shown on the legend.
+#'  * `var_colors` - influences only the colors of the variable *names* shown
 #'  on the legend. If NULL, a default from the `palettes` argument will be
 #'  inferred.
 #'  * `na` - color for the missing values for all variables. If `what` is
@@ -201,17 +209,15 @@ add_palette <- function(vtree,
   if(other == "text") { other <- "color" }
 
   # the palette associated with the tree
-  pal_at <- get_palette(vtree) %||% list()
+  pal_at <- get_palette(vtree)
 
   # generate the palette based on the provided params
   pal <- vtree_palette(vtree, palettes = palettes)
 
   # generate the variable colors
   if(is.null(var_colors)) {
-    var_colors <- map_chr(set_names(names(pal)), \(var)
-                  pal[[var]][ length(pal[[var]]) ])
+    var_colors <- map_chr(set_names(names(pal)), \(var) last(pal[[var]]))
   }
-
 
   # replace by colors defined by users
   pal <- scale_add(pal, var_palette)
@@ -220,7 +226,9 @@ add_palette <- function(vtree,
   pal_at[[what]] <- list(scale = pal,
                          na = na)
 
-  # if other is missing, get a contrast one
+  # if other is missing, get a contrast color
+  # so e.g. if "what" is text, then the fill color is automatically
+  # generated as a contrast color.
   if(is.null(pal_at[[other]])) {
     pal_contrast <- get_contrast_pal(pal)
     pal_at[[other]] <- list(scale = pal_contrast,
@@ -228,8 +236,11 @@ add_palette <- function(vtree,
   }
 
   # now the vars. We choose to use the text color to be fill color.
-  pal_at[[other]]$vars <- var_colors
-  pal_at[[what]]$vars <- map_chr(var_colors, contrast_color)
+  pal_at[[what]]$vars <- var_colors
+
+  if(is.null(pal_at[[other]]$vars)) {
+    pal_at[[other]]$vars <- map_chr(var_colors, contrast_color)
+  }
 
   vtree <- set_palette(vtree, pal_at)
 

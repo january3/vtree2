@@ -67,23 +67,31 @@ overwritten if present.
 It also sets the mapping between colors and variable levels, stored in
 the attribute "palette", which is used when showing the legend. If you
 modify the \code{fill} and \code{color} columns manually (without using
-\code{add_palette()}, you will not change the color code.
+\code{add_palette()}, you will not change the color code shown on the legend.
 
 If the parameter \code{what} is \code{text} instead of the default \code{fill}, then
 instead of generating a fill color from the palettes, the function
-generates a text color and chooses
-a contrast fill color automatically.
+generates a text color and chooses a contrast fill color automatically
+(but only if the \code{fill} column is not already present).
 
-The following arguments determine the hierarchy of the color-control on
+Additional arguments, \code{var_palette} and \code{var_colors}, allow for more
+fine-grained control of the colors of the nodes and the legend.
+\code{var_palette} allows to specify colors for specific variable levels,
+while \code{var_colors} allows to specify colors for the variable names in
+the legend. If some variable names are missing from \code{var_colors}, or
+some variable levels are missing from \code{var_palette}, the colors will be
+inferred from the \code{palettes} argument.
+
+In summary, the following arguments determine the hierarchy of the color-control on
 the resulting plot:
 \itemize{
 \item \code{palettes} - determines both the palette for the legend and the
 colors of the nodes
 \item \code{var_palette} - low level adjustment of colors. Does not have to
 include all variable and all variable levels, and does not influence
-the colors of the variable names shown on the legend, but it does
-change the colors of the variable levels shown on the legend.
-\item \code{var_colors} - influences only the colors of the variable names shown
+the colors of the variable \emph{names} shown on the legend, but it does
+change the colors of the variable \emph{levels} shown on the legend.
+\item \code{var_colors} - influences only the colors of the variable \emph{names} shown
 on the legend. If NULL, a default from the \code{palettes} argument will be
 inferred.
 \item \code{na} - color for the missing values for all variables. If \code{what} is

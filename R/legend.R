@@ -157,8 +157,8 @@ layout_legend <- function(layout, margins) {
     titles$color <- "black"
     titles$fill <- "white"
   } else {
-    titles$color <- pals$vt[ titles$node_col ]
-    titles$fill  <- pals$vf[ titles$node_col ]
+    titles$color <- pals$vf[ titles$node_col ]
+    titles$fill  <- pals$vt[ titles$node_col ]
   }
 
   if(dir %in% c("tb", "bt")) {
@@ -186,8 +186,8 @@ layout_legend_minimal <- function(layout, margins) {
   pals <- .get_legend_pal(layout)
 
   if(!is.null(pals$vf) & !is.null(pals$vt)) {
-    nodes$color <- pals$vt[ nodes[["node_col"]] ]
-    nodes$fill  <- pals$vf[ nodes[["node_col"]] ]
+    nodes$color <- pals$vf[ nodes[["node_col"]] ]
+    nodes$fill  <- pals$vt[ nodes[["node_col"]] ]
   } else {
     nodes$color <- "black"
     nodes$fill <- "white"
