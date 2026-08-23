@@ -131,8 +131,13 @@
   alias <- alias$col
 
   df <- df |>
-    mutate(label = map_chr(.data[["node_col"]],
-                           \(col) alias[[col]] %||% col))
+    mutate(label = vapply(.data[["node_col"]],
+                           \(col) {
+                             if(!col %in% names(alias)) {
+                               return(col)
+                             }
+                             alias[[col]] %||% col}, character(1)
+                           ))
   df
 }
 
