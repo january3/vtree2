@@ -110,14 +110,18 @@ pattern <- function(vtree) {
       rename(node_id = "node_id.y")
   }
 
+  totn <- get_n(vtree)
+
   d1 <- d1 |>
     mutate(path = nodes$path[match(.data[["node_id"]], nodes$node_id)]) |>
-    select(all_of(c("path", "node_id")), everything())
+    select(all_of(c("path", "node_id")), everything()) |>
+    mutate(freq = .data[[ paste0(last(cnms), "_n") ]] / totn)
 
   d1 <- as_tibble(d1)
   class(d1) <- c("vtree_pattern", class(d1))
   d1 <- set_cols(d1, cnms)
-  d1 <- copy_attrs(d1, vtree, c("N", "vp", "levels", "sep"))
+  d1 <- copy_attrs(d1, vtree, c("N", "vp", "levels", "sep", "alias",
+                                    "palette", "source_summary"))
   d1
 }
 
@@ -198,6 +202,9 @@ vtree_from_pattern <- function(pat) {
 #'
 #' @param x A vtree pattern object.
 #' @param ... Additional arguments passed to plot.vtree()
+#' @param sort_by The variable to sort the nodes by. Can be "freq" (default),
+#'       "n", or any of the variable names in the pattern object. If NA,
+#'       the pattern will be plotted in the order of the rows in the pattern object.
 #' @param lwidth,lheight The width and height of the nodes in the plot,
 #'        relative to the maximum available space.
 #' @param palettes A vector of color palettes to use for the nodes.
@@ -213,25 +220,47 @@ vtree_from_pattern <- function(pat) {
 #'         invisibly.
 #' @export
 plot.vtree_pattern <- function(x, ...,
+                      sort_by = freq,
                       palettes = c("Reds", "Blues", "Greens",
                                    "Oranges", "Purples"),
                       pattern_fill = "#fc9272",
                       lwidth = .4, lheight = .9,
                       show_root = FALSE) {
+  ensure(x, "vtree_pattern")
+  sort_by <- rlang::enquo(sort_by)
+  x <- arrange(x, !!sort_by)
+
   vt <- vtree_from_pattern(x)
 
+  mask <- find_nodes(vt, level == 1)
   vt <- vt |>
-    mutate(label = ifelse(.data[["level"]] == 1,
-                           sprintf("%d (%.0f%%)",
-                                   .data[["n"]],
-                                   100 * .data[["freq"]]),
-                           sprintf("%s", .data[["node_val"]])))
+    add_labels(fmt="{val_alias}") |>
+    add_labels(fmt="{n} ({pct}%)", mask=mask)
 
-  vt <- add_palette(vt, palettes = c("Blues", palettes)) |>
-    mutate(fill = ifelse(.data[["level"]] == 1,
-                         pattern_fill, .data[["fill"]]))
+  # cautious color handling
+  palettes <- c("Blues", palettes)
+  pal <- get_palette(vt)
 
-  vt <- mutate(vt, color = contrast_color(.data[["fill"]]))
+  if(length(pal) == 0) {
+    vt <- add_palette(vt, palettes = palettes) |>
+      mutate(fill = ifelse(.data[["level"]] == 1,
+                           pattern_fill, .data[["fill"]])) |>
+      mutate(color = contrast_color(.data[["fill"]]))
+  } else {
+    vt <- add_palette(vt, palettes = palettes,
+                          var_palette = pal$fill$scale,
+                          var_colors = pal$fill$vars) |>
+          add_palette(palettes = palettes, what="text",
+                          var_palette = pal$color$scale,
+                          var_colors = pal$color$vars)
+  }
+
+
+  # fix the pattern node colors
+  vt <- mutate(vt, fill = ifelse(.data[["level"]] == 1,
+                           pattern_fill, .data[["fill"]])) |>
+        mutate(color = ifelse(.data[["level"]] == 1,
+                           contrast_color(pattern_fill), .data[["color"]]))
 
   plot(vt, show_root = FALSE,
        layout = "regular",
