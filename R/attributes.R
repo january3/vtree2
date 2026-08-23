@@ -30,7 +30,7 @@ set_cols <- function(x, cols) {
 }
 
 get_palette <- function(x) {
-  attr(x, "palette")
+  attr(x, "palette") %||% list()
 }
 
 set_palette <- function(x, pal) {
