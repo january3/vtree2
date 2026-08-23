@@ -1249,6 +1249,8 @@ vt |>
              varspace=c(root=1, Class=1,Sex=1,Survived=4)) |>
   # legend = FALSE: not even column names on the margin
   plot(legend = FALSE)
+#> Warning: ✖ vtree has a precomputed layout with direction 'tb'.
+#> ℹ Ignoring the parameter dir = 'lr'
 ```
 
 ![](vtree2_files/figure-html/layouts4-1.png)
@@ -1494,6 +1496,8 @@ iris_grobs <- iris_grobs[ pull(vt, "node_val") ]
 vt |>
   add_graphics(iris_grobs) |>
   plot(margins=c(.05, .05, .05, .2))
+#> Warning: ✖ vtree has a precomputed layout with direction 'tb'.
+#> ℹ Ignoring the parameter dir = 'lr'
 ```
 
 ![](vtree2_files/figure-html/inset1-1.png)
@@ -1511,6 +1515,8 @@ vt |>
              varspace=c(Species=2,Long_Petals=1)) |>
   add_graphics(iris_grobs, side="l", frac=.5) |>
   plot(margins=c(.05, .05, .05, .2))
+#> Warning: ✖ vtree has a precomputed layout with direction 'tb'.
+#> ℹ Ignoring the parameter dir = 'lr'
 ```
 
 ![](vtree2_files/figure-html/inset1b-1.png)
@@ -1565,6 +1571,8 @@ vt <- vt |>
   add_graphics(grobs, condition = leaf)
 
 plot(vt)
+#> Warning: ✖ vtree has a precomputed layout with direction 'tb'.
+#> ℹ Ignoring the parameter dir = 'lr'
 ```
 
 ![](vtree2_files/figure-html/insets2-1.png)
@@ -1583,6 +1591,8 @@ too small, bad things will happen:
 
 ``` r
 plot(vt)
+#> Warning: ✖ vtree has a precomputed layout with direction 'tb'.
+#> ℹ Ignoring the parameter dir = 'lr'
 ```
 
 ![](vtree2_files/figure-html/unnamed-chunk-7-1.png)
@@ -1698,6 +1708,8 @@ vt |>
              lheight=.9) |>
   add_graphics(grobs) |>
   plot(legend=FALSE)
+#> Warning: ✖ vtree has a precomputed layout with direction 'tb'.
+#> ℹ Ignoring the parameter dir = 'lr'
 ```
 
 ![](vtree2_files/figure-html/gsum5-1.png)
@@ -1736,6 +1748,8 @@ vt |>
              lheight=.9) |>
   add_graphics(grobs) |>
   plot(legend=FALSE)
+#> Warning: ✖ vtree has a precomputed layout with direction 'tb'.
+#> ℹ Ignoring the parameter dir = 'lr'
 ```
 
 ![](vtree2_files/figure-html/gsum6-1.png)

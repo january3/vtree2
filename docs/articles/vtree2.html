@@ -1274,7 +1274,9 @@ parameters.</p>
 <span>  <span class="fu"><a href="../reference/add_layout.html">add_layout</a></span><span class="op">(</span>dir<span class="op">=</span><span class="st">"tb"</span>, lheight<span class="op">=</span><span class="fl">.8</span>,</span>
 <span>             varspace<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>root<span class="op">=</span><span class="fl">1</span>, Class<span class="op">=</span><span class="fl">1</span>,Sex<span class="op">=</span><span class="fl">1</span>,Survived<span class="op">=</span><span class="fl">4</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="co"># legend = FALSE: not even column names on the margin</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span>legend <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+<span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span>legend <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning: <span style="color: #BB0000;">✖</span> vtree has a precomputed layout with direction 'tb'.</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Ignoring the parameter dir = 'lr'</span></span></code></pre></div>
 <p><img src="vtree2_files/figure-html/layouts4-1.png" alt="" width="768"></p>
 <p>Note that both <code>varspace</code> and <code>varsize</code>
 describe the node sizes along the axis of the plot. That is, for
@@ -1511,7 +1513,9 @@ the corresponding images.</p>
 <span></span>
 <span><span class="va">vt</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/add_graphics.html">add_graphics</a></span><span class="op">(</span><span class="va">iris_grobs</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span>margins<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">.05</span>, <span class="fl">.05</span>, <span class="fl">.05</span>, <span class="fl">.2</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span>margins<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">.05</span>, <span class="fl">.05</span>, <span class="fl">.05</span>, <span class="fl">.2</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning: <span style="color: #BB0000;">✖</span> vtree has a precomputed layout with direction 'tb'.</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Ignoring the parameter dir = 'lr'</span></span></code></pre></div>
 <p><img src="vtree2_files/figure-html/inset1-1.png" alt="" width="672"></p>
 <p>The <code><a href="../reference/add_graphics.html">add_graphics()</a></code> function has parameters which control
 the layout of the node: <code>side</code> determines the side of the
@@ -1524,7 +1528,9 @@ graphics:</p>
 <span>  <span class="fu"><a href="../reference/add_layout.html">add_layout</a></span><span class="op">(</span>dir<span class="op">=</span><span class="st">"tb"</span>, show_root<span class="op">=</span><span class="cn">FALSE</span>, lwidth<span class="op">=</span><span class="fl">.9</span>, lheight<span class="op">=</span><span class="fl">.4</span>,</span>
 <span>             varspace<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>Species<span class="op">=</span><span class="fl">2</span>,Long_Petals<span class="op">=</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/add_graphics.html">add_graphics</a></span><span class="op">(</span><span class="va">iris_grobs</span>, side<span class="op">=</span><span class="st">"l"</span>, frac<span class="op">=</span><span class="fl">.5</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span>margins<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">.05</span>, <span class="fl">.05</span>, <span class="fl">.05</span>, <span class="fl">.2</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span>margins<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">.05</span>, <span class="fl">.05</span>, <span class="fl">.05</span>, <span class="fl">.2</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning: <span style="color: #BB0000;">✖</span> vtree has a precomputed layout with direction 'tb'.</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Ignoring the parameter dir = 'lr'</span></span></code></pre></div>
 <p><img src="vtree2_files/figure-html/inset1b-1.png" alt="" width="672"></p>
 </div>
 <div class="section level3" number="12.2">
@@ -1576,7 +1582,9 @@ carefully. Also, we need to set an NA value for the non-leaf nodes.</p>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>shape <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">leaf</span>, <span class="st">"rectangle"</span>, <span class="st">"roundrectangle"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/add_graphics.html">add_graphics</a></span><span class="op">(</span><span class="va">grobs</span>, condition <span class="op">=</span> <span class="va">leaf</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">vt</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">vt</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning: <span style="color: #BB0000;">✖</span> vtree has a precomputed layout with direction 'tb'.</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Ignoring the parameter dir = 'lr'</span></span></code></pre></div>
 <p><img src="vtree2_files/figure-html/insets2-1.png" alt="" width="1152"></p>
 <p>The <code>condition</code> parameter of <code><a href="../reference/add_graphics.html">add_graphics()</a></code>
 is evaluated in the context of the nodes data frame, and one column in
@@ -1588,7 +1596,9 @@ the grobs only for the nodes that are leafs. You can also use the
 <code>ggplot2</code> does not fit font sizes automatically to the
 available space. If your image is too small, bad things will happen:</p>
 <div class="sourceCode" id="cb47"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">vt</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">vt</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning: <span style="color: #BB0000;">✖</span> vtree has a precomputed layout with direction 'tb'.</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Ignoring the parameter dir = 'lr'</span></span></code></pre></div>
 <p><img src="vtree2_files/figure-html/unnamed-chunk-7-1.png" alt="" width="480"></p>
 </div>
 <div class="section level3" number="12.3">
@@ -1690,7 +1700,9 @@ figure out how to best configure the layout.</p>
 <span>             lwidth <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>             lheight<span class="op">=</span><span class="fl">.9</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/add_graphics.html">add_graphics</a></span><span class="op">(</span><span class="va">grobs</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span>legend<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+<span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span>legend<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning: <span style="color: #BB0000;">✖</span> vtree has a precomputed layout with direction 'tb'.</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Ignoring the parameter dir = 'lr'</span></span></code></pre></div>
 <p><img src="vtree2_files/figure-html/gsum5-1.png" alt="" width="1152"></p>
 <p>An alternative representation where we first split the tree by dosage
 and then by supplement type allows to better compare the effects of the
@@ -1724,7 +1736,9 @@ supplement types:</p>
 <span>             lwidth <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>             lheight<span class="op">=</span><span class="fl">.9</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/add_graphics.html">add_graphics</a></span><span class="op">(</span><span class="va">grobs</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span>legend<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+<span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span>legend<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning: <span style="color: #BB0000;">✖</span> vtree has a precomputed layout with direction 'tb'.</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Ignoring the parameter dir = 'lr'</span></span></code></pre></div>
 <p><img src="vtree2_files/figure-html/gsum6-1.png" alt="" width="1152"></p>
 </div>
 </div>
