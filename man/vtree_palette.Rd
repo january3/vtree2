@@ -110,14 +110,13 @@ In summary, the following arguments determine the hierarchy of the color-control
 the resulting plot:
 \itemize{
 \item \code{palettes} - determines both the palette for the legend and the
-colors of the nodes
+colors of the nodes. Ignored if the tree already has a palette
+attribute set.
 \item \code{var_palette} - low level adjustment of colors. Does not have to
-include all variable and all variable levels, and does not influence
-the colors of the variable \emph{names} shown on the legend, but it does
-change the colors of the variable \emph{levels} shown on the legend.
+include all variable and all variable levels.
 \item \code{var_colors} - influences only the colors of the variable \emph{names} shown
-on the legend. If NULL, a default from the \code{palettes} argument will be
-inferred.
+on the legend. If NULL, a default from the \code{palettes} argument or from
+the \code{var_palette} argument (if provided) will be inferred automatically.
 \item \code{na} - color for the missing values for all variables. If \code{what} is
 "fill", then it is interpreted as the background fill color; if \code{what} is
 "text", then it is interpreted as the text (foreground) color.
