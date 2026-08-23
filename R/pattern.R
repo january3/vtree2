@@ -249,12 +249,13 @@ plot.vtree_pattern <- function(x, ...,
                            pattern_fill, .data[["fill"]])) |>
       mutate(color = contrast_color(.data[["fill"]]))
   } else {
+    #vt <- set_palette(vt, pal)
     vt <- add_palette(vt, palettes = palettes,
                           var_palette = pal$fill$scale,
-                          var_colors = pal$fill$vars) |>
-          add_palette(palettes = palettes, what="text",
-                          var_palette = pal$color$scale,
-                          var_colors = pal$color$vars)
+                          var_colors = pal$fill$vars)# |>
+         #add_palette(palettes = palettes, what="text",
+         #                var_palette = pal$color$scale,
+         #                var_colors = pal$color$vars)
   }
 
 
