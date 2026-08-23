@@ -84,9 +84,9 @@ the attribute "palette", which is used when showing the legend. If you
 modify the `fill` and `color` columns manually (without using
 `add_palette()`, you will not change the color code.
 
-If the parameter `what` is `fill` (default), then instead of generating
-a fill color from the palettes, the function generates a text color and
-chooses a contrast fill color automatically.
+If the parameter `what` is `text` instead of the default `fill`, then
+instead of generating a fill color from the palettes, the function
+generates a text color and chooses a contrast fill color automatically.
 
 The following arguments determine the hierarchy of the color-control on
 the resulting plot:
