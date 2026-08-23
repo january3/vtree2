@@ -228,7 +228,9 @@ plot.vtree_pattern <- function(x, ...,
                       show_root = FALSE) {
   ensure(x, "vtree_pattern")
   sort_by <- rlang::enquo(sort_by)
-  x <- arrange(x, !!sort_by)
+  if(!rlang::is_na(rlang::quo_get_expr(sort_by))) {
+    x <- arrange(x, !!sort_by)
+  }
 
   vt <- vtree_from_pattern(x)
 
@@ -266,10 +268,3 @@ plot.vtree_pattern <- function(x, ...,
        layout = "regular",
        lwidth = lwidth, lheight = lheight, ...)
 }
-
-
-
-
-
-
-
