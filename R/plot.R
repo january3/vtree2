@@ -10,7 +10,7 @@
     x <- mutate(x, color = contrast_color(.data[["fill"]]))
   }
 
-  if(is.null(get_alias_attr(x))) {
+  if(is.null(get_aliases(x))) {
     x <- add_aliases(x)
   }
 
@@ -93,50 +93,6 @@
 
 }
 
-# figure out a direction from a precomputed layout
-.get_dir <- function(layout) {
-
-  if(!is.null(attr(layout, "dir"))) {
-    return(attr(layout, "dir"))
-  }
-
-  nodes <- as_tibble(layout)
-
-  # first, check if x is constant for a given node_col
-  # then it is a horizontal layout, otherwise vertical
-  vert <- TRUE
-  if(all(tapply(nodes$x, nodes$node_col,
-                \(x) length(unique(x))) == 1)) {
-    vert <- FALSE
-  } else if(all(tapply(nodes$y, nodes$node_col,
-                \(x) length(unique(x))) == 1)) {
-    vert <- TRUE
-  } else {
-    cli_abort(c(x = "cannot determine direction of precomputed layout"))
-  }
-
-  # if vert, check whether x are increasing or decreasing with node_col
-  if(vert) {
-    x_means <- tapply(nodes$x, nodes$node_col, mean)
-    if(all(diff(x_means) > 0)) {
-      return("bt")
-    } else if(all(diff(x_means) < 0)) {
-      return("tb")
-    } else {
-      cli_abort(c(x = "cannot determine direction of precomputed layout"))
-    }
-  } else {
-    y_means <- tapply(nodes$y, nodes$node_col, mean)
-    if(all(diff(y_means) > 0)) {
-      return("lr")
-    } else if(all(diff(y_means) < 0)) {
-      return("rl")
-    } else {
-      cli_abort(c(x = "cannot determine direction of precomputed layout"))
-    }
-  }
-}
-
 
 
 # check whether vtree already has a layout. If so, return vtree
@@ -148,37 +104,32 @@
        c(i = "vtree already has a layout; ignoring lwidth and lheight"))
     }
 
-    if(is.null(attr(vtree, "dir"))) {
-      attr(vtree, "dir") <- .get_dir(vtree)
-    }
-
-    return(vtree)
-  }
-
-  layout <- add_layout(vtree, layout = layout_arg,
+    layout <- vtree
+  } else {
+    layout <- add_layout(vtree, layout = layout_arg,
                    dir = dir,
                    lwidth=lwidth, lheight=lheight,
                    show_root = show_root)
+  }
 
-
+  layout <- ensure_dir(layout)
   layout
 }
 
 .normalize_dir <- function(dir, vtree) {
-  dir_tree <- attr(vtree, "dir")
+
+  if(is.na(dir)) { dir <- NULL }
+  dir <- match.arg(dir, c("lr", "rl", "bt", "tb"))
+  dir_tree <- get_dir(vtree)
 
   if(!is.na(dir)) {
     if(!is.null(dir_tree) && dir != dir_tree) {
-    cli_abort(
+      cli::cli_warn(
       c(x = "vtree has a precomputed layout with direction '{dir_tree}'.",
-        i = "However, you specified dir = '{dir}'"))
-    } else {
-      return(dir)
+        i = "Ignoring the parameter dir = '{dir}'"))
+      dir <- dir_tree
     }
-  }
-
-  if(inherits(vtree, "vtree_layout") && !is.null(attr(vtree, "dir"))) {
-    return(dir_tree)
+    return(dir)
   }
 
   "lr"
@@ -357,7 +308,6 @@ plot_vtree <- function(x,
 
   ensure_vtree(x)
   dir <- .normalize_dir(dir, x)
-  #dir <- match.arg(dir, c("lr", "rl", "bt", "tb"))
 
   layout_arg <- match.arg(layout)
 
@@ -379,7 +329,7 @@ plot_vtree <- function(x,
     legend <- NULL
   }
 
-  layout_arg <- attr(layout, "layout_arg")
+  layout_arg <- get_layout_arg(layout)
   fontsizes  <- .normalize_fontsizes(fontsizes, layout_arg)
 
   if(layout_arg == "sankey") {

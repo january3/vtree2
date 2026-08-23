@@ -23,8 +23,9 @@
 #' @return Invisibly returns the input object.
 #' @export
 print.vtree_pattern <- function(x, ...) {
-  cols <- attr(x, "cols")
-  N <- attr(x, "N")
+  cols <- get_cols(x)
+  N <- get_n(x)
+
   cat(cli::col_blue(paste("vtree pattern object with",
                length(cols), "variables and", N, "observations\n")))
   cat("Variables:", paste(cols, collapse = ", "), "\n")
@@ -94,7 +95,7 @@ pattern <- function(vtree) {
   maxl <- max(nodes[["level"]])
 
   # get the column names
-  cnms <- attr(vtree, "cols")
+  cnms <- get_cols(vtree)
 
   d1 <- .extract_level(nodes, cnms[1]) |>
     select(-all_of("parent_id"))
@@ -115,11 +116,8 @@ pattern <- function(vtree) {
 
   d1 <- as_tibble(d1)
   class(d1) <- c("vtree_pattern", class(d1))
-  attr(d1, "cols") <- cnms
-  attr(d1, "N") <- attr(vtree, "N")
-  attr(d1, "vp") <- attr(vtree, "vp")
-  attr(d1, "levels") <- attr(vtree, "levels")
-  attr(d1, "sep") <- attr(vtree, "sep")
+  d1 <- set_cols(d1, cnms)
+  d1 <- copy_attrs(d1, vtree, c("N", "vp", "levels", "sep"))
   d1
 }
 
@@ -129,8 +127,8 @@ pattern <- function(vtree) {
 vtree_from_pattern <- function(pat) {
   ensure(pat, "vtree_pattern")
 
-  cnms <- attr(pat, "cols")
-  levels <- attr(pat, "levels")
+  cnms <- get_cols(pat)
+  levels <- get_levels(pat)
 
   # we create the vtree manually. This is mostly for plotting purposes.
   # first, the root.
@@ -140,16 +138,16 @@ vtree_from_pattern <- function(pat) {
                  parent = NA_character_,
                  path_l = list(list()),
                  level = 0,
-                 n = attr(pat, "N"),
-                 tot_n = attr(pat, "N"),
+                 n = get_n(pat),
+                 tot_n = get_n(pat),
                  missing = NA,
                  freq = 1.0,
-                 denom = attr(pat, "N"))
+                 denom = get_n(pat))
 
   # for each row in the pattern, we create one branch of the tree with the
   # interim nodes. The long branches are attached to the root only.
 
-  sep <- attr(pat, "sep") %||% list()
+  sep <- get_sep(pat)
   sep_cv <- sep$cv %||% ':'
   sep_path <- sep$path %||% '/'
 
@@ -166,10 +164,10 @@ vtree_from_pattern <- function(pat) {
                      path_l = list(list()),
                      level = 1,
                      n = last(nn)[["n"]],
-                     tot_n = attr(pat, "N"),
+                     tot_n = get_n(pat),
                      missing = 0,
-                     freq = last(nn)[["n"]] / attr(pat, "N"),
-                     denom = attr(pat, "N")),
+                     freq = last(nn)[["n"]] / get_n(pat),
+                     denom = get_n(pat)),
               nn)
   }) 
 
@@ -185,9 +183,10 @@ vtree_from_pattern <- function(pat) {
   vtree <- tbl_graph(nodes = nodes, edges = edges,
                      directed = TRUE, node_key = "node_key")
 
-  attr(vtree, "vp") <- attr(pat, "vp")
-  attr(vtree, "cols") <- c("pattern", cnms)
-  attr(vtree, "levels") <- c(pattern="", levels)
+  vtree <- set_cols(vtree, c("pattern", cnms))
+  vtree <- set_levels(vtree, c(pattern="", levels))
+  vtree <- copy_attrs(vtree, pat, c("N", "sep", "vp", "alias", "levels",
+                                    "palette", "source_summary"))
   ret <- as_vtree(vtree)
   class(ret) <- c("vtree_from_pattern", class(ret))
   ret
@@ -202,7 +201,8 @@ vtree_from_pattern <- function(pat) {
 #' @param lwidth,lheight The width and height of the nodes in the plot,
 #'        relative to the maximum available space.
 #' @param palettes A vector of color palettes to use for the nodes.
-#' @param pattern_fill The fill color for the pattern nodes.
+#' @param pattern_fill The fill color for the pattern nodes (the ones on
+#'        the left side of the tree, showing how frequent each pattern is).
 #' @param show_root Whether to show the root node in the plot.
 #' @seealso [plot.vtree()] for plotting vtree objects.
 #' @examples

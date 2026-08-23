@@ -201,7 +201,7 @@ add_palette <- function(vtree,
   if(other == "text") { other <- "color" }
 
   # the palette associated with the tree
-  pal_at <- attr(vtree, "palette") %||% list()
+  pal_at <- get_palette(vtree) %||% list()
 
   # generate the palette based on the provided params
   pal <- vtree_palette(vtree, palettes = palettes)
@@ -231,7 +231,7 @@ add_palette <- function(vtree,
   pal_at[[other]]$vars <- var_colors
   pal_at[[what]]$vars <- map_chr(var_colors, contrast_color)
 
-  attr(vtree, "palette") <- pal_at
+  vtree <- set_palette(vtree, pal_at)
 
   ## now apply the color palette
   vtree <- .apply_pal(vtree, pal, na, what, other)

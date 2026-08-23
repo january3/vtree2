@@ -625,7 +625,7 @@ makeContent.vtree_plot <- function(x) {
   #params$richtext <- params$richtext %||% TRUE
   richtext  <- params$richtext
   padding   <- params$padding %||% .1
-  dir       <- attr(layout, "dir") %||% "lr"
+  dir       <- get_dir(layout) %||% "lr"
   vertical  <- dir %in% c("tb", "bt")
 
   nodes <- as_tibble(layout)

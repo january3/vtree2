@@ -43,21 +43,21 @@ as_vtree <- function(x) {
     cli_abort(c(x = "The node_col column must not contain NA values"))
   }
 
-  if(is.null(attr(x, "vp"))) {
+  if(is.null(get_vp(x))) {
     cli_abort(c(x = "VTree object lacks vp attribute"))
   }
 
   cnms <- unique(nodes$node_col[ nodes$level > 0 ])
 
-  if(is.null(attr(x, "cols"))) {
-    attr(x, "cols") <- cnms
+  if(is.null(get_cols(x))) {
+    x <- set_cols(x, cnms)
   }
 
-  if(is.null(attr(x, "N"))) {
-    attr(x, "N") <- N
+  if(is.null(get_n(x))) {
+    x <- set_n(x, N)
   }
 
-  if(is.null(attr(x, "levels"))) {
+  if(length(get_levels(x)) == 0L) {
     cli_abort(c(x = "The vtree must have an attribute 'levels'"))
   }
 
@@ -223,17 +223,17 @@ vtree <- function(cases, ..., .vp = TRUE,
   vtree <- tbl_graph(nodes = df, edges = edges,
                      directed = TRUE, node_key = "node_key")
 
-  attr(vtree, "vp") <- .vp
-  attr(vtree, "levels") <- levels
+  vtree <- set_vp(vtree, .vp)
+  vtree <- set_levels(vtree, levels)
   vtree <- as_vtree(vtree)
 
   summaries <- map_dfr(set_names(names(levels)), \(var) {
                      summary_at_var(vtree, all_of(var), as_df=TRUE)
   })
 
-  attr(vtree, "source_summary") <- summaries
-  attr(vtree, "sep") <- list(cv = .cv_sep, path = .path_sep)
-  attr(vtree, "pruned") <- FALSE
+  vtree <- set_source_summary(vtree, summaries)
+  vtree <- set_sep(vtree, list(cv = .cv_sep, path = .path_sep))
+  vtree <- set_pruned(vtree, FALSE)
   vtree
 }
 

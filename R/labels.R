@@ -366,8 +366,7 @@ add_aliases <- function(vtree, val_alias = NULL, col_alias = NULL) {
 
   }
 
-  attr(vtree, "alias") <- list(val=val_alias_n,
-                               col=col_alias_n)
+  vtree <- set_aliases(vtree, col=col_alias_n, val=val_alias_n)
   vtree
 }
 

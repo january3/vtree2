@@ -132,6 +132,64 @@ ensure_edge_cols <- function(x, cols) {
   x
 }
 
+# figure out a direction from a precomputed layout
+# this is in case the user has specified x/y/width/height etc., but did not
+# set the attribute "dir" in the vtree object.
+.guess_dir <- function(layout) {
+
+  dir <- get_dir(layout)
+  if(!is.null(dir)) {
+    return(dir)
+  }
+
+  nodes <- as_tibble(layout)
+
+  # first, check if x is constant for a given node_col
+  # then it is a horizontal layout, otherwise vertical
+  vert <- TRUE
+  if(all(tapply(nodes$x, nodes$node_col,
+                \(x) length(unique(x))) == 1)) {
+    vert <- FALSE
+  } else if(all(tapply(nodes$y, nodes$node_col,
+                \(x) length(unique(x))) == 1)) {
+    vert <- TRUE
+  } else {
+    cli_abort(c(x = "cannot determine direction of precomputed layout"))
+  }
+
+  # if vert, check whether x are increasing or decreasing with node_col
+  if(vert) {
+    x_means <- tapply(nodes$x, nodes$node_col, mean)
+    if(all(diff(x_means) > 0)) {
+      return("bt")
+    } else if(all(diff(x_means) < 0)) {
+      return("tb")
+    } else {
+      cli_abort(c(x = "cannot determine direction of precomputed layout"))
+    }
+  } else {
+    y_means <- tapply(nodes$y, nodes$node_col, mean)
+    if(all(diff(y_means) > 0)) {
+      return("lr")
+    } else if(all(diff(y_means) < 0)) {
+      return("rl")
+    } else {
+      cli_abort(c(x = "cannot determine direction of precomputed layout"))
+    }
+  }
+}
+
+# make sure the object x has the dir property
+ensure_dir <- function(x) {
+
+  dir <- get_dir(x)
+  if(!is.null(dir)) {
+    return(x)
+  }
+
+  set_dir(x, .guess_dir(x))
+}
+
 #' @importFrom cli cli_abort
 die <- function(message = "Unspecified error.",
                 call = .envir, .envir = parent.frame()) {
@@ -167,34 +225,6 @@ insert_grobs <- function(vtree, grobs) {
   vtree
 }
 
-
-get_alias_attr <- function(x, what=NULL) {
-  alias <- attr(x, "alias")
-
-  if(is.null(alias)) {
-    return(NULL)
-  }
-
-  if(is.null(alias$col)) {
-    cli::cli_warn(c("!" = "alias attribute appears corrupted, missing col element"))
-    return(NULL)
-  }
-
-  if(is.null(alias$val)) {
-    cli::cli_warn(c("!" = "alias attribute appears corrupted, missing val element"))
-    return(NULL)
-  }
-
-  if(!is.null(what)) {
-    if(!what %in% c("col", "val")) {
-      cli_abort(c("!" = "unknown alias element {.val {what}}"))
-    }
-
-    return(alias[[what]])
-  }
-
-  return(alias)
-}
 
 # add values from mapping to the existing scale
 scale_add <- function(scale, mapping) {

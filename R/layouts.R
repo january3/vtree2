@@ -8,7 +8,7 @@ layout_by_freq <- function(vtree, dir="lr",
   layout <- .calc_offsets_from_sizes(vtree, .var="n")
   nodes <- as_tibble(layout)
 
-  totn <- attr(vtree, "N") #
+  totn <- get_n(vtree)
 
   if(!show_root) {
     totn <- sum(nodes$n[nodes$level == 1])
@@ -338,9 +338,9 @@ add_layout <- function(vtree,
 ## @export
 as_vtree_layout <- function(layout, dir, show_root, layout_arg) {
   ensure_vtree(layout)
-  attr(layout, "dir") <- dir
-  attr(layout, "layout_arg") <- layout_arg
-  attr(layout, "show_root") <- show_root
+  layout <- set_dir(layout, dir)
+  layout <- set_layout_arg(layout, layout_arg)
+  layout <- set_show_root(layout, show_root)
   class(layout) <- c("vtree_layout", class(layout))
 
   layout

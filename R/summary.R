@@ -558,7 +558,7 @@ label_var_levels <- function(cases, vtree, var,
 #' the function.
 #'
 #' If the tree
-#' was constructed using valid percentages (`attr(vtree, "vp")` is TRUE),
+#' was constructed using valid percentages (`is_vp(vtree)` is TRUE),
 #' the percentages are calculated based on the valid (non-NA) counts. If
 #' the tree was constructed using total percentages, the percentages are
 #' calculated based on the total counts.
@@ -616,7 +616,7 @@ summary_at_var <- function(vtree, var, as_char = FALSE,
   var <- tidyselect::eval_select(var, data = mock)
   varname <- names(var)
 
-  vp <- attr(vtree, "vp")
+  vp <- is_vp(vtree)
 
   levels <- levels(vtree)[[varname]] %||%
     cli_abort(c(

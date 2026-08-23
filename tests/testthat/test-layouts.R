@@ -71,7 +71,7 @@ test_that("errors are raised", {
                "varsize lacks required names:")
   expect_error(add_layout(vt, varsize=c(root=10, Class = 10, Sex = 5)),
                "varsize must be less than or equal to 1")
-  expect_error(plot(add_layout(vt), dir="tb"),
+  expect_warning(plot(add_layout(vt), dir="tb"),
                "vtree has a precomputed layout with direction 'lr'")
   expect_warning(plot(add_layout(vt), lwidth=.5),
                "vtree already has a layout")

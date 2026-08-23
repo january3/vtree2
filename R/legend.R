@@ -49,7 +49,7 @@
     cli_abort(c(x="corrupted vtree object: summary and node table not compatible"))
   }
 
-  c_alias <- get_alias_attr(layout, "col")
+  c_alias <- get_aliases(layout, "col")
 
   if(!is.null(c_alias)) {
     ret[["col_alias"]] <- map_chr(ret[["node_col"]],
@@ -58,7 +58,7 @@
     ret[["col_alias"]] <- ret[["node_col"]]
   }
 
-  v_alias <- get_alias_attr(layout, "val")
+  v_alias <- get_aliases(layout, "val")
   if(!is.null(v_alias)) {
     ret[["val_alias"]] <- map2_chr(ret[["node_col"]], ret[["node_val"]],
                                    \(col, val) if(is.na(val)) {
@@ -80,7 +80,7 @@
 
 
 .get_legend_pal <- function(layout) {
-  pal <- attr(layout, "palette")
+  pal <- get_palette(layout)
 
   pals <- list()
 
@@ -109,7 +109,7 @@
 # create a layout for the legend.
 layout_legend <- function(layout, margins) {
 
-  dir <- attr(layout, "dir")
+  dir <- get_dir(layout)
 
   #req_cols <- c("x", "y", "width", "height", "shape", "fill", "label"))
   cnms <- names(layout)
@@ -173,7 +173,7 @@ layout_legend <- function(layout, margins) {
 # just the variable titles
 layout_legend_minimal <- function(layout, margins) {
 
-  dir <- attr(layout, "dir")
+  dir <- get_dir(layout)
 
   nodes <- as_tibble(layout) |>
     distinct(.data[["node_col"]], .keep_all = TRUE) |>

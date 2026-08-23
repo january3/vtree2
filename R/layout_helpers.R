@@ -123,7 +123,7 @@
 # use the aliases associated with the layout to replace the labels in the
 # legend titles.
 .use_alias_col <- function(df, layout) {
-  alias <- get_alias_attr(layout)
+  alias <- get_aliases(layout)
   if(is.null(alias)) {
     return(df)
   }

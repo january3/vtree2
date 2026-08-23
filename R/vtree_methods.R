@@ -26,7 +26,7 @@ as_tbl_graph.vtree <- function(x, ...) {
 #' names(vt)
 #' @export
 names.vtree <- function(x) {
-  attr(x, "cols")
+  get_cols(x)
 }
 
 #' Is the vtree based on valid percentages?
@@ -51,7 +51,7 @@ names.vtree <- function(x) {
 #' @export
 is_vp <- function(x) {
   ensure_vtree(x)
-  attr(x, "vp")
+  get_vp(x)
 }
 
 .same_values <- function(a, b) {
@@ -168,7 +168,7 @@ rename.vtree <- function(.data, ..., .edges = FALSE, .check = TRUE) {
 #' levels(vt)
 #' @export
 levels.vtree <- function(x) {
-  attr(x, "levels")
+  get_levels(x)
 }
 
 #' Get the column names of a vtree object
@@ -207,8 +207,8 @@ edgecols <- function(x) {
 #' @return Invisibly returns the input object.
 #' @export
 print.vtree <- function(x, ...) {
-  cols <- attr(x, "cols")
-  N <- attr(x, "N")
+  cols <- get_cols(x)
+  N <- get_n(x)
   cat(cli::col_blue(paste("vtree object with",
                length(cols), "variables and", N, "observations\n")))
   cat("Variables:", paste(cols, collapse = ", "), "\n")
@@ -265,23 +265,5 @@ print.vtree <- function(x, ...) {
 #' level of each variable in the vtree.
 #' @export
 summary.vtree <- function(object, ...) {
-  attr(object, "source_summary")
-}
-
-
-has_layout <- function(x) {
-  ensure_vtree(x)
-
-  node_names <- igraph::vertex_attr_names(x)
-  edge_names <- igraph::edge_attr_names(x)
-
-  has_cols <- all(c("x", "y", "width", "height") %in% node_names) &&
-              all(c("x1", "x2", "y1", "y2") %in% edge_names)
-
-  has_cols || inherits(x, "vtree_layout")
-}
-
-has_fill <- function(x) {
-  ensure_vtree(x)
-  "fill" %in% nodecols(x)
+  get_source_summary(object)
 }

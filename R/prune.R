@@ -16,7 +16,6 @@ new_vtree_vcol <- function(x, applicable) {
 # not applicable, the result is `NA` rather than `TRUE`.
 #
 # @param x A virtual vtree column.
-#
 # @return A logical vector.
 is_na_vtree_vcol <- function(x) {
   ret <- is.na(x)
@@ -182,7 +181,7 @@ in_vtree_vcol <- function(x, table) {
     }
 
     ret <- filter(vtree, !mask)
-    attr(ret, "pruned") <- TRUE
+    ret <- set_pruned(ret, TRUE)
   }
 
   as_vtree(ret)
@@ -221,7 +220,7 @@ in_vtree_vcol <- function(x, table) {
     }
       
     ret <- filter(vtree, mask)
-    attr(ret, "pruned") <- TRUE
+    ret <- set_pruned(ret, TRUE)
   }
 
   as_vtree(ret)

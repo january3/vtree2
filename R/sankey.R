@@ -20,7 +20,7 @@ layout_sankey <- function(vtree, dir="lr",
                            varsize=NULL,
                            show_root=TRUE) {
 
-  totn <- attr(vtree, "N") #
+  totn <- get_n(vtree)
 
   if(is.na(lwidth)) {
     lwidth <- .4
@@ -239,7 +239,7 @@ sankey_poly <- function(x1, x2, y1, y2, size,
 #' @importFrom grDevices adjustcolor
 .get_connectors <- function(layout, vertical=FALSE) {
 
-  dir <- attr(layout, "dir")
+  dir <- get_dir(layout)
   edges <- activate(layout, "edges") |> as_tibble()
   edges <- edges[nrow(edges):1, ]
 
@@ -312,8 +312,8 @@ sankey <- function(vtree) {
 
   ensure_vtree(vtree)
 
-  sep <- attr(vtree, "sep")
-  vp <- attr(vtree, "vp")
+  sep <- get_sep(vtree)
+  vp <- is_vp(vtree)
 
   nd <- as_tibble(vtree) |>
     rename("oldid" = "node_id") |>
@@ -357,11 +357,11 @@ sankey <- function(vtree) {
             activate("nodes")
 
   class(sankey) <- c("sankey_tree", "vtree", class(sankey))
-  for(a in c("vp", "levels", "cols", "N", "source_summary", "sep", "pruned",
-             "palette", "alias", "grob")) {
-    attr(sankey, a) <- attr(vtree, a)
-  }
 
+  attributes <- c("vp", "levels", "cols", "N",
+                  "source_summary", "sep", "pruned",
+                  "palette", "alias", "grob")
+  sankey <- copy_attrs(sankey, vtree, attributes)
   sankey
 }
 
