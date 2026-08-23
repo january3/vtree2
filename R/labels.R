@@ -67,24 +67,28 @@
        fmt_root=fmt_root %||% fmt %||% .fmt_root)
 }
 
-.ensure_aliases <- function(df) {
+.ensure_aliases <- function(vtree) {
 
-  if(!"val_alias" %in% names(df)) {
-    df[["val_alias"]] <- df[["node_val"]]
+  al <- get_aliases(vtree) %||% list()
+
+  if(!"val_alias" %in% nodecols(vtree)) {
+    vtree <- add_aliases(vtree, val_alias = al$val)
   }
 
-  if(!"col_alias" %in% names(df)) {
-    df[["col_alias"]] <- df[["node_col"]]
+  if(!"col_alias" %in% nodecols(vtree)) {
+    vtree <- add_aliases(vtree, col_alias = al$col)
   }
 
-  df
+  vtree
 }
 
 .add_convenience_cols <- function(df, digits) {
 
   df <- df |>
     mutate(pct = round(100 * .data[["freq"]], digits=digits)) |>
-    mutate(f = .data[["pct"]] / 100)
+    mutate(f = .data[["pct"]] / 100) |>
+    mutate(value = .data[["val_alias"]]) |>
+    mutate(variable = .data[["col_alias"]])
 
   df
 }
@@ -136,6 +140,8 @@
 #'  * `f`, equal to pct / 100 (so if the percentage is rounded with 0
 #'  digits after decimal point, `f` will have two digits after decimal
 #'  point).
+#'  * `value`, `variable`: same as `val_alias` and `col_alias`, but easier
+#'  to remember.
 #'
 #' @section Parameter precedence:
 #'
@@ -236,8 +242,9 @@ add_labels <- function(vtree,
   dflt <- .def_formats(template, fmt, fmt_na, fmt_root)
   expr <- enquo(expr)
 
-  nodes <- as_tibble(vtree) |>
+  nodes <- vtree |>
     .ensure_aliases() |>
+    as_tibble() |>
     .add_convenience_cols(digits)
 
   if(is.null(prefix)) {
