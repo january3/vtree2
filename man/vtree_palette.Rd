@@ -2,19 +2,41 @@
 % Please edit documentation in R/colors.R
 \name{vtree_palette}
 \alias{vtree_palette}
+\alias{vtree_palette.vtree}
+\alias{vtree_palette.vtree_pattern}
 \alias{var_palette}
 \alias{add_palette}
+\alias{add_palette.vtree}
+\alias{add_palette.vtree_pattern}
 \title{Color palettes for a variable levels}
 \usage{
-vtree_palette(
+vtree_palette(x, ...)
+
+\method{vtree_palette}{vtree}(
   vtree,
+  palettes = c("Reds", "Blues", "Greens", "Oranges", "Purples")
+)
+
+\method{vtree_palette}{vtree_pattern}(
+  pattern,
   palettes = c("Reds", "Blues", "Greens", "Oranges", "Purples")
 )
 
 var_palette(var_levels, pal)
 
-add_palette(
+add_palette(vtree, ...)
+
+\method{add_palette}{vtree}(
   vtree,
+  palettes = c("Reds", "Blues", "Greens", "Oranges", "Purples"),
+  na = "white",
+  var_palette = NULL,
+  var_colors = NULL,
+  what = "fill"
+)
+
+\method{add_palette}{vtree_pattern}(
+  pattern,
   palettes = c("Reds", "Blues", "Greens", "Oranges", "Purples"),
   na = "white",
   var_palette = NULL,
@@ -27,6 +49,8 @@ add_palette(
 
 \item{palettes}{The names of RColorBrewer palettes corresponding to the
 subsequent columns in the vtree}
+
+\item{pattern}{A vtree pattern object}
 
 \item{var_levels}{a character vector of values to which colors are
 assigned from a palette}

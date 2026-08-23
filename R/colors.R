@@ -1,3 +1,15 @@
+# get a contrast palette for the given palette.
+.get_contrast_pal <- function(pal) {
+
+  ret <- imap(pal, \(varpal, var) {
+               if(var == "NAs") {
+                 return(contrast_color(varpal))
+               }
+               map_chr(varpal, \(col) contrast_color(col))
+             })
+  ret
+}
+
 #' Get a contrasting color
 #'
 #' Get a color contrasting to another color
@@ -74,6 +86,7 @@ contrast_color <- function(color) {
 #' them to the provided character vector.
 #'
 #' @param vtree A vtree object
+#' @param pattern A vtree pattern object
 #' @param palettes The names of RColorBrewer palettes corresponding to the
 #'                 subsequent columns in the vtree
 #' @param what By default, add_palette() adds a fill color for the nodes
@@ -133,12 +146,30 @@ contrast_color <- function(color) {
 #' @seealso See [contrast_color()] for generating white/black contrast
 #' color automatically.
 #' @export
-vtree_palette <- function(vtree,
+vtree_palette <- function(x, ...) {
+  UseMethod("vtree_palette")
+}
+
+#' @rdname vtree_palette
+#' @export
+vtree_palette.vtree <- function(vtree,
                           palettes = c("Reds", "Blues", "Greens",
                                        "Oranges", "Purples")) {
+  .vtree_palette(vtree, palettes = palettes)
+}
 
-  ensure_vtree(vtree)
+#' @rdname vtree_palette
+#' @export
+vtree_palette.vtree_pattern <- function(pattern,
+                          palettes = c("Reds", "Blues", "Greens",
+                                       "Oranges", "Purples")) {
+  .vtree_palette(pattern, palettes = palettes)
+}
 
+# this one actually does the job
+.vtree_palette <- function(vtree,
+                          palettes = c("Reds", "Blues", "Greens",
+                                       "Oranges", "Purples")) {
   levs <- levels(vtree)
   levs <- map(levs, \(x) x[ !is.na(x)])
 
@@ -173,66 +204,106 @@ var_palette <- function(var_levels, pal) {
   ifelse(is.na(node_val), na, candidates)
 }
 
-# get a contrast palette for the given palette.
-get_contrast_pal <- function(pal) {
-
-  ret <- imap(pal, \(varpal, var) {
-               if(var == "NAs") {
-                 return(contrast_color(varpal))
-               }
-               map_chr(varpal, \(col) contrast_color(col))
-             })
-  ret
-}
+#' @rdname vtree_palette
+#' @export
+add_palette <- function(vtree, ...)
+  UseMethod("add_palette")
 
 #' @rdname vtree_palette
 #' @importFrom purrr map2_chr map_chr
 #' @export
-add_palette <- function(vtree,
+add_palette.vtree <- function(vtree,
                              palettes = c("Reds", "Blues", "Greens",
                                        "Oranges", "Purples"),
                              na = "white",
                              var_palette = NULL,
                              var_colors = NULL,
                              what = "fill") {
+  .add_palette(vtree, palettes = palettes, na = na,
+               var_palette = var_palette, var_colors = var_colors,
+               what = what, apply = TRUE)
+}
 
-  ensure_vtree(vtree)
+#' @rdname vtree_palette
+#' @importFrom purrr map2_chr map_chr
+#' @export
+add_palette.vtree_pattern <- function(pattern,
+                             palettes = c("Reds", "Blues", "Greens",
+                                       "Oranges", "Purples"),
+                             na = "white",
+                             var_palette = NULL,
+                             var_colors = NULL,
+                             what = "fill") {
+  .add_palette(pattern, palettes = palettes, na = na,
+                var_palette = var_palette, var_colors = var_colors,
+                what = what, apply = FALSE)
+}
+
+# this one actually does the job
+.add_palette <- function(x,
+                             palettes = c("Reds", "Blues", "Greens",
+                                       "Oranges", "Purples"),
+                             na = "white",
+                             var_palette = NULL,
+                             var_colors = NULL,
+                             what = "fill",
+                             apply = TRUE) {
+
   what <- match.arg(what, c("fill", "text"))
-
-  if(what == "fill") {
-    other <- "text"
-  } else {
-    other <- "fill"
-  }
-
-  if(what == "text") { what <- "color" }
-  if(other == "text") { other <- "color" }
-
-  # the palette associated with the tree
-  pal_at <- get_palette(vtree)
+  if(what == "text")  { what <- "color" }
+  other <- ifelse(what == "fill", "color", "fill")
 
   # generate the palette based on the provided params
-  pal <- vtree_palette(vtree, palettes = palettes)
+  pal <- vtree_palette(x, palettes = palettes)
 
+  # replace by colors defined by users
+  pal <- scale_add(pal, var_palette)
+
+  x <- .add_pal_to_object(x, pal, var_colors, na, what, other)
+
+  ## now apply the color palette
+  if(apply) {
+    x <- .apply_pal(x, what)
+  }
+  x
+}
+
+.merge_pals <- function(pal1, pal2) {
+  # merge two palettes, with pal2 taking precedence over pal1
+  merged <- pal1
+
+  merged$na <- pal2$na %||% pal1$na
+  if(is.null(merged$scale)) {
+    merged$scale <- pal2$scale
+  } else {
+    merged$scale[ names(pal2$scale) ] <- pal2$scale
+  }
+
+  merged
+}
+
+# add the pal to the possibly already existing palette attribute of the
+# object, only replacing the values that were not defined already.
+.add_pal_to_object <- function(obj, pal, var_colors, na, what, other) {
   # generate the variable colors
   if(is.null(var_colors)) {
     var_colors <- map_chr(set_names(names(pal)), \(var) last(pal[[var]]))
   }
 
-  # replace by colors defined by users
-  pal <- scale_add(pal, var_palette)
+  # the palette associated with the object
+  pal_at <- get_palette(obj)
 
   # assign to what will become the attribute
-  pal_at[[what]] <- list(scale = pal,
-                         na = na)
+  pal_at[[what]] <- .merge_pals(pal_at[[what]], list(scale = pal, na = na))
 
   # if other is missing, get a contrast color
   # so e.g. if "what" is text, then the fill color is automatically
   # generated as a contrast color.
   if(is.null(pal_at[[other]])) {
-    pal_contrast <- get_contrast_pal(pal)
-    pal_at[[other]] <- list(scale = pal_contrast,
-                            na = contrast_color(na))
+    pal_contrast <- .get_contrast_pal(pal)
+    pal_at[[other]] <- .merge_pals(pal_at[[other]],
+                                   list(scale = pal_contrast,
+                                        na = contrast_color(na)))
   }
 
   # now the vars. We choose to use the text color to be fill color.
@@ -242,14 +313,15 @@ add_palette <- function(vtree,
     pal_at[[other]]$vars <- map_chr(var_colors, contrast_color)
   }
 
-  vtree <- set_palette(vtree, pal_at)
-
-  ## now apply the color palette
-  vtree <- .apply_pal(vtree, pal, na, what, other)
-  vtree
+  obj <- set_palette(obj, pal_at)
+  obj
 }
 
-.apply_pal <- function(vtree, pal, na, what, other) {
+.apply_pal <- function(vtree, what) {
+
+  pal <- get_palette(vtree)[[what]]$scale
+  na  <- get_palette(vtree)[[what]]$na
+  other <- ifelse(what == "fill", "color", "fill")
 
   vtree <- mutate(vtree, !!what := .node_fill(.data[["node_col"]],
                                     .data[["node_val"]], na, pal))

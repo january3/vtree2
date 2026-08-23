@@ -8,12 +8,14 @@
 \usage{
 add_aliases(vtree, ...)
 
-\method{add_aliases}{vtree_pattern}(vtree, val_alias = NULL, col_alias = NULL)
+\method{add_aliases}{vtree_pattern}(pattern, val_alias = NULL, col_alias = NULL)
 
 \method{add_aliases}{vtree}(vtree, val_alias = NULL, col_alias = NULL)
 }
 \arguments{
 \item{vtree}{an object of class vtree}
+
+\item{pattern}{an object of class vtree_pattern (produced by \code{\link[=pattern]{pattern()}})}
 
 \item{val_alias}{A list specifying aliases for the levels of the
 variables. Each element of the list should be a named character
@@ -53,4 +55,7 @@ vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived) |>
                                              "3rd" = "Third")),
                     col_alias = list(Sex = "Gender"))
 plot(vt)
+}
+\seealso{
+\code{\link[=add_labels]{add_labels()}}, \code{\link[=plot_vtree]{plot_vtree()}}, \code{\link[=pattern]{pattern()}}
 }

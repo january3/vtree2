@@ -308,6 +308,7 @@ add_labels <- function(vtree,
 #' plots. This function allows to define aliases for both, variable names
 #' and the variable values (levels).
 #' @param vtree an object of class vtree
+#' @param pattern an object of class vtree_pattern (produced by [pattern()])
 #' @param col_alias A list specifying aliases for the columns (variables). Each name
 #'        of the list is a column/variable name (one of the values of
 #'        `names(vtree)`) and the value is the alias to be used for that
@@ -337,19 +338,20 @@ add_labels <- function(vtree,
 #' @return Returns an object of class vtree with added columns `col_alias`
 #' and `val_alias` in the node data frame. The aliases are also stored as
 #' an attribute of the vtree object.
+#' @seealso [add_labels()], [plot_vtree()], [pattern()]
 #' @export
 add_aliases <- function(vtree, ...)
   UseMethod("add_aliases")
 
 #' @rdname add_aliases
 #' @export
-add_aliases.vtree_pattern <- function(vtree, val_alias = NULL, col_alias = NULL) {
+add_aliases.vtree_pattern <- function(pattern, val_alias = NULL, col_alias = NULL) {
 
-  val_alias_n <- .normalize_val_alias(val_alias, vtree)
-  col_alias_n <- .normalize_col_alias(col_alias, vtree)
+  val_alias_n <- .normalize_val_alias(val_alias, pattern)
+  col_alias_n <- .normalize_col_alias(col_alias, pattern)
 
-  vtree <- set_aliases(vtree, col=col_alias_n, val=val_alias_n)
-  vtree
+  pattern <- set_aliases(pattern, col=col_alias_n, val=val_alias_n)
+  pattern
 }
 
 #' @rdname add_aliases
@@ -391,6 +393,3 @@ add_aliases.vtree <- function(vtree, val_alias = NULL, col_alias = NULL) {
   vtree <- set_aliases(vtree, col=col_alias_n, val=val_alias_n)
   vtree
 }
-
-
-
