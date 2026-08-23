@@ -218,7 +218,7 @@
 <li>vtree constructors take only character or factor variables: <del>build in checking for column type</del> maybe add functions to convert numeric to factor? or some automation controlled with a param?</li>
 <li>add_layout should not modify shape if present</li>
 <li>faster processing of cases into trees</li>
-<li>why is plotting patterns so slow?</li>
+<li><del>why is plotting patterns so slow?</del></li>
 <li>✔ <del>easier formatting of labels using glue syntax</del>
 </li>
 <li>✔ <del>summaries_vt and summaries_vt_df - that is clunky, maybe as_df option or smth? -&gt; rewrote it completely</del>
@@ -281,6 +281,11 @@
 <h2 id="bugs">BUGS<a class="anchor" aria-label="anchor" href="#bugs"></a>
 </h2>
 <ul>
+<li>✔ <del>if alias columns are not present, add_labels ignores aliases attached to the object. This is an issue for patterns. add_labels should check not only the columns, but also get_aliases(vtree)</del>
+</li>
+<li>plot(pattern, legend=TRUE) does not work, b/c summaries do not contain the virtual node “pattern”</li>
+<li>✔ <del>plot(pattern, legend=“tiny”) does not work either, but does not throw an error. (the colors of the titles were set to background)</del>
+</li>
 <li>✔ <del>vertical layouts do not work with Sankey connectors</del>
 </li>
 <li>✔ <del>padding doesn’t work for adaptive fonts (layout=“prop”) (cannot reproduce)</del>

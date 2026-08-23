@@ -139,6 +139,9 @@ values:
 - `f`, equal to pct / 100 (so if the percentage is rounded with 0 digits
   after decimal point, `f` will have two digits after decimal point).
 
+- `value`, `variable`: same as `val_alias` and `col_alias`, but easier
+  to remember.
+
 ## Parameter precedence
 
 If `expr` is not NULL, it will be used for all labels chosen by the

@@ -226,7 +226,7 @@ More docs available [here](https://january3.github.io/vtree2/).
   factor? or some automation controlled with a param?
 - add_layout should not modify shape if present
 - faster processing of cases into trees
-- why is plotting patterns so slow?
+- ~~why is plotting patterns so slow?~~
 - ✔ ~~easier formatting of labels using glue syntax~~
 - ✔ ~~summaries_vt and summaries_vt_df - that is clunky, maybe as_df
   option or smth? -\> rewrote it completely~~
@@ -288,6 +288,13 @@ More docs available [here](https://january3.github.io/vtree2/).
 
 ## BUGS
 
+- ✔ ~~if alias columns are not present, add_labels ignores aliases
+  attached to the object. This is an issue for patterns. add_labels
+  should check not only the columns, but also get_aliases(vtree)~~
+- plot(pattern, legend=TRUE) does not work, b/c summaries do not contain
+  the virtual node “pattern”
+- ✔ ~~plot(pattern, legend=“tiny”) does not work either, but does not
+  throw an error. (the colors of the titles were set to background)~~
 - ✔ ~~vertical layouts do not work with Sankey connectors~~
 - ✔ ~~padding doesn’t work for adaptive fonts (layout=“prop”) (cannot
   reproduce)~~

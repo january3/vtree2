@@ -46,8 +46,8 @@ Note that if a tree was pruned, these summaries will differ from the
 summaries shown by `summary(vtree)`. That is also the true purpose of
 the function.
 
-If the tree was constructed using valid percentages (`attr(vtree, "vp")`
-is TRUE), the percentages are calculated based on the valid (non-NA)
+If the tree was constructed using valid percentages (`is_vp(vtree)` is
+TRUE), the percentages are calculated based on the valid (non-NA)
 counts. If the tree was constructed using total percentages, the
 percentages are calculated based on the total counts.
 
