@@ -146,7 +146,9 @@ vtree_from_pattern <- function(pat) {
                  tot_n = get_n(pat),
                  missing = NA,
                  freq = 1.0,
-                 denom = get_n(pat))
+                 denom = get_n(pat),
+                 branch = NA_integer_,
+                 depth = 0L)
 
   # for each row in the pattern, we create one branch of the tree with the
   # interim nodes. The long branches are attached to the root only.
@@ -155,30 +157,58 @@ vtree_from_pattern <- function(pat) {
   sep_cv <- sep$cv %||% ':'
   sep_path <- sep$path %||% '/'
 
-  nodes <- map_dfr(1:nrow(pat), \(i) {
-    nn <- collect_nodes(pat[i, ], cnms, sep_cv, sep_path) |>
-      mutate(level = row_number() + 1)
-    # generate a "pattern" node to mimick the behavior of the original
-    # vtree package with pattern=TRUE option.
-    bind_rows(
-              tibble(path = "pattern",
-                     node_col = "pattern",
-                     node_val = "",
-                     parent = "root",
-                     path_l = list(list()),
-                     level = 1,
-                     n = last(nn)[["n"]],
-                     tot_n = get_n(pat),
-                     missing = 0,
-                     freq = last(nn)[["n"]] / get_n(pat),
-                     denom = get_n(pat)),
-              nn)
-  }) 
+  P <- nrow(pat)
+  K <- length(cnms)
 
-  nodes <- bind_rows(root, nodes) |>
+  pattern_nodes <- tibble(
+    path = "pattern",
+    node_col = "pattern",
+    node_val = "",
+    parent = "root",
+    path_l = rep(list(list()), P),
+    level = 1L,
+    n = pat[[paste0(cnms[K], "_n")]],
+    tot_n = get_n(pat),
+    missing = 0,
+    freq = pat[[paste0(cnms[K], "_n")]] / get_n(pat),
+    denom = get_n(pat),
+    branch = seq_len(P),
+    depth = 0L
+  )
+
+  value_nodes <- purrr::map_dfr(seq_along(cnms), \(i) {
+    cn <- cnms[i]
+
+    parts <- lapply(cnms[seq_len(i)], \(cc) {
+      paste0(cc, sep_cv, pat[[cc]])
+    })
+
+    paths <- do.call(paste, c(parts, sep = sep_path))
+    paths_parent <- do.call(paste, c(parts[-length(parts)], sep = sep_path))
+
+    tibble(
+      path = paths,
+      node_col = cn,
+      node_val = pat[[cn]],
+      parent = ifelse(i == 1, "pattern", paths_parent),
+      path_l = rep(list(list()), length(paths)),
+      level = i + 1L,
+      n = pat[[paste0(cn, "_n")]],
+      tot_n = pat[[paste0(cn, "_tot_n")]],
+      missing = pat[[paste0(cn, "_missing")]],
+      freq = pat[[paste0(cn, "_freq")]],
+      denom = pat[[paste0(cn, "_denom")]],
+      branch = seq_len(P),
+      depth = i
+    )
+  })
+
+  nodes <- rbind(root, pattern_nodes, value_nodes) |>
     mutate(node_id = row_number()) |>
-    mutate(parent_id = lag(.data[["node_id"]])) |>
-    mutate(parent_id = ifelse(.data[["level"]] == 1, 1, .data[["parent_id"]])) |>
+    group_by(.data[["branch"]]) |>
+    mutate(parent_id = lag(.data[["node_id"]], default=1)) |>
+    ungroup() |>
+    mutate(parent_id = ifelse(.data[["level"]] == 0, NA, .data[["parent_id"]])) |>
     mutate(node_key = paste0("node_", .data[["node_id"]])) |>
     dplyr::arrange(.data[["level"]], .data[["node_id"]])
 
@@ -249,13 +279,15 @@ plot.vtree_pattern <- function(x, ...,
                            pattern_fill, .data[["fill"]])) |>
       mutate(color = contrast_color(.data[["fill"]]))
   } else {
-    #vt <- set_palette(vt, pal)
+    # we need to repopulate the fill and color columns
+    # they got lost on the way from vtree to pattern and
+    # now we are coming back to a vtree.
     vt <- add_palette(vt, palettes = palettes,
                           var_palette = pal$fill$scale,
-                          var_colors = pal$fill$vars)# |>
-         #add_palette(palettes = palettes, what="text",
-         #                var_palette = pal$color$scale,
-         #                var_colors = pal$color$vars)
+                          var_colors = pal$fill$vars) |>
+          add_palette(palettes = palettes, what="text",
+                          var_palette = pal$color$scale,
+                          var_colors = pal$color$vars)
   }
 
 
