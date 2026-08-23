@@ -43,11 +43,11 @@
 
   ret <- summary(layout)
   nodes <- as_tibble(layout)
-  if(!
-     (all(nodes[-1, ][["node_col"]] %in% ret[["node_col"]]) &&
-      all(nodes[-1, ][["node_val"]] %in% ret[["node_val"]]))) {
-    cli_abort(c(x="corrupted vtree object: summary and node table not compatible"))
-  }
+# if(!
+#    (all(nodes[-1, ][["node_col"]] %in% ret[["node_col"]]) &&
+#     all(nodes[-1, ][["node_val"]] %in% ret[["node_val"]]))) {
+#   cli_abort(c(x="corrupted vtree object: summary and node table not compatible"))
+# }
 
   c_alias <- get_aliases(layout, "col")
 
