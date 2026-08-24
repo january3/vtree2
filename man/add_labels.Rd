@@ -7,7 +7,7 @@
 add_labels(
   vtree,
   template = "simple",
-  mask = TRUE,
+  mask = NULL,
   fmt = NULL,
   fmt_na = NULL,
   fmt_root = NULL,
@@ -25,8 +25,10 @@ add_labels(
 'sameline' or 'long'.  If \code{fmt} or \code{fmt_na} is defined, it will
 be overridden by the respective formatting expression.}
 
-\item{mask}{a logical vector indicating
-the nodes for which the labels will be modified.}
+\item{mask}{a logical vector indicating the nodes for which the labels
+will be modified. Alternatively, a logical expression can be
+provided which will be evaluated in the context of the vtree node
+data frame. If NULL (default), all nodes will be modified.}
 
 \item{fmt}{a glue string to format the valid value nodes. If not
 NULL, replaces the format from the template.}
@@ -136,8 +138,7 @@ add_labels(vt) |> plot()
 vt |> add_labels(template = "long") |> plot()
 
 # only add labels to some nodes
-mask <- find_nodes(vt, freq > .30)
-vt |> add_labels(mask = mask) |>
+vt |> add_labels(mask = freq > .30) |>
   plot(layout = "proportional")
 
 # customize the format
