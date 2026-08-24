@@ -195,20 +195,30 @@ More docs available [here](https://january3.github.io/vtree2/).
 ## TODO/PROBLEMS
 
 - write a manual in the main vignette \[——–\|\] 95% complete
-- ~~proper Sankey plots~~
-- ✔ ~~adding grobs explicitly with `add_grobs()`; grobs should have
-  layout parameters.~~
-- add background and line color
+- add label text alignments left/right/center - how?
+- add condition argument to add_label? like with grob? or replace the
+  mask arg with a condition? actually, a condition also understands a
+  mask, right? maybe add_labels, add_grobs, add_aliases should have a
+  uniform interface wr to condition/mask
+- write a developers vignette
+- vtree_apply is incredibly powerful and should be highlighted
+  separately. It allows conditional analyses of the data. Maybe a
+  separate vignette on how to conditionally analyse data with vtrees and
+  vtree_apply.
+- add background and line color -\> maybe add_theme()?
 - `add_gs()` for graphical summaries - tiny plots
-- ✔ ~~allow adjusting grob layouts in grob nodes~~ - only fine adjusting
-- ✔ ~~the nodes of the diagrammer are adjusted to the size of the
-  labels. We could do that, actually. I think it doesn’t look so good,
-  but OK.~~ - now “tight” layouts
 - vtree constructors take only character or factor variables: ~~build in
   checking for column type~~ maybe add functions to convert numeric to
   factor? or some automation controlled with a param?
 - add_layout should not modify shape if present
 - faster processing of cases into trees
+- ✔ ~~proper Sankey plots~~
+- ✔ ~~adding grobs explicitly with `add_grobs()`; grobs should have
+  layout parameters.~~
+- ✔ ~~allow adjusting grob layouts in grob nodes~~ - only fine adjusting
+- ✔ ~~the nodes of the diagrammer are adjusted to the size of the
+  labels. We could do that, actually. I think it doesn’t look so good,
+  but OK.~~ - now “tight” layouts
 - ~~why is plotting patterns so slow?~~
 - ✔ ~~easier formatting of labels using glue syntax~~
 - ✔ ~~summaries_vt and summaries_vt_df - that is clunky, maybe as_df
@@ -271,11 +281,14 @@ More docs available [here](https://january3.github.io/vtree2/).
 
 ## BUGS
 
+- ✔ ~~incorrect warning when running plot(add_layout(vt, dir=“tb”))
+  because plot sets default dir to lr, and then is surprised that the
+  layout already has a different dir~~
 - ✔ ~~if alias columns are not present, add_labels ignores aliases
   attached to the object. This is an issue for patterns. add_labels
   should check not only the columns, but also get_aliases(vtree)~~
-- plot(pattern, legend=TRUE) does not work, b/c summaries do not contain
-  the virtual node “pattern”
+- ✔ ~~plot(pattern, legend=TRUE) does not work, b/c summaries do not
+  contain the virtual node “pattern”~~
 - ✔ ~~plot(pattern, legend=“tiny”) does not work either, but does not
   throw an error. (the colors of the titles were set to background)~~
 - ✔ ~~vertical layouts do not work with Sankey connectors~~
@@ -287,7 +300,7 @@ More docs available [here](https://january3.github.io/vtree2/).
   `plot_vtree(vt2, layout="tight", lwidth=1, padding=.10, dir="bt")` -
   why are fonts on the second one smaller? - problem with padding, it
   increases when nodes increase~~
-- legend titles sometimes overlap with the legend
+- ~~legend titles sometimes overlap with the legend~~
 - ✔ ~~check the graphic summary example. if dir is tb, it looks ok
   (fonts maybe slightly too large). But turn it around and the fonts on
   the grob nodes are unreadable. Why?~~

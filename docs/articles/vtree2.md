@@ -239,7 +239,7 @@ Once the vtree has been constructed, this cannot change. Any operations
 downstream (like selecting and pruning nodes and modifying their labels)
 will not change the calculated percentages.
 
-### 3.5 Vtree objects
+### 3.5 Vtree object methods
 
 You can inspect the vtree object with a number of methods.
 
@@ -314,7 +314,16 @@ nodecols(vt)
 #> [13] "freq"      "denom"     "leaf"
 ```
 
-You can convert the vtree object to a data frame with `as_tibble`:
+You can directly extract the node columns with the
+[`dplyr::pull()`](https://dplyr.tidyverse.org/reference/pull.html)
+function:
+
+``` r
+head(pull(vt, freq))
+#> [1] 1.0000000 0.1476602 0.1294866 0.3207633 0.4020900 0.3753846
+```
+
+Or you can convert the vtree object to a data frame with `as_tibble`:
 
 ``` r
 as_tibble(vt)
@@ -338,7 +347,54 @@ as_tibble(vt)
 #> #   denom <int>, leaf <lgl>
 ```
 
-### 3.6 Vtree objects as graphs
+### 3.6 Node paths
+
+Each node in a vtree has an associated path, giving the combinations of
+variables and their levels that specify the node. For example, in the
+Titanic example, a path \`Class:1st/Sex:Female/Survived:Yes’ corresponds
+to all samples of passengers of the first class who were females and
+survived the sinking of the Titanic.
+
+Paths are very useful to selecting / targetting nodes. For example, to
+color a single node corresponding to all 1st class passengers who were
+male, you can specify the condition `path == "Class:1st/Sex:Male"`.
+
+By default, the variable name and value are separated by a colon `:`,
+and variable/value combinations are separated by a slash `/`. Therefore,
+if you have variable names containing slashes and/or colons, you will
+get a warning:
+
+``` r
+weird <- titanicNA |> rename("Passenger:Class"=Class,
+                             "Male/Female"=Sex)
+vt <- vtree(weird)
+#> Warning: ✖ Column names contain col/val separator `:`
+#> Following columns contain the separator: Passenger:Class
+#> ℹ Change the .cv_sep parameter to use another separator
+#> Warning: ✖ Column names contain path separator `/`
+#> Following columns contain the separator: Male/Female
+#> ℹ Change the .path_sep parameter to use another separator
+```
+
+You can specify a different separator using `.cv_sep` and
+`.path_sep`arguments:
+
+``` r
+vt <- vtree(weird, .cv_sep="=", .path_sep="|")
+head(pull(vt, "path"), 10)
+#>  [1] "root"                                  
+#>  [2] "Passenger:Class=1st"                   
+#>  [3] "Passenger:Class=2nd"                   
+#>  [4] "Passenger:Class=3rd"                   
+#>  [5] "Passenger:Class=Crew"                  
+#>  [6] "Passenger:Class=NA"                    
+#>  [7] "Passenger:Class=1st|Male/Female=Male"  
+#>  [8] "Passenger:Class=1st|Male/Female=Female"
+#>  [9] "Passenger:Class=1st|Male/Female=NA"    
+#> [10] "Passenger:Class=2nd|Male/Female=Male"
+```
+
+### 3.7 Vtree objects as graphs
 
 The `vtree` class is a wrapper around the `tbl_graph` class from package
 `tidygraph`. It is a directed graph, where each node corresponds to a
@@ -348,7 +404,10 @@ itself inherits from `igraph`, which means that you can use all of the
 
 ``` r
 igraph::degree(vt)
-#>  [1] 4 3 3 3 3 1 1 1 1 1 1 1 1
+#>   [1] 5 4 4 4 4 4 4 4 4 4 4 4 4 4 4 3 3 3 4 4 3 2 3 3 2 3 3 2 3 3 2 3 2 2 3 3 2
+#>  [38] 3 2 3 3 3 3 3 3 3 3 3 3 3 3 2 3 3 3 3 3 3 3 3 3 3 1 1 1 1 1 1 1 1 1 1 1 1
+#>  [75] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+#> [112] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
 ```
 
 Since the default plotting function for `igraph` objects is replaced by
@@ -364,7 +423,7 @@ plot(vt_tbl)
 
 ![](vtree2_files/figure-html/vtree9-1.png)
 
-### 3.7 Tidy selection of variables
+### 3.8 Tidy selection of variables
 
 The selection of columns in
 [`vtree()`](https://january3.github.io/vtree2/reference/vtree.md) and
@@ -521,7 +580,7 @@ vt |> mark(freq < .2) |>
 #> legend will be black and white
 ```
 
-![](vtree2_files/figure-html/unnamed-chunk-3-1.png)
+![](vtree2_files/figure-html/unnamed-chunk-6-1.png)
 
 ## 5 Column and value aliases with `add_aliases()`
 
@@ -1249,8 +1308,6 @@ vt |>
              varspace=c(root=1, Class=1,Sex=1,Survived=4)) |>
   # legend = FALSE: not even column names on the margin
   plot(legend = FALSE)
-#> Warning: ✖ vtree has a precomputed layout with direction 'tb'.
-#> ℹ Ignoring the parameter dir = 'lr'
 ```
 
 ![](vtree2_files/figure-html/layouts4-1.png)
@@ -1350,7 +1407,7 @@ p3 <- plot(vt, legend = TRUE) # or legend = "full"
 plot_grid(p1, p2, p3, nrow = 1)
 ```
 
-![](vtree2_files/figure-html/unnamed-chunk-5-1.png)
+![](vtree2_files/figure-html/unnamed-chunk-8-1.png)
 
 **`dir`** direction of the tree. One of “lr” (left to right), “rl”
 (right to left), “tb” (top to bottom), “bt” (bottom to top). Default is
@@ -1364,7 +1421,7 @@ p4 <- plot(vt, dir = "rl")
 plot_grid(p1, p2, p3, p4, nrow = 1)
 ```
 
-![](vtree2_files/figure-html/unnamed-chunk-6-1.png)
+![](vtree2_files/figure-html/unnamed-chunk-9-1.png)
 
 **`fontsizes`** Font sizes for the various labels are automatically fit
 to the available space, but sometimes you might manually adjust them.
@@ -1496,8 +1553,6 @@ iris_grobs <- iris_grobs[ pull(vt, "node_val") ]
 vt |>
   add_graphics(iris_grobs) |>
   plot(margins=c(.05, .05, .05, .2))
-#> Warning: ✖ vtree has a precomputed layout with direction 'tb'.
-#> ℹ Ignoring the parameter dir = 'lr'
 ```
 
 ![](vtree2_files/figure-html/inset1-1.png)
@@ -1515,8 +1570,6 @@ vt |>
              varspace=c(Species=2,Long_Petals=1)) |>
   add_graphics(iris_grobs, side="l", frac=.5) |>
   plot(margins=c(.05, .05, .05, .2))
-#> Warning: ✖ vtree has a precomputed layout with direction 'tb'.
-#> ℹ Ignoring the parameter dir = 'lr'
 ```
 
 ![](vtree2_files/figure-html/inset1b-1.png)
@@ -1571,8 +1624,6 @@ vt <- vt |>
   add_graphics(grobs, condition = leaf)
 
 plot(vt)
-#> Warning: ✖ vtree has a precomputed layout with direction 'tb'.
-#> ℹ Ignoring the parameter dir = 'lr'
 ```
 
 ![](vtree2_files/figure-html/insets2-1.png)
@@ -1591,11 +1642,9 @@ too small, bad things will happen:
 
 ``` r
 plot(vt)
-#> Warning: ✖ vtree has a precomputed layout with direction 'tb'.
-#> ℹ Ignoring the parameter dir = 'lr'
 ```
 
-![](vtree2_files/figure-html/unnamed-chunk-7-1.png)
+![](vtree2_files/figure-html/unnamed-chunk-10-1.png)
 
 ### 12.3 Graphical summary example
 
@@ -1708,8 +1757,6 @@ vt |>
              lheight=.9) |>
   add_graphics(grobs) |>
   plot(legend=FALSE)
-#> Warning: ✖ vtree has a precomputed layout with direction 'tb'.
-#> ℹ Ignoring the parameter dir = 'lr'
 ```
 
 ![](vtree2_files/figure-html/gsum5-1.png)
@@ -1748,8 +1795,6 @@ vt |>
              lheight=.9) |>
   add_graphics(grobs) |>
   plot(legend=FALSE)
-#> Warning: ✖ vtree has a precomputed layout with direction 'tb'.
-#> ℹ Ignoring the parameter dir = 'lr'
 ```
 
 ![](vtree2_files/figure-html/gsum6-1.png)
@@ -1775,7 +1820,7 @@ p2 <- plot(sk)
 plot_grid(p1, p2, ncol=1)
 ```
 
-![](vtree2_files/figure-html/unnamed-chunk-8-1.png)
+![](vtree2_files/figure-html/unnamed-chunk-11-1.png)
 
 The first plot is a vtree plot with conditional frequencies and a
 Sankey-like layout. The second plot below is a Sankey plot with marginal

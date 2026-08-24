@@ -218,7 +218,7 @@ Once the vtree has been constructed, this cannot change.
 Any operations downstream (like selecting and pruning nodes and modifying
 their labels) will not change the calculated percentages.
 
-## Vtree objects
+## Vtree object methods
 
 You can inspect the vtree object with a number of methods.
 
@@ -270,11 +270,51 @@ just a wrapper around `colnames(as_tibble(vt))`:
 nodecols(vt)
 ```
 
-You can convert the vtree object to a data frame with `as_tibble`:
+You can directly extract the node columns with the `dplyr::pull()`
+function:
+
+
+```{r}
+head(pull(vt, freq))
+```
+
+Or you can convert the vtree object to a data frame with `as_tibble`:
 
 ```{r vtree7}
 as_tibble(vt)
 ```
+
+## Node paths
+
+Each node in a vtree has an associated path, giving the combinations of
+variables and their levels that specify the node. For example, in the
+Titanic example, a path `Class:1st/Sex:Female/Survived:Yes' corresponds to
+all samples of passengers of the first class who were females and survived
+the sinking of the Titanic.
+
+Paths are very useful to selecting / targetting nodes. For example, to
+color a single node corresponding to all 1st class passengers who were
+male, you can specify the condition `path == "Class:1st/Sex:Male"`.
+
+By default, the variable name and value are separated by a colon `:`, and
+variable/value combinations are separated by a slash `/`. Therefore, if you
+have variable names containing slashes and/or colons, you will get a
+warning:
+
+
+```{r}
+weird <- titanicNA |> rename("Passenger:Class"=Class,
+                             "Male/Female"=Sex)
+vt <- vtree(weird)
+```
+
+You can specify a different separator using `.cv_sep` and `.path_sep`arguments:
+
+```{r}
+vt <- vtree(weird, .cv_sep="=", .path_sep="|")
+head(pull(vt, "path"), 10)
+```
+
 
 ## Vtree objects as graphs
 

@@ -1132,6 +1132,9 @@ vt |> add_labels(suffix = smt) |>
 
 ### New functionality in vtree2 compared to vtree ~~Killer features~~
 
+- [`vtree_apply()`](https://january3.github.io/vtree2/reference/vtree_apply.md):
+  partition some data by a vtree and call a function on each partition -
+  conditional data analysis
 - frequency plots: where nodes are scaled by the number of observations
 - inserting other graphical objects into nodes: images or ggplot2’s
 - pruning or keeping nodes takes any logical expression
@@ -1153,18 +1156,22 @@ The following are not yet implemented in vtree2:
   the original data. For now, I will just keep the original
   *summaries*.~~ -\> now the summaries are kept so the legend is always
   the same.
-- the summary expressions in the original vtree package are very
+- ~~the summary expressions in the original vtree package are very
   powerful. While most of what can be done in `vtree` can also be
   achieved in `vtree2`, it requires a few more lines of code. Maybe some
-  shortcuts are in order.
+  shortcuts are in order.~~ -\> introduced fmt as a glue expression plus
+  added convenience variables such as `pct`, this is now more powerful
+  than the original vtree syntax without a major hit on efficacy
 
 ### Design principles for vtree2
 
 - separate frequency calculations, summary calculations, node selection
   and plotting
 - use graphical objects for plotting which are flexible
-- use tidyverse principles for data manipulation
-- use tidyverse syntax for specifying variables
+- use tidyverse principles for data manipulation: expressions as
+  arguments evaluated in the context of a data mask corresponding to the
+  vtree object
+- use tidy selection syntax for specifying variables
 - vtree object inherits from tidygraph’s tbl_graph, so it can be used
   with a wide variety of plotting tools, including ggraph, ggplot2, and
   plotly
