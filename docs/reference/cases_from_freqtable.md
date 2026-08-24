@@ -18,7 +18,8 @@ cases_from_freqtable(x, ..., .freq_col = "Freq")
 
   Columns to use for the tree. If no columns are specified, all columns
   (except the frequency column for the frequency tables) will be used.
-  Use tidyselect syntax to access columns.
+  Use tidy select syntax to access columns. Named expressions to modify
+  or rename columns are also allowed (see examples).
 
 - .freq_col:
 
@@ -54,4 +55,6 @@ cases <- cases_from_freqtable(Titanic, -Age)
 cols <- c("Class", "Sex", "Survived")
 cases <- cases_from_freqtable(Titanic, all_of(cols),
               .freq_col = "Freq")
+cases <- cases_from_freqtable(Titanic, Class,
+                              Gender=Sex, Survived)
 ```

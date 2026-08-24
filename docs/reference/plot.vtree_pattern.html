@@ -54,7 +54,7 @@
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
 <span>  <span class="va">...</span>,</span>
-<span>  sort_by <span class="op">=</span> <span class="va">freq</span>,</span>
+<span>  sort_by <span class="op">=</span> <span class="st">"freq"</span>,</span>
 <span>  palettes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Reds"</span>, <span class="st">"Blues"</span>, <span class="st">"Greens"</span>, <span class="st">"Oranges"</span>, <span class="st">"Purples"</span><span class="op">)</span>,</span>
 <span>  pattern_fill <span class="op">=</span> <span class="st">"#fc9272"</span>,</span>
 <span>  lwidth <span class="op">=</span> <span class="fl">0.4</span>,</span>
@@ -77,8 +77,9 @@
 
 <dt id="arg-sort-by">sort_by<a class="anchor" aria-label="anchor" href="#arg-sort-by"></a></dt>
 <dd><p>The variable to sort the nodes by. Can be "freq" (default),
-"n", or any of the variable names in the pattern object. If NA,
-the pattern will be plotted in the order of the rows in the pattern object.</p></dd>
+or any of the variable names in the pattern object (check
+<code>colnames(pattern)</code>). If NA, the pattern will be plotted in the
+order of the rows in the pattern object.</p></dd>
 
 
 <dt id="arg-palettes">palettes<a class="anchor" aria-label="anchor" href="#arg-palettes"></a></dt>

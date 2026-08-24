@@ -13,8 +13,7 @@ add_graphics(
   side = "b",
   frac = 0.8,
   shape = "rectangle",
-  condition = NULL,
-  mask = TRUE
+  mask = NULL
 )
 ```
 
@@ -43,16 +42,11 @@ add_graphics(
 
   shape of the node ("rectangle" or "roundrectangle").
 
-- condition:
-
-  Condition to evaluate in the context of the nodes data frame. Only
-  nodes for which the result is TRUE will be assigned a grob.
-
 - mask:
 
-  a logical vector of the same length as the number of nodes. A graphics
-  will be assigned to a node only if the corresponding mask value is
-  TRUE.
+  Expression to evaluate in the context of the nodes data frame,
+  returning a logical vector. Only nodes for which the result is TRUE
+  will be assigned a grob.
 
 ## Value
 

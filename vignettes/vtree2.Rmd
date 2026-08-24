@@ -355,6 +355,30 @@ vtree(titanicNA, Class:Age)
 vtree(titanicNA, all_of(c("Class", "Sex", "Age")))
 ```
 
+Even more, you can also rename and modify variables in place. `vtree()` by
+design does not allow numeric or logical columns, since it is for
+categorical data. It is better to be explicit when converting such data to
+character vectors or factors. However, it can be done directly within
+vtree. The `ToothGrowth` data set contains a categoric variable, `dose`,
+which is represented by a numeric column with three values: `0.5`, `1.0`,
+`2.0`. Following allows a conversion on the fly:
+
+
+```{r}
+vt <- vtree(ToothGrowth, Supplement=supp, Dose=as.character(dose))
+names(vt)
+```
+
+In the above example, the `Supplement=supp` demonstrates that this syntax
+can be also used to rename the columns of the cases data frame in place.
+
+Note, however, that while the above may be convenient, it will lead to
+discrepancies between the cases data frame and the generated vtree. The
+`summarize_by_node()` and `vtree_apply()` functions will no longer work
+with the `vt` object above and the original `ToothGrowth` data frame -
+because the latter does not have a `Supplement` or `Dose` column.
+
+
 
 
 
@@ -587,12 +611,9 @@ conditionally add labels. The following makes simple default labels and
 adds a more informative label only to the leafs on the tree:
 
 ```{r labels2b,fig.width=6,fig.height=7}
-vt <- vtree(titanicNA, Class, Survived)
-mask <- pull(vt, leaf) # leaf is a logical vector
-                       # indicating whether a node is a leaf node
-vt |>
+vtree(titanicNA, Class, Survived) |>
   add_labels(template = "sameline") |>
-  add_labels(mask = mask, template = "long") |>
+  add_labels(mask = leaf, template = "long") |>
   plot(lwidth=.8)
 ```
 
@@ -682,20 +703,23 @@ plot(vt, legend = FALSE)
 
 ## Using a mask
 
-You can specify a mask with `add_labels()` - a logical vector with the same
-length as the number of nodes - to indicate which nodes should have their
-labels modified. For example, you may want a different information for the
-leaf nodes as for other nodes:
+You can specify a mask with `add_labels()` - an expression returning a
+logical vector with the same length as the number of nodes - to indicate
+which nodes should have their labels modified. For example, you may want a
+different information for the leaf nodes as for other nodes:
 
 ```{r labels_mask,fig.width=5,fig.height=4}
 vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived) |>
   retain(path == "Class:1st") # only keep the first class passengers
-mask <- find_nodes(vt, leaf) # leaf is a logical vector
-add_labels(vt, mask = mask, template = "long") |>
-  add_labels(mask = !mask, fmt = "{node_val}") |>
+
+add_labels(vt, mask = leaf, template = "long") |>
+  add_labels(mask = !leaf, fmt = "{node_val}") |>
   plot(legend = FALSE, dir="tb", show_root = FALSE,
        lwidth = 0.7, lheight = 0.5)
 ```
+
+Of course, you can also directly provide a logical vector as an argument to
+mask.
 
 ## Parameter precedence with `add_labels()`
 
@@ -1239,6 +1263,62 @@ plot(vt, richtext = TRUE, legend = TRUE)
 
 # Patterns
 
+Patterns are simply unique combinations of variable levels present in the
+data. Consider the `ToothGrowth` data set, which contains two categorical
+variables (supplement type and dosage) and the resulting length of
+odontoblasts in guinea pigs.
+
+
+```{r patterns1,fig.width=5,fig.height=3, eval=FALSE}
+
+tg <- mutate(ToothGrowth, dose=as.character(dose))
+vt <- vtree(tg, dose, supp)
+pat <- pattern(vt)
+
+plot(pat)
+```
+
+```{r patterns1_real,fig.width=8,fig.height=4}
+
+tg <- mutate(ToothGrowth, dose=as.character(dose))
+vt <- vtree(tg, dose, supp)
+pat <- pattern(vt)
+
+p0 <- plot(vt)
+p1 <- plot(pat)
+plot_grid(p0, p1)
+```
+
+In the above figure, the left you can see a regular vtree; the right-hand
+side illustration shows the pattern -- all combinations of the two
+variables (supplement type and dose) which are present in the data. As you
+can see, the data set is perfectly balanced, and all the subgroups have the
+same size.
+
+Patterns are basically data frames (tibbles) with some additional
+information:
+
+```{r patterns2}
+as_tibble(pat)
+```
+
+
+For each variable, they contain the count and frequency of the given level
+within its parent node - the numbers are the same as in the vtree. The
+final column, `freq` gives the frequency of the pattern - how often the
+given combination of levels is encountered among the samples. 
+
+Patterns can be plotted with `plot()`, and prior to the plotting colors can
+be modified with `add_palette()` and aliases set with `add_aliases()`:
+
+```{r patterns3,width=4,height=5}
+pat |>
+  add_aliases(col_alias=c(dose="Dosage", supp="Supplement type"),
+              val_alias=list(supp=c(OJ="Orange juice", VC="Vitamin C"))) |>
+  add_palette(palettes = c("Purples", "Greens")) |>
+  plot(legend=TRUE, lwidth=.7)
+```
+
 
 # Inset plots
 
@@ -1359,16 +1439,15 @@ vt <- vt |>
   add_layout(dir="tb", show_root=FALSE, lheight=.8,
              varspace=c(Sex=1,Survived=3)) |>
   mutate(shape = ifelse(leaf, "rectangle", "roundrectangle")) |>
-  add_graphics(grobs, condition = leaf)
+  add_graphics(grobs, mask = leaf)
 
 plot(vt)
 ```
 
-The `condition` parameter of `add_graphics()` is evaluated in the context
+The `mask` parameter of `add_graphics()` is evaluated in the context
 of the nodes data frame, and one column in that data frame is `leaf`, which
-contains a TRUE value if the node is a leaf. Therefore `condition = leaf`
-means: include the grobs only for the nodes that are leafs. You can also
-use the `mask` parameter for this purpose.
+contains a TRUE value if the node is a leaf. Therefore `mask = leaf`
+means: include the grobs only for the nodes that are leafs.
 
 There is one issue with such plots: unlike `vtree2`, `ggplot2` does not fit
 font sizes automatically to the available space. If your image is too

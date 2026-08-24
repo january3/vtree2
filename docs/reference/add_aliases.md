@@ -7,25 +7,20 @@ and the variable values (levels).
 ## Usage
 
 ``` r
-add_aliases(vtree, ...)
+add_aliases(x, val_alias = NULL, col_alias = NULL)
 
 # S3 method for class 'vtree_pattern'
-add_aliases(pattern, val_alias = NULL, col_alias = NULL)
+add_aliases(x, val_alias = NULL, col_alias = NULL)
 
 # S3 method for class 'vtree'
-add_aliases(vtree, val_alias = NULL, col_alias = NULL)
+add_aliases(x, val_alias = NULL, col_alias = NULL)
 ```
 
 ## Arguments
 
-- vtree:
+- x:
 
-  an object of class vtree
-
-- pattern:
-
-  an object of class vtree_pattern (produced by
-  [`pattern()`](https://january3.github.io/vtree2/reference/pattern.md))
+  an object of class vtree or vtree_pattern
 
 - val_alias:
 

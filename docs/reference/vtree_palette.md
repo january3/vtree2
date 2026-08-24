@@ -5,27 +5,28 @@ Generate and add color palettes to vtree objects.
 ## Usage
 
 ``` r
-vtree_palette(x, ...)
+vtree_palette(x, palettes = c("Reds", "Blues", "Greens", "Oranges", "Purples"))
 
 # S3 method for class 'vtree'
-vtree_palette(
-  vtree,
-  palettes = c("Reds", "Blues", "Greens", "Oranges", "Purples")
-)
+vtree_palette(x, palettes = c("Reds", "Blues", "Greens", "Oranges", "Purples"))
 
 # S3 method for class 'vtree_pattern'
-vtree_palette(
-  pattern,
-  palettes = c("Reds", "Blues", "Greens", "Oranges", "Purples")
-)
+vtree_palette(x, palettes = c("Reds", "Blues", "Greens", "Oranges", "Purples"))
 
 var_palette(var_levels, pal)
 
-add_palette(vtree, ...)
+add_palette(
+  x,
+  palettes = c("Reds", "Blues", "Greens", "Oranges", "Purples"),
+  na = "white",
+  var_palette = NULL,
+  var_colors = NULL,
+  what = "fill"
+)
 
 # S3 method for class 'vtree'
 add_palette(
-  vtree,
+  x,
   palettes = c("Reds", "Blues", "Greens", "Oranges", "Purples"),
   na = "white",
   var_palette = NULL,
@@ -35,7 +36,7 @@ add_palette(
 
 # S3 method for class 'vtree_pattern'
 add_palette(
-  pattern,
+  x,
   palettes = c("Reds", "Blues", "Greens", "Oranges", "Purples"),
   na = "white",
   var_palette = NULL,
@@ -46,18 +47,14 @@ add_palette(
 
 ## Arguments
 
-- vtree:
+- x:
 
-  A vtree object
+  A vtree or vtree pattern object
 
 - palettes:
 
   The names of RColorBrewer palettes corresponding to the subsequent
   columns in the vtree
-
-- pattern:
-
-  A vtree pattern object
 
 - var_levels:
 
@@ -90,6 +87,10 @@ add_palette(
   automatically chooses a contrast color for the text. If 'what' is
   'text', it adds a text color for the node and automatically chooses a
   contrast color for the fill.
+
+- vtree:
+
+  A vtree object
 
 ## Value
 

@@ -212,7 +212,13 @@ More docs available [here](https://january3.github.io/vtree2/).
 ## TODO/PROBLEMS
 
 - write a manual in the main vignette \[——–\|\] 95% complete
-- add label text alignments left/right/center - how?
+- use other examples than Titanic, e.g. ToothGrowth - they make more
+  readable figures
+- the tree plotting mechanism is more general, we could separate it into
+  another package. Generally, the plotting mechanisms (fitting fonts to
+  labels, palettes etc.) are more general.
+- add label text alignments left/right/center - how should that work?
+  (e.g. center for node name, but left-aligned for the summary…)
 - add condition argument to add_label? like with grob? or replace the
   mask arg with a condition? actually, a condition also understands a
   mask, right? maybe add_labels, add_grobs, add_aliases should have a
@@ -229,6 +235,8 @@ More docs available [here](https://january3.github.io/vtree2/).
   factor? or some automation controlled with a param?
 - add_layout should not modify shape if present
 - faster processing of cases into trees
+- ✔ ~~it should be possible to do this: vtree(ToothGrowth, supp,
+  as.character(dose))~~
 - ✔ ~~proper Sankey plots~~
 - ✔ ~~adding grobs explicitly with `add_grobs()`; grobs should have
   layout parameters.~~
@@ -298,6 +306,7 @@ More docs available [here](https://january3.github.io/vtree2/).
 
 ## BUGS
 
+- plot(pattern(vt), layout=“proportional”) produces garbage
 - ✔ ~~incorrect warning when running plot(add_layout(vt, dir=“tb”))
   because plot sets default dir to lr, and then is surprised that the
   layout already has a different dir~~

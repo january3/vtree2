@@ -9,7 +9,7 @@ Plots a vtree pattern object.
 plot(
   x,
   ...,
-  sort_by = freq,
+  sort_by = "freq",
   palettes = c("Reds", "Blues", "Greens", "Oranges", "Purples"),
   pattern_fill = "#fc9272",
   lwidth = 0.4,
@@ -30,9 +30,10 @@ plot(
 
 - sort_by:
 
-  The variable to sort the nodes by. Can be "freq" (default), "n", or
-  any of the variable names in the pattern object. If NA, the pattern
-  will be plotted in the order of the rows in the pattern object.
+  The variable to sort the nodes by. Can be "freq" (default), or any of
+  the variable names in the pattern object (check `colnames(pattern)`).
+  If NA, the pattern will be plotted in the order of the rows in the
+  pattern object.
 
 - palettes:
 

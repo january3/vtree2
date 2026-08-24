@@ -50,27 +50,28 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">vtree_palette</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">vtree_palette</span><span class="op">(</span><span class="va">x</span>, palettes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Reds"</span>, <span class="st">"Blues"</span>, <span class="st">"Greens"</span>, <span class="st">"Oranges"</span>, <span class="st">"Purples"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for class 'vtree'</span></span>
-<span><span class="fu">vtree_palette</span><span class="op">(</span></span>
-<span>  <span class="va">vtree</span>,</span>
-<span>  palettes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Reds"</span>, <span class="st">"Blues"</span>, <span class="st">"Greens"</span>, <span class="st">"Oranges"</span>, <span class="st">"Purples"</span><span class="op">)</span></span>
-<span><span class="op">)</span></span>
+<span><span class="fu">vtree_palette</span><span class="op">(</span><span class="va">x</span>, palettes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Reds"</span>, <span class="st">"Blues"</span>, <span class="st">"Greens"</span>, <span class="st">"Oranges"</span>, <span class="st">"Purples"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for class 'vtree_pattern'</span></span>
-<span><span class="fu">vtree_palette</span><span class="op">(</span></span>
-<span>  <span class="va">pattern</span>,</span>
-<span>  palettes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Reds"</span>, <span class="st">"Blues"</span>, <span class="st">"Greens"</span>, <span class="st">"Oranges"</span>, <span class="st">"Purples"</span><span class="op">)</span></span>
-<span><span class="op">)</span></span>
+<span><span class="fu">vtree_palette</span><span class="op">(</span><span class="va">x</span>, palettes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Reds"</span>, <span class="st">"Blues"</span>, <span class="st">"Greens"</span>, <span class="st">"Oranges"</span>, <span class="st">"Purples"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">var_palette</span><span class="op">(</span><span class="va">var_levels</span>, <span class="va">pal</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">add_palette</span><span class="op">(</span><span class="va">vtree</span>, <span class="va">...</span><span class="op">)</span></span>
+<span><span class="fu">add_palette</span><span class="op">(</span></span>
+<span>  <span class="va">x</span>,</span>
+<span>  palettes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Reds"</span>, <span class="st">"Blues"</span>, <span class="st">"Greens"</span>, <span class="st">"Oranges"</span>, <span class="st">"Purples"</span><span class="op">)</span>,</span>
+<span>  na <span class="op">=</span> <span class="st">"white"</span>,</span>
+<span>  var_palette <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  var_colors <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  what <span class="op">=</span> <span class="st">"fill"</span></span>
+<span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for class 'vtree'</span></span>
 <span><span class="fu">add_palette</span><span class="op">(</span></span>
-<span>  <span class="va">vtree</span>,</span>
+<span>  <span class="va">x</span>,</span>
 <span>  palettes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Reds"</span>, <span class="st">"Blues"</span>, <span class="st">"Greens"</span>, <span class="st">"Oranges"</span>, <span class="st">"Purples"</span><span class="op">)</span>,</span>
 <span>  na <span class="op">=</span> <span class="st">"white"</span>,</span>
 <span>  var_palette <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -80,7 +81,7 @@
 <span></span>
 <span><span class="co"># S3 method for class 'vtree_pattern'</span></span>
 <span><span class="fu">add_palette</span><span class="op">(</span></span>
-<span>  <span class="va">pattern</span>,</span>
+<span>  <span class="va">x</span>,</span>
 <span>  palettes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Reds"</span>, <span class="st">"Blues"</span>, <span class="st">"Greens"</span>, <span class="st">"Oranges"</span>, <span class="st">"Purples"</span><span class="op">)</span>,</span>
 <span>  na <span class="op">=</span> <span class="st">"white"</span>,</span>
 <span>  var_palette <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -93,17 +94,13 @@
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
 
 
-<dl><dt id="arg-vtree">vtree<a class="anchor" aria-label="anchor" href="#arg-vtree"></a></dt>
-<dd><p>A vtree object</p></dd>
+<dl><dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
+<dd><p>A vtree or vtree pattern object</p></dd>
 
 
 <dt id="arg-palettes">palettes<a class="anchor" aria-label="anchor" href="#arg-palettes"></a></dt>
 <dd><p>The names of RColorBrewer palettes corresponding to the
 subsequent columns in the vtree</p></dd>
-
-
-<dt id="arg-pattern">pattern<a class="anchor" aria-label="anchor" href="#arg-pattern"></a></dt>
-<dd><p>A vtree pattern object</p></dd>
 
 
 <dt id="arg-var-levels">var_levels<a class="anchor" aria-label="anchor" href="#arg-var-levels"></a></dt>
@@ -137,6 +134,10 @@ palettes defined by the <code>palettes</code> argument, even if
 and automatically chooses a contrast color for the text. If
 'what' is 'text', it adds a text color for the node and
 automatically chooses a contrast color for the fill.</p></dd>
+
+
+<dt id="arg-vtree">vtree<a class="anchor" aria-label="anchor" href="#arg-vtree"></a></dt>
+<dd><p>A vtree object</p></dd>
 
 </dl></div>
     <div class="section level2">

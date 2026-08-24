@@ -225,7 +225,7 @@ test_that("grob injection works", {
 
   #grid.draw(box)
   vt <- vtree_from_freqtable(Titanic, Class, Sex) |>
-    add_graphics(grob = list(box), condition = path == "Class:1st/Sex:Female")
+    add_graphics(grob = list(box), mask = path == "Class:1st/Sex:Female")
   expect_in("grob", nodecols(vt))
   nd <- as_tibble(vt)
   expect_all_true(
@@ -241,14 +241,14 @@ test_that("grob injection works", {
 
   vt <- vtree_from_freqtable(Titanic, Class, Sex) |>
     add_graphics(grob = list(box), side="t",
-                 condition = path == "Class:1st/Sex:Female")
+                 mask = path == "Class:1st/Sex:Female")
   nd <- as_tibble(vt)
   expect_all_true(
     purrr::map_lgl(nd$grob[ nd$path == "Class:1st/Sex:Female" ],
                   \(x) x$side == "t"))
 
   vt <- vtree_from_freqtable(Titanic, Class, Sex) |>
-    add_graphics(grob = list(box), condition = FALSE)
+    add_graphics(grob = list(box), mask = FALSE)
   expect_in("grob", nodecols(vt))
   nd <- as_tibble(vt)
   expect_all_true(
@@ -260,7 +260,7 @@ test_that("grob injection works", {
                "Incorrect frac parameter")
   expect_error(add_graphics(vt, grob = c(list(box), list(box))),
                "Incorrect grob list length")
-  expect_error(add_graphics(vt, list(box), condition = c(TRUE, FALSE)),
+  expect_error(add_graphics(vt, list(box), mask = c(TRUE, FALSE)),
                "returned a vector with unexpected length")
 })
 
@@ -278,7 +278,7 @@ test_that("grob plotting works", {
 
 
   vt <- vtree_from_freqtable(Titanic, Class, Sex) |>
-    add_graphics(grob = list(box), condition = path == "Class:1st/Sex:Female")
+    add_graphics(grob = list(box), mask = path == "Class:1st/Sex:Female")
 
   tempfile <- tempfile(fileext = ".pdf")
   dev.new <- grDevices::pdf(tempfile, width=5, height=5)
@@ -296,7 +296,7 @@ test_that("grob plotting works", {
   expect_equal(tb$children$test_text$label, "Hello")
 
   vt <- vtree_from_freqtable(Titanic, Class, Sex) |>
-    add_graphics(grob = list(box), condition = leaf)
+    add_graphics(grob = list(box), mask = leaf)
 
   tempfile <- tempfile(fileext = ".pdf")
   p <- plot(vt)
@@ -318,7 +318,7 @@ test_that("grob plotting works", {
   vt <- vtree_from_freqtable(Titanic, Class, Sex)
   gl <- list(box)
   dev.new <- grDevices::pdf(tempfile, width=5, height=5)
-  expect_no_error(add_graphics(vt, gl, condition = leaf) |> plot())
+  expect_no_error(add_graphics(vt, gl, mask = leaf) |> plot())
   expect_no_error(add_graphics(vt, gl) |> plot())
   expect_no_error(add_graphics(vt, gl, side="t") |> plot())
   expect_no_error(add_graphics(vt, gl, side="b") |> plot())

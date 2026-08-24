@@ -440,6 +440,34 @@ vtree(titanicNA, Class:Age)
 vtree(titanicNA, all_of(c("Class", "Sex", "Age")))
 ```
 
+Even more, you can also rename and modify variables in place.
+[`vtree()`](https://january3.github.io/vtree2/reference/vtree.md) by
+design does not allow numeric or logical columns, since it is for
+categorical data. It is better to be explicit when converting such data
+to character vectors or factors. However, it can be done directly within
+vtree. The `ToothGrowth` data set contains a categoric variable, `dose`,
+which is represented by a numeric column with three values: `0.5`,
+`1.0`, `2.0`. Following allows a conversion on the fly:
+
+``` r
+vt <- vtree(ToothGrowth, Supplement=supp, Dose=as.character(dose))
+names(vt)
+#> [1] "Supplement" "Dose"
+```
+
+In the above example, the `Supplement=supp` demonstrates that this
+syntax can be also used to rename the columns of the cases data frame in
+place.
+
+Note, however, that while the above may be convenient, it will lead to
+discrepancies between the cases data frame and the generated vtree. The
+[`summarize_by_node()`](https://january3.github.io/vtree2/reference/summarize_by_node.md)
+and
+[`vtree_apply()`](https://january3.github.io/vtree2/reference/vtree_apply.md)
+functions will no longer work with the `vt` object above and the
+original `ToothGrowth` data frame - because the latter does not have a
+`Supplement` or `Dose` column.
+
 ## 4 Pruning, retain and selecting
 
 ### 4.1 Pruning and keeping
@@ -580,7 +608,7 @@ vt |> mark(freq < .2) |>
 #> legend will be black and white
 ```
 
-![](vtree2_files/figure-html/unnamed-chunk-6-1.png)
+![](vtree2_files/figure-html/unnamed-chunk-7-1.png)
 
 ## 5 Column and value aliases with `add_aliases()`
 
@@ -711,12 +739,9 @@ makes simple default labels and adds a more informative label only to
 the leafs on the tree:
 
 ``` r
-vt <- vtree(titanicNA, Class, Survived)
-mask <- pull(vt, leaf) # leaf is a logical vector
-                       # indicating whether a node is a leaf node
-vt |>
+vtree(titanicNA, Class, Survived) |>
   add_labels(template = "sameline") |>
-  add_labels(mask = mask, template = "long") |>
+  add_labels(mask = leaf, template = "long") |>
   plot(lwidth=.8)
 ```
 
@@ -813,21 +838,25 @@ plot(vt, legend = FALSE)
 
 You can specify a mask with
 [`add_labels()`](https://january3.github.io/vtree2/reference/add_labels.md) -
-a logical vector with the same length as the number of nodes - to
-indicate which nodes should have their labels modified. For example, you
-may want a different information for the leaf nodes as for other nodes:
+an expression returning a logical vector with the same length as the
+number of nodes - to indicate which nodes should have their labels
+modified. For example, you may want a different information for the leaf
+nodes as for other nodes:
 
 ``` r
 vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived) |>
   retain(path == "Class:1st") # only keep the first class passengers
-mask <- find_nodes(vt, leaf) # leaf is a logical vector
-add_labels(vt, mask = mask, template = "long") |>
-  add_labels(mask = !mask, fmt = "{node_val}") |>
+
+add_labels(vt, mask = leaf, template = "long") |>
+  add_labels(mask = !leaf, fmt = "{node_val}") |>
   plot(legend = FALSE, dir="tb", show_root = FALSE,
        lwidth = 0.7, lheight = 0.5)
 ```
 
 ![](vtree2_files/figure-html/labels_mask-1.png)
+
+Of course, you can also directly provide a logical vector as an argument
+to mask.
 
 ### 6.5 Parameter precedence with `add_labels()`
 
@@ -1407,7 +1436,7 @@ p3 <- plot(vt, legend = TRUE) # or legend = "full"
 plot_grid(p1, p2, p3, nrow = 1)
 ```
 
-![](vtree2_files/figure-html/unnamed-chunk-8-1.png)
+![](vtree2_files/figure-html/unnamed-chunk-9-1.png)
 
 **`dir`** direction of the tree. One of “lr” (left to right), “rl”
 (right to left), “tb” (top to bottom), “bt” (bottom to top). Default is
@@ -1421,7 +1450,7 @@ p4 <- plot(vt, dir = "rl")
 plot_grid(p1, p2, p3, p4, nrow = 1)
 ```
 
-![](vtree2_files/figure-html/unnamed-chunk-9-1.png)
+![](vtree2_files/figure-html/unnamed-chunk-10-1.png)
 
 **`fontsizes`** Font sizes for the various labels are automatically fit
 to the available space, but sometimes you might manually adjust them.
@@ -1496,6 +1525,79 @@ plot(vt, richtext = TRUE, legend = TRUE)
 ![](vtree2_files/figure-html/richtext2-1.png)
 
 ## 11 Patterns
+
+Patterns are simply unique combinations of variable levels present in
+the data. Consider the `ToothGrowth` data set, which contains two
+categorical variables (supplement type and dosage) and the resulting
+length of odontoblasts in guinea pigs.
+
+``` r
+
+tg <- mutate(ToothGrowth, dose=as.character(dose))
+vt <- vtree(tg, dose, supp)
+pat <- pattern(vt)
+
+plot(pat)
+```
+
+``` r
+
+tg <- mutate(ToothGrowth, dose=as.character(dose))
+vt <- vtree(tg, dose, supp)
+pat <- pattern(vt)
+
+p0 <- plot(vt)
+p1 <- plot(pat)
+plot_grid(p0, p1)
+```
+
+![](vtree2_files/figure-html/patterns1_real-1.png)
+
+In the above figure, the left you can see a regular vtree; the
+right-hand side illustration shows the pattern – all combinations of the
+two variables (supplement type and dose) which are present in the data.
+As you can see, the data set is perfectly balanced, and all the
+subgroups have the same size.
+
+Patterns are basically data frames (tibbles) with some additional
+information:
+
+``` r
+as_tibble(pat)
+#> # A tibble: 6 × 15
+#>   path   node_id dose  dose_n dose_freq dose_tot_n dose_missing dose_denom supp 
+#>   <chr>    <int> <chr>  <int>     <dbl>      <int>        <int>      <int> <chr>
+#> 1 dose:…       5 0.5       20     0.333         60            0         60 OJ   
+#> 2 dose:…       6 0.5       20     0.333         60            0         60 VC   
+#> 3 dose:…       7 1         20     0.333         60            0         60 OJ   
+#> 4 dose:…       8 1         20     0.333         60            0         60 VC   
+#> 5 dose:…       9 2         20     0.333         60            0         60 OJ   
+#> 6 dose:…      10 2         20     0.333         60            0         60 VC   
+#> # ℹ 6 more variables: supp_n <int>, supp_freq <dbl>, supp_tot_n <int>,
+#> #   supp_missing <int>, supp_denom <int>, freq <dbl>
+```
+
+For each variable, they contain the count and frequency of the given
+level within its parent node - the numbers are the same as in the vtree.
+The final column, `freq` gives the frequency of the pattern - how often
+the given combination of levels is encountered among the samples.
+
+Patterns can be plotted with
+[`plot()`](https://rdrr.io/r/graphics/plot.default.html), and prior to
+the plotting colors can be modified with
+[`add_palette()`](https://january3.github.io/vtree2/reference/vtree_palette.md)
+and aliases set with
+[`add_aliases()`](https://january3.github.io/vtree2/reference/add_aliases.md):
+
+``` r
+pat |>
+  add_aliases(col_alias=c(dose="Dosage", supp="Supplement type"),
+              val_alias=list(supp=c(OJ="Orange juice", VC="Vitamin C"))) |>
+  add_palette(palettes = c("Purples", "Greens")) |>
+  plot(legend=TRUE, lwidth=.7)
+```
+
+![](vtree2_files/figure-html/patterns3-1.png)
 
 ## 12 Inset plots
 
@@ -1621,20 +1723,19 @@ vt <- vt |>
   add_layout(dir="tb", show_root=FALSE, lheight=.8,
              varspace=c(Sex=1,Survived=3)) |>
   mutate(shape = ifelse(leaf, "rectangle", "roundrectangle")) |>
-  add_graphics(grobs, condition = leaf)
+  add_graphics(grobs, mask = leaf)
 
 plot(vt)
 ```
 
 ![](vtree2_files/figure-html/insets2-1.png)
 
-The `condition` parameter of
+The `mask` parameter of
 [`add_graphics()`](https://january3.github.io/vtree2/reference/add_graphics.md)
 is evaluated in the context of the nodes data frame, and one column in
 that data frame is `leaf`, which contains a TRUE value if the node is a
-leaf. Therefore `condition = leaf` means: include the grobs only for the
-nodes that are leafs. You can also use the `mask` parameter for this
-purpose.
+leaf. Therefore `mask = leaf` means: include the grobs only for the
+nodes that are leafs.
 
 There is one issue with such plots: unlike `vtree2`, `ggplot2` does not
 fit font sizes automatically to the available space. If your image is
@@ -1644,7 +1745,7 @@ too small, bad things will happen:
 plot(vt)
 ```
 
-![](vtree2_files/figure-html/unnamed-chunk-10-1.png)
+![](vtree2_files/figure-html/unnamed-chunk-11-1.png)
 
 ### 12.3 Graphical summary example
 
@@ -1820,7 +1921,7 @@ p2 <- plot(sk)
 plot_grid(p1, p2, ncol=1)
 ```
 
-![](vtree2_files/figure-html/unnamed-chunk-11-1.png)
+![](vtree2_files/figure-html/unnamed-chunk-12-1.png)
 
 The first plot is a vtree plot with conditional frequencies and a
 Sankey-like layout. The second plot below is a Sankey plot with marginal

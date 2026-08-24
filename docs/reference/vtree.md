@@ -31,7 +31,8 @@ vtree_from_freqtable(
 
   Columns to use for the tree. If no columns are specified, all columns
   (except the frequency column for the frequency tables) will be used.
-  Use tidyselect syntax to access columns.
+  Use tidy select syntax to access columns. Named expressions to modify
+  or rename columns are also allowed (see examples).
 
 - .vp:
 
@@ -167,4 +168,14 @@ vt <- vtree(titanicNA, -Age)
 # same as:
 vt <- vtree(titanicNA, Class, Sex, Survived)
 plot(vt, dir="tb")
+
+
+# using derived variables
+vt <- vtree(titanicNA, Class, Gender=Sex, Survived)
+names(vt)         # "Class" "Gender" "Survived"
+#> [1] "Class"    "Survived" "Gender"  
+vt <- vtree(ToothGrowth,
+      dose_mg = as.character(dose), supplement=supp)
+names(vt)         # "dose_mg" "supplement"
+#> [1] "dose_mg"    "supplement"
 ```

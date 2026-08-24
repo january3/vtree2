@@ -59,7 +59,7 @@ node labels.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">add_labels</span><span class="op">(</span></span>
 <span>  <span class="va">vtree</span>,</span>
 <span>  template <span class="op">=</span> <span class="st">"simple"</span>,</span>
-<span>  mask <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  mask <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  fmt <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  fmt_na <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  fmt_root <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -86,8 +86,10 @@ be overridden by the respective formatting expression.</p></dd>
 
 
 <dt id="arg-mask">mask<a class="anchor" aria-label="anchor" href="#arg-mask"></a></dt>
-<dd><p>a logical vector indicating
-the nodes for which the labels will be modified.</p></dd>
+<dd><p>a logical vector indicating the nodes for which the labels
+will be modified. Alternatively, a logical expression can be
+provided which will be evaluated in the context of the vtree node
+data frame. If NULL (default), all nodes will be modified.</p></dd>
 
 
 <dt id="arg-fmt">fmt<a class="anchor" aria-label="anchor" href="#arg-fmt"></a></dt>
@@ -217,8 +219,7 @@ because for a vp tree the NA value percentages are meaningless.</p>
 <span class="r-plt img"><img src="add_labels-2.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># only add labels to some nodes</span></span></span>
-<span class="r-in"><span><span class="va">mask</span> <span class="op">&lt;-</span> <span class="fu"><a href="prune.html">find_nodes</a></span><span class="op">(</span><span class="va">vt</span>, <span class="va">freq</span> <span class="op">&gt;</span> <span class="fl">.30</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">vt</span> <span class="op">|&gt;</span> <span class="fu">add_labels</span><span class="op">(</span>mask <span class="op">=</span> <span class="va">mask</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span><span class="va">vt</span> <span class="op">|&gt;</span> <span class="fu">add_labels</span><span class="op">(</span>mask <span class="op">=</span> <span class="va">freq</span> <span class="op">&gt;</span> <span class="fl">.30</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span>layout <span class="op">=</span> <span class="st">"proportional"</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="add_labels-3.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>

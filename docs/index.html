@@ -207,7 +207,9 @@
 </h2>
 <ul>
 <li>write a manual in the main vignette [——–|] 95% complete</li>
-<li>add label text alignments left/right/center - how?</li>
+<li>use other examples than Titanic, e.g. ToothGrowth - they make more readable figures</li>
+<li>the tree plotting mechanism is more general, we could separate it into another package. Generally, the plotting mechanisms (fitting fonts to labels, palettes etc.) are more general.</li>
+<li>add label text alignments left/right/center - how should that work? (e.g. center for node name, but left-aligned for the summary…)</li>
 <li>add condition argument to add_label? like with grob? or replace the mask arg with a condition? actually, a condition also understands a mask, right? maybe add_labels, add_grobs, add_aliases should have a uniform interface wr to condition/mask</li>
 <li>write a developers vignette</li>
 <li>vtree_apply is incredibly powerful and should be highlighted separately. It allows conditional analyses of the data. Maybe a separate vignette on how to conditionally analyse data with vtrees and vtree_apply.</li>
@@ -217,6 +219,8 @@
 <li>vtree constructors take only character or factor variables: <del>build in checking for column type</del> maybe add functions to convert numeric to factor? or some automation controlled with a param?</li>
 <li>add_layout should not modify shape if present</li>
 <li>faster processing of cases into trees</li>
+<li>✔ <del>it should be possible to do this: vtree(ToothGrowth, supp, as.character(dose))</del>
+</li>
 <li>✔ <del>proper Sankey plots</del>
 </li>
 <li>✔ <del>adding grobs explicitly with <code>add_grobs()</code>; grobs should have layout parameters.</del>
@@ -286,6 +290,7 @@
 <h2 id="bugs">BUGS<a class="anchor" aria-label="anchor" href="#bugs"></a>
 </h2>
 <ul>
+<li>plot(pattern(vt), layout=“proportional”) produces garbage</li>
 <li>✔ <del>incorrect warning when running plot(add_layout(vt, dir=“tb”)) because plot sets default dir to lr, and then is surprised that the layout already has a different dir</del>
 </li>
 <li>✔ <del>if alias columns are not present, add_labels ignores aliases attached to the object. This is an issue for patterns. add_labels should check not only the columns, but also get_aliases(vtree)</del>

@@ -11,7 +11,7 @@ function to show as node labels.
 add_labels(
   vtree,
   template = "simple",
-  mask = TRUE,
+  mask = NULL,
   fmt = NULL,
   fmt_na = NULL,
   fmt_root = NULL,
@@ -38,7 +38,9 @@ add_labels(
 - mask:
 
   a logical vector indicating the nodes for which the labels will be
-  modified.
+  modified. Alternatively, a logical expression can be provided which
+  will be evaluated in the context of the vtree node data frame. If NULL
+  (default), all nodes will be modified.
 
 - fmt:
 
@@ -184,8 +186,7 @@ vt |> add_labels(template = "long") |> plot()
 
 
 # only add labels to some nodes
-mask <- find_nodes(vt, freq > .30)
-vt |> add_labels(mask = mask) |>
+vt |> add_labels(mask = freq > .30) |>
   plot(layout = "proportional")
 
 
