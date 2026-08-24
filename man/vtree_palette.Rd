@@ -10,24 +10,25 @@
 \alias{add_palette.vtree_pattern}
 \title{Color palettes for a variable levels}
 \usage{
-vtree_palette(x, ...)
+vtree_palette(x, palettes = c("Reds", "Blues", "Greens", "Oranges", "Purples"))
 
-\method{vtree_palette}{vtree}(
-  vtree,
-  palettes = c("Reds", "Blues", "Greens", "Oranges", "Purples")
-)
+\method{vtree_palette}{vtree}(x, palettes = c("Reds", "Blues", "Greens", "Oranges", "Purples"))
 
-\method{vtree_palette}{vtree_pattern}(
-  pattern,
-  palettes = c("Reds", "Blues", "Greens", "Oranges", "Purples")
-)
+\method{vtree_palette}{vtree_pattern}(x, palettes = c("Reds", "Blues", "Greens", "Oranges", "Purples"))
 
 var_palette(var_levels, pal)
 
-add_palette(vtree, ...)
+add_palette(
+  x,
+  palettes = c("Reds", "Blues", "Greens", "Oranges", "Purples"),
+  na = "white",
+  var_palette = NULL,
+  var_colors = NULL,
+  what = "fill"
+)
 
 \method{add_palette}{vtree}(
-  vtree,
+  x,
   palettes = c("Reds", "Blues", "Greens", "Oranges", "Purples"),
   na = "white",
   var_palette = NULL,
@@ -36,7 +37,7 @@ add_palette(vtree, ...)
 )
 
 \method{add_palette}{vtree_pattern}(
-  pattern,
+  x,
   palettes = c("Reds", "Blues", "Greens", "Oranges", "Purples"),
   na = "white",
   var_palette = NULL,
@@ -45,12 +46,10 @@ add_palette(vtree, ...)
 )
 }
 \arguments{
-\item{vtree}{A vtree object}
+\item{x}{A vtree or vtree pattern object}
 
 \item{palettes}{The names of RColorBrewer palettes corresponding to the
 subsequent columns in the vtree}
-
-\item{pattern}{A vtree pattern object}
 
 \item{var_levels}{a character vector of values to which colors are
 assigned from a palette}
@@ -72,6 +71,8 @@ palettes defined by the \code{palettes} argument, even if
 and automatically chooses a contrast color for the text. If
 'what' is 'text', it adds a text color for the node and
 automatically chooses a contrast color for the fill.}
+
+\item{vtree}{A vtree object}
 }
 \value{
 \code{vtree_palette()} returns a character vector of colors for the

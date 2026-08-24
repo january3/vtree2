@@ -307,8 +307,7 @@ add_labels <- function(vtree,
 #' Aliases are alternative labels / variable names which are shown on the
 #' plots. This function allows to define aliases for both, variable names
 #' and the variable values (levels).
-#' @param vtree an object of class vtree
-#' @param pattern an object of class vtree_pattern (produced by [pattern()])
+#' @param x an object of class vtree or vtree_pattern
 #' @param col_alias A list specifying aliases for the columns (variables). Each name
 #'        of the list is a column/variable name (one of the values of
 #'        `names(vtree)`) and the value is the alias to be used for that
@@ -340,28 +339,29 @@ add_labels <- function(vtree,
 #' an attribute of the vtree object.
 #' @seealso [add_labels()], [plot_vtree()], [pattern()]
 #' @export
-add_aliases <- function(vtree, ...)
+add_aliases <- function(x, val_alias = NULL, col_alias = NULL) {
   UseMethod("add_aliases")
-
-#' @rdname add_aliases
-#' @export
-add_aliases.vtree_pattern <- function(pattern, val_alias = NULL, col_alias = NULL) {
-
-  val_alias_n <- .normalize_val_alias(val_alias, pattern)
-  col_alias_n <- .normalize_col_alias(col_alias, pattern)
-
-  pattern <- set_aliases(pattern, col=col_alias_n, val=val_alias_n)
-  pattern
 }
 
 #' @rdname add_aliases
 #' @export
-add_aliases.vtree <- function(vtree, val_alias = NULL, col_alias = NULL) {
+add_aliases.vtree_pattern <- function(x, val_alias = NULL, col_alias = NULL) {
 
-  val_alias_n <- .normalize_val_alias(val_alias, vtree)
-  col_alias_n <- .normalize_col_alias(col_alias, vtree)
+  val_alias_n <- .normalize_val_alias(val_alias, pattern)
+  col_alias_n <- .normalize_col_alias(col_alias, pattern)
 
-  nodes <- as_tibble(vtree)
+  x <- set_aliases(x, col=col_alias_n, val=val_alias_n)
+  x
+}
+
+#' @rdname add_aliases
+#' @export
+add_aliases.vtree <- function(x, val_alias = NULL, col_alias = NULL) {
+
+  val_alias_n <- .normalize_val_alias(val_alias, x)
+  col_alias_n <- .normalize_col_alias(col_alias, x)
+
+  nodes <- as_tibble(x)
 
   if("col_alias" %in% colnames(nodes) && !is.null(col_alias)) {
     cli::cli_warn("Overwriting existing col_alias column in vtree")
@@ -375,7 +375,7 @@ add_aliases.vtree <- function(vtree, val_alias = NULL, col_alias = NULL) {
   if(!"col_alias" %in% colnames(nodes) || !is.null(col_alias)) {
     aliases <- purrr::map_chr(nodes[["node_col"]],
                     \(x) col_alias_n[[x]] %||% x)
-    vtree <- mutate(vtree, col_alias = aliases)
+    x <- mutate(x, col_alias = aliases)
   }
 
   if(!"val_alias" %in% colnames(nodes) || !is.null(val_alias)) {
@@ -386,10 +386,10 @@ add_aliases.vtree <- function(vtree, val_alias = NULL, col_alias = NULL) {
                              val_alias_n[[.x]][.y] %||% .y
                     })
 
-    vtree <- mutate(vtree, val_alias = aliases)
+    x <- mutate(x, val_alias = aliases)
 
   }
 
-  vtree <- set_aliases(vtree, col=col_alias_n, val=val_alias_n)
-  vtree
+  x <- set_aliases(x, col=col_alias_n, val=val_alias_n)
+  x
 }

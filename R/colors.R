@@ -84,8 +84,8 @@ contrast_color <- function(color) {
 #' `var_palette()` generates a series of colors from a palette and assigns
 #' them to the provided character vector.
 #'
+#' @param x A vtree or vtree pattern object
 #' @param vtree A vtree object
-#' @param pattern A vtree pattern object
 #' @param palettes The names of RColorBrewer palettes corresponding to the
 #'                 subsequent columns in the vtree
 #' @param what By default, add_palette() adds a fill color for the nodes
@@ -145,31 +145,33 @@ contrast_color <- function(color) {
 #' @seealso See [contrast_color()] for generating white/black contrast
 #' color automatically.
 #' @export
-vtree_palette <- function(x, ...) {
+vtree_palette <- function(x,
+                          palettes = c("Reds", "Blues", "Greens",
+                                       "Oranges", "Purples")) {
   UseMethod("vtree_palette")
 }
 
 #' @rdname vtree_palette
 #' @export
-vtree_palette.vtree <- function(vtree,
+vtree_palette.vtree <- function(x,
                           palettes = c("Reds", "Blues", "Greens",
                                        "Oranges", "Purples")) {
-  .vtree_palette(vtree, palettes = palettes)
+  .vtree_palette(x, palettes = palettes)
 }
 
 #' @rdname vtree_palette
 #' @export
-vtree_palette.vtree_pattern <- function(pattern,
+vtree_palette.vtree_pattern <- function(x,
                           palettes = c("Reds", "Blues", "Greens",
                                        "Oranges", "Purples")) {
-  .vtree_palette(pattern, palettes = palettes)
+  .vtree_palette(x, palettes = palettes)
 }
 
 # this one actually does the job
-.vtree_palette <- function(vtree,
+.vtree_palette <- function(x,
                           palettes = c("Reds", "Blues", "Greens",
                                        "Oranges", "Purples")) {
-  levs <- levels(vtree)
+  levs <- levels(x)
   levs <- map(levs, \(x) x[ !is.na(x)])
 
   palettes <- rep(palettes, length.out = length(levs))
@@ -205,20 +207,27 @@ var_palette <- function(var_levels, pal) {
 
 #' @rdname vtree_palette
 #' @export
-add_palette <- function(vtree, ...)
-  UseMethod("add_palette")
-
-#' @rdname vtree_palette
-#' @importFrom purrr map2_chr map_chr
-#' @export
-add_palette.vtree <- function(vtree,
+add_palette <- function(x,
                              palettes = c("Reds", "Blues", "Greens",
                                        "Oranges", "Purples"),
                              na = "white",
                              var_palette = NULL,
                              var_colors = NULL,
                              what = "fill") {
-  .add_palette(vtree, palettes = palettes, na = na,
+  UseMethod("add_palette")
+}
+
+#' @rdname vtree_palette
+#' @importFrom purrr map2_chr map_chr
+#' @export
+add_palette.vtree <- function(x,
+                             palettes = c("Reds", "Blues", "Greens",
+                                       "Oranges", "Purples"),
+                             na = "white",
+                             var_palette = NULL,
+                             var_colors = NULL,
+                             what = "fill") {
+  .add_palette(x, palettes = palettes, na = na,
                var_palette = var_palette, var_colors = var_colors,
                what = what, apply = TRUE)
 }
@@ -226,14 +235,14 @@ add_palette.vtree <- function(vtree,
 #' @rdname vtree_palette
 #' @importFrom purrr map2_chr map_chr
 #' @export
-add_palette.vtree_pattern <- function(pattern,
+add_palette.vtree_pattern <- function(x,
                              palettes = c("Reds", "Blues", "Greens",
                                        "Oranges", "Purples"),
                              na = "white",
                              var_palette = NULL,
                              var_colors = NULL,
                              what = "fill") {
-  .add_palette(pattern, palettes = palettes, na = na,
+  .add_palette(x, palettes = palettes, na = na,
                 var_palette = var_palette, var_colors = var_colors,
                 what = what, apply = FALSE)
 }

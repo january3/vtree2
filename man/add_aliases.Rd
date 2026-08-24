@@ -6,16 +6,14 @@
 \alias{add_aliases.vtree}
 \title{Add aliases columns to vtree}
 \usage{
-add_aliases(vtree, ...)
+add_aliases(x, val_alias = NULL, col_alias = NULL)
 
-\method{add_aliases}{vtree_pattern}(pattern, val_alias = NULL, col_alias = NULL)
+\method{add_aliases}{vtree_pattern}(x, val_alias = NULL, col_alias = NULL)
 
-\method{add_aliases}{vtree}(vtree, val_alias = NULL, col_alias = NULL)
+\method{add_aliases}{vtree}(x, val_alias = NULL, col_alias = NULL)
 }
 \arguments{
-\item{vtree}{an object of class vtree}
-
-\item{pattern}{an object of class vtree_pattern (produced by \code{\link[=pattern]{pattern()}})}
+\item{x}{an object of class vtree or vtree_pattern}
 
 \item{val_alias}{A list specifying aliases for the levels of the
 variables. Each element of the list should be a named character

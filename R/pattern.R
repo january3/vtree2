@@ -233,8 +233,9 @@ vtree_from_pattern <- function(pat) {
 #' @param x A vtree pattern object.
 #' @param ... Additional arguments passed to plot.vtree()
 #' @param sort_by The variable to sort the nodes by. Can be "freq" (default),
-#'       "n", or any of the variable names in the pattern object. If NA,
-#'       the pattern will be plotted in the order of the rows in the pattern object.
+#'       or any of the variable names in the pattern object (check
+#'       `colnames(pattern)`). If NA, the pattern will be plotted in the
+#'       order of the rows in the pattern object.
 #' @param lwidth,lheight The width and height of the nodes in the plot,
 #'        relative to the maximum available space.
 #' @param palettes A vector of color palettes to use for the nodes.
@@ -250,21 +251,20 @@ vtree_from_pattern <- function(pat) {
 #'         invisibly.
 #' @export
 plot.vtree_pattern <- function(x, ...,
-                      sort_by = freq,
+                      sort_by = "freq",
                       palettes = c("Reds", "Blues", "Greens",
                                    "Oranges", "Purples"),
                       pattern_fill = "#fc9272",
                       lwidth = .4, lheight = .9,
                       show_root = FALSE) {
   ensure(x, "vtree_pattern")
-  sort_by <- rlang::enquo(sort_by)
-  if(!rlang::is_na(rlang::quo_get_expr(sort_by))) {
-    x <- arrange(x, !!sort_by)
+  if(!is.na(sort_by)) {
+    x <- arrange(x, .data[[sort_by]])
   }
 
   vt <- vtree_from_pattern(x)
 
-  mask <- find_nodes(vt, level == 1)
+  mask <- pull(vt, "level") == 1
   vt <- vt |>
     add_labels(fmt="{val_alias}") |>
     add_labels(fmt="{n} ({pct}%)", mask=mask)
