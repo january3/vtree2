@@ -248,7 +248,7 @@ test_that("grob injection works", {
                   \(x) x$side == "t"))
 
   vt <- vtree_from_freqtable(Titanic, Class, Sex) |>
-    add_graphics(grob = list(box), mask = FALSE)
+    add_graphics(grob = list(box), condition = FALSE)
   expect_in("grob", nodecols(vt))
   nd <- as_tibble(vt)
   expect_all_true(
@@ -260,8 +260,8 @@ test_that("grob injection works", {
                "Incorrect frac parameter")
   expect_error(add_graphics(vt, grob = c(list(box), list(box))),
                "Incorrect grob list length")
-  expect_error(add_graphics(vt, list(box), mask = c(TRUE, FALSE)),
-               "Incorrect mask length")
+  expect_error(add_graphics(vt, list(box), condition = c(TRUE, FALSE)),
+               "returned a vector with unexpected length")
 })
 
 

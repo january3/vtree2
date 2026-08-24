@@ -1,5 +1,3 @@
-
-
 #' Add graphics to a vtree
 #'
 #' Add graphics (images, plots) to vtree nodes. The graphical object should
@@ -23,19 +21,16 @@
 #' @param shape shape of the node ("rectangle" or "roundrectangle").
 #' @param frac fraction of space occupied by the graphics (horizontally if
 #'        side is `l` or `r`, vertically if side is `t` or `b`).
-#' @param mask a logical vector of the same length as the number of nodes.
-#'        A graphics will be assigned to a node only if the corresponding
-#'        mask value is TRUE.
 #' @param condition Condition to evaluate in the context of the nodes data
-#'        frame. Only nodes for which the result is TRUE will be assigned a
-#'        grob.
+#'        frame, returning a logical vector. Only nodes for which the result is
+#'        TRUE will be assigned a grob.
 #' @return a vtree object with graphics.
 #' @export
 add_graphics <- function(vtree, grobs,
                       side = "b",
                       frac = .8,
                       shape = "rectangle",
-                      condition=NULL, mask=TRUE) {
+                      condition=NULL) {
 
   side <- match.arg(side, c("l", "r", "t", "b"))
 
@@ -55,18 +50,12 @@ add_graphics <- function(vtree, grobs,
       "Incorrect grob list length: {length(grobs)} != {nn}"))
   }
 
-  if(length(mask) == 1L) {
-    mask <- rep(mask, nn)
-  } else if(length(mask) != nn) {
-    cli_abort(c(x =
-      "Incorrect mask length: {length(mask)} != {nn}"))
-  }
+  mask <- rep(TRUE, nn)
 
   condition <- enquo(condition)
 
   if(!quo_is_null(condition)) {
-    mask2 <- find_nodes(vtree, !!condition)
-    mask <- mask & mask2
+    mask <- find_nodes(vtree, !!condition)
   }
 
   if(!"grob" %in% names(nodes)) {
