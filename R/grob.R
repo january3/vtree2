@@ -107,7 +107,10 @@ adapt_fontsize_df <- function(grobs, df,
                            ret_min = FALSE) {
   #.size_fct <- 1 - padding
 
-  ret <- map_dbl(seq_along(grobs), \(i)
+  padding <- map(seq_len(nrow(df)),
+                 \(i) recalculate_padding(df[i, ], padding))
+
+  ret <- map_dbl(seq_along(grobs), \(i) {
                .adapt_fontsize_single_full(grobs[[i]],
                  width = df$width[[i]],
                  height = df$height[[i]],
@@ -115,7 +118,9 @@ adapt_fontsize_df <- function(grobs, df,
                  name = grobs[[i]]$name,
                  color = df$color[[i]],
                  richtext = richtext,
-                 p = padding))
+                 p = padding[[i]])
+
+                           })
                  #.size_fct))
 
   if(ret_min) {
@@ -188,8 +193,6 @@ adjust_fontsize_df <- function(x, spec) {
   padding <- padding %||% .1
 
   #message("adjust_fontsize_df padding:", padding)
-  pad <- recalculate_padding(df, padding)
-
   path <- gPath(path)
 
   mutter <- getGrob(x, gPath = path)
@@ -200,11 +203,11 @@ adjust_fontsize_df <- function(x, spec) {
   } else if(font == "fixed") {
     fs <- fixed_fontsize_df(kinder, df,
                             richtext = richtext,
-                            padding = pad)
+                            padding = padding)
   } else if(font == "adaptive") {
     fs <- adapt_fontsize_df(kinder, df,
                             richtext = richtext,
-                            padding = pad)
+                            padding = padding)
   } else {
     cli_abort(c(x = "Unsupported fontsize mode: {font}"))
   }
