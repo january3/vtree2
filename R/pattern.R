@@ -298,6 +298,5 @@ plot.vtree_pattern <- function(x, ...,
                            contrast_color(pattern_fill), .data[["color"]]))
 
   plot(vt, show_root = FALSE,
-       layout = "regular",
        lwidth = lwidth, lheight = lheight, ...)
 }
