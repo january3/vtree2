@@ -66,7 +66,7 @@ test_that("edge cases work", {
   attr(vtp, "palette")$fill <- NULL
   expect_no_error(plot(vtp, legend = TRUE))
   attr(vtp, "palette")$color <- NULL
-  expect_no_error(plot(vtp, legend = TRUE))
+  expect_message(plot(vtp, legend = TRUE), "palette attribute is NULL")
 })
 
 test_that("plotting works without a palette assigned", {    
