@@ -118,21 +118,28 @@
 
 .normalize_dir <- function(dir, vtree) {
 
-  if(is.na(dir)) { dir <- NULL }
-  dir <- match.arg(dir, c("lr", "rl", "bt", "tb"))
   dir_tree <- get_dir(vtree)
 
-  if(!is.na(dir)) {
-    if(!is.null(dir_tree) && dir != dir_tree) {
-      cli::cli_warn(
-      c(x = "vtree has a precomputed layout with direction '{dir_tree}'.",
-        i = "Ignoring the parameter dir = '{dir}'"))
-      dir <- dir_tree
-    }
-    return(dir)
+  # no information from parameter, but tree already has a layout with
+  # direction. Use that.
+  if(is.na(dir) && !is.null(dir_tree)) {
+    return(dir_tree)
   }
 
-  "lr"
+  if(is.na(dir)) { dir <- NULL }
+  dir <- match.arg(dir, c("lr", "rl", "bt", "tb"))
+
+  # if the tree has a layout with a direction, but the user specified a
+  # different direction, then warn and use the tree's direction.
+  if(!is.null(dir_tree) && dir != dir_tree) {
+    cli::cli_warn(
+    c(x = "vtree has a precomputed layout with direction '{dir_tree}'.",
+      i = "Ignoring the parameter dir = '{dir}'"))
+    dir <- dir_tree
+  }
+
+  return(dir)
+
 }
 
 .normalize_legend <- function(legend) {
