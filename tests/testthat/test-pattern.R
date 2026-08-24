@@ -42,9 +42,6 @@ test_that("plotting vtree patterns works", {
   expect_no_error(plot(pat, pattern_fill = "white"))
   expect_error(plot(pat, layout = "proportional"))
   expect_error(plot(pat, show_tree = TRUE))
-
-
-
-
+  expect_no_error(plot(pat, legend = TRUE))
 
 })
