@@ -21,7 +21,9 @@ vtree_from_freqtable(
 
 \item{...}{Columns to use for the tree. If no columns are specified, all
 columns (except the frequency column for the frequency
-tables) will be used. Use tidyselect syntax to access columns.}
+tables) will be used. Use tidy select syntax to access
+columns. Named expressions to modify or rename columns are
+also allowed (see examples).}
 
 \item{.vp}{valid percentage; when calculating frequencies / percentages,
 omit NA values from the denominator}
@@ -134,4 +136,11 @@ vt <- vtree(titanicNA, -Age)
 # same as:
 vt <- vtree(titanicNA, Class, Sex, Survived)
 plot(vt, dir="tb")
+
+# using derived variables
+vt <- vtree(titanicNA, Class, Gender=Sex, Survived)
+names(vt)         # "Class" "Gender" "Survived"
+vt <- vtree(ToothGrowth,
+      dose_mg = as.character(dose), supplement=supp)
+names(vt)         # "dose_mg" "supplement"
 }

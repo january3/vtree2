@@ -157,11 +157,20 @@ as_vtree <- function(x) {
 #' # same as:
 #' vt <- vtree(titanicNA, Class, Sex, Survived)
 #' plot(vt, dir="tb")
+#'
+#' # using derived variables
+#' vt <- vtree(titanicNA, Class, Gender=Sex, Survived)
+#' names(vt)         # "Class" "Gender" "Survived"
+#' vt <- vtree(ToothGrowth,
+#'       dose_mg = as.character(dose), supplement=supp)
+#' names(vt)         # "dose_mg" "supplement"
 #' @param cases A data frame, one row per observation, one column per variable
 #' @param x A frequency table (matrix, table or data frame)
 #' @param ... Columns to use for the tree. If no columns are specified, all
 #'            columns (except the frequency column for the frequency
-#'            tables) will be used. Use tidyselect syntax to access columns.
+#'            tables) will be used. Use tidy select syntax to access
+#'            columns. Named expressions to modify or rename columns are
+#'            also allowed (see examples).
 #' @param .vp valid percentage; when calculating frequencies / percentages,
 #'           omit NA values from the denominator
 #' @param .freq_col The name of the column in a frequency table that
@@ -190,11 +199,34 @@ vtree <- function(cases, ..., .vp = TRUE,
     cli_abort(c(x = "No columns in the data frame cases"))
   }
 
-  cols <- tidyselect::eval_select(
-    rlang::expr(c(...)),
-    data = cases)
+  dots <- rlang::enquos(...)
+  dotnames <- names(dots)
+  is_deriv <- nzchar(dotnames)
 
-  cnms <- names(cols)
+  dots_tidysel <- dots[!is_deriv]
+
+  # tidyselect for directly selected columns
+  if (length(dots_tidysel) > 0) {
+    cols <- tidyselect::eval_select(
+      rlang::expr(c(!!!dots_tidysel)),
+      data = cases
+    )
+    cnms <- names(cols)
+  } else {
+    cnms <- character()
+  }
+
+  ## Derived variables
+  if (any(is_deriv)) {
+    for (i in which(is_deriv)) {
+      cases[[dotnames[[i]]]] <- rlang::eval_tidy(
+        dots[[i]],
+        data = cases
+      )
+    }
+  }
+
+  cnms <- c(cnms, dotnames[is_deriv])
 
   if(length(cnms) < 1L) {
     cnms <- colnames(cases)
@@ -264,6 +296,8 @@ vtree <- function(cases, ..., .vp = TRUE,
 #' cols <- c("Class", "Sex", "Survived")
 #' cases <- cases_from_freqtable(Titanic, all_of(cols),
 #'               .freq_col = "Freq")
+#' cases <- cases_from_freqtable(Titanic, Class,
+#'                               Gender=Sex, Survived)
 #' @inheritParams vtree
 #' @importFrom rlang as_name
 #' @return A tibble of cases, one row per observation, one column per variable
@@ -278,11 +312,40 @@ cases_from_freqtable <- function(x, ..., .freq_col = "Freq") {
 
   x <- as_tibble(x)
 
-  cols <- tidyselect::eval_select(
-    rlang::expr(c(...)),
-    data = x)
+  dots <- rlang::enquos(...)
+  dotnames <- names(dots)
+  is_deriv <- nzchar(dotnames)
 
-  cnms <- names(cols)
+  dots_tidysel <- dots[!is_deriv]
+
+  # tidyselect for directly selected columns
+  if (length(dots_tidysel) > 0) {
+    cols <- tidyselect::eval_select(
+      rlang::expr(c(!!!dots_tidysel)),
+      data = x
+    )
+    cnms <- names(cols)
+  } else {
+    cnms <- character()
+  }
+
+  ## Derived variables
+  if (any(is_deriv)) {
+    for (i in which(is_deriv)) {
+      x[[dotnames[[i]]]] <- rlang::eval_tidy(
+        dots[[i]],
+        data = x
+      )
+    }
+  }
+
+  cnms <- c(cnms, dotnames[is_deriv])
+
+  # cols <- tidyselect::eval_select(
+  #   rlang::expr(c(...)),
+  #   data = x)
+
+  # cnms <- names(cols)
   cnms <- setdiff(cnms, .freq_col)
 
   if(!.freq_col %in% colnames(x)) {

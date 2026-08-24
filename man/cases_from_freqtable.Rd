@@ -11,7 +11,9 @@ cases_from_freqtable(x, ..., .freq_col = "Freq")
 
 \item{...}{Columns to use for the tree. If no columns are specified, all
 columns (except the frequency column for the frequency
-tables) will be used. Use tidyselect syntax to access columns.}
+tables) will be used. Use tidy select syntax to access
+columns. Named expressions to modify or rename columns are
+also allowed (see examples).}
 
 \item{.freq_col}{The name of the column containing the frequency counts.}
 }
@@ -44,4 +46,6 @@ cases <- cases_from_freqtable(Titanic, -Age)
 cols <- c("Class", "Sex", "Survived")
 cases <- cases_from_freqtable(Titanic, all_of(cols),
               .freq_col = "Freq")
+cases <- cases_from_freqtable(Titanic, Class,
+                              Gender=Sex, Survived)
 }
