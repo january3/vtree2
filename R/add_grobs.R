@@ -21,7 +21,7 @@
 #' @param shape shape of the node ("rectangle" or "roundrectangle").
 #' @param frac fraction of space occupied by the graphics (horizontally if
 #'        side is `l` or `r`, vertically if side is `t` or `b`).
-#' @param condition Condition to evaluate in the context of the nodes data
+#' @param mask Expression to evaluate in the context of the nodes data
 #'        frame, returning a logical vector. Only nodes for which the result is
 #'        TRUE will be assigned a grob.
 #' @return a vtree object with graphics.
@@ -30,7 +30,7 @@ add_graphics <- function(vtree, grobs,
                       side = "b",
                       frac = .8,
                       shape = "rectangle",
-                      condition=NULL) {
+                      mask=NULL) {
 
   side <- match.arg(side, c("l", "r", "t", "b"))
 
@@ -50,12 +50,13 @@ add_graphics <- function(vtree, grobs,
       "Incorrect grob list length: {length(grobs)} != {nn}"))
   }
 
-  mask <- rep(TRUE, nn)
 
-  condition <- enquo(condition)
+  mask <- enquo(mask)
 
-  if(!quo_is_null(condition)) {
-    mask <- find_nodes(vtree, !!condition)
+  if(!quo_is_null(mask)) {
+    mask <- find_nodes(vtree, !!mask)
+  } else {
+    mask <- rep(TRUE, nn)
   }
 
   if(!"grob" %in% names(nodes)) {

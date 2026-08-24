@@ -10,7 +10,7 @@ add_graphics(
   side = "b",
   frac = 0.8,
   shape = "rectangle",
-  condition = NULL
+  mask = NULL
 )
 }
 \arguments{
@@ -27,7 +27,7 @@ side is \code{l} or \code{r}, vertically if side is \code{t} or \code{b}).}
 
 \item{shape}{shape of the node ("rectangle" or "roundrectangle").}
 
-\item{condition}{Condition to evaluate in the context of the nodes data
+\item{mask}{Expression to evaluate in the context of the nodes data
 frame, returning a logical vector. Only nodes for which the result is
 TRUE will be assigned a grob.}
 }
