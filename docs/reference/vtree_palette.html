@@ -169,14 +169,13 @@ some variable levels are missing from <code>var_palette</code>, the colors will 
 inferred from the <code>palettes</code> argument.</p>
 <p>In summary, the following arguments determine the hierarchy of the color-control on
 the resulting plot:</p><ul><li><p><code>palettes</code> - determines both the palette for the legend and the
-colors of the nodes</p></li>
+colors of the nodes. Ignored if the tree already has a palette
+attribute set.</p></li>
 <li><p><code>var_palette</code> - low level adjustment of colors. Does not have to
-include all variable and all variable levels, and does not influence
-the colors of the variable <em>names</em> shown on the legend, but it does
-change the colors of the variable <em>levels</em> shown on the legend.</p></li>
+include all variable and all variable levels.</p></li>
 <li><p><code>var_colors</code> - influences only the colors of the variable <em>names</em> shown
-on the legend. If NULL, a default from the <code>palettes</code> argument will be
-inferred.</p></li>
+on the legend. If NULL, a default from the <code>palettes</code> argument or from
+the <code>var_palette</code> argument (if provided) will be inferred automatically.</p></li>
 <li><p><code>na</code> - color for the missing values for all variables. If <code>what</code> is
 "fill", then it is interpreted as the background fill color; if <code>what</code> is
 "text", then it is interpreted as the text (foreground) color.</p></li>

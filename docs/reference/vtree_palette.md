@@ -127,16 +127,15 @@ In summary, the following arguments determine the hierarchy of the
 color-control on the resulting plot:
 
 - `palettes` - determines both the palette for the legend and the colors
-  of the nodes
+  of the nodes. Ignored if the tree already has a palette attribute set.
 
 - `var_palette` - low level adjustment of colors. Does not have to
-  include all variable and all variable levels, and does not influence
-  the colors of the variable *names* shown on the legend, but it does
-  change the colors of the variable *levels* shown on the legend.
+  include all variable and all variable levels.
 
 - `var_colors` - influences only the colors of the variable *names*
   shown on the legend. If NULL, a default from the `palettes` argument
-  will be inferred.
+  or from the `var_palette` argument (if provided) will be inferred
+  automatically.
 
 - `na` - color for the missing values for all variables. If `what` is
   "fill", then it is interpreted as the background fill color; if `what`
