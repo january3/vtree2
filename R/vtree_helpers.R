@@ -272,7 +272,7 @@ pat2nodes <- function(pattern, columns, cv_sep, path_sep) {
     cli::cli_warn(
       c(x = "Column names contain path separator `{path_sep}`",
       "Following columns contain the separator: {sel}",
-      i = "Change the .cv_path parameter to use another separator"
+      i = "Change the .path_sep parameter to use another separator"
       ))
   }
 }
