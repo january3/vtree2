@@ -614,7 +614,7 @@ makeContent.vtree_plot <- function(x) {
 # actually creates the plot.
 #' @importFrom grid gTree gpar gList setChildren
 #' @importFrom purrr map_int map_lgl
-.make_children <- function(params, layout, grobs=NULL) {
+make_children <- function(params, layout, grobs=NULL) {
   x <- gTree(params = params,
              layout = layout,
              name = "vtree",
