@@ -212,18 +212,14 @@ More docs available [here](https://january3.github.io/vtree2/).
 ## TODO/PROBLEMS
 
 - write a manual in the main vignette \[——–\|\] 95% complete
+- write a developers vignette \[–\| \] 15% complete
 - use other examples than Titanic, e.g. ToothGrowth - they make more
   readable figures
 - the tree plotting mechanism is more general, we could separate it into
-  another package. Generally, the plotting mechanisms (fitting fonts to
-  labels, palettes etc.) are more general.
+  another package. Generally, all the plotting mechanisms (fitting fonts
+  to labels, palettes etc.) are more general.
 - add label text alignments left/right/center - how should that work?
   (e.g. center for node name, but left-aligned for the summary…)
-- add condition argument to add_label? like with grob? or replace the
-  mask arg with a condition? actually, a condition also understands a
-  mask, right? maybe add_labels, add_grobs, add_aliases should have a
-  uniform interface wr to condition/mask
-- write a developers vignette
 - vtree_apply is incredibly powerful and should be highlighted
   separately. It allows conditional analyses of the data. Maybe a
   separate vignette on how to conditionally analyse data with vtrees and
@@ -235,6 +231,15 @@ More docs available [here](https://january3.github.io/vtree2/).
   factor? or some automation controlled with a param?
 - add_layout should not modify shape if present
 - faster processing of cases into trees
+- add_palette and add_aliases do two things at ones: set up global
+  representations for all data on legends, and modify the particulars on
+  the plot. Not sure how I feel about it.
+- ✔ ~~add condition argument to add_label? like with grob? or replace
+  the mask arg with a condition? actually, a condition also understands
+  a mask, right? maybe add_labels, add_grobs, add_aliases should have a
+  uniform interface wr to condition/mask -\> not add_aliases, because it
+  doesn’t make so much sense. add_labels and add_grobs follow now the
+  same pattern. Maybe add_palette should be next~~
 - ✔ ~~it should be possible to do this: vtree(ToothGrowth, supp,
   as.character(dose))~~
 - ✔ ~~proper Sankey plots~~
