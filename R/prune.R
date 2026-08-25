@@ -21,6 +21,8 @@ is_na_vtree_vcol <- function(x) {
   ret <- is.na(x)
   applicable <- attr(x, "applicable")
 
+  # for virtual columns, check the applicable attribute
+  # for all "non-applicable" values, return NA
   if(!is.null(applicable)) {
     ret[!applicable] <- NA
   }
@@ -34,6 +36,8 @@ is_na_vtree_vcol <- function(x) {
 in_vtree_vcol <- function(x, table) {
   ret <- base::`%in%`(x, table)
 
+  # for virtual columns, check the applicable attribute
+  # for all "non-applicable" values, return NA
   if(inherits(x, "vtree_vcol")) {
     applicable <- attr(x, "applicable")
     ret[!applicable] <- NA

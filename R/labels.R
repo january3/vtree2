@@ -255,9 +255,8 @@ add_labels <- function(vtree,
   } else {
     mask <- rep(TRUE, nrow(nodes))
   }
-  if(!is.logical(mask)) {
-    cli_abort(c(x = "mask does not evaluate to a logical vector"))
-  }
+
+  ensure(mask, "logical")
 
   if(is.null(prefix)) {
     prefix <- ""

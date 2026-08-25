@@ -140,7 +140,7 @@ test_that("expr works", {
 test_that("errors are raised", {
   expect_error(add_labels(1), "is not a vtree object")
   expect_error(add_labels(vt, template = "foo"), "'arg' should be one of")
-  expect_error(add_labels(vt, mask="foo"), "does not evaluate to a logical vector")
+  expect_error(add_labels(vt, mask="foo"), "is not a logical vector")
   expect_error(add_labels(vt, mask=c(TRUE, FALSE)),
                "vector with unexpected length")
 })
