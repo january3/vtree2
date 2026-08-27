@@ -39,6 +39,28 @@ test_that("cases_from_freqtable works", {
 
 })
 
+test_that("column transformation works", {
+  vt <- vtree(titanicNA, Class, Gender=Sex, Survived)
+  expect_all_true(names(vt) == c("Class", "Gender", "Survived"))
+
+  vt <- vtree(ToothGrowth, dose=as.character(dose), supp)
+  expect_all_true(names(vt) == c("dose", "supp"))
+
+  expect_error(vtree(iris, long_petals = Petal.Length > 4.5, Species),
+               "Only factor or character columns are supported")
+
+  vt <- vtree_from_freqtable(Titanic, Class, Gender=Sex, Survived)
+  expect_all_true(names(vt) == c("Class", "Gender", "Survived"))
+
+  vt <- vtree(iris, long_petals = as.character(Petal.Length > 4.5), Species)
+  expect_all_true(names(vt) == c("long_petals", "Species"))
+  nd <- as_tibble(vt)
+  expect_setequal(unique(nd$node_col),
+                  c("root", "long_petals", "Species"))
+  expect_setequal(unique(nd$node_val),
+                  c("", "TRUE", "FALSE", "setosa", "versicolor", "virginica"))
+})
+
 
 test_that("vtree_from_freqtable works", {
   vt <- vtree_from_freqtable(Titanic)  
@@ -177,6 +199,9 @@ test_that("methods work", {
 })
 
 test_that("errors are raised", {
+
+  expect_error(vtree(titanicNA, Sex, Sex),
+               "Duplicate column names used in the cases data frame")
 
   vt <- vtree_from_freqtable(Titanic, Class, Sex, Survived)
 

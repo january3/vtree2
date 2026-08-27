@@ -276,3 +276,64 @@ pat2nodes <- function(pattern, columns, cv_sep, path_sep) {
       ))
   }
 }
+
+# this is the central function to creating vtrees. It processes the quosure
+# from the parent, checks and selects the columns of the data frame, and
+# returns a cleaned up and correct data frame for further processing.
+# @param cases the data frame to be processed
+# @param dots the quosures of the columns to be used for the vtree
+.colprocess <- function(cases, dots, freq_col = NULL) {
+
+  dotnames <- names(dots)
+  is_deriv <- nzchar(dotnames)
+
+  dots_tidysel <- dots[!is_deriv]
+
+  # tidyselect for directly selected columns
+  if (length(dots_tidysel) > 0) {
+    cols <- map(dots_tidysel, \(x)
+                tidyselect::eval_select(x, data=cases) |>
+                names())
+    #cnms_t <- names(cols)
+  } else {
+    cols <- list()
+  }
+
+  ## Derived variables: we know it is a derived variable if it has a name.
+  if (any(is_deriv)) {
+    for (i in which(is_deriv)) {
+      cases[[dotnames[[i]]]] <- rlang::eval_tidy(
+        dots[[i]],
+        data = cases
+      )
+    }
+  }
+
+  # we need to intermingle the derived and non-derived columns in the right
+  # order. The problem is that one quosure for eval_select can produce
+  # multiple columns, so we need to reorder it as a list and unlist it only
+  # at the end.
+  cnms <- vector("list", length(dotnames))
+  cnms[!is_deriv] <- cols
+  cnms[is_deriv] <- map(dotnames[is_deriv], \(x) x)
+  cnms <- unlist(cnms)
+
+  if(length(cnms) < 1L) {
+    cnms <- colnames(cases)
+  }
+  
+  if(!is.null(freq_col)) {
+    # make sure it is the last one
+    cnms <- setdiff(cnms, freq_col)
+    cnms <- c(cnms, freq_col)
+  }
+
+  if(any(duplicated(cnms))) {
+    sel <- unique(cnms[duplicated(cnms)])
+    cli_abort(c(
+      x = "Duplicate column names used in the cases data frame",
+      "Following column names are duplicated: {sel}"))
+  }
+
+  return(select(cases, all_of(cnms)))
+}

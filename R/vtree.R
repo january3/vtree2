@@ -200,37 +200,8 @@ vtree <- function(cases, ..., .vp = TRUE,
   }
 
   dots <- rlang::enquos(...)
-  dotnames <- names(dots)
-  is_deriv <- nzchar(dotnames)
-
-  dots_tidysel <- dots[!is_deriv]
-
-  # tidyselect for directly selected columns
-  if (length(dots_tidysel) > 0) {
-    cols <- tidyselect::eval_select(
-      rlang::expr(c(!!!dots_tidysel)),
-      data = cases
-    )
-    cnms <- names(cols)
-  } else {
-    cnms <- character()
-  }
-
-  ## Derived variables
-  if (any(is_deriv)) {
-    for (i in which(is_deriv)) {
-      cases[[dotnames[[i]]]] <- rlang::eval_tidy(
-        dots[[i]],
-        data = cases
-      )
-    }
-  }
-
-  cnms <- c(cnms, dotnames[is_deriv])
-
-  if(length(cnms) < 1L) {
-    cnms <- colnames(cases)
-  }
+  cases <- .colprocess(cases, dots)
+  cnms <- colnames(cases)
 
   reserved <- c("node_col", "node_id", "path", "freq", "count",
                  "denom", "node_key", "tot_n")
@@ -312,42 +283,6 @@ cases_from_freqtable <- function(x, ..., .freq_col = "Freq") {
 
   x <- as_tibble(x)
 
-  dots <- rlang::enquos(...)
-  dotnames <- names(dots)
-  is_deriv <- nzchar(dotnames)
-
-  dots_tidysel <- dots[!is_deriv]
-
-  # tidyselect for directly selected columns
-  if (length(dots_tidysel) > 0) {
-    cols <- tidyselect::eval_select(
-      rlang::expr(c(!!!dots_tidysel)),
-      data = x
-    )
-    cnms <- names(cols)
-  } else {
-    cnms <- character()
-  }
-
-  ## Derived variables
-  if (any(is_deriv)) {
-    for (i in which(is_deriv)) {
-      x[[dotnames[[i]]]] <- rlang::eval_tidy(
-        dots[[i]],
-        data = x
-      )
-    }
-  }
-
-  cnms <- c(cnms, dotnames[is_deriv])
-
-  # cols <- tidyselect::eval_select(
-  #   rlang::expr(c(...)),
-  #   data = x)
-
-  # cnms <- names(cols)
-  cnms <- setdiff(cnms, .freq_col)
-
   if(!.freq_col %in% colnames(x)) {
       fcol <- .freq_col
     cli_abort(c(
@@ -356,9 +291,11 @@ cases_from_freqtable <- function(x, ..., .freq_col = "Freq") {
     ))
   }
 
-  if(length(cnms) < 1L) {
-    cnms <- setdiff(colnames(x), .freq_col)
-  }
+  dots <- rlang::enquos(...)
+  x <- .colprocess(x, dots, .freq_col)
+
+  cnms <- colnames(x)
+  cnms <- setdiff(cnms, .freq_col)
 
   if(!length(cnms) > 0L) {
     cli_abort(c(
