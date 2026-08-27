@@ -48,7 +48,12 @@ The basic idea is this. The device (plot window, PDF etc.) has in grid
 x and y coordinates from `0` to `1`. Before plotting starts, the
 `add_layout()` calls one a function from the `layout_*` family of functions
 to generates the `x` and `y` positions of the nodes and edges (later
-`plot()` also attaches a legend, but that is a different story). 
+`plot()` also attaches a legend, but that is a different story). The layout
+coordinates are stored as columns in the nodes data frame (x, y, width,
+height, full_w, full_h) and in the edges data frame (x1, y1, x2, y2 and
+height). The height/full_h and width/full_w determine the visible node
+width/height and the total space allocated to the node (so basically full_w
+- width is the margin of the node).
 
 Once `layout_*` (by default, `layout_regular`) returns to `add_layout()`,
 the positions are laid out in the left-to-right direction (some, like
@@ -127,6 +132,25 @@ some rules of thumb I tried to follow:
  * try to write a test ASAP
  * whenever you hit a bug, before fixing it, write a test that fails if
    this bug is present
+
+## Vtree construction
+
+The construction of the vtree follows one of three paths:
+
+ * from a cases data frame, using `vtree()`
+ * from a frequency table, using `cases_from_freqtable()` and then `vtree()`
+ * from a frequency table, using `vtree_from_freqtable()`
+
+The `vtree_from_freqtable()` function is a convenience function that
+combines the two steps of creating a cases data frame with
+`cases_from_freqtable()` and then calling `vtree()`.
+
+At the core of both `vtree()` and `cases_from_freqtable()` is the function
+`.colprocess()`. It processes the cases data frame and the caller-provided
+tidy selection / tidy evaluation arguments (see below) provided as the
+second argument (quosure list), and returns the processed cases containing
+only the selected columns in the correct order.
+
 
 ## Tidy evaluation and selection
 

@@ -294,6 +294,10 @@
 </h2>
 <ul>
 <li>plot(pattern(vt), layout=“proportional”) produces garbage</li>
+<li>✔ <del>mixing named and unnamed arguments in vtree() produces incorrect order</del>
+</li>
+<li>✔ <del>weird stuff is happening when you do vtree(titanicNA, Sex, Sex, Sex): I don’t allow any weird stuff</del>
+</li>
 <li>✔ <del>incorrect warning when running plot(add_layout(vt, dir=“tb”)) because plot sets default dir to lr, and then is surprised that the layout already has a different dir</del>
 </li>
 <li>✔ <del>if alias columns are not present, add_labels ignores aliases attached to the object. This is an issue for patterns. add_labels should check not only the columns, but also get_aliases(vtree)</del>

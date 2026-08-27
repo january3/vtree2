@@ -26,7 +26,12 @@ and y coordinates from `0` to `1`. Before plotting starts, the
 calls one a function from the `layout_*` family of functions to
 generates the `x` and `y` positions of the nodes and edges (later
 [`plot()`](https://rdrr.io/r/graphics/plot.default.html) also attaches a
-legend, but that is a different story).
+legend, but that is a different story). The layout coordinates are
+stored as columns in the nodes data frame (x, y, width, height, full_w,
+full_h) and in the edges data frame (x1, y1, x2, y2 and height). The
+height/full_h and width/full_w determine the visible node width/height
+and the total space allocated to the node (so basically full_w - width
+is the margin of the node).
 
 Once `layout_*` (by default, `layout_regular`) returns to
 [`add_layout()`](https://january3.github.io/vtree2/reference/add_layout.md),
@@ -114,9 +119,39 @@ are some rules of thumb I tried to follow:
 - whenever you hit a bug, before fixing it, write a test that fails if
   this bug is present
 
-### 4.2 Tidy evaluation and selection
+### 4.2 Vtree construction
 
-#### 4.2.1 Tidy evaluation
+The construction of the vtree follows one of three paths:
+
+- from a cases data frame, using
+  [`vtree()`](https://january3.github.io/vtree2/reference/vtree.md)
+- from a frequency table, using
+  [`cases_from_freqtable()`](https://january3.github.io/vtree2/reference/cases_from_freqtable.md)
+  and then
+  [`vtree()`](https://january3.github.io/vtree2/reference/vtree.md)
+- from a frequency table, using
+  [`vtree_from_freqtable()`](https://january3.github.io/vtree2/reference/vtree.md)
+
+The
+[`vtree_from_freqtable()`](https://january3.github.io/vtree2/reference/vtree.md)
+function is a convenience function that combines the two steps of
+creating a cases data frame with
+[`cases_from_freqtable()`](https://january3.github.io/vtree2/reference/cases_from_freqtable.md)
+and then calling
+[`vtree()`](https://january3.github.io/vtree2/reference/vtree.md).
+
+At the core of both
+[`vtree()`](https://january3.github.io/vtree2/reference/vtree.md) and
+[`cases_from_freqtable()`](https://january3.github.io/vtree2/reference/cases_from_freqtable.md)
+is the function `.colprocess()`. It processes the cases data frame and
+the caller-provided tidy selection / tidy evaluation arguments (see
+below) provided as the second argument (quosure list), and returns the
+processed cases containing only the selected columns in the correct
+order.
+
+### 4.3 Tidy evaluation and selection
+
+#### 4.3.1 Tidy evaluation
 
 `vtree2` makes heavy use of the tidy selection and tidy evaluation
 mechanisms. For example, the mask argument for many functions is treated
@@ -268,7 +303,7 @@ in_vtree_vcol <- function(x, table) {
 }
 ```
 
-#### 4.2.2 Tidy selection
+#### 4.3.2 Tidy selection
 
 Where the parameter of a function calls for columns of a data frame, we
 use the tidy select syntax. Note that tidy select and tidy evaluation

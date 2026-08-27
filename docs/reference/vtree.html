@@ -208,7 +208,7 @@ it makes the calculations transparent.</p>
 <span class="r-in"><span><span class="co"># using derived variables</span></span></span>
 <span class="r-in"><span><span class="va">vt</span> <span class="op">&lt;-</span> <span class="fu">vtree</span><span class="op">(</span><span class="va">titanicNA</span>, <span class="va">Class</span>, Gender<span class="op">=</span><span class="va">Sex</span>, <span class="va">Survived</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">vt</span><span class="op">)</span>         <span class="co"># "Class" "Gender" "Survived"</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Class"    "Survived" "Gender"  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Class"    "Gender"   "Survived"</span>
 <span class="r-in"><span><span class="va">vt</span> <span class="op">&lt;-</span> <span class="fu">vtree</span><span class="op">(</span><span class="va">ToothGrowth</span>,</span></span>
 <span class="r-in"><span>      dose_mg <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">dose</span><span class="op">)</span>, supplement<span class="op">=</span><span class="va">supp</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">vt</span><span class="op">)</span>         <span class="co"># "dose_mg" "supplement"</span></span></span>

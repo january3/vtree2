@@ -111,7 +111,12 @@ plotting starts, the <code><a href="../reference/add_layout.html">add_layout()</
 the <code>layout_*</code> family of functions to generates the
 <code>x</code> and <code>y</code> positions of the nodes and edges
 (later <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> also attaches a legend, but that is a
-different story).</p>
+different story). The layout coordinates are stored as columns in the
+nodes data frame (x, y, width, height, full_w, full_h) and in the edges
+data frame (x1, y1, x2, y2 and height). The height/full_h and
+width/full_w determine the visible node width/height and the total space
+allocated to the node (so basically full_w - width is the margin of the
+node).</p>
 <p>Once <code>layout_*</code> (by default, <code>layout_regular</code>)
 returns to <code><a href="../reference/add_layout.html">add_layout()</a></code>, the positions are laid out in the
 left-to-right direction (some, like <code>layout_tight</code>, need to
@@ -206,13 +211,41 @@ this bug is present</li>
 </ul>
 </div>
 <div class="section level3" number="4.2">
+<h3 id="vtree-construction">
+<span class="header-section-number">4.2</span> Vtree
+construction<a class="anchor" aria-label="anchor" href="#vtree-construction"></a>
+</h3>
+<p>The construction of the vtree follows one of three paths:</p>
+<ul>
+<li>from a cases data frame, using <code><a href="../reference/vtree.html">vtree()</a></code>
+</li>
+<li>from a frequency table, using <code><a href="../reference/cases_from_freqtable.html">cases_from_freqtable()</a></code>
+and then <code><a href="../reference/vtree.html">vtree()</a></code>
+</li>
+<li>from a frequency table, using
+<code><a href="../reference/vtree.html">vtree_from_freqtable()</a></code>
+</li>
+</ul>
+<p>The <code><a href="../reference/vtree.html">vtree_from_freqtable()</a></code> function is a convenience
+function that combines the two steps of creating a cases data frame with
+<code><a href="../reference/cases_from_freqtable.html">cases_from_freqtable()</a></code> and then calling
+<code><a href="../reference/vtree.html">vtree()</a></code>.</p>
+<p>At the core of both <code><a href="../reference/vtree.html">vtree()</a></code> and
+<code><a href="../reference/cases_from_freqtable.html">cases_from_freqtable()</a></code> is the function
+<code>.colprocess()</code>. It processes the cases data frame and the
+caller-provided tidy selection / tidy evaluation arguments (see below)
+provided as the second argument (quosure list), and returns the
+processed cases containing only the selected columns in the correct
+order.</p>
+</div>
+<div class="section level3" number="4.3">
 <h3 id="tidy-evaluation-and-selection">
-<span class="header-section-number">4.2</span> Tidy evaluation and
+<span class="header-section-number">4.3</span> Tidy evaluation and
 selection<a class="anchor" aria-label="anchor" href="#tidy-evaluation-and-selection"></a>
 </h3>
-<div class="section level4" number="4.2.1">
+<div class="section level4" number="4.3.1">
 <h4 id="tidy-evaluation">
-<span class="header-section-number">4.2.1</span> Tidy
+<span class="header-section-number">4.3.1</span> Tidy
 evaluation<a class="anchor" aria-label="anchor" href="#tidy-evaluation"></a>
 </h4>
 <p><code>vtree2</code> makes heavy use of the tidy selection and tidy
@@ -358,9 +391,9 @@ will be used.</li>
 <span>  <span class="co"># ...</span></span>
 <span><span class="op">}</span></span></code></pre></div>
 </div>
-<div class="section level4" number="4.2.2">
+<div class="section level4" number="4.3.2">
 <h4 id="tidy-selection">
-<span class="header-section-number">4.2.2</span> Tidy selection<a class="anchor" aria-label="anchor" href="#tidy-selection"></a>
+<span class="header-section-number">4.3.2</span> Tidy selection<a class="anchor" aria-label="anchor" href="#tidy-selection"></a>
 </h4>
 <p>Where the parameter of a function calls for columns of a data frame,
 we use the tidy select syntax. Note that tidy select and tidy evaluation

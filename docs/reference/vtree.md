@@ -173,7 +173,7 @@ plot(vt, dir="tb")
 # using derived variables
 vt <- vtree(titanicNA, Class, Gender=Sex, Survived)
 names(vt)         # "Class" "Gender" "Survived"
-#> [1] "Class"    "Survived" "Gender"  
+#> [1] "Class"    "Gender"   "Survived"
 vt <- vtree(ToothGrowth,
       dose_mg = as.character(dose), supplement=supp)
 names(vt)         # "dose_mg" "supplement"

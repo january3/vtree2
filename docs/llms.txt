@@ -312,6 +312,10 @@ More docs available [here](https://january3.github.io/vtree2/).
 ## BUGS
 
 - plot(pattern(vt), layout=“proportional”) produces garbage
+- ✔ ~~mixing named and unnamed arguments in vtree() produces incorrect
+  order~~
+- ✔ ~~weird stuff is happening when you do vtree(titanicNA, Sex, Sex,
+  Sex): I don’t allow any weird stuff~~
 - ✔ ~~incorrect warning when running plot(add_layout(vt, dir=“tb”))
   because plot sets default dir to lr, and then is surprised that the
   layout already has a different dir~~
